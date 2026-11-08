@@ -1,4 +1,5 @@
 //! Sandbox harness: deploys core + mock USDC + mock intents + mock factory, and wraps the calls the tests repeat.
+use base64::Engine as _;
 use ed25519_dalek::{Signer, SigningKey};
 use kruxa_logic::{hex, TrialParams};
 use near_workspaces::network::Sandbox;
@@ -97,6 +98,15 @@ impl Env {
 
     /// Same stack with another core profile ("demo" = demo clock, "testnet" and "mainnet" = ladder rules; only "mainnet" starts with the creator gate closed).
     pub async fn new_with_profile(profile: &str) -> anyhow::Result<Env> {
+        Self::build(profile, false).await
+    }
+
+    /// W1-DC-8: the same stack, but the Verifier is the REAL `intents.near` wasm (`scripts/fetch-intents-wasm.sh` puts it in fixtures/).
+    pub async fn new_real_intents() -> anyhow::Result<Env> {
+        Self::build("demo", true).await
+    }
+
+    async fn build(profile: &str, real_intents: bool) -> anyhow::Result<Env> {
         let worker = near_workspaces::sandbox().await?;
         let root = worker.root_account()?;
         let owner = funded(&root, "owner").await?;
@@ -106,8 +116,18 @@ impl Env {
         let relay_fees = funded(&root, "relayfees").await?;
         let usdc = deploy_at(&root, "usdc", wasm("mock_ft")).await?;
         usdc.call("new").args_json(json!({ "owner_id": owner.id(), "total_supply": "0" })).transact().await?.into_result()?;
-        let intents = deploy_at(&root, "intents", wasm("mock_intents")).await?;
-        intents.call("new").transact().await?.into_result()?;
+        let intents = if real_intents {
+            let code = std::fs::read(format!("{}/../fixtures/intents_near.wasm", env!("CARGO_MANIFEST_DIR")))
+                .expect("fixtures/intents_near.wasm missing: run scripts/fetch-intents-wasm.sh");
+            let c = deploy_at(&root, "intents", code).await?;
+            let cfg = json!({ "wnear_id": "wrap.test.near", "fees": { "fee": 0, "fee_collector": owner.id() }, "roles": { "super_admins": [owner.id()], "grantees": { "PauseManager": [owner.id()] } } });
+            c.call("new").args_json(json!({ "config": cfg })).transact().await?.into_result()?;
+            c
+        } else {
+            let c = deploy_at(&root, "intents", wasm("mock_intents")).await?;
+            c.call("new").transact().await?.into_result()?;
+            c
+        };
         let factory = deploy_at(&root, "factory", wasm("mock_factory")).await?;
         factory.call("new").transact().await?.into_result()?;
         let core = deploy_at(&root, "core", wasm("kruxa_core")).await?;
@@ -291,6 +311,33 @@ impl Env {
         self.register(&self.usdc, market.id()).await?;
         self.owner.call(self.core.id(), "set_market").args_json(json!({ "account": market.id() })).transact().await?.into_result()?;
         Ok(market)
+    }
+
+    /// Real Verifier only: puts `amount` of mock USDC into `who`'s Intents account through the normal NEP-141 deposit (`msg` = the account).
+    pub async fn deposit_real_intents(&self, who: &str, amount: u128) -> anyhow::Result<()> {
+        self.usdc.call("mint").args_json(json!({ "account_id": self.owner.id(), "amount": amount.to_string() })).transact().await?.into_result()?;
+        self.owner
+            .call(self.usdc.id(), "ft_transfer_call")
+            .args_json(json!({ "receiver_id": self.intents.id(), "amount": amount.to_string(), "msg": who }))
+            .deposit(NearToken::from_yoctonear(1))
+            .gas(GAS)
+            .transact()
+            .await?
+            .into_result()?;
+        Ok(())
+    }
+
+    /// S3 with a REAL raw_ed25519 signature: the holder signs the payload string; anyone submits it to `execute_intents`.
+    pub async fn s3_real(&self, h: &SolHolder, token: &AccountId, amount: u128, msg: Option<String>, nonce_seed: u8) -> ExecutionFinalResult {
+        let mut intent = json!({ "intent": "transfer", "receiver_id": self.core.id(), "tokens": { format!("nep141:{}", token): amount.to_string() } });
+        if let Some(m) = msg {
+            intent["msg"] = json!(m);
+            intent["min_gas"] = json!("50000000000000");
+        }
+        let nonce = base64::engine::general_purpose::STANDARD.encode([nonce_seed; 32]);
+        let payload = json!({ "signer_id": h.hex, "verifying_contract": self.intents.id(), "deadline": "2099-01-01T00:00:00.000Z", "nonce": nonce, "intents": [intent] }).to_string();
+        let signed = json!({ "standard": "raw_ed25519", "payload": payload, "public_key": format!("ed25519:{}", h.b58), "signature": format!("ed25519:{}", h.sign(&payload)) });
+        self.worker_call(&self.owner, self.intents.id(), "execute_intents", json!({ "signed": [signed] })).await
     }
 
     pub fn token_id(&self, symbol: &str) -> AccountId {
