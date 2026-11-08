@@ -1,0 +1,928 @@
+{
+  "agents": [
+    {
+      "bonus_tokens": "0",
+      "budget": "29000000",
+      "final_commit": "29000000",
+      "group": "honest",
+      "honest": true,
+      "id": "H1",
+      "index": 0,
+      "label": "steady",
+      "peak_commit": "29000000",
+      "refund": "29000000",
+      "refused": {},
+      "spend": "0",
+      "tokens": "0",
+      "walked": false,
+      "walked_round": null
+    },
+    {
+      "bonus_tokens": "0",
+      "budget": "20000000",
+      "final_commit": "20000000",
+      "group": "honest",
+      "honest": true,
+      "id": "H2",
+      "index": 1,
+      "label": "dca",
+      "peak_commit": "20000000",
+      "refund": "20000000",
+      "refused": {},
+      "spend": "0",
+      "tokens": "0",
+      "walked": false,
+      "walked_round": null
+    },
+    {
+      "bonus_tokens": "0",
+      "budget": "28000000",
+      "final_commit": "28000000",
+      "group": "honest",
+      "honest": true,
+      "id": "H3",
+      "index": 2,
+      "label": "cautious",
+      "peak_commit": "28000000",
+      "refund": "28000000",
+      "refused": {},
+      "spend": "0",
+      "tokens": "0",
+      "walked": false,
+      "walked_round": null
+    },
+    {
+      "bonus_tokens": "0",
+      "budget": "22000000",
+      "final_commit": "22000000",
+      "group": "honest",
+      "honest": true,
+      "id": "H4",
+      "index": 3,
+      "label": "fill-averse",
+      "peak_commit": "22000000",
+      "refund": "22000000",
+      "refused": {},
+      "spend": "0",
+      "tokens": "0",
+      "walked": false,
+      "walked_round": null
+    },
+    {
+      "bonus_tokens": "0",
+      "budget": "20000000",
+      "final_commit": "20000000",
+      "group": "honest",
+      "honest": true,
+      "id": "H5",
+      "index": 4,
+      "label": "small",
+      "peak_commit": "20000000",
+      "refund": "20000000",
+      "refused": {},
+      "spend": "0",
+      "tokens": "0",
+      "walked": false,
+      "walked_round": null
+    },
+    {
+      "bonus_tokens": "0",
+      "budget": "20000000",
+      "final_commit": "0",
+      "group": "honest",
+      "honest": true,
+      "id": "H6",
+      "index": 5,
+      "label": "top-up",
+      "peak_commit": "0",
+      "refund": "0",
+      "refused": {
+        "R_MIN_CONTRIBUTION": 1
+      },
+      "spend": "0",
+      "tokens": "0",
+      "walked": false,
+      "walked_round": null
+    },
+    {
+      "bonus_tokens": "0",
+      "budget": "20000000",
+      "final_commit": "20000000",
+      "group": "honest",
+      "honest": true,
+      "id": "H7",
+      "index": 6,
+      "label": "nervous",
+      "peak_commit": "20000000",
+      "refund": "20000000",
+      "refused": {},
+      "spend": "0",
+      "tokens": "0",
+      "walked": false,
+      "walked_round": null
+    },
+    {
+      "bonus_tokens": "0",
+      "budget": "1000000000",
+      "final_commit": "100000000",
+      "group": "whale",
+      "honest": false,
+      "id": "W1",
+      "index": 7,
+      "label": "whale",
+      "peak_commit": "100000000",
+      "refund": "100000000",
+      "refused": {
+        "R_CAP_ACCOUNT": 4
+      },
+      "spend": "0",
+      "tokens": "0",
+      "walked": false,
+      "walked_round": null
+    },
+    {
+      "bonus_tokens": "0",
+      "budget": "1000000000",
+      "final_commit": "100000000",
+      "group": "whale",
+      "honest": false,
+      "id": "W2",
+      "index": 8,
+      "label": "whale",
+      "peak_commit": "100000000",
+      "refund": "100000000",
+      "refused": {
+        "R_CAP_ACCOUNT": 2
+      },
+      "spend": "0",
+      "tokens": "0",
+      "walked": false,
+      "walked_round": null
+    },
+    {
+      "bonus_tokens": "0",
+      "budget": "100000000",
+      "final_commit": "0",
+      "group": "sniper",
+      "honest": false,
+      "id": "S1",
+      "index": 9,
+      "label": "sniper-rescuer",
+      "peak_commit": "0",
+      "refund": "0",
+      "refused": {
+        "R_WRONG_PHASE": 1
+      },
+      "spend": "0",
+      "tokens": "0",
+      "walked": false,
+      "walked_round": null
+    },
+    {
+      "bonus_tokens": "0",
+      "budget": "100000000",
+      "final_commit": "100000000",
+      "group": "sniper",
+      "honest": false,
+      "id": "S2",
+      "index": 10,
+      "label": "sniper",
+      "peak_commit": "100000000",
+      "refund": "100000000",
+      "refused": {
+        "R_WRONG_PHASE": 1
+      },
+      "spend": "0",
+      "tokens": "0",
+      "walked": false,
+      "walked_round": null
+    },
+    {
+      "bonus_tokens": "0",
+      "budget": "100000000",
+      "final_commit": "100000000",
+      "group": "sybil",
+      "honest": false,
+      "id": "Y1",
+      "index": 11,
+      "label": "sybil-lead",
+      "peak_commit": "100000000",
+      "refund": "100000000",
+      "refused": {
+        "R_CAP_ACCOUNT": 1
+      },
+      "spend": "0",
+      "tokens": "0",
+      "walked": false,
+      "walked_round": null
+    },
+    {
+      "bonus_tokens": "0",
+      "budget": "100000000",
+      "final_commit": "100000000",
+      "group": "sybil",
+      "honest": false,
+      "id": "Y2",
+      "index": 12,
+      "label": "sybil",
+      "peak_commit": "100000000",
+      "refund": "100000000",
+      "refused": {},
+      "spend": "0",
+      "tokens": "0",
+      "walked": false,
+      "walked_round": null
+    },
+    {
+      "bonus_tokens": "0",
+      "budget": "100000000",
+      "final_commit": "100000000",
+      "group": "sybil",
+      "honest": false,
+      "id": "Y3",
+      "index": 13,
+      "label": "sybil",
+      "peak_commit": "100000000",
+      "refund": "100000000",
+      "refused": {},
+      "spend": "0",
+      "tokens": "0",
+      "walked": false,
+      "walked_round": null
+    },
+    {
+      "bonus_tokens": "0",
+      "budget": "100000000",
+      "final_commit": "100000000",
+      "group": "sybil",
+      "honest": false,
+      "id": "Y4",
+      "index": 14,
+      "label": "sybil",
+      "peak_commit": "100000000",
+      "refund": "100000000",
+      "refused": {},
+      "spend": "0",
+      "tokens": "0",
+      "walked": false,
+      "walked_round": null
+    },
+    {
+      "bonus_tokens": "0",
+      "budget": "100000000",
+      "final_commit": "100000000",
+      "group": "flipper",
+      "honest": false,
+      "id": "F",
+      "index": 15,
+      "label": "walk-flipper",
+      "peak_commit": "100000000",
+      "refund": "100000000",
+      "refused": {},
+      "spend": "0",
+      "tokens": "0",
+      "walked": false,
+      "walked_round": null
+    }
+  ],
+  "analysis": {
+    "adversaries_beat_honest": false,
+    "blocked_by_rule": [
+      {
+        "count": 1,
+        "group": "honest",
+        "rule_code": "R_MIN_CONTRIBUTION"
+      },
+      {
+        "count": 2,
+        "group": "sniper",
+        "rule_code": "R_WRONG_PHASE"
+      },
+      {
+        "count": 1,
+        "group": "sybil",
+        "rule_code": "R_CAP_ACCOUNT"
+      },
+      {
+        "count": 6,
+        "group": "whale",
+        "rule_code": "R_CAP_ACCOUNT"
+      }
+    ],
+    "bounded_not_blocked": [
+      {
+        "attack": "sybil_split",
+        "multiple_of_one_wallet_cap_x100": "400",
+        "note": "accounts are unlinkable on chain, so the ring holds up to 4x the per-wallet cap; it pays the same uniform price and is diluted pro-rata",
+        "outcome": "BOUNDED",
+        "ring_accounts": 4,
+        "ring_committed": "400000000"
+      },
+      {
+        "attack": "walk_flip",
+        "flip_succeeded": false,
+        "margin_before_walk_usdc": null,
+        "note": "a last-round Walk flips PASS to FAIL only when the pass margin is smaller than one position (at most the wallet cap); all other buyers are refunded in full",
+        "outcome": "BOUNDED"
+      }
+    ],
+    "max_price_deviation_ppm": "0",
+    "price_parity": true,
+    "violations": []
+  },
+  "groups": [
+    {
+      "agents": 7,
+      "commit_share_bps": 1480,
+      "committed": "139000000",
+      "fill_bps": 0,
+      "group": "honest",
+      "refund": "139000000",
+      "spend": "0",
+      "token_share_bps": 0,
+      "tokens": "0"
+    },
+    {
+      "agents": 2,
+      "commit_share_bps": 2129,
+      "committed": "200000000",
+      "fill_bps": 0,
+      "group": "whale",
+      "refund": "200000000",
+      "spend": "0",
+      "token_share_bps": 0,
+      "tokens": "0"
+    },
+    {
+      "agents": 2,
+      "commit_share_bps": 1064,
+      "committed": "100000000",
+      "fill_bps": 0,
+      "group": "sniper",
+      "refund": "100000000",
+      "spend": "0",
+      "token_share_bps": 0,
+      "tokens": "0"
+    },
+    {
+      "agents": 4,
+      "commit_share_bps": 4259,
+      "committed": "400000000",
+      "fill_bps": 0,
+      "group": "sybil",
+      "refund": "400000000",
+      "spend": "0",
+      "token_share_bps": 0,
+      "tokens": "0"
+    },
+    {
+      "agents": 1,
+      "commit_share_bps": 1064,
+      "committed": "100000000",
+      "fill_bps": 0,
+      "group": "flipper",
+      "refund": "100000000",
+      "spend": "0",
+      "token_share_bps": 0,
+      "tokens": "0"
+    }
+  ],
+  "honest_budget_pct": 30,
+  "invariants": {
+    "checks_run": 240,
+    "held": true,
+    "ids": [
+      "C1",
+      "C2",
+      "K1",
+      "K2",
+      "V1",
+      "A1",
+      "A2",
+      "A3",
+      "A4",
+      "T1"
+    ],
+    "rounds_checked": 24,
+    "violations": 0
+  },
+  "label": "SCRIPTED, RECORDED (offline simulation against the real kruxa-logic verdict and allocation functions)",
+  "preset": "cold crowd, soft cap too high",
+  "probes": [
+    {
+      "result": "R_WALK_CLOSED",
+      "what": "walk at walk_end"
+    },
+    {
+      "result": "R_WRONG_PHASE",
+      "what": "commit at walk_end"
+    },
+    {
+      "result": "Ready",
+      "what": "settle phase at walk_end"
+    }
+  ],
+  "rounds": [
+    {
+      "events": [
+        {
+          "action": "commit",
+          "agent": 7,
+          "amount": "1000000000",
+          "result": "R_CAP_ACCOUNT"
+        }
+      ],
+      "funders": 0,
+      "invariants_checked": 10,
+      "margin_funders": -10,
+      "margin_usdc": "-1000000000",
+      "oversubscription_bps": 0,
+      "phase": "Open",
+      "round": 0,
+      "total_committed": "0",
+      "verdict_now": "FAIL(BELOW_SOFT_CAP|BELOW_MIN_FUNDERS)",
+      "violations": []
+    },
+    {
+      "events": [
+        {
+          "action": "commit",
+          "agent": 7,
+          "amount": "100000000",
+          "result": "ok"
+        },
+        {
+          "action": "commit",
+          "agent": 5,
+          "amount": "10000000",
+          "result": "R_MIN_CONTRIBUTION"
+        }
+      ],
+      "funders": 1,
+      "invariants_checked": 10,
+      "margin_funders": -9,
+      "margin_usdc": "-900000000",
+      "oversubscription_bps": 1000,
+      "phase": "Open",
+      "round": 1,
+      "total_committed": "100000000",
+      "verdict_now": "FAIL(BELOW_SOFT_CAP|BELOW_MIN_FUNDERS)",
+      "violations": []
+    },
+    {
+      "events": [
+        {
+          "action": "commit",
+          "agent": 3,
+          "amount": "22000000",
+          "result": "ok"
+        },
+        {
+          "action": "commit",
+          "agent": 1,
+          "amount": "20000000",
+          "result": "ok"
+        },
+        {
+          "action": "commit",
+          "agent": 0,
+          "amount": "29000000",
+          "result": "ok"
+        }
+      ],
+      "funders": 4,
+      "invariants_checked": 10,
+      "margin_funders": -6,
+      "margin_usdc": "-829000000",
+      "oversubscription_bps": 1710,
+      "phase": "Open",
+      "round": 2,
+      "total_committed": "171000000",
+      "verdict_now": "FAIL(BELOW_SOFT_CAP|BELOW_MIN_FUNDERS)",
+      "violations": []
+    },
+    {
+      "events": [
+        {
+          "action": "commit",
+          "agent": 11,
+          "amount": "400000000",
+          "result": "R_CAP_ACCOUNT"
+        }
+      ],
+      "funders": 4,
+      "invariants_checked": 10,
+      "margin_funders": -6,
+      "margin_usdc": "-829000000",
+      "oversubscription_bps": 1710,
+      "phase": "Open",
+      "round": 3,
+      "total_committed": "171000000",
+      "verdict_now": "FAIL(BELOW_SOFT_CAP|BELOW_MIN_FUNDERS)",
+      "violations": []
+    },
+    {
+      "events": [
+        {
+          "action": "commit",
+          "agent": 15,
+          "amount": "100000000",
+          "result": "ok"
+        },
+        {
+          "action": "commit",
+          "agent": 11,
+          "amount": "100000000",
+          "result": "ok"
+        }
+      ],
+      "funders": 6,
+      "invariants_checked": 10,
+      "margin_funders": -4,
+      "margin_usdc": "-629000000",
+      "oversubscription_bps": 3710,
+      "phase": "Open",
+      "round": 4,
+      "total_committed": "371000000",
+      "verdict_now": "FAIL(BELOW_SOFT_CAP|BELOW_MIN_FUNDERS)",
+      "violations": []
+    },
+    {
+      "events": [],
+      "funders": 6,
+      "invariants_checked": 10,
+      "margin_funders": -4,
+      "margin_usdc": "-629000000",
+      "oversubscription_bps": 3710,
+      "phase": "Open",
+      "round": 5,
+      "total_committed": "371000000",
+      "verdict_now": "FAIL(BELOW_SOFT_CAP|BELOW_MIN_FUNDERS)",
+      "violations": []
+    },
+    {
+      "events": [
+        {
+          "action": "commit",
+          "agent": 6,
+          "amount": "20000000",
+          "result": "ok"
+        },
+        {
+          "action": "commit",
+          "agent": 7,
+          "amount": "50000000",
+          "result": "R_CAP_ACCOUNT"
+        }
+      ],
+      "funders": 7,
+      "invariants_checked": 10,
+      "margin_funders": -3,
+      "margin_usdc": "-609000000",
+      "oversubscription_bps": 3910,
+      "phase": "Open",
+      "round": 6,
+      "total_committed": "391000000",
+      "verdict_now": "FAIL(BELOW_SOFT_CAP|BELOW_MIN_FUNDERS)",
+      "violations": []
+    },
+    {
+      "events": [
+        {
+          "action": "commit",
+          "agent": 12,
+          "amount": "100000000",
+          "result": "ok"
+        }
+      ],
+      "funders": 8,
+      "invariants_checked": 10,
+      "margin_funders": -2,
+      "margin_usdc": "-509000000",
+      "oversubscription_bps": 4910,
+      "phase": "Open",
+      "round": 7,
+      "total_committed": "491000000",
+      "verdict_now": "FAIL(BELOW_SOFT_CAP|BELOW_MIN_FUNDERS)",
+      "violations": []
+    },
+    {
+      "events": [
+        {
+          "action": "commit",
+          "agent": 2,
+          "amount": "28000000",
+          "result": "ok"
+        },
+        {
+          "action": "commit",
+          "agent": 8,
+          "amount": "1000000000",
+          "result": "R_CAP_ACCOUNT"
+        }
+      ],
+      "funders": 9,
+      "invariants_checked": 10,
+      "margin_funders": -1,
+      "margin_usdc": "-481000000",
+      "oversubscription_bps": 5190,
+      "phase": "Open",
+      "round": 8,
+      "total_committed": "519000000",
+      "verdict_now": "FAIL(BELOW_SOFT_CAP|BELOW_MIN_FUNDERS)",
+      "violations": []
+    },
+    {
+      "events": [
+        {
+          "action": "commit",
+          "agent": 8,
+          "amount": "100000000",
+          "result": "ok"
+        }
+      ],
+      "funders": 10,
+      "invariants_checked": 10,
+      "margin_funders": 0,
+      "margin_usdc": "-381000000",
+      "oversubscription_bps": 6190,
+      "phase": "Open",
+      "round": 9,
+      "total_committed": "619000000",
+      "verdict_now": "FAIL(BELOW_SOFT_CAP)",
+      "violations": []
+    },
+    {
+      "events": [],
+      "funders": 10,
+      "invariants_checked": 10,
+      "margin_funders": 0,
+      "margin_usdc": "-381000000",
+      "oversubscription_bps": 6190,
+      "phase": "Open",
+      "round": 10,
+      "total_committed": "619000000",
+      "verdict_now": "FAIL(BELOW_SOFT_CAP)",
+      "violations": []
+    },
+    {
+      "events": [],
+      "funders": 10,
+      "invariants_checked": 10,
+      "margin_funders": 0,
+      "margin_usdc": "-381000000",
+      "oversubscription_bps": 6190,
+      "phase": "Open",
+      "round": 11,
+      "total_committed": "619000000",
+      "verdict_now": "FAIL(BELOW_SOFT_CAP)",
+      "violations": []
+    },
+    {
+      "events": [
+        {
+          "action": "commit",
+          "agent": 7,
+          "amount": "50000000",
+          "result": "R_CAP_ACCOUNT"
+        },
+        {
+          "action": "commit",
+          "agent": 13,
+          "amount": "100000000",
+          "result": "ok"
+        }
+      ],
+      "funders": 11,
+      "invariants_checked": 10,
+      "margin_funders": 1,
+      "margin_usdc": "-281000000",
+      "oversubscription_bps": 7190,
+      "phase": "Open",
+      "round": 12,
+      "total_committed": "719000000",
+      "verdict_now": "FAIL(BELOW_SOFT_CAP)",
+      "violations": []
+    },
+    {
+      "events": [],
+      "funders": 11,
+      "invariants_checked": 10,
+      "margin_funders": 1,
+      "margin_usdc": "-281000000",
+      "oversubscription_bps": 7190,
+      "phase": "Open",
+      "round": 13,
+      "total_committed": "719000000",
+      "verdict_now": "FAIL(BELOW_SOFT_CAP)",
+      "violations": []
+    },
+    {
+      "events": [
+        {
+          "action": "commit",
+          "agent": 8,
+          "amount": "50000000",
+          "result": "R_CAP_ACCOUNT"
+        },
+        {
+          "action": "commit",
+          "agent": 14,
+          "amount": "100000000",
+          "result": "ok"
+        },
+        {
+          "action": "commit",
+          "agent": 4,
+          "amount": "20000000",
+          "result": "ok"
+        }
+      ],
+      "funders": 13,
+      "invariants_checked": 10,
+      "margin_funders": 3,
+      "margin_usdc": "-161000000",
+      "oversubscription_bps": 8390,
+      "phase": "Open",
+      "round": 14,
+      "total_committed": "839000000",
+      "verdict_now": "FAIL(BELOW_SOFT_CAP)",
+      "violations": []
+    },
+    {
+      "events": [],
+      "funders": 13,
+      "invariants_checked": 10,
+      "margin_funders": 3,
+      "margin_usdc": "-161000000",
+      "oversubscription_bps": 8390,
+      "phase": "Open",
+      "round": 15,
+      "total_committed": "839000000",
+      "verdict_now": "FAIL(BELOW_SOFT_CAP)",
+      "violations": []
+    },
+    {
+      "events": [],
+      "funders": 13,
+      "invariants_checked": 10,
+      "margin_funders": 3,
+      "margin_usdc": "-161000000",
+      "oversubscription_bps": 8390,
+      "phase": "Open",
+      "round": 16,
+      "total_committed": "839000000",
+      "verdict_now": "FAIL(BELOW_SOFT_CAP)",
+      "violations": []
+    },
+    {
+      "events": [],
+      "funders": 13,
+      "invariants_checked": 10,
+      "margin_funders": 3,
+      "margin_usdc": "-161000000",
+      "oversubscription_bps": 8390,
+      "phase": "Open",
+      "round": 17,
+      "total_committed": "839000000",
+      "verdict_now": "FAIL(BELOW_SOFT_CAP)",
+      "violations": []
+    },
+    {
+      "events": [
+        {
+          "action": "commit",
+          "agent": 7,
+          "amount": "50000000",
+          "result": "R_CAP_ACCOUNT"
+        }
+      ],
+      "funders": 13,
+      "invariants_checked": 10,
+      "margin_funders": 3,
+      "margin_usdc": "-161000000",
+      "oversubscription_bps": 8390,
+      "phase": "Open",
+      "round": 18,
+      "total_committed": "839000000",
+      "verdict_now": "FAIL(BELOW_SOFT_CAP)",
+      "violations": []
+    },
+    {
+      "events": [
+        {
+          "action": "commit",
+          "agent": 10,
+          "amount": "100000000",
+          "result": "ok"
+        }
+      ],
+      "funders": 14,
+      "invariants_checked": 10,
+      "margin_funders": 4,
+      "margin_usdc": "-61000000",
+      "oversubscription_bps": 9390,
+      "phase": "Open",
+      "round": 19,
+      "total_committed": "939000000",
+      "verdict_now": "FAIL(BELOW_SOFT_CAP)",
+      "violations": []
+    },
+    {
+      "events": [],
+      "funders": 14,
+      "invariants_checked": 10,
+      "margin_funders": 4,
+      "margin_usdc": "-61000000",
+      "oversubscription_bps": 9390,
+      "phase": "Closing",
+      "round": 20,
+      "total_committed": "939000000",
+      "verdict_now": "FAIL(BELOW_SOFT_CAP)",
+      "violations": []
+    },
+    {
+      "events": [
+        {
+          "action": "commit",
+          "agent": 9,
+          "amount": "100000000",
+          "result": "R_WRONG_PHASE"
+        },
+        {
+          "action": "commit",
+          "agent": 10,
+          "amount": "100000000",
+          "result": "R_WRONG_PHASE"
+        }
+      ],
+      "funders": 14,
+      "invariants_checked": 10,
+      "margin_funders": 4,
+      "margin_usdc": "-61000000",
+      "oversubscription_bps": 9390,
+      "phase": "Closing",
+      "round": 21,
+      "total_committed": "939000000",
+      "verdict_now": "FAIL(BELOW_SOFT_CAP)",
+      "violations": []
+    },
+    {
+      "events": [],
+      "funders": 14,
+      "invariants_checked": 10,
+      "margin_funders": 4,
+      "margin_usdc": "-61000000",
+      "oversubscription_bps": 9390,
+      "phase": "Closing",
+      "round": 22,
+      "total_committed": "939000000",
+      "verdict_now": "FAIL(BELOW_SOFT_CAP)",
+      "violations": []
+    },
+    {
+      "events": [],
+      "funders": 14,
+      "invariants_checked": 10,
+      "margin_funders": 4,
+      "margin_usdc": "-61000000",
+      "oversubscription_bps": 9390,
+      "phase": "Closing",
+      "round": 23,
+      "total_committed": "939000000",
+      "verdict_now": "FAIL(BELOW_SOFT_CAP)",
+      "violations": []
+    }
+  ],
+  "schema": "kruxa.swarm.run/1",
+  "seed": 3,
+  "settlement": {
+    "accepted": "0",
+    "clearing_usdc_per_million_whole_tokens": null,
+    "excess_refunded": "0",
+    "funders": 14,
+    "launch_fee": "0",
+    "lp_quote": "0",
+    "margin_funders": 4,
+    "margin_usdc": "-61000000",
+    "oversubscription_bps": 9390,
+    "passed": false,
+    "stream": "0",
+    "total_committed": "939000000",
+    "verdict": "FAIL(BELOW_SOFT_CAP)"
+  },
+  "trial": {
+    "commit_end_round": 20,
+    "hard_cap": "1000000000",
+    "max_holders": 100,
+    "max_total_held": "2000000000",
+    "min_buy": "20000000",
+    "min_funders": 10,
+    "n_sale": "600000000000000",
+    "rounds": 24,
+    "soft_cap": "1000000000",
+    "usdc_unit": "1000000",
+    "walk_end_round": 24,
+    "wallet_cap": "100000000"
+  }
+}
