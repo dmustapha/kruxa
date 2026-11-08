@@ -25,7 +25,7 @@ pub const ONE_YOCTO: NearToken = NearToken::from_yoctonear(1);
 pub const GAS_OUT: Gas = Gas::from_tgas(15);
 pub const GAS_CB: Gas = Gas::from_tgas(20);
 pub const GAS_VIEW: Gas = Gas::from_tgas(10);
-pub const GAS_FACTORY: Gas = Gas::from_tgas(80);
+pub const GAS_FACTORY: Gas = Gas::from_tgas(110);
 pub const GAS_LEG: Gas = Gas::from_tgas(90);
 pub const GAS_STORAGE: Gas = Gas::from_tgas(15);
 /// Callback of the seed leg: its own work plus sending the token leg and that leg's callback.
