@@ -1,3 +1,4 @@
+use kruxa_logic::genesis::{Disclosure, Frontier, GenesisMode, GenesisSpec};
 use kruxa_logic::{hex, Derived, Rules, StatusClass, TrialParams, VerdictInputs};
 use near_sdk::{bs58, near, AccountId};
 
@@ -92,6 +93,8 @@ pub struct Charter {
     pub commit_end: u64,
     pub walk_end: u64,
     pub route: TokenRoute,
+    /// Static genesis intent, committed with the Charter (ARCHITECTURE 5.2). Defaults keep every authority None.
+    pub genesis: GenesisPlan,
 }
 
 #[near(serializers = [borsh])]
@@ -139,6 +142,11 @@ pub struct Ledger {
     pub launch_fee_paid: u128,
     pub launch_fee_inflight: u128,
     pub lp_seed_due: u128,
+    /// D-3: the part of the LP seed handed to `open_market` and not yet answered, and the part the market accepted.
+    pub lp_seed_inflight: u128,
+    pub lp_seed_sent: u128,
+    pub lp_tokens_inflight: u128,
+    pub lp_tokens_sent: u128,
     pub stream_total: u128,
     pub stream_drawn: u128,
     pub stream_inflight: u128,
@@ -182,6 +190,7 @@ pub struct LaunchState {
     pub book_hash: [u8; 32],
     pub ledger: Ledger,
     pub settlement: Option<Settlement>,
+    pub genesis: GenesisState,
 }
 
 impl LaunchState {
@@ -257,4 +266,91 @@ pub struct Config {
     pub frozen_until: u64,
     pub factory_deposit: u128,
     pub profile: String,
+    /// D-1: while true only the owner can `create_trial`. Starts true on the mainnet profile, one-way off through `open_beta`.
+    pub creator_gate: bool,
+    /// D-3: the market contract that receives the LP seed. Set once by the owner; locked after the first `open_market`.
+    pub market: Option<AccountId>,
+    pub market_locked: bool,
+    /// The genesis relayer (`genesis-relayer.kruxa.near`): commit, build_root_page, confirm, abort, attest_log_append and nothing else.
+    pub genesis_relayer: Option<AccountId>,
+    pub genesis_paused: bool,
+}
+
+#[near(serializers = [borsh])]
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct GenesisPlan {
+    pub plan_version: u8,
+    pub mode: GenesisMode,
+    pub decimals: u8,
+    pub metadata_uri_sha256: [u8; 32],
+    pub metadata_hash: [u8; 32],
+    pub mint_authority_none: bool,
+    pub freeze_authority_none: bool,
+    pub extensions_allowed: bool,
+    pub lp_mirror_to_solana: bool,
+    pub reserve_bps: u16,
+    pub squads_multisig_hash: [u8; 32],
+    pub vault_index: u8,
+    pub disclosure: Disclosure,
+    pub clawback_days: u16,
+    pub mint_pubkey_f0: Option<[u8; 32]>,
+}
+
+#[near(serializers = [borsh])]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum GenesisStatus {
+    None,
+    Committed,
+    Confirmed,
+    Aborted,
+}
+
+#[near(serializers = [borsh])]
+#[derive(Clone, Debug)]
+pub struct GenesisState {
+    pub status: GenesisStatus,
+    pub g_pub: Option<[u8; 32]>,
+    pub mint_address: Option<[u8; 32]>,
+    pub commit_height: u64,
+    pub expected_leaves: u32,
+    pub expected_total: u64,
+    pub frontier: Frontier,
+    pub last_leaf: Option<[u8; 32]>,
+    pub leaf_sum: u64,
+    pub root_ready: bool,
+    pub merkle_root: Option<[u8; 32]>,
+    pub spec: Option<GenesisSpec>,
+    pub genesis_spec_hash: Option<[u8; 32]>,
+    pub sol_mint_supply: u64,
+    pub tx_sigs: Vec<String>,
+    pub slot: u64,
+    pub ceremony_hash: Option<[u8; 32]>,
+    pub attest_log: Vec<[u8; 32]>,
+    pub abort_reason: String,
+}
+
+impl Default for GenesisState {
+    fn default() -> Self {
+        Self {
+            status: GenesisStatus::None,
+            g_pub: None,
+            mint_address: None,
+            commit_height: 0,
+            expected_leaves: 0,
+            expected_total: 0,
+            frontier: Frontier::default(),
+            last_leaf: None,
+            leaf_sum: 0,
+            root_ready: false,
+            merkle_root: None,
+            spec: None,
+            genesis_spec_hash: None,
+            sol_mint_supply: 0,
+            tx_sigs: Vec::new(),
+            slot: 0,
+            ceremony_hash: None,
+            attest_log: Vec::new(),
+            abort_reason: String::new(),
+        }
+    }
 }

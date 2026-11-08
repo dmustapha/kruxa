@@ -17,6 +17,7 @@ s4-fallback = []
 near-sdk = { workspace = true }
 kruxa-math = { path = "../../crates/kruxa-math" }
 kruxa-logic = { path = "../../crates/kruxa-logic" }
+base64 = { version = "0.22", default-features = false, features = ["alloc"] }
 
 [dev-dependencies]
 near-sdk = { workspace = true, features = ["unit-testing"] }

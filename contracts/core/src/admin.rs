@@ -48,6 +48,16 @@ impl Contract {
         emit("unpaused", json!({}));
     }
 
+    /// D-1, one-way: opens `create_trial` to every account. Owner only (the guardian cannot), after the brand token has launched.
+    pub fn open_beta(&mut self) {
+        self.require_owner();
+        if !self.cfg.creator_gate {
+            fail(RuleCode::RNothing, "creator gate is already open");
+        }
+        self.cfg.creator_gate = false;
+        emit("beta_opened", json!({ "by": env::predecessor_account_id() }));
+    }
+
     /// Lowering a cap is instant for owner or guardian.
     pub fn lower_global_cap(&mut self, value: U128) {
         self.require_owner_or_guardian();

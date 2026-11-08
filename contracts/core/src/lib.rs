@@ -7,8 +7,10 @@
 mod admin;
 mod events;
 mod ext;
+mod genesis;
 mod intake;
 mod lifecycle;
+mod market_link;
 mod model;
 mod payout;
 #[cfg(feature = "s4-fallback")]
@@ -72,6 +74,7 @@ impl Contract {
         factory: AccountId,
         profile: String,
     ) -> Self {
+        let creator_gate = !matches!(profile.as_str(), "demo" | "testnet");
         let rules = if profile == "demo" { Rules::demo_clock() } else { Rules::ladder() };
         let cfg = Config {
             owner,
@@ -91,6 +94,11 @@ impl Contract {
             frozen_until: 0,
             factory_deposit: FACTORY_DEPOSIT_YOCTO,
             profile,
+            creator_gate,
+            market: None,
+            market_locked: false,
+            genesis_relayer: None,
+            genesis_paused: false,
         };
         Self {
             cfg,

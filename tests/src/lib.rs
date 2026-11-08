@@ -92,6 +92,11 @@ impl SolHolder {
 
 impl Env {
     pub async fn new() -> anyhow::Result<Env> {
+        Self::new_with_profile("demo").await
+    }
+
+    /// Same stack with another core profile ("demo" = demo clock, "testnet" and "mainnet" = ladder rules; only "mainnet" starts with the creator gate closed).
+    pub async fn new_with_profile(profile: &str) -> anyhow::Result<Env> {
         let worker = near_workspaces::sandbox().await?;
         let root = worker.root_account()?;
         let owner = funded(&root, "owner").await?;
@@ -107,7 +112,7 @@ impl Env {
         factory.call("new").transact().await?.into_result()?;
         let core = deploy_at(&root, "core", wasm("kruxa_core")).await?;
         core.call("new")
-            .args_json(json!({ "owner": owner.id(), "guardian": guardian.id(), "treasury": treasury.id(), "relay_fees": relay_fees.id(), "usdc": usdc.id(), "intents": intents.id(), "factory": factory.id(), "profile": "demo" }))
+            .args_json(json!({ "owner": owner.id(), "guardian": guardian.id(), "treasury": treasury.id(), "relay_fees": relay_fees.id(), "usdc": usdc.id(), "intents": intents.id(), "factory": factory.id(), "profile": profile }))
             .transact()
             .await?
             .into_result()?;
@@ -229,6 +234,11 @@ impl Env {
 
     /// Same as `create_launch`, for any creator account (one active trial per account, so a second launch needs a second creator).
     pub async fn create_launch_as(&self, creator: &Account, p: &TrialParams) -> anyhow::Result<u64> {
+        self.create_launch_to(creator, p, None).await
+    }
+
+    /// Same, with an explicit payout recipient (`stream_recipient` in the Charter, named `payout_recipient` in the views).
+    pub async fn create_launch_to(&self, creator: &Account, p: &TrialParams, recipient: Option<&AccountId>) -> anyhow::Result<u64> {
         let required: String = self.core.view("required_deposit").args_json(json!({ "params": p })).await?.json()?;
         let supply = (p.total_supply_whole as u128) * USDC;
         let token = self
@@ -249,11 +259,12 @@ impl Env {
         let id = self.next_id.get();
         let res = creator
             .call(self.core.id(), "create_trial")
-            .args_json(json!({ "params": p, "stream_recipient": null }))
+            .args_json(json!({ "params": p, "stream_recipient": recipient }))
             .deposit(NearToken::from_yoctonear(required.parse()?))
             .gas(GAS)
             .transact()
             .await?;
+        self.record(&res);
         if std::env::var("KRUXA_DEBUG").is_ok() {
             eprintln!("create_trial logs: {:#?}\nfailures: {:#?}", res.logs(), res.failures());
         }
@@ -261,6 +272,15 @@ impl Env {
         self.next_id.set(id + 1);
         self.assert_invariants().await;
         Ok(id)
+    }
+
+    /// Deploys the stub market, registers it on USDC and calls `core.set_market` as the owner. Register it on each launch token separately.
+    pub async fn deploy_stub_market(&self) -> anyhow::Result<Contract> {
+        let market = deploy_at(&self.worker.root_account()?, "market", wasm("mock_market")).await?;
+        market.call("new").transact().await?.into_result()?;
+        self.register(&self.usdc, market.id()).await?;
+        self.owner.call(self.core.id(), "set_market").args_json(json!({ "account": market.id() })).transact().await?.into_result()?;
+        Ok(market)
     }
 
     pub fn token_id(&self, symbol: &str) -> AccountId {
