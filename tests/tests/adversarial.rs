@@ -2,6 +2,7 @@
 //! callback re-credit, fake-token and direct-callback attacks, and creation failures.
 use kruxa_logic::TrialParams;
 use kruxa_tests::*;
+use near_workspaces::result::ValueOrReceiptId;
 use near_workspaces::types::NearToken;
 use serde_json::json;
 
@@ -362,7 +363,21 @@ async fn reentrant_refund_cannot_pay_twice() -> anyhow::Result<()> {
         .transact()
         .await?
         .into_result()?;
-    env.call(&users[1], "claim_refund", key.clone(), ZERO).await.into_result()?;
+    let r = env.call(&users[1], "claim_refund", key.clone(), ZERO).await;
+    // Every value core returned in this transaction tree, in order: the outer claim paid (true), then the reentrant claim_refund
+    // that the token fired from inside ft_transfer ran and was refused (false). Callbacks return nothing.
+    let core_bools: Vec<bool> = r
+        .outcomes()
+        .into_iter()
+        .filter(|o| o.executor_id == *env.core.id())
+        .filter_map(|o| match o.clone().into_result() {
+            Ok(ValueOrReceiptId::Value(v)) => v.json::<bool>().ok(),
+            _ => None,
+        })
+        .collect();
+    assert_eq!(core_bools, vec![true, false], "the outer claim paid once and the reentrant claim ran and paid nothing");
+    assert!(r.failures().is_empty(), "the reentrant call is refused by returning false, not by crashing: {:?}", r.failures());
+    r.into_result()?;
     assert_eq!(env.usdc_balance(users[0].id()).await, 1_000 * USDC, "refunded exactly once, not twice");
     assert_eq!(env.view("get_position", key).await, serde_json::Value::Null, "a fully paid position record is deleted");
     assert_eq!(env.view("get_ledger", lid(id)).await["refunded"], "30000000", "the ledger shows one refund of 30 USDC, not two");
