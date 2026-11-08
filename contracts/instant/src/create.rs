@@ -72,14 +72,14 @@ impl Launcher {
         supply.and(held).then(Self::ext(env::current_account_id()).with_static_gas(GAS_CB).on_instant_token_verified(U64(id)))
     }
 
-    /// Creation ended without a usable token. `factory_kept`: the factory call succeeded, so it keeps its deposit.
-    fn fail_creation(&mut self, id: u64, reason: &str, factory_kept: bool) {
+    /// Creation ended without a usable token. The factory deposit is NEVER refunded: a failed factory batch (for example the
+    /// token account already exists) sends its refund to the factory, not to the launcher, so the launcher cannot know it
+    /// got the 0.06 NEAR back (review H-01). The creator gets the rest. The 24 h rate limit stays.
+    fn fail_creation(&mut self, id: u64, reason: &str) {
         let mut r = self.instant(id);
         r.status = Status::CreationFailed;
-        let kept = RECORD_STORAGE_YOCTO + if factory_kept { self.cfg.factory_deposit } else { 0 };
-        r.deposit_refundable = r.deposit_paid.saturating_sub(kept);
+        r.deposit_refundable = r.deposit_paid.saturating_sub(RECORD_STORAGE_YOCTO + self.cfg.factory_deposit);
         self.symbols.remove(&r.params.symbol);
-        self.last_launch.remove(&r.creator);
         emit("instant_creation_failed", Obj::new().s("launch_id", id).s("code", "R_TOKEN_CREATE").s("reason", reason));
         self.save(r);
     }
@@ -137,6 +137,7 @@ impl Launcher {
             created_at: now,
             seeded_at: 0,
             opened_at: 0,
+            inflight_since: 0,
             seed_total: 0,
             seed_due: 0,
             seed_inflight: 0,
@@ -187,7 +188,7 @@ impl Launcher {
             return PromiseOrValue::Value(false);
         }
         if env::promise_result_checked(0, 4096).is_err() {
-            self.fail_creation(id, "factory call failed", false);
+            self.fail_creation(id, "factory call failed");
             return PromiseOrValue::Value(false);
         }
         PromiseOrValue::Promise(self.verify_token(id))
@@ -207,7 +208,7 @@ impl Launcher {
         };
         let n = r.derived.n_total;
         if read(0) != Some(n) || read(1) != Some(n) {
-            self.fail_creation(id, "token supply is not at the launcher", true);
+            self.fail_creation(id, "token supply is not at the launcher");
             return false;
         }
         r.status = Status::TokenReady;

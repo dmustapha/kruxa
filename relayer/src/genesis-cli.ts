@@ -23,7 +23,7 @@ const USAGE = "usage: genesis --launch N --mode F1|F0 [--cluster devnet|local] [
 
 function parseArgs(argv: string[]): Args {
   const get = (k: string) => { const i = argv.indexOf(k); return i >= 0 ? argv[i + 1] : undefined; };
-  const known = new Set(["--launch", "--mode", "--cluster", "--core", "--record", "--squads-multisig", "--squads-time-lock", "--holders", "--prior-tx1", "--holders-file"]);
+  const known = new Set(["--launch", "--mode", "--cluster", "--core", "--record", "--squads-multisig", "--squads-time-lock", "--holders", "--prior-tx1", "--holders-file", "--expect-refused"]);
   const bad = argv.filter((a) => a.startsWith("--") && !known.has(a));
   const launch = get("--launch"), mode = get("--mode") ?? "F1", cluster = get("--cluster") ?? "devnet";
   if (!launch || !/^\d+$/.test(launch) || !["F1", "F0"].includes(mode) || !["devnet", "local"].includes(cluster) || bad.length) {
@@ -62,7 +62,8 @@ async function main(): Promise<void> {
   const leaves = holderLeaves(holders);
   const real = a.core ? new RealCore(await testnetAccount(), a.core) : undefined;
   const core: CoreClient = real ?? new StandaloneCore({ verdicts: VERDICTS, mode: a.mode, multisig: new PublicKey(multisig).toBytes(), reserveAmount: 50_000_000_000n, metadataUri, leaves });
-  if (VERDICTS[a.launch.toString()] !== "PASS") { console.log(await attemptRefused(core, a.launch, conn, null)); return; }
+  if (VERDICTS[a.launch.toString()] !== "PASS" && !real) { console.log(await attemptRefused(core, a.launch, conn, null)); return; }
+  if (real && process.argv.includes("--expect-refused")) { console.log(await attemptRefused(core, a.launch, conn, null)); return; }
   const signer = await makeSigner(a.mode, a.launch);
   const gPub = new PublicKey(signer.pub()).toBase58();
   const t0 = Date.now();

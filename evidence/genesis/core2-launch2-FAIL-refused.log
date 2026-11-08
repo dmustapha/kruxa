@@ -1,0 +1,5 @@
+cluster: devnet (devnet) mode: F1 launch: 2
+Retrying transaction core2.kxa1-owner-1203.testnet:GXYVcSHApS2sxFmZqej2tgaoe95KXCnW4bgBPHhtQ4nh with new nonce.
+	Failure [core2.kxa1-owner-1203.testnet]: Error: {"index":0,"kind":{"index":0,"kind":{"FunctionCallError":{"ExecutionError":"Smart contract panicked: R_GENESIS_STATE: needs Passed, every position settled and sweep_residue done"}}}}
+refused: R_GENESIS_STATE
+mint account: null

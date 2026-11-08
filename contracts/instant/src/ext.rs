@@ -1,5 +1,20 @@
-use near_sdk::json_types::U128;
+use near_sdk::json_types::{U128, U64};
+use near_sdk::serde::Deserialize;
 use near_sdk::{ext_contract, AccountId};
+
+/// The two fields of the market's `get_pool` that `reconcile` reads (other fields are ignored).
+#[derive(Deserialize)]
+#[serde(crate = "near_sdk::serde")]
+pub struct PoolView {
+    pub token: AccountId,
+    pub state: String,
+}
+
+#[allow(dead_code)] // the trait only exists to generate the ext_market call builder
+#[ext_contract(ext_market)]
+pub trait ExtMarket {
+    fn get_pool(&self, launch_id: U64);
+}
 
 /// NEP-141 and NEP-145 surface used by the launcher (USDC and the launch token).
 #[allow(dead_code)] // the trait only exists to generate the ext_ft call builders

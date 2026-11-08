@@ -2,6 +2,8 @@
 // not logged is `unknown`. Nothing claims a trial, a verdict, a refund, a Solana mint or "locked" liquidity.
 import { fmtBps, fmtUnits } from './format';
 import type { InstantInfo, SafetyIndicator, VestingView } from './types';
+import { termWord, unitInfo } from '../instant/rules';
+import { cliffSharePct } from '../instant/summary';
 
 const NS = 1_000_000_000n;
 const big = (v: string | number | bigint | null | undefined): bigint | null => { try { return v === null || v === undefined || v === '' ? null : BigInt(v); } catch { return null; } };
@@ -26,14 +28,15 @@ export interface VestSchedule {
  * Prefer the launcher's `get_vesting` (authoritative), then the API's copy, then an estimate from the schedule (n_alloc, opened_at,
  * cliff_days, vest_days) with the integer formula. The estimate is labelled as such.
  */
-export function vestSchedule(info: InstantInfo | null | undefined, vesting: VestingView | null | undefined, nowSec: number, unitSeconds = 86_400): VestSchedule {
+export function vestSchedule(info: InstantInfo | null | undefined, vesting: VestingView | null | undefined, nowSec: number, unitSeconds: number | null = null): VestSchedule {
   const v = vesting ?? info?.vesting ?? null;
   const alloc = big(v?.total) ?? big(info?.n_alloc);
   const openedNs = big(info?.opened_at_ns);
   let cliffEnd = big(v?.cliff_end_ns);
   let vestEnd = big(v?.vest_end_ns);
-  if (openedNs !== null && info?.cliff_days !== undefined && cliffEnd === null) cliffEnd = openedNs + BigInt(info.cliff_days) * BigInt(unitSeconds) * NS;
-  if (openedNs !== null && info?.vest_days !== undefined && vestEnd === null) vestEnd = openedNs + BigInt(info.vest_days) * BigInt(unitSeconds) * NS;
+  // Without the launcher's unit_ns the length of a "day" is not known, so the schedule is never estimated from cliff_days and vest_days.
+  if (unitSeconds !== null && openedNs !== null && info?.cliff_days !== undefined && cliffEnd === null) cliffEnd = openedNs + BigInt(info.cliff_days) * BigInt(unitSeconds) * NS;
+  if (unitSeconds !== null && openedNs !== null && info?.vest_days !== undefined && vestEnd === null) vestEnd = openedNs + BigInt(info.vest_days) * BigInt(unitSeconds) * NS;
   const out: VestSchedule = {
     allocated: alloc, unlocked: big(v?.unlocked), claimed: big(v?.claimed) ?? big(info?.alloc_claimed), claimable: big(v?.claimable),
     cliffEndSec: cliffEnd === null ? null : Number(cliffEnd / NS), vestEndSec: vestEnd === null ? null : Number(vestEnd / NS),
@@ -76,6 +79,8 @@ const indicator = (rows: SafetyIndicator[], id: string): SafetyIndicator | undef
 export function contractFacts(a: {
   totalSupply: string | null; info: InstantInfo | null | undefined; sched: VestSchedule; safety: SafetyIndicator[];
   feeTotalBps: number | null; payout: string; token: string | null; market: string;
+  /** The launcher's `unit_ns` from `get_config`; null or absent means the unit is not known and no number of days is claimed. */
+  unitNs?: string | null;
 }): ContractFact[] {
   const lp = indicator(a.safety, 'lp_in_pool');
   const nAlloc = a.sched.allocated;
@@ -84,7 +89,7 @@ export function contractFacts(a: {
     { id: 'supply', label: 'Total supply', value: a.totalSupply ? `${fmtUnits(a.totalSupply, 6, 0)} tokens` : 'unknown', status: a.totalSupply ? 'info' : 'unknown', basis: a.totalSupply ? 'event' : 'not logged', detail: 'Fixed when the token is created: the launcher has no mint method. The token is a factory token; its publisher key is disclosed in the Charter.' },
     { id: 'pool', label: 'Pool liquidity', value: lp && lp.status === 'pass' && lp.basis !== 'not_indexed' ? 'Seeded; the market has no LP withdrawal method' : 'unknown', status: lp && lp.status === 'pass' && lp.basis !== 'not_indexed' ? 'pass' : 'unknown', basis: lp && lp.basis !== 'not_indexed' ? lp.basis : 'not logged', detail: 'A property of the unreviewed market contract, which the phase-0 key can upgrade. Not an audit.' },
     { id: 'alloc', label: 'Creator allocation', value: nAlloc !== null ? `${fmtUnits(nAlloc, 6, 0)} tokens${pct ? ` (${pct})` : ''}` : 'unknown', status: nAlloc !== null ? 'info' : 'unknown', basis: nAlloc !== null ? 'contract' : 'not logged', detail: 'Held by the launcher, never in the pool. It reaches the payout recipient only through claim_vested.' },
-    { id: 'vest', label: 'Vesting', value: a.info?.cliff_days !== undefined && a.info?.vest_days !== undefined ? `${a.info.cliff_days} day cliff, linear over ${a.info.vest_days} days` : 'unknown', status: a.info?.vest_days !== undefined ? 'info' : 'unknown', basis: a.info?.vest_days !== undefined ? 'contract' : 'not logged' },
+    { id: 'vest', label: 'Vesting', value: a.info?.cliff_days !== undefined && a.info?.vest_days !== undefined ? `${termWord(a.info.cliff_days, unitInfo(a.unitNs))} cliff, then ${cliffSharePct({ cliff_days: a.info.cliff_days, vest_days: a.info.vest_days })} unlocks at once and the rest linearly until ${termWord(a.info.vest_days, unitInfo(a.unitNs))} after the pool opens` : 'unknown', status: a.info?.vest_days !== undefined ? 'info' : 'unknown', basis: a.info?.vest_days !== undefined ? 'contract' : 'not logged' },
     { id: 'payout', label: 'Payout recipient', value: a.payout, status: 'info', basis: 'event', detail: 'Fixed at launch: no method changes it.' },
     { id: 'fees', label: 'Base trading fee', value: a.feeTotalBps !== null ? `${fmtBps(a.feeTotalBps)} of each trade, in USDC` : 'unknown', status: a.feeTotalBps !== null ? 'info' : 'unknown', basis: a.feeTotalBps !== null ? 'event' : 'not logged', detail: 'Holders and referral slices go to liquidity in this release.' },
     { id: 'solana', label: 'Solana mint', value: 'None. This token lives on NEAR only.', status: 'info', basis: 'launcher ABI' },

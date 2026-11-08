@@ -3,7 +3,7 @@
  *  PASS needs N*40 USDC >= 350 USDC and >= 10 funders (N=12). N=5 gives a FAIL launch.
  *  PREREQUISITE (A1): the token account <symbol>.factory.<root> must exist with the mock_ft code and the launch's total supply, owner = core. */
 import { createHash } from "node:crypto";
-import { chmodSync, writeFileSync } from "node:fs";
+import { chmodSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { Keypair, PublicKey } from "@solana/web3.js";
 import bs58 from "bs58";
@@ -28,8 +28,10 @@ async function main(): Promise<void> {
   const view = <T>(c: string, m: string, a: object) => acct.viewFunction({ contractId: c, methodName: m, args: a }) as Promise<T>;
   const call = (c: string, m: string, a: object, dep = 0n) => acct.functionCall({ contractId: c, methodName: m, args: a, gas: GAS, attachedDeposit: dep });
 
+  const resume = arg("--resume");
   let id = 1n;
-  while ((await view<unknown>(core, "get_state", { launch_id: id.toString() })) !== null) id++;
+  while (!resume && (await view<unknown>(core, "get_state", { launch_id: id.toString() })) !== null) id++;
+  if (resume) id = BigInt(resume);
   const uri = `https://kruxa.example/rehearsal/${id}.json`;
   const multisig = arg("--multisig", "CneX72zHFJsd71BBZ39xAuBH8zBySsWo6RedYr6j6A1Z")!;
   const plan: Record<string, unknown> = {
@@ -43,22 +45,39 @@ async function main(): Promise<void> {
   const params = {
     symbol, name: `${symbol} Rehearsal`, total_supply_whole: 1_000_000_000, sale_bps: 6000, lp_bps: 2500, creator_bps: 1000, backer_bps: 500,
     hard_cap: "1000000000", soft_cap: "350000000", min_buy: "20000000", wallet_bps: 200, min_funders: 10, open_delay_secs: 0,
-    commit_secs: 90, tail_secs: 30, stream_days: 30,
+    commit_secs: Number(arg("--commit-secs", "360")), tail_secs: 30, stream_days: 30,
   };
-  const need = await view<string>(core, "required_deposit", { params });
-  console.log(`creating launch ${id} (${symbol}, ${mode}), deposit ${need} yocto`);
-  const t = await call(core, "create_trial", { params, stream_recipient: null, genesis: plan }, BigInt(need));
-  console.log(`create_trial: ${t.transaction.hash}`);
+  const file = `${homedir()}/.kruxa-secrets/genesis/holders-${resume ?? id}.json`;
+  const holders = resume ? (JSON.parse(readFileSync(file, "utf8")) as number[][]).map((k) => Keypair.fromSecretKey(Uint8Array.from(k))) : Array.from({ length: buyers }, () => Keypair.generate());
+  if (!resume) {
+    writeFileSync(file, JSON.stringify(holders.map((h) => Array.from(h.secretKey))), { mode: 0o600 });
+    chmodSync(file, 0o600);
+  }
+  const amount = (40n * USDC).toString();
+  // fund every buyer BEFORE the launch opens: the commit window is short and each testnet call takes seconds
+  if (!resume) {
+    for (const h of holders) {
+      await call(usdcId, "mint", { account_id: intentsId, amount });
+      await call(intentsId, "mt_deposit", { account_id: Buffer.from(h.publicKey.toBytes()).toString("hex"), token_id: `nep141:${usdcId}`, amount });
+    }
+    console.log(`funded ${holders.length} buyers in mock Intents`);
+  }
+  if (!resume) {
+    const need = await view<string>(core, "required_deposit", { params });
+    console.log(`creating launch ${id} (${symbol}, ${mode}), deposit ${need} yocto`);
+    const t = await call(core, "create_trial", { params, stream_recipient: null, genesis: plan }, BigInt(need));
+    console.log(`create_trial: ${t.transaction.hash}`);
+  }
 
-  const holders = Array.from({ length: buyers }, () => Keypair.generate());
-  const file = `${homedir()}/.kruxa-secrets/genesis/holders-${id}.json`;
-  writeFileSync(file, JSON.stringify(holders.map((h) => Array.from(h.secretKey))), { mode: 0o600 });
-  chmodSync(file, 0o600);
+  if (process.argv.includes("--cancel")) {
+    const c = await call(core, "cancel_trial", { launch_id: id.toString() });
+    const st = await view<{ status: string }>(core, "get_state", { launch_id: id.toString() });
+    console.log(`cancel_trial: ${c.transaction.hash}\nstatus: ${st.status}\nFAIL launch id: ${id}`);
+    return;
+  }
   for (const h of holders) {
+    if (resume && (await view<unknown>(core, "get_position", { launch_id: id.toString(), holder: `sol:${h.publicKey.toBase58()}` })) !== null) continue;
     const hexKey = Buffer.from(h.publicKey.toBytes()).toString("hex");
-    const amount = (40n * USDC).toString();
-    await call(usdcId, "mint", { account_id: intentsId, amount });
-    await call(intentsId, "mt_deposit", { account_id: hexKey, token_id: `nep141:${usdcId}`, amount });
     const msg = JSON.stringify({ v: 1, op: "contribute", launch_id: id.toString(), deliver: `sol:${h.publicKey.toBase58()}`, relay_fee: "0" });
     const intent = { intent: "transfer", receiver_id: core, tokens: { [`nep141:${usdcId}`]: amount }, msg, min_gas: "50000000000000" };
     const payload = { signer_id: hexKey, verifying_contract: intentsId, deadline: "2099-01-01T00:00:00.000Z", nonce: "AAAA", intents: [intent] };

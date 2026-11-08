@@ -229,3 +229,50 @@ async fn sandwich_is_defeated_by_min_out_and_missing_min_out_is_refused() -> any
     mk.assert_solvent(&[ID]).await;
     Ok(())
 }
+
+#[tokio::test]
+async fn token_whose_ft_transfer_returns_a_value_is_not_paid_twice() -> anyhow::Result<()> {
+    // M-04 regression: promise_result_checked(0, 0) booked any non-empty result as a failure, so claim_owed paid again.
+    let mk = Mk::new(None).await?;
+    let root = mk.worker.root_account()?;
+    let rt = deploy_ft_ret(&root, "rtok").await?;
+    mk.mint(&rt, mk.market.id(), 0).await?;
+    mk.mint(&rt, mk.core.id(), SEED_T).await?;
+    mk.mint(&mk.usdc, mk.core.id(), SEED_Q).await?;
+    mk.send(&mk.core, &mk.usdc, SEED_Q, mk.seed_msg(ID, rt.id())).await?.into_result()?;
+    mk.send(&mk.core, &rt, SEED_T, Mk::leg_msg(ID)).await?.into_result()?;
+    let alice = mk.user("alice", 500 * USDC).await?;
+    mk.mint(&rt, alice.id(), 0).await?;
+    let r = mk.buy(&alice, ID, 100 * USDC, 1).await?;
+    let out = n(&events(&r, "swap")[0]["amount_out"]);
+    assert!(events(&r, "owed_credited").is_empty(), "a successful transfer must not create an owed balance");
+    assert_eq!(mk.bal(&rt, alice.id()).await, out);
+    let again = alice.call(mk.market.id(), "claim_owed").args_json(json!({ "token_id": rt.id() })).gas(GAS).transact().await?;
+    assert!(has_code(&again, "R_NOTHING_TO_CLAIM"));
+    assert_eq!(mk.bal(&rt, alice.id()).await, out, "paid exactly once");
+    let inv = mk.view("get_invariants", json!({})).await;
+    assert_eq!(inv["usdc_custody_identity"], true);
+    Ok(())
+}
+
+#[tokio::test]
+async fn emptied_owed_entries_are_removed_from_storage() -> anyhow::Result<()> {
+    // L-10 regression: owed_debit wrote zero instead of removing the key, so entries never shrank.
+    let mk = Mk::new(None).await?;
+    mk.open_pool(ID).await?;
+    let alice = mk.user("alice", 500 * USDC).await?;
+    let ghost = format!("ghost.{}", mk.worker.root_account()?.id());
+    let msg = json!({ "v": 1, "op": "buy", "launch_id": "1", "min_out": "1", "receiver": ghost }).to_string();
+    mk.send(&alice, &mk.usdc, 50 * USDC, msg).await?;
+    let owed_keys =
+        |st: &std::collections::HashMap<Vec<u8>, Vec<u8>>| st.keys().filter(|k| k.first() == Some(&2u8) || k.first() == Some(&3u8)).count();
+    let before = owed_keys(&mk.market.view_state().await?);
+    assert!(before >= 2, "owed entry and owed_total entry exist: {before}");
+    let ghost_acct =
+        mk.worker.root_account()?.create_subaccount("ghost").initial_balance(NearToken::from_near(10)).transact().await?.into_result()?;
+    mk.mint(&mk.token, ghost_acct.id(), 0).await?;
+    let c = ghost_acct.call(mk.market.id(), "claim_owed").args_json(json!({ "token_id": mk.token.id() })).gas(GAS).transact().await?;
+    assert!(c.is_success());
+    assert_eq!(owed_keys(&mk.market.view_state().await?), 0, "both keys removed once the balance is zero");
+    Ok(())
+}

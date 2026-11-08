@@ -5,6 +5,7 @@ import { instantCapCheck, selfBuyBlock } from './rules';
 import { buildClaimVestedTx } from './tx';
 import { phaseOf, tokenState } from './phase';
 import type { InstantInfo, LaunchSummary, SafetyIndicator, TokenPageData } from './types';
+const vsd = (info: Parameters<typeof vestSchedule>[0], v: Parameters<typeof vestSchedule>[1], t: number): ReturnType<typeof vestSchedule> => vestSchedule(info, v, t, 86_400);
 
 const DAY = 86_400; const NS = 1_000_000_000n;
 const info: InstantInfo = { n_alloc: '50000000000000', creator_alloc_bps: 500, cliff_days: 7, vest_days: 90, opened_at_ns: String(1_000_000n * NS), total_supply: '1000000000000000' };
@@ -48,25 +49,25 @@ describe('vesting', () => {
     expect(linearUnlocked(1000n, 10n, 100n, 5n)).toBe(0n);
   });
   it('is zero before the cliff and says when it ends', () => {
-    const s = vestSchedule(info, null, open + 3 * DAY);
+    const s = vsd(info, null, open + 3 * DAY);
     expect(s.phase).toBe('cliff'); expect(s.unlocked).toBe(0n); expect(s.claimable).toBe(null);
     expect(s.basis).toBe('schedule estimate'); expect(s.next).toMatch(/Cliff ends/);
   });
   it('after the cliff it is linear from open (INSTANT-ABI section 6) and fully unlocked at vest end', () => {
-    const half = vestSchedule(info, null, open + 45 * DAY);
+    const half = vsd(info, null, open + 45 * DAY);
     expect(half.phase).toBe('vesting'); expect(half.unlocked).toBe(25_000_000_000_000n);
-    expect(vestSchedule(info, null, open + 90 * DAY).unlocked).toBe(50_000_000_000_000n);
-    expect(vestSchedule(info, null, open + 91 * DAY).phase).toBe('done');
+    expect(vsd(info, null, open + 90 * DAY).unlocked).toBe(50_000_000_000_000n);
+    expect(vsd(info, null, open + 91 * DAY).phase).toBe('done');
   });
   it('prefers the contract view and reports claimable from it', () => {
-    const s = vestSchedule(info, { recipient: 'p', total: '100', unlocked: '40', claimed: '10', claimable: '30', cliff_end_ns: String(1n), vest_end_ns: String(2n * NS * 1000000n) }, open + 45 * DAY);
+    const s = vsd(info, { recipient: 'p', total: '100', unlocked: '40', claimed: '10', claimable: '30', cliff_end_ns: String(1n), vest_end_ns: String(2n * NS * 1000000n) }, open + 45 * DAY);
     expect(s.basis).toBe('contract view'); expect(s.claimable).toBe(30n);
   });
-  it('is not started before the pool opens', () => { expect(vestSchedule({ n_alloc: '5' }, null, 1).phase).toBe('before_open'); });
+  it('is not started before the pool opens', () => { expect(vsd({ n_alloc: '5' }, null, 1).phase).toBe('before_open'); });
   it('gates claim_vested: recipient only, after the cliff, with an amount', () => {
-    const cliff = vestSchedule(info, null, open + DAY);
+    const cliff = vsd(info, null, open + DAY);
     expect(claimVestedBlock(cliff, 'p', 'p', true)).toMatch(/Cliff ends/);
-    const v = vestSchedule(info, { recipient: 'p', total: '100', unlocked: '40', claimed: '10', claimable: '30', cliff_end_ns: '1', vest_end_ns: String(2n * NS * 1000000n) }, open + 45 * DAY);
+    const v = vsd(info, { recipient: 'p', total: '100', unlocked: '40', claimed: '10', claimable: '30', cliff_end_ns: '1', vest_end_ns: String(2n * NS * 1000000n) }, open + 45 * DAY);
     expect(claimVestedBlock(v, 'p', 'stranger', true)).toMatch(/Only the payout recipient/);
     expect(claimVestedBlock(v, 'p', 'p', false, 'locked')).toBe('locked');
     expect(claimVestedBlock(v, 'p', 'p', true)).toBeNull();
@@ -81,17 +82,17 @@ describe('vesting', () => {
 });
 
 describe('contract facts and tiles', () => {
-  const sched = vestSchedule(info, null, 1_000_000 + 45 * DAY);
+  const sched = vsd(info, null, 1_000_000 + 45 * DAY);
   it('says unknown where nothing is logged and never claims authorities or locked liquidity', () => {
-    const facts = contractFacts({ totalSupply: null, info: null, sched: vestSchedule(null, null, 1), safety: [], feeTotalBps: null, payout: 'p', token: null, market: 'm' });
+    const facts = contractFacts({ totalSupply: null, info: null, sched: vsd(null, null, 1), safety: [], feeTotalBps: null, payout: 'p', token: null, market: 'm' });
     expect(facts.find((f) => f.id === 'supply')!.value).toBe('unknown');
     expect(facts.find((f) => f.id === 'pool')!.status).toBe('unknown');
     expect(facts.find((f) => f.id === 'authorities')!.value).toBe('unknown');
     expect(JSON.stringify(facts).toLowerCase()).not.toMatch(/\blocked\b|audited|\bsafe\b/);
   });
   it('lists the vesting schedule and fees when logged', () => {
-    const facts = contractFacts({ totalSupply: '1000000000000000', info, sched, safety: [lp], feeTotalBps: 100, payout: 'p', token: 't', market: 'm' });
-    expect(facts.find((f) => f.id === 'vest')!.value).toBe('7 day cliff, linear over 90 days');
+    const facts = contractFacts({ totalSupply: '1000000000000000', info, sched, safety: [lp], feeTotalBps: 100, payout: 'p', token: 't', market: 'm', unitNs: '86400000000000' });
+    expect(facts.find((f) => f.id === 'vest')!.value).toBe('7 days cliff, then 7.8% unlocks at once and the rest linearly until 90 days after the pool opens');
     expect(facts.find((f) => f.id === 'pool')!.status).toBe('pass');
     expect(facts.find((f) => f.id === 'fees')!.value).toContain('1%');
     expect(facts.find((f) => f.id === 'solana')!.value).toContain('NEAR only');
@@ -120,5 +121,26 @@ describe('market rules for instant pools', () => {
     expect(instantCapCheck(cfg, 20_000_000n).status).toBe('refused');
     expect(instantCapCheck(cfg, 5_000_000n).status).toBe('ok');
     expect(instantCapCheck(cfg, 20_000_000n).message).toMatch(/R_MARKET_CAP/);
+  });
+});
+
+describe('unit_ns (REVIEW M-02 / L-09): no number of days is claimed without the launcher\'s unit', () => {
+  const info2 = { n_alloc: '90000000', cliff_days: 7, vest_days: 90, opened_at_ns: String(BigInt(1_000_000) * NS) };
+  it('without a unit the schedule is not estimated from cliff_days and vest_days', () => {
+    const s = vestSchedule(info2, null, 1_000_000 + 50 * 86_400);
+    expect(s.cliffEndSec).toBeNull(); expect(s.vestEndSec).toBeNull(); expect(s.unlocked).toBeNull(); expect(s.phase).toBe('unknown');
+  });
+  it('with a 10 second unit the cliff is 70 s after open, not 7 days', () => {
+    const s = vestSchedule(info2, null, 1_000_000 + 5, 10);
+    expect(s.cliffEndSec).toBe(1_000_070); expect(s.vestEndSec).toBe(1_000_900); expect(s.phase).toBe('cliff');
+  });
+  const base = { totalSupply: null, safety: [], feeTotalBps: null, payout: 'p', token: null, market: 'm', sched: vestSchedule(null, null, 1) };
+  const tile = (unitNs?: string | null): string => contractFacts({ ...base, info: info2, unitNs }).find((f) => f.id === 'vest')!.value;
+  it('the vesting tile says days only on a day unit, and states the share that unlocks at the cliff', () => {
+    expect(tile('86400000000000')).toBe('7 days cliff, then 7.8% unlocks at once and the rest linearly until 90 days after the pool opens');
+    expect(tile(null)).toContain('7 units (length not known) cliff');
+    expect(tile(undefined)).not.toMatch(/\bdays?\b/);
+    expect(tile('10000000000')).toContain('7 units (10 s each)');
+    expect(tile('10000000000')).not.toMatch(/\bdays?\b/);
   });
 });

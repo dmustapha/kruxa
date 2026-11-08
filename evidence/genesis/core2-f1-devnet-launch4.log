@@ -1,0 +1,21 @@
+cluster: devnet (devnet) mode: F1 launch: 4
+commit_genesis ok (REAL core core2.kxa1-owner-1203.testnet (NEAR testnet))
+fund G 827tTD2YCvbsD7jZB7Ps9qW2A4NUGxcbGZgHixXvDrzG: 61Kw75NRdgutGtUGoR93PhywjdLWs4C7fsQrmH3wgzm9Fm6oC9atACPchREQyihcMQUeLDLHhLRRaZd4biSYEGEi
+tx1 create: uBa21XY3iVYAxVKvGseR2SmZpYVV5WU1rfEHsaYnBPWzQaokagbidnQ61oLR23a8wxqz7GkrAhUubqdYrQUVetG
+tx2 seal: 2PZsAAZ1sbQMzqPZkiWuAZabpkpy1brDEsh1JWCFFdJ7rFeup9Ffm1BLRKZVaCemgsTkNN5Fw5ZRe6L4KB6Fia6
+mint: FtAU9HbUopWVMMr41XNsFr11B4ZxbbKX4JLWmNAJ8Wfe
+mint_authority: null
+freeze_authority: null
+extensions: none
+g_lamports_after: 2091800
+space: 82
+owner: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
+supply: 649999999999992 (sum of buckets: 649999999999992)
+latency_ms: 15866
+sign_ms: 4,2
+signed by per-launch key (destroyed) 827tTD2YCvbsD7jZB7Ps9qW2A4NUGxcbGZgHixXvDrzG
+confirm_genesis ok
+merkle root matches core
+claim ok: 54166666666666
+distributor admin: NULL
+record: evidence/genesis/core2-f1-devnet-launch4.json

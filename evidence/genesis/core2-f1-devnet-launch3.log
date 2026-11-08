@@ -1,0 +1,18 @@
+cluster: devnet (devnet) mode: F1 launch: 3
+commit_genesis ok (REAL core core2.kxa1-owner-1203.testnet (NEAR testnet))
+fund G 68fJqkkNYYYKCqUhNwDGLRFLycdqW2yHicVBnxhWxGyb: 2fdon7VC3iFDD3ZhhXB4e82P7hp8jC1M8Du8dx8kKTDSdvVKuxyE7QbgkHFSWRzhvjEo7zuyYNC2tiDqHxmoVxHj
+tx1 create: 3SwiaqPJUsSor1fxSgi9u8vVnag8Do9s1nLri453ZbSyYjCVzY4CRYG53FSzngWJ72XguUMRkDFgHy1VqsaekRGX
+Simulation failed. 
+Message: Transaction simulation failed: Error processing Instruction 2: custom program error: 0x1004. 
+Logs: 
+[
+  "Program ComputeBudget111111111111111111111111111111 invoke [1]",
+  "Program ComputeBudget111111111111111111111111111111 success",
+  "Program ComputeBudget111111111111111111111111111111 invoke [1]",
+  "Program ComputeBudget111111111111111111111111111111 success",
+  "Program FReNGaxENcrpwY9nzdhPGRkuyPwrwZXBviwhs9nAbCYS invoke [1]",
+  "Program log: AnchorError occurred. Error Code: DeclaredProgramIdMismatch. Error Number: 4100. Error Message: The declared program id does not match the actual program id.",
+  "Program FReNGaxENcrpwY9nzdhPGRkuyPwrwZXBviwhs9nAbCYS consumed 3430 of 249700 compute units",
+  "Program FReNGaxENcrpwY9nzdhPGRkuyPwrwZXBviwhs9nAbCYS failed: custom program error: 0x1004"
+]. 
+Catch the `SendTransactionError` and call `getLogs()` on it for full details.

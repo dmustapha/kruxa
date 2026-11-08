@@ -29,6 +29,12 @@ pub const GAS_STORAGE: Gas = Gas::from_tgas(15);
 /// Callback of the seed leg: its own work plus sending the token leg and that leg's callback.
 pub const GAS_SEED_CB: Gas = Gas::from_tgas(150);
 pub const GAS_TOKEN_CB: Gas = Gas::from_tgas(30);
+/// `open_instant` refuses to start below this (checked before any state change). Measured: see docs/interfaces/INSTANT-ABI.md.
+pub const MIN_OPEN_GAS: Gas = Gas::from_tgas(255);
+/// What the seed callback must still have, after its own work, to create the registration, the token leg and its callback.
+pub const NEED_FOR_TOKEN_LEG: Gas = Gas::from_tgas(145);
+pub const GAS_RECONCILE_VIEW: Gas = Gas::from_tgas(10);
+pub const GAS_RECONCILE_CB: Gas = Gas::from_tgas(30);
 /// The first launch id. The market gives ids at or above this to the launcher and below it to core.
 pub const INSTANT_ID_BASE: u64 = 1_000_000_000;
 pub const SEC_NS: u64 = 1_000_000_000;
@@ -92,7 +98,14 @@ pub(crate) fn fail(code: &str, detail: &str) -> ! {
 impl Launcher {
     #[init]
     pub fn new(owner: AccountId, guardian: AccountId, treasury: AccountId, usdc: AccountId, factory: AccountId, profile: String) -> Self {
-        let mainnet = profile == "mainnet";
+        let profile = Profile::parse(&profile).unwrap_or_else(|| fail("R_PROFILE", "profile must be mainnet, testnet or demo"));
+        if !profile.fits_account(env::current_account_id().as_str()) {
+            fail(
+                "R_PROFILE",
+                "this profile is not allowed on this account: mainnet needs a .near account, testnet and demo a .testnet or .localnet one",
+            );
+        }
+        let mainnet = profile == Profile::Mainnet;
         let cfg = Config {
             owner,
             guardian,
@@ -111,7 +124,8 @@ impl Launcher {
             agg_cap: AGG_SEED_CAP,
             pending_seed_max: None,
             pending_agg_cap: None,
-            unit_ns: if profile == "demo" { DEMO_DAY_NS } else { DAY_NS },
+            unit_ns: if profile == Profile::Demo { DEMO_DAY_NS } else { DAY_NS },
+            freeze_barrier: 0,
             profile,
         };
         Self {

@@ -6,6 +6,7 @@ import { MARKET_CONFIG } from '@/lib/market/config';
 import { fmtBps, fmtUnits, shortAccount } from '@/lib/market/format';
 import type { InstantBundle, Section } from '@/lib/market/hooks';
 import { claimVestedBlock, utc, vestSchedule } from '@/lib/market/instant';
+import { useLauncherUnit } from '@/components/features/instant/useInstant';
 import { buildClaimVestedTx, describeSignError } from '@/lib/market/tx';
 import type { TokenPageData } from '@/lib/market/types';
 import { Async, Panel } from './shared';
@@ -14,6 +15,7 @@ type Phase = { s: 'idle' } | { s: 'signing' } | { s: 'sent'; txHash?: string } |
 const tok = (v: bigint | null): string => (v === null ? 'unknown' : `${fmtUnits(v, 6, 2)}`);
 
 export function AllocationPanel({ page, instant, nowSec, onClaimed, onRetry }: { page: TokenPageData; instant: Section<InstantBundle>; nowSec: number; onClaimed(): void; onRetry(): void }) {
+  const { unit } = useLauncherUnit();
   const { guard, sessions, adapters, openChooser } = useWallet();
   const [phase, setPhase] = useState<Phase>({ s: 'idle' });
   const recipient = page.creator?.payout_recipient ?? page.launch.payout_recipient;
@@ -33,7 +35,7 @@ export function AllocationPanel({ page, instant, nowSec, onClaimed, onRetry }: {
     <Panel title="Creator allocation" id="mkt-alloc-h">
       <Async section={instant} lines={4} onRetry={onRetry}>
         {(b) => {
-          const s = vestSchedule(b.info, b.vesting, nowSec);
+          const s = vestSchedule(b.info, b.vesting, nowSec, unit.secs);
           const block = claimVestedBlock(s, recipient, near?.address ?? null, guard.signingEnabled, guard.lockReason);
           const pct = b.info?.creator_alloc_bps !== undefined ? ` (${fmtBps(b.info.creator_alloc_bps)} of supply)` : '';
           return (

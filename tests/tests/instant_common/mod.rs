@@ -76,7 +76,22 @@ impl Ix {
         Self::build(profile, false, caps, set_launcher).await
     }
 
+    /// Like `new` but the launcher has no market yet (the test names it, or not).
+    pub async fn without_market(profile: &str, stub: bool) -> anyhow::Result<Ix> {
+        Self::build_with(profile, stub, None, true, false).await
+    }
+
     async fn build(profile: &str, stub: bool, caps: Option<(u128, u128, u128)>, set_launcher: bool) -> anyhow::Result<Ix> {
+        Self::build_with(profile, stub, caps, set_launcher, true).await
+    }
+
+    async fn build_with(
+        profile: &str,
+        stub: bool,
+        caps: Option<(u128, u128, u128)>,
+        set_launcher: bool,
+        name_market: bool,
+    ) -> anyhow::Result<Ix> {
         let worker = near_workspaces::sandbox().await?;
         let root = worker.root_account()?;
         let (owner, guardian, treasury, creator) =
@@ -107,7 +122,14 @@ impl Ix {
         for who in [ix.launcher.id(), ix.market.id(), ix.treasury.id(), ix.creator.id()] {
             ix.register(&ix.usdc, who).await?;
         }
-        ix.owner.call(ix.launcher.id(), "set_market").args_json(json!({ "account": ix.market.id() })).transact().await?.into_result()?;
+        if name_market {
+            ix.owner
+                .call(ix.launcher.id(), "set_market")
+                .args_json(json!({ "account": ix.market.id() }))
+                .transact()
+                .await?
+                .into_result()?;
+        }
         Ok(ix)
     }
 

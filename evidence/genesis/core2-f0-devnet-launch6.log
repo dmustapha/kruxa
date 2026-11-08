@@ -1,0 +1,24 @@
+cluster: devnet (devnet) mode: F0 launch: 6
+commit_genesis ok (REAL core core2.kxa1-owner-1203.testnet (NEAR testnet))
+fund G 7TZaLzF3GjHFQB56WrQVkxxD39jtJX4roF5z9q2kcWsa: 5AFCY2pWVArfQU5eAGrmSKUS2VX7qdY3dmmFaFpu8oozbe98ctYUHktVkYb5K7aTHKdDmhKYmMts2hbxwPyNi1NN
+tx1 create: 2zV129uoeHDUg7he4jgahF46Vqw1715WWy5oaGD4c9DaTJ2BdfWL83FjcpTxmRmtcx9hmF6iz1A2h6jwD957jt2m
+tx2 seal: 5aNdwRFt2w8m2CJhScGYmF8KPSC3V41FSfb9YMa3Pt1KbEkvivdSR1qBWTGpmqZeRVuQ4smEvKAHLhWjRvYrgaGs
+mint: AwLcLNWgKC7oiCjRQjwnJZrardDJ8Y7MJ4YAb1qXbZMh
+mint_authority: null
+freeze_authority: null
+extensions: none
+g_lamports_after: 890880
+space: 82
+owner: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
+supply: 649999999999992 (sum of buckets: 649999999999992)
+latency_ms: 33304
+sign_ms: 6217,7352
+signed by derived key 7TZaLzF3GjHFQB56WrQVkxxD39jtJX4roF5z9q2kcWsa
+F0_SIGN {"tx":"HNZgtoDeQ6QaXBRN3wjGnUxLHjJhVtVpJoMcY5UJGexT","ms":6209,"response":"{\"scheme\":\"Ed25519\",\"signature\":[..64 bytes..]}","gas_burnt_tgas":17.169426429457,"near_burnt":"0.000964"}
+F0_SIGN {"tx":"GgvvN7NQ6ai7RnGFprTNBXeK2LSNRPK1gHxf3cVMiQPQ","ms":7348,"response":"{\"scheme\":\"Ed25519\",\"signature\":[..64 bytes..]}","gas_burnt_tgas":17.030397494815,"near_burnt":"0.000951"}
+signature verified against the derived key (offline, before broadcast)
+confirm_genesis ok
+merkle root matches core
+claim ok: 54166666666666
+distributor admin: NULL
+record: evidence/genesis/core2-f0-devnet-launch6.json

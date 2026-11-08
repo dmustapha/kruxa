@@ -93,7 +93,7 @@ impl Launcher {
             .s("factory", &c.factory)
             .opt("market", c.market.as_ref())
             .n("market_locked", c.market_locked)
-            .s("profile", &c.profile)
+            .s("profile", c.profile.name())
             .n("creator_gate", c.creator_gate)
             .s("paused", self.pause_level().name())
             .s("launch_fee", c.launch_fee)

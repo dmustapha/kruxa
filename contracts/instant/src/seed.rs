@@ -29,6 +29,9 @@ impl Launcher {
         if self.pause_level() != PauseLevel::None {
             return Err("R_PAUSED");
         }
+        if self.cfg.market.is_none() {
+            return Err("R_NO_MARKET");
+        }
         let mut r = self.instants.get(&m.launch_id.0).ok_or("R_INSTANT_STATE")?;
         if r.status != Status::TokenReady {
             return Err("R_INSTANT_STATE");
@@ -48,6 +51,7 @@ impl Launcher {
         r.seed_total = amount;
         r.seed_due = amount - fee;
         r.fee_held = fee;
+        self.cfg.market_locked = true;
         self.seeds_held += amount;
         self.seed_due_total += amount - fee;
         self.fee_held_total += fee;

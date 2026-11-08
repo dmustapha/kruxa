@@ -21,7 +21,11 @@ export function mockAdapter(chain: Chain, session: WalletSession | null = null):
 
 export const NEAR_SESSION: WalletSession = { chain: 'near', walletId: 'mock', walletName: 'Mock', address: 'maya.testnet', env: 'testnet' };
 
+/** The adapters of the most recently rendered <Wallets>, so a test can inspect what was signed. */
+export const lastAdapters: { current: Adapters | null } = { current: null };
+
 export function Wallets({ children, near = null, solana = null }: { children: ReactNode; near?: WalletSession | null; solana?: WalletSession | null }) {
   const adapters: Adapters = { near: mockAdapter('near', near), solana: mockAdapter('solana', solana) };
+  lastAdapters.current = adapters;
   return <WalletProvider adapters={adapters} guard={resolveNetworkGuard({})}>{children}</WalletProvider>;
 }

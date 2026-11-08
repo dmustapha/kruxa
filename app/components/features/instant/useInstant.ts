@@ -25,3 +25,14 @@ export function useInstantLaunch(id: string | null) {
 }
 
 export const FINAL_DEAD = ['CreationFailed', 'Abandoned', 'Aborted'];
+
+import { launcherConfig, limitsFrom } from '@/lib/instant/preview';
+import { unitInfo, type UnitInfo } from '@/lib/instant/rules';
+
+/** The launcher's `get_config` as the app needs it: the unit (never assumed to be a day) and the limits. */
+export function useLauncherUnit(): { unit: UnitInfo; unitNs: string | null; known: boolean } {
+  const s = useApi(() => launcherConfig(), 'launcher-config-unit');
+  const cfg = s.status === 'ok' && s.data.kind === 'ok' ? s.data.config : null;
+  const unitNs = limitsFrom(cfg).unitNs;
+  return { unit: unitInfo(unitNs), unitNs, known: unitNs !== null };
+}
