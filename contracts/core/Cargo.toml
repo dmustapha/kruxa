@@ -1,0 +1,28 @@
+[package]
+name = "kruxa-core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = ["s4-fallback"]
+# S4 fallback: buyer-signed intent parsed and forwarded by anyone (S3 mt_on_transfer is the primary path).
+s4-fallback = []
+
+[dependencies]
+near-sdk = { workspace = true }
+kruxa-math = { path = "../../crates/kruxa-math" }
+kruxa-logic = { path = "../../crates/kruxa-logic" }
+
+[dev-dependencies]
+near-sdk = { workspace = true, features = ["unit-testing"] }
+
+[package.metadata.near.reproducible_build]
+image = "sourcescan/cargo-near:0.23.0-rust-1.95.0"
+image_digest = ""
+passed_env = []
+container_build_command = ["cargo", "near", "build", "non-reproducible-wasm", "--locked"]

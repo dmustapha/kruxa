@@ -1,0 +1,16 @@
+[package]
+name = "kruxa-logic"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+kruxa-math = { path = "../kruxa-math" }
+sha2 = { workspace = true }
+serde = { workspace = true }
+borsh = { workspace = true }
+
+[dev-dependencies]
+proptest = { workspace = true }
+serde_json = "1"

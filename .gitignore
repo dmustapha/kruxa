@@ -1,0 +1,11 @@
+target/
+node_modules/
+.next/
+.env
+.env.*
+!.env.example
+!app/.env.example
+*.key
+*.keys
+keys/
+evidence/*.tmp

@@ -1,0 +1,15 @@
+[package]
+name = "kruxa-tests"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+near-workspaces = { version = "=0.24.0" }
+tokio = { version = "1", features = ["full"] }
+serde_json = "1"
+anyhow = "1"
+ed25519-dalek = "2"
+bs58 = "0.5"
+kruxa-logic = { path = "../crates/kruxa-logic" }

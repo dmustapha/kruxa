@@ -1,0 +1,25 @@
+[workspace]
+resolver = "2"
+members = ["crates/kruxa-math", "crates/kruxa-logic", "contracts/core", "contracts/mock-ft", "contracts/mock-intents", "contracts/mock-factory", "tools/kruxa-sim", "tests"]
+
+[workspace.package]
+edition = "2021"
+rust-version = "1.95"
+version = "0.1.0"
+publish = false
+
+[workspace.dependencies]
+near-sdk = { version = "=5.30.1", default-features = false }
+uint = { version = "=0.10.2", default-features = false }
+proptest = "=1.12.0"
+sha2 = { version = "0.10", default-features = false }
+serde = { version = "1", default-features = false, features = ["derive", "alloc"] }
+borsh = { version = "1", default-features = false, features = ["derive"] }
+
+[profile.release]
+codegen-units = 1
+opt-level = "z"
+lto = true
+debug = false
+panic = "abort"
+overflow-checks = true

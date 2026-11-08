@@ -1,0 +1,13 @@
+[package]
+name = "kruxa-sim"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+kruxa-logic = { path = "../../crates/kruxa-logic" }
+kruxa-math = { path = "../../crates/kruxa-math" }
+serde_json = "1"
+ureq = { version = "2", features = ["json"] }
+base64 = "0.22"
