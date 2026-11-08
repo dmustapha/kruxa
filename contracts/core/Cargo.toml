@@ -4,6 +4,8 @@ version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 publish.workspace = true
+# NEP-330 needs a non-empty value; the repo has no remote yet (DC-G). PLACEHOLDER until publication.
+repository = "https://example.invalid/kruxa-pending-publication"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
