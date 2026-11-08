@@ -16,7 +16,7 @@ fn quote_json(r: Result<Swap, MarketError>, before: Reserves) -> Value {
             let spot = before.q as f64 / before.t as f64;
             let fill = if x.amount_in > 0 && x.amount_out > 0 { x.q_leg as f64 / if x.q_leg == x.amount_in { x.amount_out as f64 } else { x.amount_in as f64 } } else { spot };
             let impact = if spot > 0.0 { (((fill - spot) / spot).abs() * 10_000.0) as u64 } else { 0 };
-            json!({ "ok": true, "out": s(x.amount_out), "fee_total": s(f.total), "fee_bps_applied": s(f.total.saturating_mul(10_000) / x.q_leg.max(1)),
+            json!({ "ok": true, "out": s(x.amount_out), "fee_total": s(f.total), "fee_bps": s(f.total.saturating_mul(10_000) / x.q_leg.max(1)),
                     "creator": s(f.creator), "platform": s(f.platform), "holders": s(f.holders), "lp": s(f.lp), "referral": s(f.referral),
                     "surcharge": s(f.surcharge), "q_after": s(x.after.q), "t_after": s(x.after.t), "price_impact_bps": impact })
         }
@@ -34,7 +34,7 @@ impl Market {
         let Some(p) = self.pools.get(&launch_id.0) else { return Value::Null };
         json!({ "launch_id": s(p.launch_id as u128), "token": p.token, "quote": self.usdc, "state": if p.open { "Open" } else { "AwaitToken" },
                 "q": s(p.q), "t": s(p.t), "opened_ns": s(p.opened_ns as u128), "payout_recipient": p.payout_recipient,
-                "total_supply": s(p.total_supply), "charter_hash": p.charter_hash, "terms": p.terms })
+                "total_supply": s(p.total_supply), "charter_hash": p.charter_hash, "mint_authority": p.mint_authority, "freeze_authority": p.freeze_authority, "terms": p.terms })
     }
 
     pub fn quote_buy(&self, launch_id: U64, amount_in: U128, now_ns: Option<U64>) -> Value {

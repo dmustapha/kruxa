@@ -15,6 +15,9 @@ async fn handoff_opens_pool_seed_first() -> anyhow::Result<()> {
     let r = mk.send(&mk.core, &mk.token, SEED_T, Mk::leg_msg(ID)).await?;
     let opened = events(&r, "pool_opened");
     assert_eq!(opened.len(), 1);
+    for k in ["fee_bps", "creator_bps", "mint_authority", "freeze_authority", "q", "t"] {
+        assert!(opened[0].get(k).is_some(), "pool_opened lacks {k}");
+    }
     let p = mk.view("get_pool", json!({ "launch_id": "1" })).await;
     assert_eq!((p["state"].as_str(), n(&p["q"]), n(&p["t"])), (Some("Open"), SEED_Q, SEED_T));
     assert_eq!(p["payout_recipient"], mk.creator.id().as_str());
@@ -64,6 +67,7 @@ async fn buy_and_sell_slices_sum_and_custody_holds() -> anyhow::Result<()> {
     let e = &ev[0];
     let sum: u128 = ["creator", "platform", "holders", "lp", "referral"].iter().map(|k| n(&e[*k])).sum();
     assert_eq!(sum, n(&e["fee_total"]));
+    assert_eq!((n(&e["fee_bps"]), e["creator_bps"].as_u64()), (500, Some(5000)), "inside the opening window");
     assert_eq!(n(&e["holders"]) + n(&e["referral"]), 0, "M-A redirects holders and referral to LP");
     assert_eq!(n(&e["red_holders"]) + n(&e["red_referral"]) + n(&e["surcharge"]) <= n(&e["lp"]), true);
     assert_eq!(mk.bal(&mk.token, alice.id()).await, n(&e["amount_out"]));

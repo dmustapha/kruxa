@@ -2,17 +2,18 @@
 
 Status: FROZEN 1.0.0 for M-A (Market-lite). Source: ARCHITECTURE 5.1, 5.8, 5.9; PRD 4b.2, C5. Contract: `contracts/market`, account `market.kruxa.near`.
 All u128 and u64 values are decimal strings in JSON. USDC is 6 decimals (micro-USDC). All `ft_on_transfer` messages are JSON objects with `"v":1` and an `"op"`.
-Unknown fields are ignored. Any bad message, wrong token, pause (for buys and opens), cap breach or unmet `min_out` REFUSES: `ft_on_transfer` returns the full amount (the token contract refunds the sender) and logs a rule code. `ft_on_transfer` never panics.
+Unknown fields are ignored. States are `AwaitToken` (seed landed, token leg not yet) and `Open`. Any bad message, wrong token, pause (for buys and opens), cap breach or unmet `min_out` REFUSES: `ft_on_transfer` returns the full amount (the token contract refunds the sender) and logs a rule code. `ft_on_transfer` never panics.
 
 ## Changes against the ARCHITECTURE 5.1 sketch (A must read)
 1. Terms ride on the USDC leg. Only the USDC contract is authenticated by `predecessor_account_id`; a launch token can be any contract, so the `seed_quote` message (USDC leg, `sender_id == core`) carries the authoritative `token`, `terms` and `payout_recipient`. The token leg `open_pool_token` carries only `launch_id` (extra fields ignored) and is accepted only from the token named by `seed_quote`.
-2. Either leg may land first. A token leg that lands first is parked (bounded, max 64 parked) and joins when the seed lands. The pool is `AwaitSeed` until both legs landed, then `Open`.
-3. `FeeTerms` is the existing `kruxa_logic::FeeTerms` (it already carries `fee_vest_bps`, `fee_vest_days`).
+2. Either leg may land first. A token leg that lands first is parked (bounded, max 64 parked) and joins when the seed lands. The pool is `AwaitToken` until both legs landed, then `Open`.
+3. `mint_authority` and `freeze_authority` (optional strings, null or absent = revoked) are copied by core from the genesis state so the indexer can show safety indicators; the market stores them for display and never acts on them.
+4. `FeeTerms` is the existing `kruxa_logic::FeeTerms` (it already carries `fee_vest_bps`, `fee_vest_days`).
 
 ## Handoff (core -> market), two ft_transfer_call legs from core
 | Leg | Token contract (predecessor) | `sender_id` | amount | msg |
 |---|---|---|---|---|
-| seed | USDC | core account | LP seed in micro-USDC | `{"v":1,"op":"seed_quote","launch_id":"7","token":"tok.near","payout_recipient":"alice.near","total_supply":"1000000000000000000000000000","charter_hash":"<64 hex>","terms":{FeeTerms}}` |
+| seed | USDC | core account | LP seed in micro-USDC | `{"v":1,"op":"seed_quote","launch_id":"7","token":"tok.near","payout_recipient":"alice.near","total_supply":"1000000000000000000000000000","charter_hash":"<64 hex>","mint_authority":null,"freeze_authority":null,"terms":{FeeTerms}}` |
 | token | the launch token | core account | LP bucket (all of it) | `{"v":1,"op":"open_pool_token","launch_id":"7"}` |
 
 `FeeTerms` JSON: `{"total_fee_bps":100,"creator_bps":5000,"platform_bps":1500,"holders_bps":1500,"lp_bps":1000,"referral_bps":1000,"opening_fee_start_bps":500,"opening_decay_minutes":60,"fee_vest_bps":5000,"fee_vest_days":90}`.
@@ -38,12 +39,12 @@ The pool is permanent: there is no LP withdrawal method. The payout recipient is
 | `unpause()` | owner | resumes |
 | `new(owner, guardian, treasury, usdc, core, max_pool_reserve_q?, max_global_reserve_q?)` | init | caps default 5_000_000_000 and 15_000_000_000 micro-USDC (DN-17 interim) |
 
-All outbound payments follow debit-before-outbound: the counter moves first, then `ft_transfer`; a callback that never panics re-credits on failure (creator and platform counters are restored; failed swap payouts become `owed`).
+All outbound payments follow debit-before-outbound: the counter moves first, then `ft_transfer`; a callback that never panics re-credits on failure (a failed payout, swap or claim, becomes an `owed` balance of the beneficiary, withdrawable with `claim_owed`; no value is lost).
 
 ## Views (all return JSON; u128 as strings)
 - `get_config()` -> `{owner, guardian, treasury, usdc, core, paused, max_pool_reserve_q, max_global_reserve_q, global_q}`
-- `get_pool(launch_id)` -> `null` or `{launch_id, token, quote, state: "AwaitSeed"|"Open", q, t, opened_ns, payout_recipient, total_supply, charter_hash, terms}`
-- `quote_buy(launch_id, amount_in, now_ns?)` -> `{ok, code?, out, fee_total, fee_bps_applied, creator, platform, holders, lp, referral, surcharge, q_after, t_after, price_impact_bps}`
+- `get_pool(launch_id)` -> `null` or `{launch_id, token, quote, state: "AwaitToken"|"Open", q, t, opened_ns, payout_recipient, total_supply, charter_hash, terms}`
+- `quote_buy(launch_id, amount_in, now_ns?)` -> `{ok, code?, out, fee_total, fee_bps, creator, platform, holders, lp, referral, surcharge, q_after, t_after, price_impact_bps}`
 - `quote_sell(launch_id, amount_in, now_ns?)` -> same shape; `out` is net USDC to the seller
 - `creator_status(launch_id)` -> `{recipient, accrued, unlocked, paid, claimable, epochs}`
 - `ledger_report(launch_id)` -> the FeeLedger: `fee_total, acc_creator, acc_platform, acc_holders (0 in M-A), acc_referral (0), acc_lp, paid_creator, paid_platform, red_holders, red_referral, folded_unlocked, epoch_cursor`

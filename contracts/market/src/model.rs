@@ -26,6 +26,9 @@ pub struct Pool {
     pub payout_recipient: AccountId,
     pub total_supply: u128,
     pub charter_hash: String,
+    /// Token authorities as reported by core at the handoff (None = revoked). Display only; the market never acts on them.
+    pub mint_authority: Option<String>,
+    pub freeze_authority: Option<String>,
     pub terms: FeeTerms,
     pub open: bool,
     pub q: u128,
@@ -49,5 +52,7 @@ pub struct Msg {
     pub payout_recipient: Option<AccountId>,
     pub total_supply: Option<U128>,
     pub charter_hash: Option<String>,
+    pub mint_authority: Option<String>,
+    pub freeze_authority: Option<String>,
     pub terms: Option<FeeTerms>,
 }

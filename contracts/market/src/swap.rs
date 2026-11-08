@@ -88,6 +88,8 @@ impl Market {
             payout_recipient: recipient,
             total_supply: m.total_supply.map_or(0, |v| v.0),
             charter_hash: m.charter_hash.unwrap_or_default(),
+            mint_authority: m.mint_authority,
+            freeze_authority: m.freeze_authority,
             terms,
             open: false,
             q: amount,
@@ -150,7 +152,8 @@ impl Market {
         emit(
             "pool_opened",
             json!({ "launch_id": pool.launch_id.to_string(), "token": pool.token, "quote": self.usdc, "q": pool.q.to_string(), "t": t.to_string(),
-                    "payout_recipient": pool.payout_recipient, "opened_ns": pool.opened_ns.to_string(), "terms": pool.terms }),
+                    "payout_recipient": pool.payout_recipient, "opened_ns": pool.opened_ns.to_string(), "fee_bps": pool.terms.total_fee_bps,
+                    "creator_bps": pool.terms.creator_bps, "mint_authority": pool.mint_authority, "freeze_authority": pool.freeze_authority, "terms": pool.terms }),
         );
         self.pools.insert(pool.launch_id, pool);
     }
@@ -231,7 +234,7 @@ impl Market {
             "swap",
             json!({ "launch_id": pool.launch_id.to_string(), "side": side, "trader": trader, "receiver": receiver,
                     "amount_in": s.amount_in.to_string(), "amount_out": s.amount_out.to_string(), "fee_total": f.total.to_string(),
-                    "fee_bps_applied": (rate_ppm / 100).to_string(), "creator": f.creator.to_string(), "platform": f.platform.to_string(),
+                    "fee_bps": (rate_ppm / 100).to_string(), "creator_bps": pool.terms.creator_bps, "creator": f.creator.to_string(), "platform": f.platform.to_string(),
                     "holders": f.holders.to_string(), "lp": f.lp.to_string(), "referral": f.referral.to_string(),
                     "surcharge": f.surcharge.to_string(), "red_holders": f.red_holders.to_string(), "red_referral": f.red_referral.to_string(),
                     "q": pool.q.to_string(), "t": pool.t.to_string(), "ts_ns": now.to_string() }),
