@@ -79,8 +79,8 @@ pub fn fold_book(events: &[BookEvent]) -> Result<Folded, FoldError> {
 mod tests {
     use super::*;
     use crate::verdict::{hex, inputs_hash, verdict, Outcome, VerdictInputs};
-    use sha2::Digest;
     use proptest::prelude::*;
+    use sha2::Digest;
 
     fn c(h: &str, n: u128) -> BookEvent {
         BookEvent::Contributed { holder: h.into(), net: n }
