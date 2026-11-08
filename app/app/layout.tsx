@@ -1,19 +1,26 @@
 import type { ReactNode } from 'react';
-import Link from 'next/link';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import { WalletProvider } from '@/components/wallet';
+import { SiteFooter, SiteHeader, StatusStrip } from '@/components/layouts/SiteChrome';
 
-export const metadata = { title: 'Kruxa', description: 'A token launch that is a refundable trial first. Verdict by rule, refunds by pull.' };
+export const metadata: Metadata = {
+  title: { default: 'Kruxa', template: '%s | Kruxa' },
+  description: 'A token launch that is a refundable trial first. The verdict is a rule anyone can recompute.',
+};
+export const viewport: Viewport = { width: 'device-width', initialScale: 1 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body>
-        <nav>
-          <Link href="/">Kruxa</Link>
-          <Link href="/create">Create a trial</Link>
-          <Link href="/demo">Verify (no wallet)</Link>
-        </nav>
-        <main>{children}</main>
+        <a href="#main" className="skip">Skip to content</a>
+        <WalletProvider>
+          <StatusStrip />
+          <SiteHeader />
+          <main id="main">{children}</main>
+          <SiteFooter />
+        </WalletProvider>
       </body>
     </html>
   );

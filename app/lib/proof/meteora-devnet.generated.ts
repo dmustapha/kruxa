@@ -1,0 +1,86 @@
+// GENERATED from spikes/meteora/RESULTS.md (section 'Devnet run 2026-11-08', VERIFIED on Solana devnet). Signatures are copied by script, not by hand.
+export interface DevnetRow { id: string; sigs: string[]; note: string }
+export const METEORA_DEVNET_ROWS: DevnetRow[] = [
+  {
+    "id": "a-create-pool-external-mint",
+    "sigs": [
+      "4D7mHkjehMqA5iqydJMnTyQ2v1JygSVAfxaWR1zdDPJRXHuaiMxap9ArwHuW8PmVwsDSPKbTdsRWXzQDgvsCqNbi"
+    ],
+    "note": "plain SPL base 4Ne1ZQhC21XJZBRpsv5wHqyVn5pRK7ayMMkDMEVoX2SX (mint+freeze auth null), test USDC; collectFeeMode=1"
+  },
+  {
+    "id": "b-permanent-lock",
+    "sigs": [
+      "4D7mHkjehMqA5iqydJMnTyQ2v1JygSVAfxaWR1zdDPJRXHuaiMxap9ArwHuW8PmVwsDSPKbTdsRWXzQDgvsCqNbi"
+    ],
+    "note": "permanentLockedLiquidity=583337269021023124047623965365 in same tx as create"
+  },
+  {
+    "id": "dm4-protocol-fee",
+    "sigs": [
+      "4D7mHkjehMqA5iqydJMnTyQ2v1JygSVAfxaWR1zdDPJRXHuaiMxap9ArwHuW8PmVwsDSPKbTdsRWXzQDgvsCqNbi"
+    ],
+    "note": "pool.poolFees.protocolFeePercent=20 (read from created pool; fixed by program, not set by creator)"
+  },
+  {
+    "id": "f-cost-pool1",
+    "sigs": [
+      "4D7mHkjehMqA5iqydJMnTyQ2v1JygSVAfxaWR1zdDPJRXHuaiMxap9ArwHuW8PmVwsDSPKbTdsRWXzQDgvsCqNbi"
+    ],
+    "note": "payer balance delta 0.016510 SOL (tx fee, pool, position, vaults, NFT rent; ATAs pre-existed)"
+  },
+  {
+    "id": "b-fee-claim-locked-position",
+    "sigs": [
+      "2pihB5maYmXsuWPECY1BUpTWpH9SR1YRSLDhMoNMBLmXopAeqbxRrzz72c6ahYywLeGmwJbDGE6gyj3gLAprWezv",
+      "5MoX6Sa5YaXkwSAtR7sFQXCEQ5RS6rZkj43siZqsFTHuQxDZP1pnNofCDYLsAbhcWA6j755V8fBnzUaiNntJ4VT6"
+    ],
+    "note": "keypair owner claimed 119999 raw quote after 1 swap on a permanently locked position"
+  },
+  {
+    "id": "e-fee-scheduler",
+    "sigs": [
+      "2pihB5maYmXsuWPECY1BUpTWpH9SR1YRSLDhMoNMBLmXopAeqbxRrzz72c6ahYywLeGmwJbDGE6gyj3gLAprWezv",
+      "5MoX6Sa5YaXkwSAtR7sFQXCEQ5RS6rZkj43siZqsFTHuQxDZP1pnNofCDYLsAbhcWA6j755V8fBnzUaiNntJ4VT6",
+      "ghXqvJb8JvEVDtGSWb8QdKnuszqr9ncNr6icTj8oepKKonQJ9NTvHyTQ4g11rgygyCky23P9gE6dPvmZtjjkWjT",
+      "4ku4F4iTAb1UXnc5cjcy9AtE8rrJvvqwQLWGUrjRCeE9bZ8iuqxxdjQSRqNyfJANEMhM7XZ7Cd4s5ztachHwcTcN"
+    ],
+    "note": "1 USDC swap at t0 yielded 119999 LP fee, same swap after 60s yielded 8000; ratio 15.0 (schedule 1500 to 100 bps over 6 periods, linear)"
+  },
+  {
+    "id": "d-two-owner-split",
+    "sigs": [
+      "3PcfAdeZbtJRHLApT7nChaxcCm1PmfdeTYhfjKRSJayEVvkepEYKgDF2Ws4DhEz15vkK83D3Pvvsrm9mLcR2q6Vm",
+      "5s6MizLMwSWZPDP18vv4HWsGh2XgbLsbS46xkYjMen6T5BY9LphfRxFte17bkm23mv5RobDVXvmzHqf7Ta9UyEaJ",
+      "2uMFji8X41DRVB1WTQG1c12sv3uG21PvfjaZd8F8K3fajjYwZiqk5A35D2EXNvkKNVrCGdqo8f4eV6aYvuCjqBzr"
+    ],
+    "note": "split_position2 numerator 50% of a permanently LOCKED position to a second owner EY83tmmVJmxH18ganTTzKVFwPAMy8oC6vH9vsqa5iSaL: second position lockedLiquidity=291668634510511562023811982682; second owner claim gained 4000"
+  },
+  {
+    "id": "c0-squads-multisig",
+    "sigs": [
+      "26cxoWLLicAtsFPECTKG25p1VbzbLwxN2gmYuYZjrDatMVRJ1zcoEFBvoqppwUunP6J5JVP7kkFApPzkxtb8zgCw"
+    ],
+    "note": "1-of-1 multisig AbTuhsXjhacUYrksgymKrFwA231rL6p8uuubF67mRpG8 timeLock 20s, vault 8at6bgUimHqikuAhTVv55UGW5oRymPU5auf1EXzgMVmt"
+  },
+  {
+    "id": "c-vault-creates-and-locks",
+    "sigs": [
+      "2ok2uXZtsiH3pn12eKRXDgXAFDeD1KLmR74WxBE8d7vdJERaFgtMKSUN6Ntkw1UvB2uwZdCNtdxWWj4pr9PdFdnJ",
+      "3ypREpZcfKkpTFTrPHMnKyjjw17eVMNhzRQGUxBoMTLfYfuQs1edcgUB6DgZqX5FKkK2stBHaDhnSR5BeCYd74kK",
+      "39MJpCLU7VRvnPtwT3HEXBPUoquomkKALEPTSUiojh4nSV4TJatZvBLf6TMR6nPRUTLggTmAhPdSPcG75G1sZDLg"
+    ],
+    "note": "kruxa-venue plan executed as Squads vault tx (ephemeral signer for NFT); NFT owner=8at6bgUimHqikuAhTVv55UGW5oRymPU5auf1EXzgMVmt (vault); locked=583337269021023124047623965365; early execute: rejected (TimeLockNotReleased); pool co"
+  },
+  {
+    "id": "c-vault-claims-fees",
+    "sigs": [
+      "3KJ2SEDwyY2uuMPPgwevHp1E42o6EZAKLZVbQFFzNXTYPDmbWYkMrKrZMwLNF3sGy28VWFp1bCHdMgb2bmDxqAZU",
+      "5tT8Es8nnDyuPwGnhWff9JM4e3z9dhwybb4fUE6yXXMkZR3igEABjNNzke6HgqhffL23qf1wDCoVtTizo9QuaevF",
+      "2zergtWNE9Y2XXcLu3GfEZGNuFdcewRccPsugJpL29crgxbUyTx8ce8op1VCj5ozAYmfvR3Wdy8BFSHMpeGUphdY",
+      "4Ld1XytjxmTmxzu2qQfF3nA3P3G4gfuKc3FxzmGqEUXFj6hMphsb2vucaC3XPyzKrFYFfibF5Zeqry72T31Aj59E"
+    ],
+    "note": "Squads-vault-owned permanently locked position claimed 119999 raw quote to the vault ATA via a vault transaction"
+  }
+];
+export const METEORA_DEVNET_PAYER = '8K2kQuuavjCo7QTREyKMUDJfpAHVyV6PqJooW56nDBCA';

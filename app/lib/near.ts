@@ -36,3 +36,20 @@ export const getSettlement = (id: string) => view<Record<string, unknown> | null
 export const getVerdictInputs = (id: string, contractId?: string) => view<{ inputs: Record<string, unknown>; inputs_hash: string } | null>('get_verdict_inputs', { launch_id: id }, contractId);
 export const getPosition = (id: string, holder: string) => view<Record<string, unknown> | null>('get_position', { launch_id: id, holder });
 export const requiredDeposit = (params: Record<string, unknown>) => view<string>('required_deposit', { params });
+
+export interface StreamStatus {
+  recipient: string; total: string; cap: string; drawn: string; inflight: string; drawable: string; starts_at: string; ends_at: string; paused: boolean;
+}
+export interface Settlement {
+  pass: boolean; reasons: number; settled_at: string; total_active: string; accepted: string; launch_fee: string; lp_quote: string;
+  stream: string; excess_pool: string; inputs_hash: string; book_hash: string;
+}
+export interface PositionView {
+  holder?: string; contributed?: string; open?: string; owed?: string; refunded?: string; spent?: string; tokens_entitled?: string; claimed?: string; settled?: boolean;
+  [k: string]: unknown;
+}
+
+export const streamStatus = (id: string) => view<StreamStatus | null>('stream_status', { launch_id: id });
+export const listPositions = (id: string, from: number, limit = 50) => view<PositionView[]>('list_positions', { launch_id: id, from_seq: from, limit });
+export const getLedger = (id: string) => view<Record<string, string> | null>('get_ledger', { launch_id: id });
+export const getConfigView = () => view<Record<string, unknown>>('get_config');
