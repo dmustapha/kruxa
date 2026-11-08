@@ -78,7 +78,8 @@ pub fn fold_book(events: &[BookEvent]) -> Result<Folded, FoldError> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::verdict::{hex, inputs_hash, verdict, VerdictInputs};
+    use crate::verdict::{hex, inputs_hash, verdict, Outcome, VerdictInputs};
+    use sha2::Digest;
     use proptest::prelude::*;
 
     fn c(h: &str, n: u128) -> BookEvent {
@@ -106,58 +107,130 @@ mod tests {
         assert_eq!(hex(&fold_book(&[]).unwrap().book_hash), "0".repeat(64));
     }
 
-    /// The contract's own bookkeeping, written the way `intake.rs` does it: mutate counters, extend the rolling hash, emit an event.
-    struct ContractModel {
-        open: HashMap<String, u128>,
+    /// How the reference may be deliberately broken, so the test can prove it is able to fail.
+    #[derive(Clone, Copy, PartialEq, Eq, Debug)]
+    enum Sabotage {
+        None,
+        /// Hash the byte `kind + 1` instead of `kind` on the first event.
+        KindByte,
+        /// Count a returning funder twice.
+        DoubleCountFunder,
+    }
+
+    /// Everything the independent reference derives from raw operations.
+    struct Reference {
+        log: Vec<BookEvent>,
         total: u128,
         funders: u32,
         hash: [u8; 32],
-        log: Vec<BookEvent>,
+        inputs_hash: [u8; 32],
+        outcome: (bool, u8),
+        /// True when the sabotage actually changed something for these operations.
+        sabotaged: bool,
     }
 
-    impl ContractModel {
-        fn contribute(&mut self, holder: &str, net: u128) {
-            let slot = self.open.entry(holder.to_string()).or_insert(0);
-            if *slot == 0 {
-                self.funders += 1;
-            }
-            *slot += net;
-            self.total += net;
-            self.hash = book_next(&self.hash, 1, holder.as_bytes(), net, self.total, self.funders);
-            self.log.push(c(holder, net));
+    /// Independent reference. It shares no code with `fold_book`, `book_next`, `verdict` or `inputs_hash`: positions live in a Vec
+    /// scanned linearly (not a HashMap), the hash preimage is spelled out byte by byte from the documented layout
+    /// `prev || kind || len u16 LE || holder || amount u128 LE || total u128 LE || funders u32 LE` and hashed with one `Sha256::digest`
+    /// call, and the verdict is the written rule: PASS iff not cancelled, total >= soft cap and funders >= minimum.
+    fn reference(ops: &[(usize, u128, bool)], sabotage: Sabotage) -> Reference {
+        const SOFT_CAP: u128 = 350_000_000;
+        const MIN_FUNDERS: u32 = 10;
+        let mut open: Vec<(String, u128)> = Vec::new();
+        let (mut total, mut funders, mut hash, mut log, mut sabotaged) = (0u128, 0u32, [0u8; 32], Vec::new(), false);
+        for (who, amount, walk) in ops {
+            let holder = format!("near:buyer{who}.test");
+            let at = open.iter().position(|(h, _)| *h == holder);
+            let held = at.map_or(0, |i| open[i].1);
+            let (kind, moved) = if *walk {
+                if held == 0 {
+                    continue; // the contract refuses (R_NO_POSITION) and emits nothing
+                }
+                open[at.unwrap()].1 = 0;
+                total -= held;
+                funders -= 1;
+                log.push(BookEvent::Walked { holder: holder.clone(), amount: held });
+                (2u8, held)
+            } else {
+                match at {
+                    Some(i) => open[i].1 += amount,
+                    None => open.push((holder.clone(), *amount)),
+                }
+                if held == 0 {
+                    let extra = u32::from(sabotage == Sabotage::DoubleCountFunder && !log.is_empty());
+                    sabotaged |= extra == 1;
+                    funders += 1 + extra;
+                }
+                total += amount;
+                log.push(BookEvent::Contributed { holder: holder.clone(), net: *amount });
+                (1u8, *amount)
+            };
+            let mut pre = hash.to_vec();
+            let flip = sabotage == Sabotage::KindByte && log.len() == 1;
+            sabotaged |= flip;
+            pre.push(kind + u8::from(flip));
+            pre.extend_from_slice(&(holder.len() as u16).to_le_bytes());
+            pre.extend_from_slice(holder.as_bytes());
+            pre.extend_from_slice(&moved.to_le_bytes());
+            pre.extend_from_slice(&total.to_le_bytes());
+            pre.extend_from_slice(&funders.to_le_bytes());
+            hash = sha2::Sha256::digest(&pre).into();
         }
+        let mut enc = Vec::new();
+        enc.extend_from_slice(&1u64.to_le_bytes());
+        enc.extend_from_slice(&[3u8; 32]);
+        enc.extend_from_slice(&total.to_le_bytes());
+        enc.extend_from_slice(&funders.to_le_bytes());
+        enc.extend_from_slice(&SOFT_CAP.to_le_bytes());
+        enc.extend_from_slice(&MIN_FUNDERS.to_le_bytes());
+        enc.push(0);
+        let reasons = u8::from(total < SOFT_CAP) | (u8::from(funders < MIN_FUNDERS) << 1);
+        Reference { log, total, funders, hash, inputs_hash: sha2::Sha256::digest(&enc).into(), outcome: (reasons == 0, reasons), sabotaged }
+    }
 
-        fn walk(&mut self, holder: &str) {
-            let on = self.open.get(holder).copied().unwrap_or(0);
-            if on == 0 {
-                return; // the contract refuses (R_NO_POSITION); nothing is emitted
-            }
-            self.open.insert(holder.to_string(), 0);
-            self.total -= on;
-            self.funders -= 1;
-            self.hash = book_next(&self.hash, 2, holder.as_bytes(), on, self.total, self.funders);
-            self.log.push(w(holder, on));
-        }
+    fn op_strategy() -> impl Strategy<Value = Vec<(usize, u128, bool)>> {
+        proptest::collection::vec((0usize..12, 20_000_000u128..=100_000_000, any::<bool>()), 1..80)
+    }
+
+    /// What `fold_book` plus the shipped verdict code say about the reference's own event log.
+    fn shipped(r: &Reference) -> ((u128, u32, [u8; 32]), [u8; 32], Outcome) {
+        let f = fold_book(&r.log).unwrap();
+        let i = VerdictInputs {
+            launch_id: 1,
+            charter_hash: [3; 32],
+            total_active: f.total_active,
+            active_funders: f.active_funders,
+            soft_cap: 350_000_000,
+            min_funders: 10,
+            cancelled: false,
+        };
+        ((f.total_active, f.active_funders, f.book_hash), inputs_hash(&i), verdict(&i))
     }
 
     proptest! {
         #![proptest_config(ProptestConfig::with_cases(10_000))]
 
-        /// P-RECOMPUTE: folding the events a contract-shaped book emitted reproduces its stored book_hash, counters, inputs_hash and verdict.
+        /// P-RECOMPUTE: replaying the events with `fold_book` reproduces the hash, counters, inputs_hash and verdict that an
+        /// independent reference derives from the raw operations.
         #[test]
-        fn p_recompute(ops in proptest::collection::vec((0usize..12, 20_000_000u128..=100_000_000, any::<bool>()), 1..80)) {
-            let mut m = ContractModel { open: HashMap::new(), total: 0, funders: 0, hash: [0; 32], log: vec![] };
-            for (who, amount, walk) in ops {
-                let holder = format!("near:buyer{who}.test");
-                if walk { m.walk(&holder) } else { m.contribute(&holder, amount) }
+        fn p_recompute(ops in op_strategy()) {
+            let r = reference(&ops, Sabotage::None);
+            let (state, ih, outcome) = shipped(&r);
+            prop_assert_eq!(state, (r.total, r.funders, r.hash));
+            prop_assert_eq!(ih, r.inputs_hash);
+            let want = if r.outcome.0 { Outcome::Pass } else { Outcome::Fail(r.outcome.1) };
+            prop_assert_eq!(outcome, want);
+        }
+
+        /// The comparison above can fail: a reference with one wrong hash byte, or one extra funder, is always caught.
+        #[test]
+        fn p_recompute_detects_a_corrupted_reference(ops in op_strategy()) {
+            for sabotage in [Sabotage::KindByte, Sabotage::DoubleCountFunder] {
+                let r = reference(&ops, sabotage);
+                if !r.sabotaged { continue; }
+                let (state, _, _) = shipped(&r);
+                prop_assert!(state != (r.total, r.funders, r.hash), "{sabotage:?} slipped through");
             }
-            let f = fold_book(&m.log).unwrap();
-            prop_assert_eq!((f.total_active, f.active_funders, f.book_hash), (m.total, m.funders, m.hash));
-            let inputs = |total, funders| VerdictInputs { launch_id: 1, charter_hash: [3; 32], total_active: total, active_funders: funders,
-                                                           soft_cap: 350_000_000, min_funders: 10, cancelled: false };
-            let (a, b) = (inputs(f.total_active, f.active_funders), inputs(m.total, m.funders));
-            prop_assert_eq!(verdict(&a), verdict(&b));
-            prop_assert_eq!(inputs_hash(&a), inputs_hash(&b));
         }
     }
 }
