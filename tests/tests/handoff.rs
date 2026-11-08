@@ -16,6 +16,10 @@ fn num(v: &Value, k: &str) -> u128 {
 
 /// A PASSED launch with everything the handoff needs: positions settled, residue swept, launch fee paid. Returns (env, id, stub market).
 async fn passed_launch(symbol: &str) -> anyhow::Result<(Env, u64, near_workspaces::Contract)> {
+    passed_launch_with(symbol, false).await
+}
+
+async fn passed_launch_with(symbol: &str, real: bool) -> anyhow::Result<(Env, u64, near_workspaces::Contract)> {
     let env = Env::new().await?;
     let mut p = TrialParams::example(symbol);
     p.commit_secs = 600;
@@ -31,7 +35,7 @@ async fn passed_launch(symbol: &str) -> anyhow::Result<(Env, u64, near_workspace
     env.call(&env.creator, "settle_positions_page", page, ZERO).await.into_result()?;
     env.call(&env.creator, "sweep_residue", lid(id), ZERO).await.into_result()?;
     env.call(&env.creator, "pay_launch_fee", lid(id), ZERO).await.into_result()?;
-    let market = env.deploy_stub_market().await?;
+    let market = if real { env.deploy_real_market().await? } else { env.deploy_stub_market().await? };
     env.register_on_token(symbol, market.id()).await?;
     Ok((env, id, market))
 }
@@ -158,5 +162,39 @@ async fn pause_blocks_open_market() -> anyhow::Result<()> {
     env.call(&env.guardian, "pause", json!({}), ZERO).await.into_result()?;
     let r = env.call(&env.creator, "open_market", lid(id), ZERO).await;
     assert!(has_code(&r, "R_PAUSED"), "{:?}", r.failures());
+    Ok(())
+}
+
+/// GR-15 against the REAL market wasm (M-2): both legs land, the pool opens with the Charter's terms, and a buy goes through.
+#[tokio::test]
+async fn open_market_against_the_real_market_opens_the_pool_and_a_buy_works() -> anyhow::Result<()> {
+    let (env, id, market) = passed_launch_with("HANR", true).await?;
+    let seed = num(&env.view("get_ledger", lid(id)).await, "lp_seed_due");
+    let n_lp = num(&env.view("get_charter", lid(id)).await["derived"], "n_lp");
+    let r = env.call(&env.creator, "open_market", lid(id), ZERO).await;
+    assert_eq!(r.json::<u8>()?, 2);
+    let link = env.view("get_market_link", lid(id)).await;
+    assert_eq!(link["opened"], true, "{link}");
+    let pool: Value = market.view("get_pool").args_json(lid(id)).await?.json()?;
+    let charter = env.view("get_charter", lid(id)).await;
+    assert_eq!(pool["state"], "Open", "{pool}");
+    assert_eq!((num(&pool, "q"), num(&pool, "t")), (seed, n_lp));
+    assert_eq!(pool["payout_recipient"], charter["payout_recipient"]);
+    assert_eq!(pool["token"], json!(env.token_id("HANR")));
+    assert_eq!(pool["terms"]["total_fee_bps"], charter["params"]["fees"]["total_fee_bps"]);
+    assert_eq!(env.view("get_invariants", lid(id)).await["all_ok"], true);
+    // a buyer swaps USDC for the launch token through the market
+    let buyer = env.user("buyer", 100 * USDC).await?;
+    env.register_on_token("HANR", buyer.id()).await?;
+    let msg = json!({ "v": 1, "op": "buy", "launch_id": id.to_string(), "min_out": "1" }).to_string();
+    let res = buyer
+        .call(env.usdc.id(), "ft_transfer_call")
+        .args_json(json!({ "receiver_id": market.id(), "amount": (20 * USDC).to_string(), "msg": msg }))
+        .deposit(NearToken::from_yoctonear(1))
+        .gas(GAS)
+        .transact()
+        .await?;
+    assert!(res.is_success(), "{:?}", res.failures());
+    assert!(env.token_balance("HANR", buyer.id()).await > 0, "the buyer received launch tokens");
     Ok(())
 }

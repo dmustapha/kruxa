@@ -283,6 +283,16 @@ impl Env {
         Ok(market)
     }
 
+    /// Deploys the REAL market wasm (`scripts/market-build.sh`), registers it on USDC and names it on core.
+    pub async fn deploy_real_market(&self) -> anyhow::Result<Contract> {
+        let market = deploy_at(&self.worker.root_account()?, "market", wasm("kruxa_market_contract")).await?;
+        let args = json!({ "owner": self.owner.id(), "guardian": self.guardian.id(), "treasury": self.treasury.id(), "usdc": self.usdc.id(), "core": self.core.id() });
+        market.call("new").args_json(args).transact().await?.into_result()?;
+        self.register(&self.usdc, market.id()).await?;
+        self.owner.call(self.core.id(), "set_market").args_json(json!({ "account": market.id() })).transact().await?.into_result()?;
+        Ok(market)
+    }
+
     pub fn token_id(&self, symbol: &str) -> AccountId {
         format!("{}.{}", symbol.to_lowercase(), self.factory.id()).parse().unwrap()
     }

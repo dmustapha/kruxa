@@ -25,10 +25,10 @@ Before any promise: `lp_seed_due -> lp_seed_inflight` (all of it) and the unsent
 
 | Leg | Contract called | receiver | amount | msg |
 |---|---|---|---|---|
-| seed | USDC | market | `lp_seed_due` (micro-USDC) | `{"v":1,"op":"seed_quote","launch_id":"7","token":"tok.near","payout_recipient":"alice.near","total_supply":"<n_total>","charter_hash":"<64 hex>","terms":{FeeTerms}}` |
+| seed | USDC | market | `lp_seed_due` (micro-USDC) | `{"v":1,"op":"seed_quote","launch_id":"7","token":"tok.near","payout_recipient":"alice.near","total_supply":"<n_total>","charter_hash":"<64 hex>","mint_authority":null,"freeze_authority":null,"terms":{FeeTerms}}` |
 | token | the launch token | market | `n_lp` (Charter `derived.n_lp`, all of it) | `{"v":1,"op":"open_pool_token","launch_id":"7"}` |
 
-`terms` is the Charter's `params.fees` (`kruxa_logic::FeeTerms`, the snapshot taken at `create_trial`), `payout_recipient` is the Charter `stream_recipient`, `total_supply` is `derived.n_total`, `charter_hash` is the stored Charter hash. Either leg may land first on the market side (MARKET-ABI change 2). A leg is sent only if its amount is greater than zero, so a retry after a partial failure sends only the missing leg.
+`mint_authority` and `freeze_authority` are `null` (revoked) because the genesis plan only accepts revoked authorities (R_GENESIS_AUTH); they describe the SOLANA mint, not the NEAR factory token. `terms` is the Charter's `params.fees` (`kruxa_logic::FeeTerms`, the snapshot taken at `create_trial`), `payout_recipient` is the Charter `stream_recipient`, `total_supply` is `derived.n_total`, `charter_hash` is the stored Charter hash. Either leg may land first on the market side (MARKET-ABI change 2). A leg is sent only if its amount is greater than zero, so a retry after a partial failure sends only the missing leg.
 
 ## Callback and re-credit
 
@@ -51,4 +51,4 @@ Authenticate `seed_quote` by `predecessor == usdc` and `sender_id == core`; acce
 
 ## Tests
 
-Core side runs against `contracts/mock-market` (a stub implementing exactly this table; modes `accept`, `refuse_seed`, `refuse_token`, `panic`). The real market is exercised by the integrator once M merges: swap the stub wasm in `Env::new_with_market`.
+Failure modes run against `contracts/mock-market` (a stub implementing exactly this table; modes `accept`, `refuse_seed`, `refuse_token`, `panic`). The happy path also runs against the REAL market wasm (`tests/tests/handoff.rs`, `open_market_against_the_real_market_opens_the_pool_and_a_buy_works`; build it with `./scripts/market-build.sh`). Pool states on the market side are `AwaitToken` then `Open`.
