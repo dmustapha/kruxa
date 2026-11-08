@@ -1,0 +1,3 @@
+cluster: devnet (devnet) mode: F0 launch: 5
+commit_genesis ok (REAL core core2.kxa1-owner-1203.testnet (NEAR testnet))
+mint already exists and is not resumable (mint authority null)

@@ -1,0 +1,11 @@
+creating launch 2 (KRXG1, F1), deposit 421250000000000000000000 yocto
+Receipt: 14Dwv18ysvCba9h36iGzfo3L7BQRHk4d83txJjZMJDu8
+create_trial: 8VjvgLBVzh1feycAnv8jgQP5PvX8VNMzvWUQZAtig1ar
+Receipt: 8iRmYCUFNSfBLgm5vxE3nnYr2YVKeYyzxSNN4mp7XriG
+commit 5GZkG2Ep: 2ErhAzCX19ZtY9bZR6QBB9Kqm5waKCQVnjn2SNqniDqt
+Receipt: 6kbHYikysiwsNkZPkVbQwZuVhkiDCmitoLAPrE9as189
+commit EWr1oejx: EebDGUDh66f2kfpZ1yAwtSDg937fGZqPJsCEUtkTt44
+Receipt: 3rXGS5gJwfM29gG2RLWKbsVicXxm2h7Xb9ZiMmrbz7NM
+commit 5qgKaNde: 8RHuTzdV4p4ecYeYaMmrFi4srgXmcBFLHaNinma8yE5j
+{"jsonrpc": "2.0", "error": {"code": -429, "message": "WARNING! THIS ENDPOINT IS DEPRECATED! STOP USING IT NOW! Switch to https://fastnear.com or alternative RPC providers at https://docs.near.org/api/rpc/providers"}, "id": "1"}
+finished

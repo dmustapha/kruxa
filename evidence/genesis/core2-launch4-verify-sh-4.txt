@@ -1,0 +1,27 @@
+== NEAR recompute (C31-C34, kruxa-sim)
+recomputed outcome=PASS inputs_hash=1d43200cc484b0fb01ef3a97d2a51fa5ab1ae178eb8af0490f5d9b10b2f50d83
+stored     pass=true inputs_hash=1d43200cc484b0fb01ef3a97d2a51fa5ab1ae178eb8af0490f5d9b10b2f50d83
+MATCH
+== operator lines (VX-2)
+KEYS: 1 full-access key(s): ed25519:62U9ohNY2zoggSisugXyiCgs59UFc7yjwjniknxpVYKN; 0 function-call key(s)
+NOTE: a full-access key is present, so its owner can redeploy this contract.
+CODE: view_code sha256 34d7f6b42654bd550fb13b558a9b7bb42d00958e75e60362b72a327d120483f7; reproducible build sha256 UNAVAILABLE (no artifacts/SHA256SUMS entry); NOT COMPARED
+== Solana genesis (C3-C28)
+PASS C5 mint == createWithSeed(g_pub, seed 4, Tokenkeg): no private key exists
+PASS C3 spec re-hash 7e1af450072873eb (sha256 of the committed borsh GenesisSpec)
+PASS C4 mint FtAU9HbUopWVMMr41XNsFr11B4ZxbbKX4JLWmNAJ8Wfe owner Tokenkeg space 82 (no extensions: C8)
+PASS C7 mint_authority=None freeze_authority=None
+PASS C6 decimals 6 supply 649999999999992 == sum of buckets
+PASS C9 metadata is_mutable=false, name/symbol/uri == spec, fee 0, no creators
+PASS C11 reserve bucket 0, distributor vault holds the unclaimed rest
+PASS C13 distributor 9XYvBt root/max_total_claim/max_num_nodes/timestamps/clawback receiver match, admin NULL (1nc1nera)
+PASS C12 squads 2-of-3 time_lock 172800 == charter, config_authority None, reserve owner is vault 8955vW2w
+PASS C14 G holds no token accounts
+PASS C15 G history is the ceremony only (3 signatures)
+MISMATCH g_pub C=C16 expected=<=895880 lamports actual=2091800
+PASS C17 on-chain tx1 and tx2 message bytes == compile(spec, blockhash, price)
+PASS C18 program allowlist holds
+PASS C19 SetAuthority(MintTokens, None) is the last token instruction, after every MintTo
+PASS C20 rebuilt merkle root == spec == on-chain; sum 649999999999992, leaves 12
+PASS C21 all 12 proofs verify against the root
+exit 2

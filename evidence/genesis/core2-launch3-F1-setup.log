@@ -1,0 +1,19 @@
+funded 12 buyers in mock Intents
+creating launch 3 (KRXG2, F1), deposit 421250000000000000000000 yocto
+create_trial: 22vdD51FeQVAfGQK7NWT2FQBiz5mPAFbK9HvRTz5m5KK
+commit Ebh7iQLE: 9H6Q4iJJQzMf58wwEtncamZmSdceErcznE3i4vVvTuy7
+commit GdNtGUpw: 3WxnTwwwaUPHKsGkSPVV2yuF6aZyAFs7msz4KCnZa2gq
+commit CJtPG7vA: 5ZKEZa6YhYjJyzHTFdZqbkyc4twL564gW3Yo5C4QQ7Ff
+commit 2B6xPuq2: Erf79WsWdmUqgCrD16ny1nXNZiWwdSqofV5Qo5PmtMNW
+commit H7FT63Uc: Gqz7Ufmv5LmX64MkS5kRj4WaE9DpfmUY3F6Q3BbrgPwJ
+commit 8ebJVtyP: 6iRaaHvHX1nHqPXENNHFhnYwXePCv3HvCAV7QE9BmUGj
+commit E5ENZvyT: 5C4NGRoCfx1gchnhK6xzWGf1pX2eN124qMEsmNiqRbKg
+commit HErJm12P: C1AT6P7Ej1v7EWj3amn6banuJAgAbT95ERNWZTjdzzaR
+commit 66BjQ63D: 7bb5arGDUeYFw6kJq1rAsZmyCE8FS5UCdMWHtS8ptYvY
+commit 73iKfkDt: 4DQXg55rPm98y5iz19SKjpyZqDXBZMs5HP4an4CdWJtU
+commit ARvtNGmm: 4PYK7UGQzAvRCT15o3vJDJhd3wLbJ9hZbGGG616PZtZH
+commit Yb5PqrRY: 2oLvQQuugsLWeZvTPpTp3PLx1WnzqMRrGSEdgtZz9dHu
+settle: 3Nmy2MpMG6FMdJP5xB6KWMfcnzGGyPSubJsdJtxUhPYK
+status: Passed
+launch 3 settled PASS; holders file /Users/MAC/.kruxa-secrets/genesis/holders-3.json (mode 600)
+finished

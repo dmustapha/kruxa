@@ -73,7 +73,7 @@ export async function nearBackend(launch: bigint): Promise<SignBackend> {
   const k: NearKeyFile = JSON.parse(readFileSync(file, "utf8"));
   const keyStore = new keyStores.InMemoryKeyStore();
   await keyStore.setKey("testnet", k.account_id, KeyPair.fromString(k.secret_key as `ed25519:${string}`));
-  const near = await connect({ networkId: "testnet", nodeUrl: "https://rpc.testnet.near.org", keyStore });
+  const near = await connect({ networkId: "testnet", nodeUrl: (process.env.NEAR_TESTNET_RPC ?? "https://test.rpc.fastnear.com"), keyStore });
   if (near.connection.networkId !== "testnet") throw new Error("refusing: NEAR network is not testnet");
   const account = await near.account(k.account_id);
   const path = `kruxa:genesis:${launch}`;

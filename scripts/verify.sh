@@ -35,7 +35,7 @@ full_run() {
     --charter) [ "$#" -ge 2 ] || { echo "usage: --charter needs a file" >&2; exit 64; }; charter="$2"; shift ;;
     *) echo "usage: $0 <launch_id> [--tamper-all] [--rpc2 <url>] [--charter FILE] [--production]" >&2; exit 64 ;;
   esac; shift; done
-  local near="${KRUXA_NEAR_RPC:-https://rpc.testnet.near.org}" contract="${KRUXA_CONTRACT:-core.kruxa.testnet}"
+  local near="${KRUXA_NEAR_RPC:-https://test.rpc.fastnear.com}" contract="${KRUXA_CONTRACT:-core.kruxa.testnet}"
   local sol="${SOL_DEVNET_RPC:-https://api.devnet.solana.com}" rec="evidence/genesis-$id.json"
   local c_near c_ops c_sol
   echo "== NEAR recompute (C31-C34, kruxa-sim)"

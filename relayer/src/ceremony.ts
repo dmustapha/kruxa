@@ -3,7 +3,7 @@ import { Connection, Keypair, PublicKey, SystemProgram, Transaction } from "@sol
 import bs58 from "bs58";
 import { assertCluster, DEVNET_GENESIS_HASH, type Cluster } from "./cluster.js";
 import { compileGenesis, decodeSpec, MAX_TX, specHash, type GenesisCompiled, type Params, type Spec } from "./compile.js";
-import { b58d, b58e } from "./solana-bytes.js";
+import { b58d, b58e, createWithSeed, TOKENKEG } from "./solana-bytes.js";
 import { GenesisRefused, type CoreClient } from "./core.js";
 import { assertSealed, readMint, type MintView } from "./mintcheck.js";
 import type { GenesisSigner } from "./signer.js";
@@ -16,10 +16,10 @@ export const GENESIS_NON_FEE_LAMPORTS = 27_295_600;
  *  Metaplex creation fee; tx fees). Calibrated against a local validator with the real programs; G is funded with exactly this so it
  *  ends at the rent-exempt dust (verify C16). A shortfall fails the tx loudly. Recalibrate if the Metaplex fee or account sizes change. */
 /** Measured per cluster: the local validator runs the same Metaplex binary but without its on-chain fee configuration, so the
- *  Metaplex creation cost differs by 1,974,400 lamports between local and devnet. devnet with distributor is DERIVED, not yet measured. */
+ *  Metaplex creation cost differs by 1,974,400 lamports between local and devnet. devnet with distributor measured on core2 launch 4 (funded 21,242,640 + dust, 1,200,920 left over). */
 export const NON_FEE: Record<Cluster, { withDistributor: number; noDistributor: number }> = {
   local: { withDistributor: 23_217_040, noDistributor: 18_658_240 },
-  devnet: { withDistributor: 21_242_640, noDistributor: 16_683_840 },
+  devnet: { withDistributor: 20_041_720, noDistributor: 16_683_840 },
 };
 /** A system account may not end a transaction with 0 < lamports < rent-exempt minimum, so G keeps exactly this much (dust, disclosed). */
 export const G_DUST_LAMPORTS = 890_880;
@@ -78,6 +78,9 @@ async function freshCompile(conn: Connection, specBytes: Uint8Array, params: Par
 export async function runCeremony(i: CeremonyInput): Promise<CeremonyResult> {
   const { conn, signer, log, core, launchId } = i;
   await assertCluster(conn, i.cluster);
+  const predicted = new PublicKey(createWithSeed(signer.pub(), launchId.toString(), TOKENKEG));
+  const pre = await readMint(conn, predicted);
+  if (pre && pre.mintAuthority !== new PublicKey(signer.pub()).toBase58()) throw new Error(`preflight: mint ${predicted.toBase58()} already exists and is not resumable (a previous ceremony used the same key and launch id); refusing BEFORE commit_genesis, which is one-shot`);
   await core.commitGenesis(launchId, signer.pub());
   log(`commit_genesis ok (${core.label})`);
   const specBytes = await core.specBytes(launchId);
@@ -86,6 +89,8 @@ export async function runCeremony(i: CeremonyInput): Promise<CeremonyResult> {
   if (Buffer.compare(spec.gPub, signer.pub()) !== 0) throw new Error("spec g_pub is not the signer key");
   if (i.cluster === "devnet" && b58e(spec.clusterGenesisHash) !== DEVNET_GENESIS_HASH) throw new Error("spec cluster hash is not devnet");
   const params: Params = { jitoProgram: b58d(i.jitoProgram), metadataUri: i.metadataUri, clockTs: BigInt(Math.floor(Date.now() / 1000)) };
+  const jitoAcct = await conn.getAccountInfo(new PublicKey(i.jitoProgram));
+  if (!jitoAcct?.executable) throw new Error(`preflight: distributor program ${i.jitoProgram} is not deployed on this cluster (refusing before tx1: an F1 key is memory-only, a stranded unsealed mint cannot be recovered)`);
   const gKey = new PublicKey(signer.pub());
   const existing = await readMint(conn, new PublicKey(spec.mintAddress));
   const resume = existing !== null && existing.mintAuthority === gKey.toBase58();

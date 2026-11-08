@@ -1,0 +1,8 @@
+== NEAR recompute (C31-C34, kruxa-sim)
+MATCH
+== operator lines (VX-2)
+KEYS: 1 full-access key(s): ed25519:62U9ohNY2zoggSisugXyiCgs59UFc7yjwjniknxpVYKN; 0 function-call key(s)
+CODE: view_code sha256 34d7f6b42654bd550fb13b558a9b7bb42d00958e75e60362b72a327d120483f7; reproducible build sha256 UNAVAILABLE (no artifacts/SHA256SUMS entry); NOT COMPARED
+== Solana genesis (C3-C28)
+ALL CHECKS OK (18 passed, 10 skipped)
+exit 0
