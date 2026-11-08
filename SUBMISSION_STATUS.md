@@ -2,8 +2,8 @@
 _Last updated: CHANGE-ORDER-5 doc-sync, 2026-11-08 (after forge Phase 3, CHANGE-ORDER-3 and CHANGE-ORDER-4)_
 
 ## Status
-- [x] Pure crates `kruxa-math` and `kruxa-logic` compile and pass 25 unit and property tests (rustc 1.95.0, local run)
-- [x] Core contract builds to wasm with cargo-near 0.23.0 (456,999 bytes) and passes 19 sandbox tests against mock USDC, mock Intents and mock factory (local run)
+- [x] Pure crates `kruxa-math` and `kruxa-logic` compile and pass 50 unit and property tests (rustc 1.95.0, local run)
+- [x] Core contract builds to wasm with cargo-near 0.23.0 (462,222 bytes) and passes 34 sandbox tests against mock USDC, mock Intents and mock factory (local run)
 - [x] Lifecycle verified in the sandbox: create, commit (native and S3), S4 forward, Walk (key and signature), settle PASS (under- and oversubscribed) and FAIL, refunds, claims, consolidation, launch fee, `STREAM_CAP`
 - [x] Adversarial cases for every reachable `R_*` code, callback re-credit, fake token, direct callback, pause and freeze
 - [x] `scripts/verify.sh golden` reproduces the S1-B boundary vectors and example 1
@@ -23,8 +23,8 @@ _Last updated: CHANGE-ORDER-5 doc-sync, 2026-11-08 (after forge Phase 3, CHANGE-
 - A live S3 test and Phantom `signMessage` byte-exactness are unproven. Reason: needs Dami's per-action confirmation and funding for the approved <= $1 test.
 - Charter has fee terms but no payees, creator-allocation vesting or LP-token distribution. Reason: scope (Wave 3); fee terms are inert until the market exists.
 - No async solvency anchor, no token burn for failed launches, claimants must register on the launch token first. Reason: scope; designed in ARCHITECTURE.md 5.6.
-- The wasm is 456,999 bytes against a 350 KB budget. Reason: JSON `Value` views; locks about 4.57 NEAR of storage stake.
-- Gas constants are estimates and the 7-day freeze expiry is untested. Reason: time and sandbox clock limits.
+- The wasm is 462,222 bytes against a 350 KB budget. Reason: JSON `Value` views; locks about 4.57 NEAR of storage stake.
+- Gas constants are estimates and the 7-day freeze expiry is tested only as a pure function. Reason: a 7-day sandbox fast-forward is impractical (100,000 blocks did not finish in 4 minutes).
 - The app has not been opened in a browser or connected to a wallet. Reason: phase scope.
 - Open rulings (waiting on Dami): relay-fee ceiling (5% / $0.50 implemented, 1% suggested), the 2x oversubscription ceiling, reserve split, storage payer, pool and LP-seed amounts, USDC payout address, README headline, brand-token supply, and Squads independents (BLOCKER BLK-1 for third-party creators only; Dami: "when we get there"). RULED on 2026-11-08 and closed: fee split 50/15/15/10/10, round-one LP seed 100% on the NEAR pool, hosting tier 2 through Nov 25, market reserve caps $5,000 / $15,000 (interim), beta access (open under caps after BLK-1). Reason for the open list: ARCHITECTURE.md 3.2, PRD 9.4.
 - Rust toolchain: the machine default is 1.91.1; 1.95.0 was installed alongside for this run and must be installed on any build machine. Reason: near-sdk 5.30.1 requirement.
