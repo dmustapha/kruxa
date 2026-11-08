@@ -995,7 +995,7 @@ components:
         fold_ok: { type: boolean, nullable: true, description: 'null until a chain view comparison runs; the indexer does not recompute the book hash' }
         fold_note: { type: string }
         mode: { type: string, enum: [trial, instant] }
-        ledger_consistent: { type: boolean, nullable: true, description: 'null for instant launches (no book). Otherwise: 'indexed positions sum to total_active and the active holder count equals funders' }
+        ledger_consistent: { type: boolean, nullable: true, description: 'null for instant launches (no book); otherwise indexed positions sum to total_active and the active holder count equals funders' }
         book_events: { type: integer }
         verdict: { type: string, enum: [PASS, FAIL], nullable: true }
         event_count: { type: integer }
