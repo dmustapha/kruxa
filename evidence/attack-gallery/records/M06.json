@@ -17,6 +17,7 @@
   "invariants_after": {
     "market": {
       "global_q": "1794800000",
+      "instant_q_matches": true,
       "parked_count": 0,
       "usdc_custody": "1800000000",
       "usdc_custody_identity": true,
@@ -45,7 +46,7 @@
       "role": "support",
       "rule_code": null,
       "status": "succeeded",
-      "tx": "4f9k7rMgLSwJhDQzcqAQrBPwsYb1FCddZhs1b6xz8v4y"
+      "tx": "Fu7YTFTR3Xgcfka3K9npXBKRAUtXxyYdzaq2QaF6RiHs"
     },
     {
       "expected_rule_code": "R_MIN_OUT",
@@ -54,7 +55,7 @@
       "role": "attack",
       "rule_code": "R_MIN_OUT",
       "status": "succeeded",
-      "tx": "95g6xCKPEcxNjaLdjc6CDzbSdafwhPob8yEYYhJcGzTP"
+      "tx": "7fUimK6m8HTbDQwADotjtjUXJYxd2pAgS1uczPQojdnc"
     },
     {
       "expected_rule_code": "R_MIN_OUT",
@@ -63,7 +64,7 @@
       "role": "attack",
       "rule_code": "R_MIN_OUT",
       "status": "succeeded",
-      "tx": "FMG2DHiHTaVtKryrZ9EmULnnZG8QKm2fC6EbNx8nWiep"
+      "tx": "4Rpq8u13rcFUw6BcPCXrTawssmgmEexZEiZ3VcQyCaCp"
     },
     {
       "expected_rule_code": "R_MIN_OUT",
@@ -72,7 +73,7 @@
       "role": "attack",
       "rule_code": "R_MIN_OUT",
       "status": "succeeded",
-      "tx": "8PwXWJhXojRUPrYbuEeDxge1J8MivF4NjNEEgAippMik"
+      "tx": "2XUpabWycZLyPwM8PMKFgQWk6iTRqVZtRDbfFdSZjgLZ"
     }
   ]
 }

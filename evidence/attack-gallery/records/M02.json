@@ -17,6 +17,7 @@
   "invariants_after": {
     "market": {
       "global_q": "1000000000",
+      "instant_q_matches": true,
       "parked_count": 0,
       "usdc_custody": "1000000000",
       "usdc_custody_identity": true,
@@ -45,7 +46,7 @@
       "role": "attack",
       "rule_code": "R_NOT_AUTHORIZED",
       "status": "succeeded",
-      "tx": "EhuJnFLt3K6sdWv6MjjQqN2PCvuRszeDLmPLsxNiB53z"
+      "tx": "UxYAmcBYnpY9C9gmQjebuTma6eQkw5hHZHCqGa3NaB1"
     },
     {
       "expected_rule_code": "R_DUP_LAUNCH",
@@ -54,7 +55,7 @@
       "role": "attack",
       "rule_code": "R_DUP_LAUNCH",
       "status": "succeeded",
-      "tx": "AcpdPyLFDHtDZKkkU2FpKNttxCDNw89GessVJ8T5Yeie"
+      "tx": "Ap3LgxStxz3PEB2FJ99djpKvPoQakbBf1Vh1CoFNkbwf"
     }
   ]
 }
