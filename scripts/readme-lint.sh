@@ -173,7 +173,7 @@ def lint(path):
         for m in re.finditer(r"\bmake ([a-z][\w-]*)", l):
             if m.group(1) not in MAKE:
                 fail(path, i, "make", f"no make target '{m.group(1)}'")
-        for m in re.finditer(r"`((?:docs|evidence|fixtures|contracts|crates|tools|tests|app|services)/[\w./-]+\.(?:md|json|txt|sh|rs|toml|jsonl))`", l):
+        for m in re.finditer(r"`((?:(?:docs|evidence|fixtures|contracts|crates|tools|tests|app|services)/[\w./-]+|[A-Z][A-Z-]*)\.(?:md|json|txt|sh|rs|toml|jsonl))`", l):
             if not os.path.exists(m.group(1)):
                 fail(path, i, "path", f"{m.group(1)} does not exist")
     # evidence rules
