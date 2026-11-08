@@ -34,8 +34,13 @@ impl Launcher {
     /// Stops everything including exits; auto-expires to Paused after 7 days.
     pub fn freeze(&mut self) {
         self.require_owner_or_guardian();
+        let now = env::block_timestamp();
+        if env::predecessor_account_id() != self.cfg.owner && now < self.cfg.freeze_barrier {
+            fail("R_NOT_YET", "the guardian cannot freeze again within 7 days after a freeze ended; the owner can");
+        }
         self.cfg.pause = PauseLevel::Frozen;
-        self.cfg.frozen_until = kruxa_logic::frozen_until(env::block_timestamp());
+        self.cfg.frozen_until = kruxa_logic::frozen_until(now);
+        self.cfg.freeze_barrier = self.cfg.frozen_until.saturating_add(kruxa_logic::FREEZE_MAX_NS);
         emit("frozen", Obj::new().s("by", env::predecessor_account_id()).s("until", self.cfg.frozen_until));
     }
 
@@ -65,9 +70,13 @@ impl Launcher {
         self.cfg.market = Some(account);
     }
 
-    /// Owner. Impersonation guard on top of the built-in list (KRUXA and the core list).
+    /// Owner. Impersonation guard on top of the built-in list (anything containing KRUXA, and the core list). Stored upper-case.
     pub fn reserve_symbol(&mut self, symbol: String) {
         self.require_owner();
+        let symbol = symbol.to_ascii_uppercase();
+        if !kruxa_instant::symbol_format_ok(&symbol) {
+            fail("R_SYMBOL", "2..=12 of [A-Z0-9]");
+        }
         emit("symbol_reserved", Obj::new().s("symbol", &symbol));
         self.reserved.insert(symbol, 1);
     }
@@ -87,7 +96,15 @@ impl Launcher {
                 CapKind::Aggregate => self.cfg.agg_cap = value.0,
                 CapKind::PerLaunch => self.cfg.seed_max = value.0,
             }
+            // A lowering also cancels a queued raise of the same kind: the brake must not be undone by a timer (review M-03).
+            let queued = match kind {
+                CapKind::Aggregate => self.cfg.pending_agg_cap.take(),
+                CapKind::PerLaunch => self.cfg.pending_seed_max.take(),
+            };
             emit("cap_lowered", Obj::new().s("kind", kind.name()).s("value", value.0));
+            if queued.is_some() {
+                emit("cap_cancelled", Obj::new().s("kind", kind.name()));
+            }
             return;
         }
         self.require_owner();
@@ -106,6 +123,10 @@ impl Launcher {
         };
         match pending {
             Some((v, at)) if kruxa_logic::timelock_elapsed(at, env::block_timestamp()) => {
+                let cur = if kind == CapKind::Aggregate { self.cfg.agg_cap } else { self.cfg.seed_max };
+                if v <= cur {
+                    fail("R_NOTHING", "the queued value is no longer a raise; lower it again or queue a new one");
+                }
                 match kind {
                     CapKind::Aggregate => {
                         self.cfg.agg_cap = v;

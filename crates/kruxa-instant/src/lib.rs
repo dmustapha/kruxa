@@ -7,9 +7,9 @@ mod params;
 mod vest;
 
 pub use params::{
-    default_fees, derive, is_reserved_symbol, total_supply_base, validate_instant, Derived, InstantParams, Limits, Violation,
-    DEFAULT_ALLOC_BPS, DEFAULT_CLIFF_DAYS, DEFAULT_SEED_Q, DEFAULT_VEST_DAYS, MAX_ALLOC_BPS, MAX_CLIFF_DAYS, MAX_SEED_Q, MAX_VEST_DAYS,
-    MIN_CLIFF_DAYS, MIN_SEED_Q, MIN_VEST_DAYS, TOKEN_DECIMALS, TOTAL_SUPPLY_WHOLE,
+    default_fees, derive, is_reserved_symbol, symbol_format_ok, total_supply_base, validate_instant, Derived, InstantParams, Limits,
+    Violation, DEFAULT_ALLOC_BPS, DEFAULT_CLIFF_DAYS, DEFAULT_SEED_Q, DEFAULT_VEST_DAYS, MAX_ALLOC_BPS, MAX_CLIFF_DAYS, MAX_SEED_Q,
+    MAX_VEST_DAYS, MIN_CLIFF_DAYS, MIN_SEED_Q, MIN_VEST_DAYS, TOKEN_DECIMALS, TOTAL_SUPPLY_WHOLE,
 };
 pub use vest::{alloc_unlocked, claimable, Schedule};
 
