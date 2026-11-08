@@ -26,7 +26,7 @@ impl Contract {
     pub fn get_config(&self) -> Value {
         let c = &self.cfg;
         json!({ "owner": c.owner, "guardian": c.guardian, "treasury": c.treasury, "relay_fees": c.relay_fees, "usdc": c.usdc, "intents": c.intents, "factory": c.factory,
-                "profile": c.profile, "global_cap": c.global_cap.to_string(), "global_held": c.global_held.to_string(), "pause": format!("{:?}", self.pause_level()),
+                "profile": c.profile, "creator_gate": c.creator_gate, "market": c.market, "genesis_relayer": c.genesis_relayer, "genesis_paused": c.genesis_paused, "global_cap": c.global_cap.to_string(), "global_held": c.global_held.to_string(), "pause": format!("{:?}", self.pause_level()),
                 "pending_global_cap": c.pending_global_cap.map(|(v, t)| json!({ "value": v.to_string(), "effective_at": t.to_string() })),
                 "rules": to_value(&c.rules).expect("rules serialize") })
     }
@@ -39,7 +39,7 @@ impl Contract {
     pub fn get_charter(&self, launch_id: U64) -> Option<Value> {
         let ch = self.charters.get(&launch_id.0)?;
         Some(
-            json!({ "launch_id": ch.launch_id.to_string(), "creator": ch.creator, "stream_recipient": ch.stream_recipient, "created_at": ch.created_at.to_string(),
+            json!({ "launch_id": ch.launch_id.to_string(), "creator": ch.creator, "stream_recipient": ch.stream_recipient, "payout_recipient": ch.stream_recipient, "created_at": ch.created_at.to_string(),
                      "opens_at": ch.opens_at.to_string(), "commit_end": ch.commit_end.to_string(), "walk_end": ch.walk_end.to_string(),
                      "params": to_value(&ch.params).expect("params serialize"), "derived": to_value(&ch.derived).expect("derived serialize"),
                      "route": format!("{:?}", ch.route) }),
@@ -50,7 +50,7 @@ impl Contract {
         let (ch, st) = (self.charters.get(&launch_id.0)?, self.states.get(&launch_id.0)?);
         let phase = phase_at(env::block_timestamp(), ch.opens_at, ch.commit_end, ch.walk_end);
         Some(
-            json!({ "status": format!("{:?}", st.status), "phase": format!("{:?}", phase), "token": st.token, "total_active": st.total_active.to_string(),
+            json!({ "status": format!("{:?}", st.status), "phase": format!("{:?}", phase), "token": st.token, "payout_recipient": ch.stream_recipient, "total_active": st.total_active.to_string(),
                      "active_funders": st.active_funders, "holder_count": st.holder_count, "positions_live": st.positions_live, "positions_unsettled": st.positions_unsettled,
                      "residue_swept": st.residue_swept, "charter_hash": hex(&st.charter_hash), "book_hash": hex(&st.book_hash), "bond": st.bond.to_string() }),
         )
@@ -63,7 +63,7 @@ impl Contract {
                      "due_native": l.due_native.to_string(), "due_intents": l.due_intents.to_string(), "inflight_native": l.inflight_native.to_string(),
                      "inflight_intents": l.inflight_intents.to_string(), "refunded": l.refunded.to_string(), "spent_native": l.spent_native.to_string(),
                      "spent_intents": l.spent_intents.to_string(), "consolidated": l.consolidated.to_string(), "excess_pool": l.excess_pool.to_string(),
-                     "launch_fee_due": l.launch_fee_due.to_string(), "launch_fee_paid": l.launch_fee_paid.to_string(), "lp_seed_due": l.lp_seed_due.to_string(),
+                     "launch_fee_due": l.launch_fee_due.to_string(), "launch_fee_paid": l.launch_fee_paid.to_string(), "lp_seed_due": l.lp_seed_due.to_string(), "lp_seed_inflight": l.lp_seed_inflight.to_string(), "lp_seed_sent": l.lp_seed_sent.to_string(),
                      "stream_total": l.stream_total.to_string(), "stream_drawn": l.stream_drawn.to_string(), "relay_fee_total": l.relay_fee_total.to_string() }),
         )
     }
@@ -160,6 +160,7 @@ impl Contract {
             ("position: refunded + inflight + due > contributed", sums.position_overpay, 0),
             ("position: claimed > entitled", sums.claim_overpay, 0),
             ("launch fee paid + inflight > due", l.launch_fee_paid + l.launch_fee_inflight, l.launch_fee_due),
+            ("lp tokens sent + inflight > bucket", l.lp_tokens_sent + l.lp_tokens_inflight, ch.derived.n_lp),
             ("stream drawn + inflight > total", l.stream_drawn + l.stream_inflight, l.stream_total),
             ("relay fee paid + inflight > collected", l.relay_fee_paid + l.relay_fee_inflight, l.relay_fee_total),
         ]);
@@ -185,7 +186,12 @@ struct PositionSums {
 }
 
 fn sums_buckets(l: &Ledger) -> Buckets {
-    Buckets { launch_fee_due: l.launch_fee_due, lp_seed_due: l.lp_seed_due, stream_total: l.stream_total, excess_pool: l.excess_pool }
+    Buckets {
+        launch_fee_due: l.launch_fee_due,
+        lp_seed_due: l.lp_seed_due + l.lp_seed_inflight + l.lp_seed_sent,
+        stream_total: l.stream_total,
+        excess_pool: l.excess_pool,
+    }
 }
 
 impl Contract {

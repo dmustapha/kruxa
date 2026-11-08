@@ -10,7 +10,7 @@ Written by workstream I from `contracts/core/src/*.rs` on main (the section was 
 ### Emitted today
 | Event | Data fields | When |
 |---|---|---|
-| `charter_created` | `launch_id, creator, symbol, charter_hash` | `create_trial` accepted, token creation started |
+| `charter_created` | `launch_id, creator, symbol, name, charter_hash, soft_cap, min_funders, stream_days, total_supply, payout_recipient, token_decimals` | `create_trial` accepted, token creation started. `payout_recipient` equals the Charter `stream_recipient` (D-2), `token_decimals` is the rule-set decimals (6), `total_supply` is `derived.n_total` in base units |
 | `trial_opened` | `launch_id, opens_at, commit_end, walk_end` | token created, trial open |
 | `contributed` | `launch_id, holder, net, relay_fee, custody ("Native"/"Intents"), total_active, funders, book_hash` | a commit landed; `total_active`, `funders`, `book_hash` are the launch totals after it |
 | `walked` | `launch_id, holder, amount, total_active, funders, book_hash` | walk (exit) accepted; totals after it |
@@ -32,21 +32,19 @@ Written by workstream I from `contracts/core/src/*.rs` on main (the section was 
 | `global_cap_lowered` | `value` | instant lower |
 | `global_cap_queued` / `global_cap_applied` | `value, effective_at` / `value` | timelocked raise |
 | `launch_cap_queued` / `launch_cap_applied` | `value, effective_at` / `value` | timelocked raise |
+| `beta_opened` | `by` | owner flipped the one-way creator gate (D-1) |
+| `market_set` | `market` | owner named the market account |
+| `market_handoff` | `launch_id, market, lp_seed, lp_tokens` | `open_market` debited the seed and the LP bucket and sent the legs |
+| `market_leg_resolved` | `launch_id, leg ("Seed"/"Token"), amount, used, unused` | a leg answered; `unused` is re-credited |
+| `market_opened` | `launch_id, lp_seed, lp_tokens, market` | both legs fully accepted |
+| `genesis_relayer_set` | `account` | owner named the genesis relayer |
+| `genesis_paused` / `genesis_resumed` | `by` / none | genesis pause |
+| `genesis_committed` | `launch_id, g_pub, mint, merkle_root, genesis_spec_hash, leaf_count, max_total_claim, mode ("F1"/"F0")` | the Merkle root completed (hex values are 64 chars). Supersedes the earlier proposal (no network or path fields: the network follows from the profile and is inside the spec) |
+| `genesis_confirmed` | `launch_id, mint, sigs[], slot, ceremony_hash` | relayer confirmed (a signed claim, audited by verify.sh) |
+| `genesis_aborted` | `launch_id, by, reason` | aborted before confirm |
+| `attest_log` | `launch_id, attestation_hash` | Verdict Rail attestation hash appended |
 
-### Requested additions (not emitted yet; the indexer reads them when present and shows `null`/`unknown` otherwise)
-| Event | Extra fields | Why |
-|---|---|---|
-| `charter_created` | `name, soft_cap, min_funders, stream_days, total_supply, payout_recipient` (alias of Charter `stream_recipient`), `token_decimals` | feed and detail cards show the name; verdict margin needs the soft cap and minimum backers; the stream meter needs `stream_days`; market cap needs `total_supply`. `payout_recipient` is Charter `stream_recipient` |
-| `pool_opened` (market) | `total_supply` | market cap without an RPC view |
-
-### Proposed, not emitted by any contract yet (genesis progress; the indexer accepts them from the core account)
-| Event | Data fields |
-|---|---|
-| `genesis_committed` | `launch_id, network, path ("F0"/"F1"), spec_hash` |
-| `genesis_confirmed` | `launch_id, mint, tx_create, tx_authority, distributor, root, mint_authority (null = revoked), freeze_authority, verified_checks[]` |
-| `external_pool` | `launch_id, venue ("meteora"), pool, url` (only when verified on chain) |
-
-Until these exist the API reports genesis `stage:"pending"` after a PASS, with every other genesis fact `null` or `"unknown"`.
+`external_pool` is still proposed and not emitted by core. Until `genesis_confirmed` exists for a launch the API should report genesis `stage:"pending"`.
 <!-- END CORE EVENTS -->
 
 <!-- BEGIN MARKET EVENTS (owner: workstream M) -->

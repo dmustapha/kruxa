@@ -22,9 +22,17 @@ fn math<T>(r: Result<T, kruxa_math::MathError>) -> T {
 impl Contract {
     /// Creator attaches `required_deposit` (position-storage bond + factory deposit). Everything above the factory deposit is the bond.
     #[payable]
-    pub fn create_trial(&mut self, params: TrialParams, stream_recipient: Option<AccountId>) -> Promise {
+    pub fn create_trial(
+        &mut self,
+        params: TrialParams,
+        stream_recipient: Option<AccountId>,
+        genesis: Option<crate::genesis::GenesisPlanInput>,
+    ) -> Promise {
         self.require_live();
         let creator = env::predecessor_account_id();
+        if self.cfg.creator_gate && creator != self.cfg.owner {
+            fail(RuleCode::RCreatorGate, "creation is limited to the owner until open_beta");
+        }
         if self.active_by_creator.contains_key(&creator) {
             fail(RuleCode::RActiveTrial, "one active trial per account");
         }
@@ -45,10 +53,12 @@ impl Contract {
         let opens_at = now + math(secs_to_ns(params.open_delay_secs).ok_or(kruxa_math::MathError::Overflow));
         let commit_end = opens_at + math(secs_to_ns(params.commit_secs).ok_or(kruxa_math::MathError::Overflow));
         let walk_end = commit_end + math(secs_to_ns(params.tail_secs).ok_or(kruxa_math::MathError::Overflow));
+        let plan = crate::genesis::plan_from_input(genesis);
+        let stream_recipient_out = stream_recipient.unwrap_or_else(|| creator.clone());
         let provider = FactoryPrimitives { factory: self.cfg.factory.clone() };
         let charter = Charter {
             launch_id: id,
-            stream_recipient: stream_recipient.unwrap_or_else(|| creator.clone()),
+            stream_recipient: stream_recipient_out.clone(),
             creator: creator.clone(),
             created_at: now,
             derived: derived.clone(),
@@ -57,6 +67,7 @@ impl Contract {
             commit_end,
             walk_end,
             route: provider.route(),
+            genesis: plan,
             params: params.clone(),
         };
         let charter_hash = env::sha256_array(near_sdk::borsh::to_vec(&charter).expect("charter serializes"));
@@ -77,6 +88,7 @@ impl Contract {
             book_hash: [0; 32],
             ledger: Ledger::default(),
             settlement: None,
+            genesis: GenesisState::default(),
         };
         self.charters.insert(id, charter);
         self.states.insert(id, state);
@@ -84,7 +96,10 @@ impl Contract {
         self.symbols.insert(params.symbol.clone());
         emit(
             "charter_created",
-            json!({ "launch_id": id.to_string(), "creator": creator, "symbol": params.symbol, "charter_hash": kruxa_logic::hex(&charter_hash) }),
+            json!({ "launch_id": id.to_string(), "creator": creator, "symbol": params.symbol, "charter_hash": kruxa_logic::hex(&charter_hash),
+                    "soft_cap": params.soft_cap.to_string(), "min_funders": params.min_funders, "stream_days": params.stream_days,
+                    "payout_recipient": stream_recipient_out, "token_decimals": self.cfg.rules.decimals,
+                    "name": params.name, "total_supply": derived.n_total.to_string() }),
         );
         provider
             .create(&params, derived.n_total, &env::current_account_id(), self.cfg.factory_deposit)

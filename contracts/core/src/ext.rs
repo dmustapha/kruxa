@@ -8,6 +8,7 @@ use near_sdk::{ext_contract, AccountId};
 pub trait ExtFt {
     fn ft_transfer(&mut self, receiver_id: AccountId, amount: U128, memo: Option<String>);
     fn ft_balance_of(&self, account_id: AccountId) -> U128;
+    fn ft_transfer_call(&mut self, receiver_id: AccountId, amount: U128, memo: Option<String>, msg: String);
 }
 
 /// intents.near surface: NEP-245 transfer, ft_withdraw to native, and execute_intents for S4.

@@ -268,7 +268,7 @@ impl Contract {
         Self::ext(env::current_account_id()).with_static_gas(GAS_CB).on_payout(op)
     }
 
-    fn require_buckets_ready(&self, st: &LaunchState) {
+    pub(crate) fn require_buckets_ready(&self, st: &LaunchState) {
         if st.status != Status::Passed || st.positions_unsettled != 0 || !st.residue_swept {
             fail(RuleCode::RNotClear, "needs Passed, every position settled and sweep_residue done");
         }
@@ -277,7 +277,13 @@ impl Contract {
     /// Native USDC that belongs to the fee and stream buckets (the LP bucket stays untouched).
     fn native_free(l: &Ledger) -> u128 {
         let held = l.spent_native + l.consolidated;
-        let reserved = l.lp_seed_due + l.launch_fee_paid + l.launch_fee_inflight + l.stream_drawn + l.stream_inflight;
+        let reserved = l.lp_seed_due
+            + l.lp_seed_inflight
+            + l.lp_seed_sent
+            + l.launch_fee_paid
+            + l.launch_fee_inflight
+            + l.stream_drawn
+            + l.stream_inflight;
         held.saturating_sub(reserved)
     }
 

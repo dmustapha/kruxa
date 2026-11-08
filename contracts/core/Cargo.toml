@@ -4,6 +4,8 @@ version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 publish.workspace = true
+# NEP-330 needs a non-empty value; the repo has no remote yet (DC-G). PLACEHOLDER until publication.
+repository = "https://example.invalid/kruxa-pending-publication"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
@@ -17,12 +19,13 @@ s4-fallback = []
 near-sdk = { workspace = true }
 kruxa-math = { path = "../../crates/kruxa-math" }
 kruxa-logic = { path = "../../crates/kruxa-logic" }
+base64 = { version = "0.22", default-features = false, features = ["alloc"] }
 
 [dev-dependencies]
 near-sdk = { workspace = true, features = ["unit-testing"] }
 
 [package.metadata.near.reproducible_build]
-image = "sourcescan/cargo-near:0.23.0-rust-1.95.0"
-image_digest = ""
+image = "sourcescan/cargo-near:0.23.0-rust-1.99.1"
+image_digest = "sha256:8013f039e8005627f10ae66b5519d1a6eeeed7d7aef4b5067d5e9a86c4302fcc"
 passed_env = []
-container_build_command = ["cargo", "near", "build", "non-reproducible-wasm", "--locked"]
+container_build_command = ["cargo", "near", "build", "non-reproducible-wasm", "--locked", "--no-abi"]

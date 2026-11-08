@@ -5,6 +5,7 @@
 
 pub mod book;
 pub mod controls;
+pub mod genesis;
 pub mod ledger;
 pub mod rules;
 pub mod settle;

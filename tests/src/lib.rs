@@ -1,4 +1,5 @@
 //! Sandbox harness: deploys core + mock USDC + mock intents + mock factory, and wraps the calls the tests repeat.
+use base64::Engine as _;
 use ed25519_dalek::{Signer, SigningKey};
 use kruxa_logic::{hex, TrialParams};
 use near_workspaces::network::Sandbox;
@@ -92,6 +93,20 @@ impl SolHolder {
 
 impl Env {
     pub async fn new() -> anyhow::Result<Env> {
+        Self::new_with_profile("demo").await
+    }
+
+    /// Same stack with another core profile ("demo" = demo clock, "testnet" and "mainnet" = ladder rules; only "mainnet" starts with the creator gate closed).
+    pub async fn new_with_profile(profile: &str) -> anyhow::Result<Env> {
+        Self::build(profile, false).await
+    }
+
+    /// W1-DC-8: the same stack, but the Verifier is the REAL `intents.near` wasm (`scripts/fetch-intents-wasm.sh` puts it in fixtures/).
+    pub async fn new_real_intents() -> anyhow::Result<Env> {
+        Self::build("demo", true).await
+    }
+
+    async fn build(profile: &str, real_intents: bool) -> anyhow::Result<Env> {
         let worker = near_workspaces::sandbox().await?;
         let root = worker.root_account()?;
         let owner = funded(&root, "owner").await?;
@@ -101,13 +116,23 @@ impl Env {
         let relay_fees = funded(&root, "relayfees").await?;
         let usdc = deploy_at(&root, "usdc", wasm("mock_ft")).await?;
         usdc.call("new").args_json(json!({ "owner_id": owner.id(), "total_supply": "0" })).transact().await?.into_result()?;
-        let intents = deploy_at(&root, "intents", wasm("mock_intents")).await?;
-        intents.call("new").transact().await?.into_result()?;
+        let intents = if real_intents {
+            let code = std::fs::read(format!("{}/../fixtures/intents_near.wasm", env!("CARGO_MANIFEST_DIR")))
+                .expect("fixtures/intents_near.wasm missing: run scripts/fetch-intents-wasm.sh");
+            let c = deploy_at(&root, "intents", code).await?;
+            let cfg = json!({ "wnear_id": "wrap.test.near", "fees": { "fee": 0, "fee_collector": owner.id() }, "roles": { "super_admins": [owner.id()], "grantees": { "PauseManager": [owner.id()] } } });
+            c.call("new").args_json(json!({ "config": cfg })).transact().await?.into_result()?;
+            c
+        } else {
+            let c = deploy_at(&root, "intents", wasm("mock_intents")).await?;
+            c.call("new").transact().await?.into_result()?;
+            c
+        };
         let factory = deploy_at(&root, "factory", wasm("mock_factory")).await?;
         factory.call("new").transact().await?.into_result()?;
         let core = deploy_at(&root, "core", wasm("kruxa_core")).await?;
         core.call("new")
-            .args_json(json!({ "owner": owner.id(), "guardian": guardian.id(), "treasury": treasury.id(), "relay_fees": relay_fees.id(), "usdc": usdc.id(), "intents": intents.id(), "factory": factory.id(), "profile": "demo" }))
+            .args_json(json!({ "owner": owner.id(), "guardian": guardian.id(), "treasury": treasury.id(), "relay_fees": relay_fees.id(), "usdc": usdc.id(), "intents": intents.id(), "factory": factory.id(), "profile": profile }))
             .transact()
             .await?
             .into_result()?;
@@ -191,6 +216,13 @@ impl Env {
         Ok(())
     }
 
+    /// Task 2.6: with BENCH=1 every harness call prints `BENCH <method> <tgas>` (total gas burnt over all receipts of the call).
+    fn bench(&self, label: &str, r: &ExecutionFinalResult) {
+        if std::env::var("BENCH").is_ok() {
+            println!("BENCH {} {:.1}", label, r.total_gas_burnt.as_gas() as f64 / 1e12);
+        }
+    }
+
     /// Keeps the contract's events from a finished call so a test can replay them (P-RECOMPUTE).
     fn record(&self, r: &ExecutionFinalResult) {
         let mut seen = self.events.borrow_mut();
@@ -229,6 +261,11 @@ impl Env {
 
     /// Same as `create_launch`, for any creator account (one active trial per account, so a second launch needs a second creator).
     pub async fn create_launch_as(&self, creator: &Account, p: &TrialParams) -> anyhow::Result<u64> {
+        self.create_launch_to(creator, p, None).await
+    }
+
+    /// Same, with an explicit payout recipient (`stream_recipient` in the Charter, named `payout_recipient` in the views).
+    pub async fn create_launch_to(&self, creator: &Account, p: &TrialParams, recipient: Option<&AccountId>) -> anyhow::Result<u64> {
         let required: String = self.core.view("required_deposit").args_json(json!({ "params": p })).await?.json()?;
         let supply = (p.total_supply_whole as u128) * USDC;
         let token = self
@@ -249,11 +286,12 @@ impl Env {
         let id = self.next_id.get();
         let res = creator
             .call(self.core.id(), "create_trial")
-            .args_json(json!({ "params": p, "stream_recipient": null }))
+            .args_json(json!({ "params": p, "stream_recipient": recipient }))
             .deposit(NearToken::from_yoctonear(required.parse()?))
             .gas(GAS)
             .transact()
             .await?;
+        self.record(&res);
         if std::env::var("KRUXA_DEBUG").is_ok() {
             eprintln!("create_trial logs: {:#?}\nfailures: {:#?}", res.logs(), res.failures());
         }
@@ -261,6 +299,71 @@ impl Env {
         self.next_id.set(id + 1);
         self.assert_invariants().await;
         Ok(id)
+    }
+
+    /// Deploys the stub market, registers it on USDC and calls `core.set_market` as the owner. Register it on each launch token separately.
+    pub async fn deploy_stub_market(&self) -> anyhow::Result<Contract> {
+        let market = deploy_at(&self.worker.root_account()?, "market", wasm("mock_market")).await?;
+        market.call("new").transact().await?.into_result()?;
+        self.register(&self.usdc, market.id()).await?;
+        self.owner.call(self.core.id(), "set_market").args_json(json!({ "account": market.id() })).transact().await?.into_result()?;
+        Ok(market)
+    }
+
+    /// Deploys the REAL market wasm (`scripts/market-build.sh`), registers it on USDC and names it on core.
+    pub async fn deploy_real_market(&self) -> anyhow::Result<Contract> {
+        let market = deploy_at(&self.worker.root_account()?, "market", wasm("kruxa_market_contract")).await?;
+        let args = json!({ "owner": self.owner.id(), "guardian": self.guardian.id(), "treasury": self.treasury.id(), "usdc": self.usdc.id(), "core": self.core.id() });
+        market.call("new").args_json(args).transact().await?.into_result()?;
+        self.register(&self.usdc, market.id()).await?;
+        self.owner.call(self.core.id(), "set_market").args_json(json!({ "account": market.id() })).transact().await?.into_result()?;
+        Ok(market)
+    }
+
+    /// Real Verifier only: puts `amount` of mock USDC into `who`'s Intents account through the normal NEP-141 deposit (`msg` = the account).
+    pub async fn deposit_real_intents(&self, who: &str, amount: u128) -> anyhow::Result<()> {
+        self.usdc
+            .call("mint")
+            .args_json(json!({ "account_id": self.owner.id(), "amount": amount.to_string() }))
+            .transact()
+            .await?
+            .into_result()?;
+        self.owner
+            .call(self.usdc.id(), "ft_transfer_call")
+            .args_json(json!({ "receiver_id": self.intents.id(), "amount": amount.to_string(), "msg": who }))
+            .deposit(NearToken::from_yoctonear(1))
+            .gas(GAS)
+            .transact()
+            .await?
+            .into_result()?;
+        Ok(())
+    }
+
+    /// S3 with a REAL raw_ed25519 signature: the holder signs the payload string; anyone submits it to `execute_intents`.
+    pub async fn s3_real(
+        &self,
+        h: &SolHolder,
+        token: &AccountId,
+        amount: u128,
+        msg: Option<String>,
+        nonce_seed: u8,
+    ) -> ExecutionFinalResult {
+        let mut intent =
+            json!({ "intent": "transfer", "receiver_id": self.core.id(), "tokens": { format!("nep141:{}", token): amount.to_string() } });
+        if let Some(m) = msg {
+            intent["msg"] = json!(m);
+            intent["min_gas"] = json!("50000000000000");
+        }
+        let nonce = base64::engine::general_purpose::STANDARD.encode([nonce_seed; 32]);
+        let payload = json!({ "signer_id": h.hex, "verifying_contract": self.intents.id(), "deadline": "2099-01-01T00:00:00.000Z", "nonce": nonce, "intents": [intent] }).to_string();
+        let signed = json!({ "standard": "raw_ed25519", "payload": payload, "public_key": format!("ed25519:{}", h.b58), "signature": format!("ed25519:{}", h.sign(&payload)) });
+        self.worker_call(&self.owner, self.intents.id(), "execute_intents", json!({ "signed": [signed] })).await
+    }
+
+    /// Rule codes `preview_charter` returns for `p` as seen from `creator`.
+    pub async fn preview_codes(&self, p: &TrialParams, creator: &AccountId) -> Vec<String> {
+        let r = self.view("preview_charter", json!({ "params": p, "creator": creator })).await;
+        r["violations"].as_array().unwrap().iter().map(|x| x["code"].as_str().unwrap().to_string()).collect()
     }
 
     pub fn token_id(&self, symbol: &str) -> AccountId {
@@ -300,11 +403,13 @@ impl Env {
 
     /// Fast-forwards the sandbox until the launch reaches `phase` (Open | Closing | Ready).
     pub async fn advance_to(&self, id: u64, phase: &str) {
-        for _ in 0..400 {
+        // The Closing window is only the walk tail wide; a 100-block step can jump over it when the machine is loaded.
+        let step = if phase == "Closing" { 10 } else { 100 };
+        for _ in 0..1_000 {
             if self.state(id).await["phase"] == phase {
                 return;
             }
-            self.worker.fast_forward(100).await.unwrap();
+            self.worker.fast_forward(step).await.unwrap();
         }
         panic!("launch {id} never reached {phase}");
     }
@@ -320,6 +425,7 @@ impl Env {
             .await
             .unwrap();
         self.record(&r);
+        self.bench("ft_on_transfer(commit_native, incl. usdc ft_transfer_call)", &r);
         self.assert_invariants().await;
         r
     }
@@ -351,6 +457,7 @@ impl Env {
     pub async fn worker_call(&self, who: &Account, to: &AccountId, method: &str, args: Value) -> ExecutionFinalResult {
         let r = who.call(to, method).args_json(args).gas(GAS).transact().await.unwrap();
         self.record(&r);
+        self.bench(method, &r);
         self.assert_invariants().await;
         r
     }
@@ -358,6 +465,7 @@ impl Env {
     pub async fn call(&self, who: &Account, method: &str, args: Value, deposit: NearToken) -> ExecutionFinalResult {
         let r = who.call(self.core.id(), method).args_json(args).deposit(deposit).gas(GAS).transact().await.unwrap();
         self.record(&r);
+        self.bench(method, &r);
         self.assert_invariants().await;
         r
     }

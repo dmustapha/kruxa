@@ -1673,6 +1673,7 @@ dependencies = [
 name = "kruxa-core"
 version = "0.1.0"
 dependencies = [
+ "base64 0.22.1",
  "kruxa-logic",
  "kruxa-math",
  "near-sdk",
@@ -1737,6 +1738,8 @@ name = "kruxa-tests"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "base64 0.22.1",
+ "borsh",
  "bs58 0.5.1",
  "ed25519-dalek",
  "kruxa-logic",
@@ -1861,6 +1864,13 @@ dependencies = [
 
 [[package]]
 name = "mock-intents"
+version = "0.1.0"
+dependencies = [
+ "near-sdk",
+]
+
+[[package]]
+name = "mock-market"
 version = "0.1.0"
 dependencies = [
  "near-sdk",
