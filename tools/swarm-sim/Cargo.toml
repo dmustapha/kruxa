@@ -1,0 +1,19 @@
+[package]
+name = "swarm-sim"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[lib]
+name = "swarm_sim"
+path = "src/lib.rs"
+
+[[bin]]
+name = "swarm-sim"
+path = "src/main.rs"
+
+[dependencies]
+kruxa-logic = { path = "../../crates/kruxa-logic" }
+kruxa-math = { path = "../../crates/kruxa-math" }
+serde_json = "1"
