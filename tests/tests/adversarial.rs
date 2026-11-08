@@ -141,8 +141,13 @@ async fn create_trial_rejects_bad_params_deposit_duplicates_and_recovers_from_fa
         }
     };
     let req: u128 = required.parse()?;
+    let before = env.creator.view_account().await?.balance.as_yoctonear();
     assert!(has_code(&attempt(p.clone(), req - 1).await, "R_DEPOSIT"));
     assert!(has_code(&attempt(TrialParams { soft_cap: 100 * USDC, ..p.clone() }, req).await, "R_SOFT_CAP"));
+    // DC-3: a refused create_trial returns the attached deposit; the creator is out gas only (two refused calls, far below one deposit)
+    let spent = before - env.creator.view_account().await?.balance.as_yoctonear();
+    assert!(req > NearToken::from_millinear(400).as_yoctonear(), "the deposit under test is not trivial: {req}");
+    assert!(spent < req / 4, "two refused calls cost {spent} yocto, the {req} deposit must have come back");
     assert!(has_code(&attempt(TrialParams { symbol: "good".into(), ..p.clone() }, req).await, "R_SYMBOL"));
     let mut greedy = p.clone();
     greedy.fees.total_fee_bps = 200;
