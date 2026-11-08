@@ -20,3 +20,6 @@ verify-claims:
 
 judge:
 	./scripts/judge-run.sh
+
+# One fragment per workstream (PLAN C3.3): make/<ws>.mk
+-include make/*.mk
