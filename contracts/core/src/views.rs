@@ -124,7 +124,7 @@ impl Contract {
     /// Exactly what create_trial will demand: position-storage bond for the validated max_holders plus the factory deposit.
     pub fn required_deposit(&self, params: TrialParams) -> U128 {
         let d = validate_params(&params, &self.cfg.rules, self.cfg.global_cap, true).unwrap_or_else(|v| env::panic_str(&v.message()));
-        U128(bond_required(d.max_holders) + self.cfg.factory_deposit)
+        U128(bond_required(d.max_holders) + self.cfg.factory_deposit + crate::TOKEN_REG_YOCTO)
     }
 
     /// Ledger identities L1, L3, L4 and I2 to I5 (S1-B 3.4). L3, I2 and I5 walk the position records, which are bounded by the holder cap.

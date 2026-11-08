@@ -37,7 +37,7 @@ impl Contract {
         let deposit = validate_params(&params, &self.cfg.rules, headroom, is_owner)
             .ok()
             .filter(|_| violations.is_empty())
-            .map(|d| (bond_required(d.max_holders) + self.cfg.factory_deposit).to_string());
+            .map(|d| (bond_required(d.max_holders) + self.cfg.factory_deposit + crate::TOKEN_REG_YOCTO).to_string());
         json!({ "ok": violations.is_empty(), "violations": violations, "required_deposit": deposit })
     }
 

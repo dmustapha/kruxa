@@ -36,7 +36,6 @@ async fn passed_launch_with(symbol: &str, real: bool) -> anyhow::Result<(Env, u6
     env.call(&env.creator, "sweep_residue", lid(id), ZERO).await.into_result()?;
     env.call(&env.creator, "pay_launch_fee", lid(id), ZERO).await.into_result()?;
     let market = if real { env.deploy_real_market().await? } else { env.deploy_stub_market().await? };
-    env.register_on_token(symbol, market.id()).await?;
     Ok((env, id, market))
 }
 
@@ -122,7 +121,6 @@ async fn open_market_is_refused_until_the_buckets_are_ready() -> anyhow::Result<
         env.commit_native(&u, id, 30 * USDC, None).await.into_result()?;
     }
     let market = env.deploy_stub_market().await?;
-    env.register_on_token("HANC", market.id()).await?;
     let early = env.call(&env.creator, "open_market", lid(id), ZERO).await;
     assert!(has_code(&early, "R_NOT_CLEAR"), "an Open launch has no seed: {:?}", early.failures());
     env.advance_to(id, "Ready").await;
@@ -197,4 +195,48 @@ async fn open_market_against_the_real_market_opens_the_pool_and_a_buy_works() ->
     assert!(res.is_success(), "{:?}", res.failures());
     assert!(env.token_balance("HANR", buyer.id()).await > 0, "the buyer received launch tokens");
     Ok(())
+}
+
+async fn storage_registered(env: &Env, symbol: &str, who: &near_workspaces::AccountId) -> bool {
+    let v: Value = env.worker.view(&env.token_id(symbol), "storage_balance_of").args_json(json!({ "account_id": who })).await.unwrap().json().unwrap();
+    !v.is_null()
+}
+
+/// A REAL factory token refuses `ft_transfer` to an account that is not registered (NEP-145, probed on testnet, W1-DC-12), so core must
+/// register the market on each launch token itself. The mock token enforces the same rule; this test does not pre-register the market.
+#[tokio::test]
+async fn open_market_registers_the_market_on_the_launch_token_itself() -> anyhow::Result<()> {
+    let (env, id, market) = passed_launch("REGA").await?;
+    assert!(!storage_registered(&env, "REGA", market.id()).await, "the market starts unregistered on the new token");
+    let r = env.call(&env.creator, "open_market", lid(id), ZERO).await;
+    assert_eq!(r.json::<u8>()?, 2);
+    assert!(storage_registered(&env, "REGA", market.id()).await, "core registered the market");
+    assert_eq!(env.view("get_market_link", lid(id)).await["opened"], true);
+    let n_lp = num(&env.view("get_charter", lid(id)).await["derived"], "n_lp");
+    assert_eq!(env.token_balance("REGA", market.id()).await, n_lp);
+    Ok(())
+}
+
+#[tokio::test]
+async fn the_creator_deposit_includes_the_registration_reserve_and_a_failed_launch_gets_it_back() -> anyhow::Result<()> {
+    let env = Env::new().await?;
+    let p = params_for("REGB");
+    let id = env.create_launch(&p).await?;
+    let required: String = env.core.view("required_deposit").args_json(json!({ "params": p })).await?.json()?;
+    let bond = num(&env.state(id).await, "bond");
+    let (factory, reg) = (60_000_000_000_000_000_000_000u128, 1_250_000_000_000_000_000_000u128);
+    assert_eq!(required.parse::<u128>()? - bond, factory + reg, "deposit = bond + factory deposit + registration reserve");
+    env.call(&env.creator, "cancel_trial", lid(id), ZERO).await.into_result()?;
+    env.call(&env.creator, "dissolve", lid(id), ZERO).await.into_result()?;
+    let r = env.call(&env.creator, "reclaim_bond", lid(id), ZERO).await;
+    let paid = r.logs().iter().filter_map(|l| l.strip_prefix("EVENT_JSON:")).filter_map(|j| serde_json::from_str::<Value>(j).ok()).find(|e| e["event"] == "bond_reclaimed").map(|e| num(&e["data"][0], "amount"));
+    assert_eq!(paid, Some(bond + reg), "the unused registration reserve comes back with the bond");
+    Ok(())
+}
+
+fn params_for(symbol: &str) -> TrialParams {
+    let mut p = TrialParams::example(symbol);
+    p.commit_secs = 600;
+    p.tail_secs = 60;
+    p
 }

@@ -43,7 +43,7 @@ impl Contract {
         let derived =
             validate_params(&params, &self.cfg.rules, headroom, creator == self.cfg.owner).unwrap_or_else(|v| env::panic_str(&v.message()));
         let attached = env::attached_deposit().as_yoctonear();
-        let need = bond_required(derived.max_holders) + self.cfg.factory_deposit;
+        let need = bond_required(derived.max_holders) + self.cfg.factory_deposit + crate::TOKEN_REG_YOCTO;
         if attached < need {
             fail(RuleCode::RDeposit, &format!("attach at least {} yocto, got {}", need, attached));
         }
@@ -83,7 +83,7 @@ impl Contract {
             positions_live: 0,
             positions_unsettled: 0,
             residue_swept: false,
-            bond: attached - self.cfg.factory_deposit,
+            bond: attached - self.cfg.factory_deposit - crate::TOKEN_REG_YOCTO,
             bond_reclaimed: false,
             book_hash: [0; 32],
             ledger: Ledger::default(),
@@ -289,7 +289,8 @@ impl Contract {
             fail(RuleCode::RNotClear, "bond is not reclaimable yet");
         }
         st.bond_reclaimed = true;
-        let amount = if st.status == Status::CreationFailed { st.bond + self.cfg.factory_deposit } else { st.bond };
+        let reg = if st.status == Status::Passed { 0 } else { crate::TOKEN_REG_YOCTO };
+        let amount = st.bond + reg + if st.status == Status::CreationFailed { self.cfg.factory_deposit } else { 0 };
         self.save_state(launch_id.0, st);
         emit("bond_reclaimed", json!({ "launch_id": launch_id.0.to_string(), "amount": amount.to_string() }));
         Promise::new(ch.creator).transfer(near_sdk::NearToken::from_yoctonear(amount))
