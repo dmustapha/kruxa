@@ -1,3 +1,4 @@
+'use client';
 // Orchestrates the token page. Every section loads independently; the chart, trades and header stay live over SSE.
 // Desktop (1024 px and up): header, safety tiles, then chart plus tabs on the left and the order panel and DexScreener-style rail on the
 // right. Mobile: header, chart, activity, segmented tabs (Trades, Holders, Info, Verify) and a sticky Buy / Sell bar that opens a sheet.

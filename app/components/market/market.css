@@ -240,3 +240,5 @@ main:has(.mkt-root) { max-width: 1240px; padding-top: 20px; }
 .mkt-sheet .mkt-panel { border: 0; padding: 0; background: transparent; }
 @media (prefers-reduced-motion: no-preference) { .mkt-sheet[open] { animation: mkt-up .2s ease-out; } }
 @keyframes mkt-up { from { transform: translateY(24px); opacity: 0; } }
+
+.mkt-stats .mkt-stat-note { font: 400 11px ui-monospace, Menlo, monospace; }

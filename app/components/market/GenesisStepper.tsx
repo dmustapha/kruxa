@@ -1,6 +1,6 @@
 import type { GenesisStep, StepState } from '@/lib/market/genesis';
 
-const MARK: Record<StepState, { glyph: string; word: string }> = { done: { glyph: '✓', word: 'Done' }, current: { glyph: '→', word: 'In progress' }, pending: { glyph: '○', word: 'Waiting' }, unknown: { glyph: '?', word: 'Unknown' }, skipped: { glyph: '–', word: 'Skipped' } };
+const MARK: Record<StepState, { glyph: string; word: string }> = { done: { glyph: '✓', word: 'Done' }, current: { glyph: '→', word: 'In progress' }, pending: { glyph: '○', word: 'Waiting' }, unknown: { glyph: '?', word: 'Unknown' }, skipped: { glyph: '-', word: 'Skipped' } };
 
 /** Token-page variant: NEAR verdict to Solana mint to NEAR pool. An ordered list; the current step carries aria-current. */
 export function GenesisStepper({ steps, receiptUrl }: { steps: GenesisStep[]; receiptUrl?(receipt: string): string }) {

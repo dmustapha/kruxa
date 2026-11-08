@@ -66,11 +66,10 @@ export function PriceChart({ candles, interval, onInterval, stream, onRetry, sym
         rightPriceScale: { borderColor: p.line, scaleMargins: { top: 0.08, bottom: 0.25 } },
         timeScale: { borderColor: p.line, timeVisible: true, secondsVisible: false },
         crosshair: { mode: 1 },
-        localization: { priceFormatter: (x: number) => fmtPrice(x) },
       });
       const s = c.addSeries(CandlestickSeries, {
         upColor: p.up, downColor: p.down, borderUpColor: p.up, borderDownColor: p.down, wickUpColor: p.up, wickDownColor: p.down,
-        priceFormat: { type: 'custom', formatter: (x: number) => fmtPrice(x).replace('$', ''), minMove: 1e-10 },
+        priceFormat: { type: 'custom', formatter: (x: number) => (x <= 1e-12 ? '' : fmtPrice(x).replace('$', '')), minMove: 1e-10 },
       });
       const v = c.addSeries(HistogramSeries, { priceFormat: { type: 'volume' }, priceScaleId: '', color: withAlpha(p.muted, 0.35), lastValueVisible: false, priceLineVisible: false });
       v.priceScale().applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
@@ -96,8 +95,7 @@ export function PriceChart({ candles, interval, onInterval, stream, onRetry, sym
   useEffect(() => {
     if (!ready || !data || !price.current || !volume.current) return;
     const k = mode === 'mc' && supply ? supply : 1;
-    price.current.applyOptions({ priceFormat: { type: 'custom', formatter: (x: number) => (mode === 'mc' ? fmtCompact(x) : fmtPrice(x).replace('$', '')), minMove: mode === 'mc' ? 0.01 : 1e-10 } });
-    chart.current?.applyOptions({ localization: { priceFormatter: fmtAxis(mode) } });
+    price.current.applyOptions({ priceFormat: { type: 'custom', formatter: (x: number) => (x <= 1e-12 ? '' : mode === 'mc' ? fmtCompact(x) : fmtPrice(x).replace('$', '')), minMove: mode === 'mc' ? 0.01 : 1e-10 } });
     const toBar = (c: Candle) => ({ time: c.t as UTCTimestamp, open: c.o * k, high: c.h * k, low: c.l * k, close: c.c * k });
     const toVol = (c: Candle) => ({ time: c.t as UTCTimestamp, value: c.v, color: withAlpha(c.c >= c.o ? readPalette(host.current!).up : readPalette(host.current!).down, 0.4) });
     const key = `${interval}:${mode}:${data[0]?.t ?? 0}`;
