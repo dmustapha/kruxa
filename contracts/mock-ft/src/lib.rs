@@ -15,13 +15,16 @@ pub struct MockFt {
     balances: LookupMap<AccountId, u128>,
     registered: LookupMap<AccountId, bool>,
     total: u128,
+    /// Test hook (A-REENTRANCY-REFUND): when set, every `ft_transfer` also calls `(account, method, json args)` from this token,
+    /// so the call lands between the transfer and the caller's callback.
+    reenter: Option<(AccountId, String, String)>,
 }
 
 #[near]
 impl MockFt {
     #[init]
     pub fn new(owner_id: AccountId, total_supply: U128) -> Self {
-        let mut s = Self { balances: LookupMap::new(b"b"), registered: LookupMap::new(b"r"), total: total_supply.0 };
+        let mut s = Self { balances: LookupMap::new(b"b"), registered: LookupMap::new(b"r"), total: total_supply.0, reenter: None };
         s.balances.insert(owner_id.clone(), total_supply.0);
         s.registered.insert(owner_id, true);
         s
@@ -58,6 +61,10 @@ impl MockFt {
     pub fn ft_transfer(&mut self, receiver_id: AccountId, amount: U128, _memo: Option<String>) {
         assert_one_yocto();
         self.move_tokens(&env::predecessor_account_id(), &receiver_id, amount.0);
+        if let Some((account, method, args)) = self.reenter.clone() {
+            // Detached on purpose: its result must not become this transfer's result.
+            let _ = Promise::new(account).function_call(method, args.into_bytes(), NearToken::from_yoctonear(0), Gas::from_tgas(50));
+        }
     }
 
     #[payable]
@@ -103,6 +110,11 @@ impl MockFt {
 
 #[near]
 impl MockFt {
+    /// Test helper: make every later `ft_transfer` also call `method` on `account` with the JSON `args`. Empty method clears it.
+    pub fn set_reenter(&mut self, account: AccountId, method: String, args: String) {
+        self.reenter = if method.is_empty() { None } else { Some((account, method, args)) };
+    }
+
     /// Test helper: drop an account's registration, to make an outbound ft_transfer fail.
     pub fn unregister(&mut self, account_id: AccountId) {
         self.registered.insert(account_id, false);

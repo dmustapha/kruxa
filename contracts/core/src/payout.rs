@@ -49,10 +49,7 @@ impl Contract {
             self.settle_position_inner(&ch, &mut st, &holder);
             self.save_state(id, st);
         }
-        match self.pay_due(id, &holder) {
-            Some(p) => PromiseOrValue::Promise(p),
-            None => PromiseOrValue::Value(false),
-        }
+        PromiseOrValue::Value(self.pay_due(id, &holder))
     }
 
     /// Delivers sale tokens plus the vested part of the backer bonus to a NEAR holder. The holder must already be
@@ -284,13 +281,15 @@ impl Contract {
         held.saturating_sub(reserved)
     }
 
-    /// Debit first (due -> in_flight), then one outbound leg per custody. Each leg has its own callback.
-    pub(crate) fn pay_due(&mut self, id: u64, holder: &HolderId) -> Option<Promise> {
+    /// Debit first (due -> in_flight), then one outbound leg per custody. Each leg has its own callback, which re-credits on failure.
+    /// Returns whether anything was sent. The legs are scheduled and NOT joined into the return value: a joint promise cannot be
+    /// returned from a method (the runtime refuses it), which used to make every exit of a holder with both a native and an Intents leg fail.
+    pub(crate) fn pay_due(&mut self, id: u64, holder: &HolderId) -> bool {
         let key = (id, holder.clone());
-        let mut pos = self.positions.get(&key).cloned()?;
+        let Some(mut pos) = self.positions.get(&key).cloned() else { return false };
         let (dn, di) = (pos.due_native, pos.due_intents);
         if dn + di == 0 {
-            return None;
+            return false;
         }
         let mut st = self.state(id);
         pos.due_native = 0;
@@ -304,27 +303,22 @@ impl Contract {
         l.inflight_intents += di;
         self.positions.insert(key, pos);
         self.save_state(id, st);
-        let mut legs: Vec<Promise> = Vec::new();
         if let (true, HolderId::Near(account)) = (dn > 0, holder) {
             let op = PayoutOp { kind: PayoutKind::RefundNative, launch_id: id, holder: Some(holder.key()), amount: dn };
-            legs.push(
-                ext_ft::ext(self.cfg.usdc.clone())
-                    .with_attached_deposit(ONE_YOCTO)
-                    .with_static_gas(GAS_OUT)
-                    .ft_transfer(account.clone(), U128(dn), None)
-                    .then(self.callback(op)),
-            );
+            let _ = (ext_ft::ext(self.cfg.usdc.clone())
+                .with_attached_deposit(ONE_YOCTO)
+                .with_static_gas(GAS_OUT)
+                .ft_transfer(account.clone(), U128(dn), None)
+                .then(self.callback(op)),);
         }
         if di > 0 {
             let op = PayoutOp { kind: PayoutKind::RefundIntents, launch_id: id, holder: Some(holder.key()), amount: di };
-            legs.push(
-                ext_intents::ext(self.cfg.intents.clone())
-                    .with_attached_deposit(ONE_YOCTO)
-                    .with_static_gas(GAS_OUT)
-                    .mt_transfer(holder.intents_account(), self.cfg.usdc_token_id.clone(), U128(di), None, None)
-                    .then(self.callback(op)),
-            );
+            let _ = (ext_intents::ext(self.cfg.intents.clone())
+                .with_attached_deposit(ONE_YOCTO)
+                .with_static_gas(GAS_OUT)
+                .mt_transfer(holder.intents_account(), self.cfg.usdc_token_id.clone(), U128(di), None, None)
+                .then(self.callback(op)),);
         }
-        legs.into_iter().reduce(|a, b| a.and(b))
+        true
     }
 }

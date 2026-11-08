@@ -26,13 +26,19 @@ pub trait Usdc {
 #[derive(PanicOnDefault)]
 pub struct MockIntents {
     balances: LookupMap<(AccountId, String), u128>,
+    /// Test switch (W-REFUND-PARTIAL): while set, `mt_transfer` panics, like a Verifier that refuses one leg.
+    fail_transfers: bool,
 }
 
 #[near]
 impl MockIntents {
     #[init]
     pub fn new() -> Self {
-        Self { balances: LookupMap::new(b"b") }
+        Self { balances: LookupMap::new(b"b"), fail_transfers: false }
+    }
+
+    pub fn set_fail_transfers(&mut self, fail: bool) {
+        self.fail_transfers = fail;
     }
 
     /// Test helper: credit an internal balance (the harness sends the underlying USDC here separately).
@@ -55,6 +61,7 @@ impl MockIntents {
         _memo: Option<String>,
     ) {
         assert_one_yocto();
+        require!(!self.fail_transfers, "mt_transfer refused");
         self.mv(&env::predecessor_account_id(), &receiver_id, &token_id, amount.0);
     }
 
