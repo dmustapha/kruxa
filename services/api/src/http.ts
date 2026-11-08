@@ -102,7 +102,7 @@ function push(ctx: Ctx, ring: Pushed[], clients: Set<{ res: ServerResponse; laun
   let item: Pushed | null = null;
   if (c.type === "trade") {
     const r = one(ctx.store, "SELECT * FROM trades WHERE launch_id = ? AND receipt_id = ?", c.launchId, String(c.trade.receipt_id));
-    if (r) item = { id: c.seq, event: "trade", launchId: c.launchId, data: tradeJson(r) };
+    if (r) item = { id: c.seq, event: "trade", launchId: c.launchId, data: tradeJson(r, one(ctx.store, "SELECT creator, payout_recipient FROM launches WHERE launch_id = ?", c.launchId)) };
   } else if (c.type === "candle") {
     item = { id: c.seq, event: "candle", launchId: c.launchId, data: { launch_id: String(c.launchId), interval: "1m", ...candleJson(c.candle) } };
   } else {

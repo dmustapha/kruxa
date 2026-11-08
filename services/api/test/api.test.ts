@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { after, before, test } from "node:test";
-import { FIXTURE_CONTRACTS, generateFixtureBlocks } from "../../indexer/src/fixtures.ts";
+import { FIXTURE_CONTRACTS, FIXTURE_DAY_SECONDS, generateFixtureBlocks } from "../../indexer/src/fixtures.ts";
 import { Store } from "../../indexer/src/store.ts";
 import { asOf } from "../src/common.ts";
 import type { Ctx, Json } from "../src/common.ts";
@@ -16,7 +16,7 @@ const blocks = generateFixtureBlocks(7, 240);
 before(async () => {
   store = new Store(":memory:", { contracts: FIXTURE_CONTRACTS, network: "fixture" });
   for (const b of blocks) store.ingestBlock(b, "fixture");
-  const ctx: Ctx = { store, startedAt: 0, maxLagBlocks: 10, now: () => asOf(store).block_time ?? 0, tail: () => ({ headHeight: null, lastError: null }), dataSource: "fixture" };
+  const ctx: Ctx = { store, startedAt: 0, maxLagBlocks: 10, now: () => asOf(store).block_time ?? 0, tail: () => ({ headHeight: null, lastError: null }), dataSource: "fixture", daySeconds: FIXTURE_DAY_SECONDS };
   app = createApp(ctx);
   base = `http://127.0.0.1:${await app.listen(0)}`;
 });
@@ -39,16 +39,16 @@ test("health reports fixture status and a stable state hash", async () => {
 });
 
 test("launch feed: stages, search, filters, paging", async () => {
-  const all = (await get("/api/launches")).body;
+  const all = (await get("/api/launches?launch_type=trial")).body;
   assert.equal(all.source, "fixture");
   const stages = Object.fromEntries(all.items.map((l: Json) => [l.symbol, l.stage]));
   assert.deepEqual(stages, { ALPHA: "passed", BRAVO: "failed", CHARLIE: "new", DELTA: "passed" });
-  assert.equal((await get("/api/launches?stage=failed")).body.items[0].symbol, "BRAVO");
+  assert.equal((await get("/api/launches?stage=failed&launch_type=trial")).body.items[0].symbol, "BRAVO");
   assert.equal((await get("/api/launches?q=alp")).body.total, 1);
-  assert.equal((await get("/api/launches?has_market=true")).body.items.length, 1);
-  const p1 = (await get("/api/launches?limit=2")).body;
+  assert.equal((await get("/api/launches?has_market=true&launch_type=trial")).body.items.length, 1);
+  const p1 = (await get("/api/launches?limit=2&launch_type=trial")).body;
   assert.equal(p1.items.length, 2);
-  const p2 = (await get(`/api/launches?limit=2&cursor=${p1.next_cursor}`)).body;
+  const p2 = (await get(`/api/launches?limit=2&launch_type=trial&cursor=${p1.next_cursor}`)).body;
   assert.equal(p2.items.length, 2);
   assert.equal(p2.next_cursor, null);
   assert.equal((await get("/api/launches?stage=bogus")).status, 400);
@@ -166,17 +166,17 @@ test("SSE: a newly ingested trade arrives on the stream with a fixture label, an
 });
 
 test("phase and tab: exclusive, cover every launch, and the tab filter matches them", async () => {
-  const all = (await get("/api/launches")).body.items as Json[];
+  const all = (await get("/api/launches?launch_type=trial")).body.items as Json[];
   const phases = Object.fromEntries(all.map((l) => [l.symbol, [l.phase, l.tab]]));
   assert.deepEqual(phases, { ALPHA: ["TRADING", "trading"], BRAVO: ["DISSOLVED", "failed"], CHARLIE: ["OPEN", "live"], DELTA: ["PASS", "passed"] });
   const counts: Record<string, number> = {};
   for (const tab of ["live", "walk", "trading", "passed", "failed"]) {
-    const r = (await get(`/api/launches?tab=${tab}`)).body;
+    const r = (await get(`/api/launches?tab=${tab}&launch_type=trial`)).body;
     counts[tab] = r.total;
     assert.ok(r.items.every((l: Json) => l.tab === tab));
   }
   assert.deepEqual(counts, { live: 1, walk: 0, trading: 1, passed: 1, failed: 1 });
-  assert.equal((await get("/api/launches?tab=all")).body.total, 4);
+  assert.equal((await get("/api/launches?tab=all&launch_type=trial")).body.total, 4);
   assert.equal((await get("/api/launches?tab=nope")).status, 400);
 });
 
@@ -233,7 +233,7 @@ test("stats: honest aggregates that reconcile with the underlying rows", async (
   assert.equal(s.source, "fixture");
   assert.equal(s.launches.total, 4);
   assert.equal(s.launches.pass_rate_bps, 6666);
-  assert.equal(s.volume.trades, Number((store.db.prepare("SELECT COUNT(*) AS n FROM trades").get() as { n: number }).n));
+  assert.equal(s.volume.trades, Number((store.db.prepare("SELECT COUNT(*) AS n FROM trades WHERE launch_id < 1000000000").get() as { n: number }).n));
   const refunded = (await get("/api/portfolio/ivy.testnet")).body.positions[0].contributed;
   const jon = (await get("/api/portfolio/jon.testnet")).body.positions[0].contributed;
   assert.equal(s.committed.refunds_paid, (BigInt(refunded) + BigInt(jon)).toString());
@@ -244,19 +244,25 @@ test("stats: honest aggregates that reconcile with the underlying rows", async (
   assert.ok(typeof s.basis === "string" && s.since_block > 0);
 });
 
-test("ops-log: pause, freeze, cap and market events, newest first, paged", async () => {
+test("ops-log: pause, freeze, cap and market events, newest first, paged, with launcher scope", async () => {
   const log = (await get("/api/ops-log")).body;
-  const evs = log.items.map((i: Json) => i.event);
-  assert.deepEqual([...evs].sort(), ["global_cap_queued", "market_paused", "market_paused", "paused", "platform_withdrawn", "unpaused"]);
+  const evs = log.items.map((i: Json) => `${i.scope}:${i.event}`).sort();
+  assert.deepEqual(evs, ["core:global_cap_queued", "core:paused", "core:unpaused", "launcher:beta_opened", "launcher:cap_queued", "launcher:paused", "launcher:unpaused",
+    "market:market_paused", "market:market_paused", "market:platform_withdrawn"]);
   const hs = log.items.map((i: Json) => i.block_height);
   assert.deepEqual([...hs].sort((a: number, b: number) => b - a), hs);
   assert.equal(log.items[0].event, "platform_withdrawn");
   assert.ok(log.items.every((i: Json) => i.source === "fixture" && typeof i.summary === "string"));
   assert.equal((await get("/api/ops-log?scope=market")).body.items.length, 3);
+  assert.equal((await get("/api/ops-log?scope=core")).body.items.length, 3);
+  const launcher = (await get("/api/ops-log?scope=launcher")).body.items as Json[];
+  assert.equal(launcher.length, 4);
+  assert.ok(launcher.some((i) => String(i.summary).startsWith("instant launcher paused")));
   const p1 = (await get("/api/ops-log?limit=4")).body;
   const p2 = (await get(`/api/ops-log?limit=4&before=${p1.next_cursor}`)).body;
-  assert.equal(p1.items.length + p2.items.length, 6);
-  assert.equal(p2.next_cursor, null);
+  const p3 = (await get(`/api/ops-log?limit=4&before=${p2.next_cursor}`)).body;
+  assert.equal(p1.items.length + p2.items.length + p3.items.length, 10);
+  assert.equal(p3.next_cursor, null);
   assert.equal((await get("/api/ops-log?scope=x")).status, 400);
 });
 
@@ -272,4 +278,136 @@ test("external_pool event surfaces a venue link; unknown contracts cannot inject
   assert.deepEqual((await get("/api/token/1")).body.external_pools, []);
   store.ingestBlock(mkb(6, "core.fixture.testnet"), "fixture");
   assert.deepEqual((await get("/api/token/1")).body.external_pools, [{ venue: "meteora", pool: "PoolAddr1", url: "https://example.invalid/pool" }]);
+});
+
+const ECHO = "1000000000";
+
+test("instant feed: launch_type filter, default hides failed instants, trial results unchanged", async () => {
+  const sym = async (path: string): Promise<string[]> => (await get(path)).body.items.map((l: Json) => l.symbol).sort();
+  assert.deepEqual(await sym("/api/launches?launch_type=instant"), ["ECHO", "PEND"]);
+  assert.deepEqual(await sym("/api/launches?mode=instant&include_failed=true"), ["ECHO", "FOXX", "PEND", "ZETA"]);
+  assert.deepEqual(await sym("/api/launches?launch_type=trial"), ["ALPHA", "BRAVO", "CHARLIE", "DELTA"]);
+  assert.deepEqual(await sym("/api/launches"), ["ALPHA", "BRAVO", "CHARLIE", "DELTA", "ECHO", "PEND"]);
+  assert.deepEqual(await sym("/api/launches?tab=failed"), ["BRAVO", "FOXX", "ZETA"]);
+  assert.deepEqual(await sym("/api/launches?tab=launching"), ["PEND"]);
+  assert.deepEqual(await sym("/api/launches?tab=trading"), ["ALPHA", "ECHO"]);
+  assert.deepEqual(await sym("/api/launches?tab=trading&launch_type=instant"), ["ECHO"]);
+  assert.equal((await get("/api/launches?launch_type=nope")).status, 400);
+  const echo = (await get("/api/launches?q=echo wave")).body.items[0];
+  assert.equal(echo.launch_id, ECHO);
+  assert.equal(typeof echo.launch_id, "string");
+  assert.equal(echo.mode, "instant");
+  assert.equal(echo.phase, "instant_open");
+  assert.equal(echo.stage, "trading");
+  assert.equal(echo.verdict, null);
+  assert.equal(echo.funders, 0);
+  assert.equal(echo.total_active, "0");
+  assert.equal(echo.source, "fixture");
+  assert.deepEqual(await sym("/api/launches?q=instant"), ["ECHO", "PEND"]);
+});
+
+test("tabs stay exclusive and cover every launch, with instants included", async () => {
+  const total = (await get("/api/launches?include_failed=true&limit=200")).body.total;
+  let sum = 0;
+  for (const tab of ["live", "walk", "launching", "trading", "passed", "failed"]) sum += (await get(`/api/launches?tab=${tab}&limit=200`)).body.total;
+  assert.equal(sum, total);
+  assert.equal(total, 8);
+  const phases = Object.fromEntries((await get("/api/launches?launch_type=instant&include_failed=true")).body.items.map((l: Json) => [l.symbol, l.phase]));
+  assert.deepEqual(phases, { ECHO: "instant_open", FOXX: "instant_failed", ZETA: "instant_failed", PEND: "instant_pending_seed" });
+});
+
+test("instant launch detail: no verdict, no genesis, steps with receipts, vesting at the API clock", async () => {
+  const d = (await get(`/api/launch/${ECHO}`)).body;
+  assert.equal(d.mode, "instant");
+  assert.equal(d.verdict_inputs, null);
+  assert.equal(d.genesis, null);
+  assert.deepEqual(d.instant.steps.map((s: Json) => [s.step, s.done]), [["created", true], ["seeded", true], ["trading", true]]);
+  assert.ok(d.instant.steps.every((s: Json) => typeof s.receipt_id === "string"));
+  assert.equal(d.instant.solana_mint, "none");
+  assert.equal(d.instant.seed.pool_seed_q, "250000000");
+  const v = d.instant.vesting;
+  assert.equal(v.total, "50000000000000");
+  assert.equal(v.creator_alloc_bps, 500);
+  assert.equal(v.day_seconds, 600);
+  assert.equal(v.cliff_end - v.vest_end, -(90 - 7) * 600);
+  assert.equal(v.claimed, "4000000000000");
+  assert.equal(BigInt(v.claimable), BigInt(v.unlocked) - BigInt(v.claimed));
+  assert.ok(BigInt(v.unlocked) >= BigInt(v.claimed));
+  const pend = (await get(`/api/launch/${1_000_000_003}`)).body;
+  assert.equal(pend.instant.vesting.unlocked, "0");
+  assert.equal(pend.instant.vesting.cliff_end, null);
+  assert.equal(pend.instant.steps[1].done, false);
+  const foxx = (await get(`/api/launch/${1_000_000_001}`)).body;
+  assert.equal(foxx.instant.failure, "abandoned");
+  assert.equal((await get(`/api/launch/${1_000_000_002}`)).body.instant.failure, "creation_failed");
+});
+
+test("instant token page: pool mode and creator from the market, instant safety tiles only, windows and fees as for trials", async () => {
+  const t = (await get(`/api/token/${ECHO}`)).body;
+  assert.equal(t.pool.mode, "instant");
+  assert.equal(t.pool.creator, "eve.testnet");
+  assert.equal(t.pool.token, "echo.token.fixture.testnet");
+  assert.equal(t.genesis, null);
+  assert.equal(t.launch.mode, "instant");
+  const ids = t.safety.map((s: Json) => s.id).sort();
+  assert.deepEqual(ids, ["creator_allocation_vesting", "creator_fee_within_bound", "fixed_supply", "lp_in_pool", "market_not_paused", "payout_recipient_declared", "solana_mint_none"]);
+  assert.equal(t.safety.find((s: Json) => s.id === "fixed_supply").status, "warn");
+  assert.equal(t.instant.vesting.recipient, "eve.testnet");
+  assert.deepEqual(Object.keys(t.stats.windows), ["5m", "1h", "6h", "24h"]);
+  const trade = (await get(`/api/token/${ECHO}/trades?limit=1`)).body.items[0];
+  assert.equal(trade.fee_slices.holders, "0");
+  assert.equal(trade.declared, false);
+  const trial = (await get("/api/token/1")).body;
+  assert.equal(trial.pool.mode, "trial");
+  assert.equal(trial.instant, null);
+  assert.ok(trial.safety.some((s: Json) => s.id === "mint_authority_null"));
+  const h = (await get(`/api/token/${ECHO}/holders`)).body;
+  assert.equal(h.unclaimed_allocation, "46000000000000");
+});
+
+test("trades flag declared wallets (creator, payout recipient)", async () => {
+  const tip = store.checkpoint()!;
+  const line = `EVENT_JSON:${JSON.stringify({ standard: "kruxa", version: "1.0.0", event: "swap", data: [{ launch_id: ECHO, side: "sell", trader: "eve.testnet", receiver: "eve.testnet", amount_in: "1000000", amount_out: "20", fee_total: "1", creator: "0", platform: "0", holders: "0", lp: "1", referral: "0", q: "250000000", t: "949000000000000" }] })}`;
+  store.ingestBlock({ block: { header: { height: tip.height + 2, hash: "decl-1", prev_hash: tip.hash, timestamp_nanosec: ((BigInt(asOf(store).block_time!) + 5n) * 1_000_000_000n).toString() } },
+    shards: [{ receipt_execution_outcomes: [{ execution_outcome: { id: "decl-r1", outcome: { executor_id: "market.fixture.testnet", logs: [line], status: { SuccessValue: "" } } } }] }] }, "fixture");
+  const mine = (await get(`/api/token/${ECHO}/trades?trader=eve.testnet`)).body.items;
+  assert.equal(mine.length, 1);
+  assert.equal(mine[0].declared, true);
+  assert.equal(mine[0].declared_as, "both");
+});
+
+test("creator desk and portfolio carry the instant allocation", async () => {
+  const desk = (await get("/api/creator/eve.testnet")).body;
+  assert.equal(desk.launches.length, 1);
+  assert.equal(desk.launches[0].launch.mode, "instant");
+  assert.equal(desk.launches[0].stream, null);
+  assert.equal(desk.launches[0].allocation.claimed, "4000000000000");
+  assert.equal(desk.launches[0].earnings.alloc_claimed, "4000000000000");
+  assert.equal(desk.totals.alloc_claimed, "4000000000000");
+  assert.ok(desk.claims.some((c: Json) => c.kind === "alloc_claim" && c.amount === "4000000000000"));
+  const pf = (await get("/api/portfolio/kim.testnet")).body;
+  assert.ok(pf.positions.some((p: Json) => (p.launch as Json).mode === "instant" && p.status === "market_only"));
+  const v = (await get(`/api/verify/${ECHO}`)).body;
+  assert.equal(v.mode, "instant");
+  assert.equal(v.ledger_consistent, null);
+  assert.equal(v.verdict, null);
+});
+
+test("stats keep trial and instant apart, with source labels", async () => {
+  const s = (await get("/api/stats")).body;
+  assert.equal(s.launches.total, 4);
+  assert.equal(s.launches.source, "fixture");
+  assert.equal(s.volume.source, "fixture");
+  assert.equal(s.instant.source, "fixture");
+  assert.equal(s.instant.launches.total, 4);
+  assert.equal(s.instant.launches.open, 1);
+  assert.equal(s.instant.launches.failed, 2);
+  assert.equal(s.instant.seeds_declared, "250000000");
+  assert.equal(s.instant.alloc_claimed, "4000000000000");
+  const n = (sql: string): number => Number((store.db.prepare(sql).get() as { n: number }).n);
+  assert.equal(s.instant.volume.trades, n("SELECT COUNT(*) AS n FROM trades WHERE launch_id >= 1000000000"));
+  assert.equal(s.volume.trades, n("SELECT COUNT(*) AS n FROM trades WHERE launch_id < 1000000000"));
+  assert.equal(s.combined.trades, s.volume.trades + s.instant.volume.trades);
+  assert.deepEqual(s.combined.by_mode, { trial: 4, instant: 4 });
+  assert.equal(s.committed.refunds_paid, "14000000");
 });

@@ -1,6 +1,6 @@
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
-import { FIXTURE_CONTRACTS, generateFixtureBlocks } from "../../indexer/src/fixtures.ts";
+import { FIXTURE_CONTRACTS, FIXTURE_DAY_SECONDS, generateFixtureBlocks } from "../../indexer/src/fixtures.ts";
 import { NeardataSource } from "../../indexer/src/sources.ts";
 import { Store } from "../../indexer/src/store.ts";
 import { Tailer } from "../../indexer/src/tailer.ts";
@@ -12,7 +12,8 @@ import { createApp } from "./http.ts";
  * Single process: tail the chain into SQLite and serve the API. All configuration is environment variables:
  *   KRUXA_NETWORK  testnet | mainnet | fixture   (default testnet; fixture = offline generator, no network)
  *   KRUXA_DB       SQLite file                    (default ./data/indexer.db; mount a persistent volume here)
- *   KRUXA_CORE / KRUXA_MARKET   comma lists of contract account ids to index
+ *   KRUXA_CORE / KRUXA_MARKET / KRUXA_LAUNCHER   comma lists of contract account ids to index (launcher = instant launcher)
+ *   KRUXA_INSTANT_DAY_SECONDS  seconds per vesting day (86400; 10 only for the launcher demo profile)
  *   KRUXA_START_HEIGHT  height or "tip"           (used only when the DB is empty)
  *   PORT, HOST, KRUXA_POLL_MS, KRUXA_MAX_LAG
  */
@@ -30,8 +31,8 @@ async function main(): Promise<void> {
   const dbPath = env("KRUXA_DB", "./data/indexer.db");
   if (dbPath !== ":memory:") mkdirSync(dirname(dbPath), { recursive: true });
   const fixture = network === "fixture";
-  const contracts = fixture ? FIXTURE_CONTRACTS : { core: list("KRUXA_CORE"), market: list("KRUXA_MARKET") };
-  if (!fixture && contracts.core.length + contracts.market.length === 0) throw new Error("set KRUXA_CORE and/or KRUXA_MARKET to the contract account ids to index");
+  const contracts = fixture ? FIXTURE_CONTRACTS : { core: list("KRUXA_CORE"), market: list("KRUXA_MARKET"), launcher: list("KRUXA_LAUNCHER") };
+  if (!fixture && contracts.core.length + contracts.market.length + (contracts.launcher?.length ?? 0) === 0) throw new Error("set KRUXA_CORE, KRUXA_MARKET and/or KRUXA_LAUNCHER to the contract account ids to index");
   const store = new Store(dbPath, { contracts, network });
   let tailer: Tailer | null = null;
   if (fixture) {
@@ -46,6 +47,7 @@ async function main(): Promise<void> {
     now: () => (fixture ? (asOf(store).block_time ?? 0) : Math.floor(Date.now() / 1000)),
     tail: () => ({ headHeight: tailer?.status.headHeight ?? null, lastError: tailer?.status.lastError ?? null }),
     dataSource: fixture ? "fixture" : "neardata",
+    daySeconds: fixture ? FIXTURE_DAY_SECONDS : Number(env("KRUXA_INSTANT_DAY_SECONDS", "86400")),
   };
   const app = createApp(ctx);
   const port = await app.listen(Number(env("PORT", "8787")), env("HOST", "0.0.0.0"));

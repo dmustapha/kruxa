@@ -1,6 +1,6 @@
 # Kruxa indexer + API: one process, one SQLite file on a persistent volume.
 # Build from the repo root:  docker build -f ops/Dockerfile -t kruxa-indexer .
-# Run:  docker run -v kruxa-data:/data -e KRUXA_NETWORK=testnet -e KRUXA_CORE=<core account> -e KRUXA_MARKET=<market account> -p 8787:8787 kruxa-indexer
+# Run:  docker run -v kruxa-data:/data -e KRUXA_NETWORK=testnet -e KRUXA_CORE=<core account> -e KRUXA_MARKET=<market account> -e KRUXA_LAUNCHER=<instant launcher account> -p 8787:8787 kruxa-indexer
 # Zero runtime dependencies: Node 24 strips TypeScript types and ships node:sqlite.
 FROM node:24-slim
 ENV NODE_ENV=production NODE_NO_WARNINGS=1 KRUXA_DB=/data/indexer.db PORT=8787 HOST=0.0.0.0

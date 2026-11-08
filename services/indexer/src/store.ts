@@ -196,7 +196,7 @@ export class Store {
 function rowToEvent(r: Row): StoredEvent {
   return {
     receiptId: String(r.receipt_id), logIndex: Number(r.log_index), ord: Number(r.ord), contract: String(r.contract),
-    kind: r.kind === "market" ? "market" : "core", event: String(r.event), data: JSON.parse(String(r.data)) as Record<string, unknown>,
+    kind: r.kind === "market" ? "market" : r.kind === "launcher" ? "launcher" : "core", event: String(r.event), data: JSON.parse(String(r.data)) as Record<string, unknown>,
     blockHeight: Number(r.block_height), blockHash: String(r.block_hash), time: Number(r.time), source: r.source === "fixture" ? "fixture" : "chain",
   };
 }

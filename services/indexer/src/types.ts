@@ -26,7 +26,14 @@ export interface NearBlock {
 export interface ContractSet {
   core: string[];
   market: string[];
+  /** Instant launcher accounts (CHANGE-ORDER-7). Optional so 1.1 callers keep working. */
+  launcher?: string[];
 }
+
+export type ContractKind = "core" | "market" | "launcher";
+
+/** Instant launch ids start here (INSTANT-ABI); trial ids stay below. */
+export const INSTANT_ID_BASE = 1_000_000_000;
 
 /** One parsed NEP-297 event, before storage. */
 export interface ParsedEvent {
@@ -35,7 +42,7 @@ export interface ParsedEvent {
   /** Position of the receipt outcome inside the block (shard-major). Part of the canonical order. */
   ord: number;
   contract: string;
-  kind: "core" | "market";
+  kind: ContractKind;
   event: string;
   data: Record<string, unknown>;
 }
