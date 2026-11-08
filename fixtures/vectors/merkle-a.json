@@ -1,0 +1,56 @@
+{
+  "comment": "Merkle golden vector (PLAN 4.7). leaf=sha256(00||sha256(claimant||unlocked LE||locked LE)); node=sha256(01||min||max).",
+  "leaves": [
+    {
+      "claimant": "1ea149f82a426ed4100aa99dcb01d0aa7e95e845ed25f4849e0be1ef0b9717eb",
+      "unlocked": "3000000",
+      "locked": "0"
+    },
+    {
+      "claimant": "26dd149dea692cd7b6472ce6011e7b9162345d6a3f95f1b0c58639789c0b94aa",
+      "unlocked": "1000000",
+      "locked": "0"
+    },
+    {
+      "claimant": "2feb3e41b020ed7561f5f79cb6210e9bf52b7c45d610e47c0d3d04b28ce58826",
+      "unlocked": "4000000",
+      "locked": "0"
+    },
+    {
+      "claimant": "cf02d0fa03cba3341372851bf71150c6595526db2350b6fbf15657d83355c00d",
+      "unlocked": "5000000",
+      "locked": "0"
+    },
+    {
+      "claimant": "f0787a5c90c41e58d34db19f65d8c6b700e1482e567b776e9c269386ad27b4a8",
+      "unlocked": "2000000",
+      "locked": "0"
+    }
+  ],
+  "root": "f6b0f2b26330c8bb1fb27007e39bcd6df8fa874b8fed6b8f960ba9777011efe0",
+  "proofs": [
+    [
+      "9b1aff1c01e055b73dd1c9a5449631604fb4c1ad621b8b19b3c2becda30afc46",
+      "ea190c5a89238f4e63a70d86265ee60038f9354537078231e5f9fc6dd3828141",
+      "33d68efbdb4035c39bbccbb9a1fe6b4fc2cb7eb2a2cbefacc3366a3197e1c566"
+    ],
+    [
+      "621c34c2e081c16c5656c4b63be25165b8f78b7c15321f2b3bedbdd786ddb4d9",
+      "ea190c5a89238f4e63a70d86265ee60038f9354537078231e5f9fc6dd3828141",
+      "33d68efbdb4035c39bbccbb9a1fe6b4fc2cb7eb2a2cbefacc3366a3197e1c566"
+    ],
+    [
+      "cb4f32852691c633719b2b72fe4fc51f290112c5b7ac314972d2d2afa34374fd",
+      "9b35a31dc99e19e37970d11c9c224d41e477c5b1719563bf51f336e6d5e8c4da",
+      "33d68efbdb4035c39bbccbb9a1fe6b4fc2cb7eb2a2cbefacc3366a3197e1c566"
+    ],
+    [
+      "ab5142d40d5d127fbb76d8fb1453df56967a13b9a6b66d54ba10d2781d659732",
+      "9b35a31dc99e19e37970d11c9c224d41e477c5b1719563bf51f336e6d5e8c4da",
+      "33d68efbdb4035c39bbccbb9a1fe6b4fc2cb7eb2a2cbefacc3366a3197e1c566"
+    ],
+    [
+      "f351f4125f12e833c9f0f7a813d01ec21b68a73521e7f4576b994fea55cf1c12"
+    ]
+  ]
+}
