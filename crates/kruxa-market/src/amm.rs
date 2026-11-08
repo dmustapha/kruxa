@@ -42,7 +42,14 @@ fn check_reserves(r: &Reserves) -> Result<(), MarketError> {
 }
 
 /// Buy: `amount_in` USDC in, tokens out. `min_out` is mandatory (zero is refused).
-pub fn quote_buy(r: Reserves, amount_in: u128, min_out: u128, terms: &FeeTerms, elapsed_ns: u64, routing: Routing) -> Result<Swap, MarketError> {
+pub fn quote_buy(
+    r: Reserves,
+    amount_in: u128,
+    min_out: u128,
+    terms: &FeeTerms,
+    elapsed_ns: u64,
+    routing: Routing,
+) -> Result<Swap, MarketError> {
     check_reserves(&r)?;
     if min_out == 0 {
         return Err(MarketError::MinOut);
@@ -65,7 +72,14 @@ pub fn quote_buy(r: Reserves, amount_in: u128, min_out: u128, terms: &FeeTerms, 
 }
 
 /// Sell: `amount_in` tokens in, net USDC out (gross output minus fee).
-pub fn quote_sell(r: Reserves, amount_in: u128, min_out: u128, terms: &FeeTerms, elapsed_ns: u64, routing: Routing) -> Result<Swap, MarketError> {
+pub fn quote_sell(
+    r: Reserves,
+    amount_in: u128,
+    min_out: u128,
+    terms: &FeeTerms,
+    elapsed_ns: u64,
+    routing: Routing,
+) -> Result<Swap, MarketError> {
     check_reserves(&r)?;
     if min_out == 0 {
         return Err(MarketError::MinOut);

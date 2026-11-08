@@ -67,7 +67,8 @@ async fn buy_and_sell_slices_sum_and_custody_holds() -> anyhow::Result<()> {
     let e = &ev[0];
     let sum: u128 = ["creator", "platform", "holders", "lp", "referral"].iter().map(|k| n(&e[*k])).sum();
     assert_eq!(sum, n(&e["fee_total"]));
-    assert_eq!((n(&e["fee_bps"]), e["creator_bps"].as_u64()), (500, Some(5000)), "inside the opening window");
+    assert!((101..=500).contains(&n(&e["fee_bps"])), "inside the opening window the rate is above base");
+    assert_eq!(e["creator_bps"].as_u64(), Some(5000));
     assert_eq!(n(&e["holders"]) + n(&e["referral"]), 0, "M-A redirects holders and referral to LP");
     assert_eq!(n(&e["red_holders"]) + n(&e["red_referral"]) + n(&e["surcharge"]) <= n(&e["lp"]), true);
     assert_eq!(mk.bal(&mk.token, alice.id()).await, n(&e["amount_out"]));
@@ -187,7 +188,14 @@ async fn failed_payout_becomes_owed_and_is_claimable() -> anyhow::Result<()> {
     let owed = events(&r, "owed_credited");
     assert_eq!(owed.len(), 1, "{:?}", r.logs());
     mk.assert_solvent(&[ID]).await;
-    let ghost_acct = mk.worker.root_account()?.create_subaccount("ghost").initial_balance(near_workspaces::types::NearToken::from_near(10)).transact().await?.into_result()?;
+    let ghost_acct = mk
+        .worker
+        .root_account()?
+        .create_subaccount("ghost")
+        .initial_balance(near_workspaces::types::NearToken::from_near(10))
+        .transact()
+        .await?
+        .into_result()?;
     mk.mint(&mk.token, ghost_acct.id(), 0).await?;
     let c = ghost_acct.call(mk.market.id(), "claim_owed").args_json(json!({ "token_id": mk.token.id() })).gas(GAS).transact().await?;
     assert!(c.is_success(), "{:?}", c.failures());

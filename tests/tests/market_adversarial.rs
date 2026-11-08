@@ -98,8 +98,15 @@ async fn reentrancy_from_the_payout_token_cannot_claim_or_double_pay() -> anyhow
     let alice = mk.user("alice", 2_000 * USDC).await?;
     mk.buy(&alice, ID, 500 * USDC, 1).await?.into_result()?;
     // From now on every ft_transfer of the launch token also calls claim / withdraw_platform / claim_owed on the market
-    for (method, args) in [("claim", json!({ "launch_id": "1" })), ("withdraw_platform", json!({})), ("claim_owed", json!({ "token_id": mk.token.id() }))] {
-        mk.token.call("set_reenter").args_json(json!({ "account": mk.market.id(), "method": method, "args": args.to_string() })).transact().await?.into_result()?;
+    for (method, args) in
+        [("claim", json!({ "launch_id": "1" })), ("withdraw_platform", json!({})), ("claim_owed", json!({ "token_id": mk.token.id() }))]
+    {
+        mk.token
+            .call("set_reenter")
+            .args_json(json!({ "account": mk.market.id(), "method": method, "args": args.to_string() }))
+            .transact()
+            .await?
+            .into_result()?;
         let r = mk.buy(&alice, ID, 100 * USDC, 1).await?;
         assert_eq!(events(&r, "swap").len(), 1, "{method}");
     }
@@ -122,7 +129,12 @@ async fn donation_moves_no_price_and_cannot_break_solvency() -> anyhow::Result<(
     mk.open_pool(ID).await?;
     let q0 = mk.view("quote_buy", json!({ "launch_id": "1", "amount_in": (50 * USDC).to_string(), "now_ns": "9999999999999999999" })).await;
     let eve = mk.user("eve", 1_000 * USDC).await?;
-    eve.call(mk.usdc.id(), "ft_transfer").args_json(json!({ "receiver_id": mk.market.id(), "amount": (900 * USDC).to_string() })).deposit(NearToken::from_yoctonear(1)).transact().await?.into_result()?;
+    eve.call(mk.usdc.id(), "ft_transfer")
+        .args_json(json!({ "receiver_id": mk.market.id(), "amount": (900 * USDC).to_string() }))
+        .deposit(NearToken::from_yoctonear(1))
+        .transact()
+        .await?
+        .into_result()?;
     let q1 = mk.view("quote_buy", json!({ "launch_id": "1", "amount_in": (50 * USDC).to_string(), "now_ns": "9999999999999999999" })).await;
     assert_eq!(q0, q1, "a direct transfer is not a deposit");
     let p = pool_json(&mk, ID).await;

@@ -1,5 +1,5 @@
 use crate::{Market, MarketExt};
-use kruxa_market::{creator_unlocked, quote_buy as cp_buy, quote_sell as cp_sell, Reserves, Routing, Swap, MarketError};
+use kruxa_market::{creator_unlocked, quote_buy as cp_buy, quote_sell as cp_sell, MarketError, Reserves, Routing, Swap};
 use near_sdk::json_types::{U128, U64};
 use near_sdk::serde_json::{json, Value};
 use near_sdk::{env, near, AccountId};
@@ -14,7 +14,11 @@ fn quote_json(r: Result<Swap, MarketError>, before: Reserves) -> Value {
         Ok(x) => {
             let f = x.fee;
             let spot = before.q as f64 / before.t as f64;
-            let fill = if x.amount_in > 0 && x.amount_out > 0 { x.q_leg as f64 / if x.q_leg == x.amount_in { x.amount_out as f64 } else { x.amount_in as f64 } } else { spot };
+            let fill = if x.amount_in > 0 && x.amount_out > 0 {
+                x.q_leg as f64 / if x.q_leg == x.amount_in { x.amount_out as f64 } else { x.amount_in as f64 }
+            } else {
+                spot
+            };
             let impact = if spot > 0.0 { (((fill - spot) / spot).abs() * 10_000.0) as u64 } else { 0 };
             json!({ "ok": true, "out": s(x.amount_out), "fee_total": s(f.total), "fee_bps": s(f.total.saturating_mul(10_000) / x.q_leg.max(1)),
                     "creator": s(f.creator), "platform": s(f.platform), "holders": s(f.holders), "lp": s(f.lp), "referral": s(f.referral),

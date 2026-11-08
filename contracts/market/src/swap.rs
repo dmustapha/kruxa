@@ -176,7 +176,8 @@ impl Market {
         let mut pool = self.open_pool(m.launch_id.0)?;
         let min_out = m.min_out.map_or(0, |v| v.0);
         let now = env::block_timestamp();
-        let s = quote_buy(pool.reserves(), amount, min_out, &pool.terms, now.saturating_sub(pool.opened_ns), Routing::M_A).map_err(market_code)?;
+        let s = quote_buy(pool.reserves(), amount, min_out, &pool.terms, now.saturating_sub(pool.opened_ns), Routing::M_A)
+            .map_err(market_code)?;
         if s.after.q > self.max_pool_q || self.global_q - pool.q + s.after.q > self.max_global_q {
             return Err("R_MARKET_CAP");
         }
@@ -197,7 +198,8 @@ impl Market {
         }
         let min_out = m.min_out.map_or(0, |v| v.0);
         let now = env::block_timestamp();
-        let s = quote_sell(pool.reserves(), amount, min_out, &pool.terms, now.saturating_sub(pool.opened_ns), Routing::M_A).map_err(market_code)?;
+        let s = quote_sell(pool.reserves(), amount, min_out, &pool.terms, now.saturating_sub(pool.opened_ns), Routing::M_A)
+            .map_err(market_code)?;
         let receiver = m.receiver.unwrap_or_else(|| sender.clone());
         self.custody_add(token, amount);
         self.apply_swap(&mut pool, &s, now);
@@ -247,7 +249,12 @@ impl Market {
             .with_attached_deposit(ONE_YOCTO)
             .with_static_gas(GAS_OUT)
             .ft_transfer(to.clone(), U128(amount), None)
-            .then(Self::ext(env::current_account_id()).with_static_gas(GAS_CB).resolve_payout(token.clone(), to.clone(), U128(amount), reason.to_string()))
+            .then(Self::ext(env::current_account_id()).with_static_gas(GAS_CB).resolve_payout(
+                token.clone(),
+                to.clone(),
+                U128(amount),
+                reason.to_string(),
+            ))
     }
 }
 

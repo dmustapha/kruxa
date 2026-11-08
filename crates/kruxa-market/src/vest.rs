@@ -44,7 +44,13 @@ fn entry_unlocked(e: &EpochAccrual, opened_ns: u64, terms: &FeeTerms, now_ns: u6
 }
 
 /// Total creator amount claimable at `now_ns` (before subtracting what was already paid).
-pub fn creator_unlocked(list: &[EpochAccrual], folded_unlocked: u128, opened_ns: u64, terms: &FeeTerms, now_ns: u64) -> Result<u128, MarketError> {
+pub fn creator_unlocked(
+    list: &[EpochAccrual],
+    folded_unlocked: u128,
+    opened_ns: u64,
+    terms: &FeeTerms,
+    now_ns: u64,
+) -> Result<u128, MarketError> {
     let mut total = folded_unlocked;
     for e in list {
         total = total.checked_add(entry_unlocked(e, opened_ns, terms, now_ns)?).ok_or(MarketError::Math)?;

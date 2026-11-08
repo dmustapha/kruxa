@@ -68,8 +68,13 @@ impl Mk {
     pub async fn new(caps: Option<(u128, u128)>) -> anyhow::Result<Mk> {
         let worker = near_workspaces::sandbox().await?;
         let root = worker.root_account()?;
-        let (owner, guardian, treasury, core, creator) =
-            (sub(&root, "owner").await?, sub(&root, "guardian").await?, sub(&root, "treasury").await?, sub(&root, "core").await?, sub(&root, "creator").await?);
+        let (owner, guardian, treasury, core, creator) = (
+            sub(&root, "owner").await?,
+            sub(&root, "guardian").await?,
+            sub(&root, "treasury").await?,
+            sub(&root, "core").await?,
+            sub(&root, "creator").await?,
+        );
         let usdc = deploy_ft(&root, "usdc").await?;
         let token = deploy_ft(&root, "tok").await?;
         let acct = sub(&root, "market").await?;
@@ -77,8 +82,10 @@ impl Mk {
         let (pq, gq) = caps.map_or((None, None), |(p, g)| (Some(p.to_string()), Some(g.to_string())));
         market
             .call("new")
-            .args_json(json!({ "owner": owner.id(), "guardian": guardian.id(), "treasury": treasury.id(), "usdc": usdc.id(), "core": core.id(),
-                               "max_pool_reserve_q": pq, "max_global_reserve_q": gq }))
+            .args_json(
+                json!({ "owner": owner.id(), "guardian": guardian.id(), "treasury": treasury.id(), "usdc": usdc.id(), "core": core.id(),
+                               "max_pool_reserve_q": pq, "max_global_reserve_q": gq }),
+            )
             .transact()
             .await?
             .into_result()?;

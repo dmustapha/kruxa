@@ -62,7 +62,8 @@ pub fn route_fee(q_leg: u128, terms: &FeeTerms, elapsed_ns: u64, routing: Routin
     }
     let base_fee = mul_div_ceil(q_leg, base_rate_ppm(terms), FEE_DENOM_PPM)?.min(total);
     let part = |bps: u16| mul_div_floor(base_fee, bps as u128, BPS);
-    let (creator, platform, holders, referral) = (part(terms.creator_bps)?, part(terms.platform_bps)?, part(terms.holders_bps)?, part(terms.referral_bps)?);
+    let (creator, platform, holders, referral) =
+        (part(terms.creator_bps)?, part(terms.platform_bps)?, part(terms.holders_bps)?, part(terms.referral_bps)?);
     let surcharge = total - base_fee;
     let lp_base = base_fee - creator - platform - holders - referral;
     let (red_holders, holders) = if routing.holders_live { (0, holders) } else { (holders, 0) };
@@ -74,7 +75,8 @@ pub fn route_fee(q_leg: u128, terms: &FeeTerms, elapsed_ns: u64, routing: Routin
 /// Creator-take bound (ARCHITECTURE 5.1): the creator slice never exceeds `q_leg * total_fee_bps * creator_bps` plus one unit of rounding.
 pub fn creator_take_ok(creator: u128, q_leg: u128, terms: &FeeTerms) -> bool {
     let lhs = kruxa_math::U256::from(creator) * kruxa_math::U256::from(BPS * BPS);
-    let rhs = kruxa_math::U256::from(q_leg) * kruxa_math::U256::from(terms.total_fee_bps as u128 * terms.creator_bps as u128) + kruxa_math::U256::from(BPS * BPS);
+    let rhs = kruxa_math::U256::from(q_leg) * kruxa_math::U256::from(terms.total_fee_bps as u128 * terms.creator_bps as u128)
+        + kruxa_math::U256::from(BPS * BPS);
     lhs <= rhs
 }
 
