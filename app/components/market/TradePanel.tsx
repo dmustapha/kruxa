@@ -104,8 +104,12 @@ export function TradePanel({ page, facts, reserves, nowSec, onSubmitted, initial
       {instant && win && (
         <p className="mkt-alert" data-tone="warn" role="timer" aria-live="off"><strong>Opening fee: {fmtBps(Math.round(win.appliedBps))} now</strong>Falling to the {fmtBps(win.baseBps)} base in <span className="mkt-mono">{fmtDuration(win.secondsLeft)}</span>. The extra goes to liquidity.</p>
       )}
-      {instant && cap && cap.status !== 'refused' && side === 'buy' && <p className="mkt-note" style={{ marginTop: 0 }}>{cap.message}</p>}
-      {instant && <p className="mkt-note" style={{ marginTop: 0 }}>Creator and payout recipient accounts cannot buy on an instant pool (R_SELF_BUY). Other wallets are not blocked.</p>}
+      {instant && (
+        <ul className="mkt-rules" aria-label="Instant pool rules">
+          {cap && cap.status !== 'refused' && side === 'buy' && <li>{cap.message}</li>}
+          <li>Creator and payout recipient accounts cannot buy on an instant pool (R_SELF_BUY). Other wallets are not blocked.</li>
+        </ul>
+      )}
       <form id="mkt-order" role="tabpanel" aria-labelledby={`mkt-tab-${side}`} onSubmit={(e) => { e.preventDefault(); if (canSubmit || (!near && view.status === 'ok')) void submit(); }} noValidate>
         <div className="mkt-field">
           <div className="mkt-label"><label htmlFor={amountId}>{side === 'buy' ? 'You pay' : 'You sell'}</label>{bal && <span>Balance {bal} {unit}</span>}</div>

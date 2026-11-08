@@ -246,3 +246,5 @@ main:has(.mkt-root) { max-width: 1240px; padding-top: 20px; }
 /* instant launch */
 .mkt-instant-notice { margin-top: 12px; display: grid; gap: 2px; padding: 12px 14px; border: 1px solid var(--mkt-warn); border-left-width: 4px; border-radius: 10px; background: color-mix(in srgb, var(--mkt-warn) 10%, transparent); font-size: 14px; }
 .mkt-instant-notice strong { color: var(--fg); } .mkt-instant-notice span { color: var(--fg); }
+.mkt-rules { list-style: none; margin: 0 0 12px; padding: 0 0 0 10px; border-left: 2px solid var(--line); display: grid; gap: 6px; font-size: 12px; color: var(--muted); }
+.mkt-rules li { color: var(--muted); }
