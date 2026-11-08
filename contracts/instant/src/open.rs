@@ -1,8 +1,8 @@
 //! Step 3: `open_instant` hands the seed, then the pool bucket, to the market. Debit first, one leg at a time, a callback
 //! that never panics and re-credits whatever the market did not consume (docs/interfaces/INSTANT-ABI.md section 4).
+use crate::events::{emit, Obj};
 use crate::ext::ext_ft;
 use crate::model::*;
-use crate::events::{emit, Obj};
 use crate::{fail, Launcher, LauncherExt};
 use crate::{GAS_LEG, GAS_SEED_CB, GAS_STORAGE, GAS_TOKEN_CB, MARKET_STORAGE_YOCTO, ONE_YOCTO, TOKEN_REG_YOCTO};
 use kruxa_logic::hex;
@@ -39,7 +39,11 @@ impl Launcher {
             .with_attached_deposit(ONE_YOCTO)
             .with_static_gas(GAS_LEG)
             .ft_transfer_call(market.clone(), U128(amount), None, msg)
-            .then(Self::ext(env::current_account_id()).with_static_gas(GAS_SEED_CB).on_instant_leg(U64(r.launch_id), Leg::Seed, U128(amount)));
+            .then(Self::ext(env::current_account_id()).with_static_gas(GAS_SEED_CB).on_instant_leg(
+                U64(r.launch_id),
+                Leg::Seed,
+                U128(amount),
+            ));
     }
 
     /// Debit the unsent pool bucket, register the market on the token and top up its storage (once), then send leg 2.
@@ -63,7 +67,11 @@ impl Launcher {
             .with_attached_deposit(ONE_YOCTO)
             .with_static_gas(GAS_LEG)
             .ft_transfer_call(market.clone(), U128(amount), None, msg)
-            .then(Self::ext(env::current_account_id()).with_static_gas(GAS_TOKEN_CB).on_instant_leg(U64(r.launch_id), Leg::Token, U128(amount)));
+            .then(Self::ext(env::current_account_id()).with_static_gas(GAS_TOKEN_CB).on_instant_leg(
+                U64(r.launch_id),
+                Leg::Token,
+                U128(amount),
+            ));
     }
 
     fn consumed(read: Result<Vec<u8>, near_sdk::PromiseError>, amount: u128) -> u128 {
@@ -146,7 +154,8 @@ impl Launcher {
     }
 
     fn finish_if_open(&mut self, r: &mut Instant) {
-        let both = r.seed_sent == r.derived.pool_seed_q && r.seed_inflight == 0 && r.tokens_sent == r.derived.n_pool && r.tokens_inflight == 0;
+        let both =
+            r.seed_sent == r.derived.pool_seed_q && r.seed_inflight == 0 && r.tokens_sent == r.derived.n_pool && r.tokens_inflight == 0;
         if !both || r.status == Status::Open {
             return;
         }
@@ -154,7 +163,13 @@ impl Launcher {
         r.opened_at = env::block_timestamp();
         emit(
             "instant_opened",
-            Obj::new().s("launch_id", r.launch_id).s("token", &r.token).opt("market", self.cfg.market.as_ref()).s("q", r.seed_sent).s("t", r.tokens_sent).s("opened_at", r.opened_at),
+            Obj::new()
+                .s("launch_id", r.launch_id)
+                .s("token", &r.token)
+                .opt("market", self.cfg.market.as_ref())
+                .s("q", r.seed_sent)
+                .s("t", r.tokens_sent)
+                .s("opened_at", r.opened_at),
         );
     }
 }

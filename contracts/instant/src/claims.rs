@@ -1,8 +1,8 @@
 //! Money out: allocation claims, launch fees, seed and deposit refunds, owed balances.
 //! Every payout debits first and pays second; a never-panicking callback turns a failed transfer into an owed balance.
+use crate::events::{emit, Obj};
 use crate::ext::ext_ft;
 use crate::model::*;
-use crate::events::{emit, Obj};
 use crate::{fail, Launcher, LauncherExt};
 use crate::{ABORT_UNITS, GAS_CB, GAS_OUT, ONE_YOCTO};
 use kruxa_instant::{alloc_unlocked, claimable, Schedule};
@@ -32,11 +32,17 @@ impl Launcher {
 
     /// Outbound `ft_transfer` plus the never-panicking callback. State was debited before this is called.
     pub(crate) fn pay_out(&self, token: &AccountId, to: &AccountId, amount: u128, reason: &str) -> Promise {
-        ext_ft::ext(token.clone()).with_attached_deposit(ONE_YOCTO).with_static_gas(GAS_OUT).ft_transfer(to.clone(), U128(amount), None).then(
-            Self::ext(env::current_account_id()).with_static_gas(GAS_CB).resolve_payout(token.clone(), to.clone(), U128(amount), reason.to_string()),
-        )
+        ext_ft::ext(token.clone())
+            .with_attached_deposit(ONE_YOCTO)
+            .with_static_gas(GAS_OUT)
+            .ft_transfer(to.clone(), U128(amount), None)
+            .then(Self::ext(env::current_account_id()).with_static_gas(GAS_CB).resolve_payout(
+                token.clone(),
+                to.clone(),
+                U128(amount),
+                reason.to_string(),
+            ))
     }
-
 }
 
 #[near]
@@ -75,7 +81,12 @@ impl Launcher {
         self.custody_sub(&token, want);
         emit(
             "alloc_claimed",
-            Obj::new().s("launch_id", r.launch_id).s("recipient", &to).s("amount", want).s("claimed_total", r.claimed).s("unlocked_total", unlocked),
+            Obj::new()
+                .s("launch_id", r.launch_id)
+                .s("recipient", &to)
+                .s("amount", want)
+                .s("claimed_total", r.claimed)
+                .s("unlocked_total", unlocked),
         );
         self.save(r);
         self.pay_out(&token, &to, want, "alloc")

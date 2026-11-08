@@ -1,8 +1,8 @@
 //! Step 1: `create_instant` (gate, rules, deposit, factory token, supply verification) and the paths that end a launch before the seed.
+use crate::events::{emit, Obj};
 use crate::ext::ext_ft;
 use crate::model::*;
 use crate::LauncherExt;
-use crate::events::{emit, Obj};
 use crate::{fail, Launcher};
 use crate::{ABANDON_UNITS, GAS_CB, GAS_FACTORY, GAS_VIEW, INSTANT_ID_BASE, RATE_LIMIT_UNITS, RECORD_STORAGE_YOCTO};
 use kruxa_instant::{derive, InstantParams, Limits, TOKEN_DECIMALS};
@@ -176,7 +176,8 @@ impl Launcher {
         if attached > need {
             let _ = Promise::new(creator).transfer(NearToken::from_yoctonear(attached - need));
         }
-        self.factory_call(&params, derived.n_total).then(Self::ext(env::current_account_id()).with_static_gas(GAS_CB).on_instant_token_created(U64(id)))
+        self.factory_call(&params, derived.n_total)
+            .then(Self::ext(env::current_account_id()).with_static_gas(GAS_CB).on_instant_token_created(U64(id)))
     }
 
     #[private]

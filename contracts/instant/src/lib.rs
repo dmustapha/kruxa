@@ -15,8 +15,8 @@ mod open;
 mod seed;
 mod views;
 
-use model::*;
 use kv::Map;
+use model::*;
 use near_sdk::{env, near, AccountId, Gas, NearToken, PanicOnDefault};
 
 pub const ONE_YOCTO: NearToken = NearToken::from_yoctonear(1);

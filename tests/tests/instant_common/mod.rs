@@ -150,14 +150,31 @@ impl Ix {
 
     /// Pre-deploys the launch token the real factory would create, holding `supply` at the launcher.
     pub async fn predeploy_token(&self, symbol: &str, supply: u128) -> anyhow::Result<Contract> {
-        let a = self.factory.as_account().create_subaccount(&symbol.to_lowercase()).initial_balance(NearToken::from_near(5)).transact().await?.into_result()?;
+        let a = self
+            .factory
+            .as_account()
+            .create_subaccount(&symbol.to_lowercase())
+            .initial_balance(NearToken::from_near(5))
+            .transact()
+            .await?
+            .into_result()?;
         let t = a.deploy(&wasm("mock_ft")).await?.into_result()?;
-        t.call("new").args_json(json!({ "owner_id": self.launcher.id(), "total_supply": supply.to_string() })).transact().await?.into_result()?;
+        t.call("new")
+            .args_json(json!({ "owner_id": self.launcher.id(), "total_supply": supply.to_string() }))
+            .transact()
+            .await?
+            .into_result()?;
         Ok(t)
     }
 
     pub async fn register_on_token(&self, token: &AccountId, who: &AccountId) -> anyhow::Result<()> {
-        self.owner.call(token, "storage_deposit").args_json(json!({ "account_id": who })).deposit(NearToken::from_millinear(2)).transact().await?.into_result()?;
+        self.owner
+            .call(token, "storage_deposit")
+            .args_json(json!({ "account_id": who }))
+            .deposit(NearToken::from_millinear(2))
+            .transact()
+            .await?
+            .into_result()?;
         Ok(())
     }
 
@@ -172,7 +189,13 @@ impl Ix {
         self.create_with_deposit(who, p, recipient, dep).await
     }
 
-    pub async fn create_with_deposit(&self, who: &Account, p: Value, recipient: Option<&AccountId>, dep: u128) -> anyhow::Result<ExecutionFinalResult> {
+    pub async fn create_with_deposit(
+        &self,
+        who: &Account,
+        p: Value,
+        recipient: Option<&AccountId>,
+        dep: u128,
+    ) -> anyhow::Result<ExecutionFinalResult> {
         Ok(who
             .call(self.launcher.id(), "create_instant")
             .args_json(json!({ "params": p, "payout_recipient": recipient }))
@@ -187,7 +210,10 @@ impl Ix {
         let symbol = p["symbol"].as_str().unwrap().to_string();
         self.predeploy_token(&symbol, N_TOTAL).await?;
         let res = self.create_raw(who, p, recipient).await?;
-        let id = events(&res, "instant_created").first().map(|e| e["launch_id"].as_str().unwrap().to_string()).unwrap_or_else(|| panic!("create failed: {:?}", res.failures()));
+        let id = events(&res, "instant_created")
+            .first()
+            .map(|e| e["launch_id"].as_str().unwrap().to_string())
+            .unwrap_or_else(|| panic!("create failed: {:?}", res.failures()));
         assert_eq!(self.status(&id).await, "TokenReady", "{:?}", res.failures());
         Ok(id)
     }

@@ -173,8 +173,18 @@ fn check_money(p: &InstantParams, l: &Limits, out: &mut Vec<Violation>) {
 fn check_fees(fees: &FeeTerms, out: &mut Vec<Violation>) {
     let stand_in = TrialParams { fees: fees.clone(), ..TrialParams::example("ABCD") };
     let fee_codes = [
-        "R_FEE_TOTAL", "R_CREATOR_SHARE", "R_CREATOR_TAKE", "R_PLATFORM_FLOOR", "R_PLATFORM_FIXED", "R_HOLDER_RANGE", "R_LP_RANGE",
-        "R_HOLDER_LP_FLOOR", "R_REFERRAL", "R_SPLIT_SUM", "R_FEE_VEST", "R_OPENING",
+        "R_FEE_TOTAL",
+        "R_CREATOR_SHARE",
+        "R_CREATOR_TAKE",
+        "R_PLATFORM_FLOOR",
+        "R_PLATFORM_FIXED",
+        "R_HOLDER_RANGE",
+        "R_LP_RANGE",
+        "R_HOLDER_LP_FLOOR",
+        "R_REFERRAL",
+        "R_SPLIT_SUM",
+        "R_FEE_VEST",
+        "R_OPENING",
     ];
     let before = out.len();
     for v in validate_all(&stand_in, &Rules::ladder(), u128::MAX, true) {
@@ -279,7 +289,10 @@ mod tests {
         for (want, p) in cases {
             assert!(validate_instant(&p, &lim()).iter().any(|v| v.code == want), "{want} not raised for {p:?}");
         }
-        assert_eq!(first_code(&InstantParams { seed_q: 10_000_000, ..base.clone() }, &Limits { seed_min: 1, ..Limits::standard(10_000_000) }), code::SEED_RANGE);
+        assert_eq!(
+            first_code(&InstantParams { seed_q: 10_000_000, ..base.clone() }, &Limits { seed_min: 1, ..Limits::standard(10_000_000) }),
+            code::SEED_RANGE
+        );
     }
 
     #[test]

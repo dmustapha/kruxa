@@ -51,7 +51,15 @@ async fn a_fake_usdc_or_the_launch_token_can_never_seed() -> anyhow::Result<()> 
     let ix = Ix::new("demo", true).await?;
     let id = ix.create_ready(&ix.creator, params("FAKE"), None).await?;
     let root = ix.worker.root_account()?;
-    let fake = root.create_subaccount("fakeusdc").initial_balance(NearToken::from_near(50)).transact().await?.into_result()?.deploy(&wasm("mock_ft")).await?.into_result()?;
+    let fake = root
+        .create_subaccount("fakeusdc")
+        .initial_balance(NearToken::from_near(50))
+        .transact()
+        .await?
+        .into_result()?
+        .deploy(&wasm("mock_ft"))
+        .await?
+        .into_result()?;
     fake.call("new").args_json(json!({ "owner_id": ix.owner.id(), "total_supply": "0" })).transact().await?.into_result()?;
     ix.register(&fake, ix.launcher.id()).await?;
     ix.register(&fake, ix.creator.id()).await?;
@@ -66,7 +74,13 @@ async fn a_fake_usdc_or_the_launch_token_can_never_seed() -> anyhow::Result<()> 
     ix.register_on_token(&tok, ix.creator.id()).await?;
     // calling ft_on_transfer directly, from a non-token account, with the exact right message
     let msg = json!({ "v": 1, "op": "seed_instant", "launch_id": id }).to_string();
-    let direct = ix.creator.call(ix.launcher.id(), "ft_on_transfer").args_json(json!({ "sender_id": ix.creator.id(), "amount": "250000000", "msg": msg })).gas(GAS).transact().await?;
+    let direct = ix
+        .creator
+        .call(ix.launcher.id(), "ft_on_transfer")
+        .args_json(json!({ "sender_id": ix.creator.id(), "amount": "250000000", "msg": msg }))
+        .gas(GAS)
+        .transact()
+        .await?;
     assert_eq!(direct.json::<String>()?, "250000000", "returned in full");
     assert_eq!(ix.status(&id).await, "TokenReady");
     assert_eq!(n(&ix.view("get_invariants", json!({})).await["usdc_custody"]), 0);
@@ -171,7 +185,13 @@ async fn creator_seed_tricks_do_not_move_money_twice() -> anyhow::Result<()> {
     let id = ix.create_ready(&ix.creator, params("TRIK"), None).await?;
     ix.mint_usdc(ix.creator.id(), 2_000 * USDC).await?;
     // a donation by a plain ft_transfer only adds to the balance
-    ix.creator.call(ix.usdc.id(), "ft_transfer").args_json(json!({ "receiver_id": ix.launcher.id(), "amount": "5000000" })).deposit(NearToken::from_yoctonear(1)).transact().await?.into_result()?;
+    ix.creator
+        .call(ix.usdc.id(), "ft_transfer")
+        .args_json(json!({ "receiver_id": ix.launcher.id(), "amount": "5000000" }))
+        .deposit(NearToken::from_yoctonear(1))
+        .transact()
+        .await?
+        .into_result()?;
     ix.seed(&ix.creator, &id, 250 * USDC).await?.into_result()?;
     for _ in 0..3 {
         let dup = ix.seed(&ix.creator, &id, 250 * USDC).await?;
@@ -227,7 +247,12 @@ async fn nobody_bypasses_the_mainnet_gate_or_redirects_the_market() -> anyhow::R
         let r = ix.create_raw(who, params("BYPS"), Some(stranger.id())).await?;
         assert!(has_code(&r, "R_CREATOR_GATE"), "{}: {:?}", who.id(), r.failures());
     }
-    for (m, a) in [("open_beta", json!({})), ("set_market", json!({ "account": stranger.id() })), ("unpause", json!({})), ("reserve_symbol", json!({ "symbol": "ZZZ" }))] {
+    for (m, a) in [
+        ("open_beta", json!({})),
+        ("set_market", json!({ "account": stranger.id() })),
+        ("unpause", json!({})),
+        ("reserve_symbol", json!({ "symbol": "ZZZ" })),
+    ] {
         for who in [&stranger, &ix.creator, &ix.guardian] {
             let r = ix.call(who, m, a.clone()).await?;
             assert!(has_code(&r, "R_NOT_AUTHORIZED"), "{m} by {}: {:?}", who.id(), r.failures());
@@ -249,8 +274,10 @@ async fn nobody_bypasses_the_mainnet_gate_or_redirects_the_market() -> anyhow::R
 #[tokio::test]
 async fn hostile_fee_terms_and_edge_inputs_are_refused() -> anyhow::Result<()> {
     let ix = Ix::new("demo", true).await?;
-    let fees = |c: u16, pl: u16, h: u16, l: u16, rf: u16, total: u16| json!({ "total_fee_bps": total, "creator_bps": c, "platform_bps": pl, "holders_bps": h, "lp_bps": l, "referral_bps": rf,
-        "opening_fee_start_bps": 0, "opening_decay_minutes": 0, "fee_vest_bps": 5000, "fee_vest_days": 90 });
+    let fees = |c: u16, pl: u16, h: u16, l: u16, rf: u16, total: u16| {
+        json!({ "total_fee_bps": total, "creator_bps": c, "platform_bps": pl, "holders_bps": h, "lp_bps": l, "referral_bps": rf,
+        "opening_fee_start_bps": 0, "opening_decay_minutes": 0, "fee_vest_bps": 5000, "fee_vest_days": 90 })
+    };
     let cases: Vec<(Value, &str)> = vec![
         (json!({ "name": "A", "symbol": "HOS1", "fees": fees(10000, 0, 0, 0, 0, 100) }), "R_CREATOR_SHARE"),
         (json!({ "name": "A", "symbol": "HOS2", "fees": fees(0, 0, 3000, 7000, 0, 100) }), "R_PLATFORM_FLOOR"),
@@ -265,7 +292,14 @@ async fn hostile_fee_terms_and_edge_inputs_are_refused() -> anyhow::Result<()> {
         let r = ix.create_raw(&ix.creator, p.clone(), None).await?;
         assert!(has_code(&r, code), "{code} for {p}: {:?}", r.failures());
     }
-    let junk = ix.creator.call(ix.launcher.id(), "create_instant").args_json(json!({ "params": "nope" })).deposit(NearToken::from_near(1)).gas(GAS).transact().await?;
+    let junk = ix
+        .creator
+        .call(ix.launcher.id(), "create_instant")
+        .args_json(json!({ "params": "nope" }))
+        .deposit(NearToken::from_near(1))
+        .gas(GAS)
+        .transact()
+        .await?;
     assert!(junk.is_failure());
     assert_eq!(ix.view("get_config", json!({})).await["next_launch_id"], ID0.to_string());
     Ok(())
@@ -275,7 +309,22 @@ async fn hostile_fee_terms_and_edge_inputs_are_refused() -> anyhow::Result<()> {
 async fn the_abi_has_no_mint_no_pool_withdrawal_and_no_recipient_setter() -> anyhow::Result<()> {
     let ex = exports(&wasm("kruxa_instant_contract"));
     assert!(ex.iter().any(|e| e == "claim_vested") && ex.iter().any(|e| e == "open_instant"), "parser sanity: {ex:?}");
-    for bad in ["mint", "burn", "set_payout", "set_recipient", "set_creator", "change_recipient", "withdraw_pool", "withdraw_liquidity", "remove_liquidity", "sweep", "upgrade", "set_launch", "migrate", "transfer_pool"] {
+    for bad in [
+        "mint",
+        "burn",
+        "set_payout",
+        "set_recipient",
+        "set_creator",
+        "change_recipient",
+        "withdraw_pool",
+        "withdraw_liquidity",
+        "remove_liquidity",
+        "sweep",
+        "upgrade",
+        "set_launch",
+        "migrate",
+        "transfer_pool",
+    ] {
         assert!(!ex.iter().any(|e| e.contains(bad)), "forbidden export containing {bad}: {ex:?}");
     }
     // the only methods that move a token out: claim_vested (recipient), abort_instant (creator seed), withdraw_platform,

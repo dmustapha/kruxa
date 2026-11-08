@@ -21,7 +21,10 @@ async fn happy_path_create_seed_open() -> anyhow::Result<()> {
     let id = ix.create_ready(&ix.creator, params("HAPY"), None).await?;
     let r = ix.inst(&id).await;
     assert_eq!((n(&r["total_supply"]), n(&r["n_alloc"]), n(&r["n_pool"])), (N_TOTAL, N_TOTAL / 20, N_TOTAL / 20 * 19));
-    assert_eq!((r["mode"].clone(), r["creator"].clone(), r["payout_recipient"].clone()), (json!("instant"), json!(ix.creator.id()), json!(ix.creator.id())));
+    assert_eq!(
+        (r["mode"].clone(), r["creator"].clone(), r["payout_recipient"].clone()),
+        (json!("instant"), json!(ix.creator.id()), json!(ix.creator.id()))
+    );
     assert_eq!(r["token"], json!(ix.token_id("HAPY")));
     assert_eq!(r["charter_hash"].as_str().unwrap().len(), 64);
     assert!(id.parse::<u64>()? >= ID0);
@@ -44,12 +47,18 @@ async fn happy_path_create_seed_open() -> anyhow::Result<()> {
     assert_eq!((seed_leg["token_contract"].clone(), seed_leg["sender"].clone()), (json!(ix.usdc.id()), json!(ix.launcher.id())));
     let m = &seed_leg["msg"];
     assert_eq!((m["op"].clone(), m["launch_id"].clone(), m["token"].clone()), (json!("seed_quote"), json!(id), json!(ix.token_id("HAPY"))));
-    assert_eq!((m["creator"].clone(), m["payout_recipient"].clone(), m["charter_hash"].clone()), (json!(ix.creator.id()), json!(ix.creator.id()), r["charter_hash"].clone()));
+    assert_eq!(
+        (m["creator"].clone(), m["payout_recipient"].clone(), m["charter_hash"].clone()),
+        (json!(ix.creator.id()), json!(ix.creator.id()), r["charter_hash"].clone())
+    );
     assert_eq!((m["total_supply"].clone(), m["supply_model"].clone()), (json!(N_TOTAL.to_string()), json!("near_factory_fixed")));
     assert_eq!(m["terms"]["opening_fee_start_bps"], 500);
     assert!(m.get("mint_authority").is_none() || m["mint_authority"].is_null());
     assert_eq!(seed_leg["amount"], "250000000");
-    assert_eq!((tok_leg["token_contract"].clone(), tok_leg["amount"].clone()), (json!(ix.token_id("HAPY")), json!((N_TOTAL / 20 * 19).to_string())));
+    assert_eq!(
+        (tok_leg["token_contract"].clone(), tok_leg["amount"].clone()),
+        (json!(ix.token_id("HAPY")), json!((N_TOTAL / 20 * 19).to_string()))
+    );
     assert_eq!(ix.usdc_bal(ix.market.id()).await, 250 * USDC);
     assert_eq!(ix.usdc_bal(ix.launcher.id()).await, 0);
     let tok = ix.token_id("HAPY");
@@ -219,7 +228,10 @@ async fn create_instant_refuses_each_rule_with_its_code() -> anyhow::Result<()> 
         ("R_VEST", json!({ "name": "A", "symbol": "VSTB", "cliff_days": 6 })),
         ("R_SEED_RANGE", json!({ "name": "A", "symbol": "SEDA", "seed_q": "99999999" })),
         ("R_SEED_RANGE", json!({ "name": "A", "symbol": "SEDB", "seed_q": "1000000001" })),
-        ("R_FEE_TOTAL", json!({ "name": "A", "symbol": "FEEA", "fees": { "total_fee_bps": 201, "creator_bps": 5000, "platform_bps": 1500, "holders_bps": 1500, "lp_bps": 1000, "referral_bps": 1000, "opening_fee_start_bps": 0, "opening_decay_minutes": 0, "fee_vest_bps": 5000, "fee_vest_days": 90 } })),
+        (
+            "R_FEE_TOTAL",
+            json!({ "name": "A", "symbol": "FEEA", "fees": { "total_fee_bps": 201, "creator_bps": 5000, "platform_bps": 1500, "holders_bps": 1500, "lp_bps": 1000, "referral_bps": 1000, "opening_fee_start_bps": 0, "opening_decay_minutes": 0, "fee_vest_bps": 5000, "fee_vest_days": 90 } }),
+        ),
     ];
     for (code, p) in cases {
         let r = ix.create_raw(&ix.creator, p.clone(), None).await?;
@@ -282,7 +294,12 @@ async fn a_failed_factory_call_frees_the_symbol_and_refunds_the_deposit() -> any
     let before = ix.creator.view_account().await?.balance.as_yoctonear();
     let rr = ix.call_gas(&ix.creator, "reclaim_deposit", lid(&id), 30).await?;
     let after = ix.creator.view_account().await?.balance.as_yoctonear();
-    assert!(after > before, "before {before} after {after}: {:#?} {:#?}", rr.logs(), rr.outcomes().iter().map(|o| (o.executor_id.to_string(), o.is_success(), o.tokens_burnt)).collect::<Vec<_>>());
+    assert!(
+        after > before,
+        "before {before} after {after}: {:#?} {:#?}",
+        rr.logs(),
+        rr.outcomes().iter().map(|o| (o.executor_id.to_string(), o.is_success(), o.tokens_burnt)).collect::<Vec<_>>()
+    );
     let gained = after - before;
     assert!(gained > n(&r["deposit_refundable"]) - NearToken::from_millinear(50).as_yoctonear(), "gained {gained}");
     assert!(has_code(&ix.call(&ix.creator, "reclaim_deposit", lid(&id)).await?, "R_NOTHING_TO_CLAIM"));
@@ -325,7 +342,14 @@ async fn seed_is_refused_with_the_full_amount_returned() -> anyhow::Result<()> {
         assert!(has_code(&r, code), "{code}: {:?}", r.logs());
     }
     assert_eq!(ix.usdc_bal(ix.launcher.id()).await, 0, "nothing was kept");
-    let bad = ix.creator.call(ix.usdc.id(), "ft_transfer_call").args_json(json!({ "receiver_id": ix.launcher.id(), "amount": "250000000", "msg": "not json" })).deposit(NearToken::from_yoctonear(1)).gas(GAS).transact().await?;
+    let bad = ix
+        .creator
+        .call(ix.usdc.id(), "ft_transfer_call")
+        .args_json(json!({ "receiver_id": ix.launcher.id(), "amount": "250000000", "msg": "not json" }))
+        .deposit(NearToken::from_yoctonear(1))
+        .gas(GAS)
+        .transact()
+        .await?;
     assert!(has_code(&bad, "R_BAD_MSG"));
     assert_eq!(ix.usdc_bal(ix.creator.id()).await, 1_000 * USDC);
     ix.seed(&ix.creator, &id, 250 * USDC).await?.into_result()?;
@@ -353,7 +377,10 @@ async fn a_refused_seed_leg_is_recredited_and_a_retry_sends_only_what_is_missing
     set_mode(&ix, "refuse_token").await;
     ix.open(&ix.creator, &id).await?.into_result()?;
     let r = ix.inst(&id).await;
-    assert_eq!((r["status"].clone(), n(&r["seed_sent"]), n(&r["tokens_sent"]), n(&r["tokens_inflight"])), (json!("Handoff"), 250 * USDC, 0, 0));
+    assert_eq!(
+        (r["status"].clone(), n(&r["seed_sent"]), n(&r["tokens_sent"]), n(&r["tokens_inflight"])),
+        (json!("Handoff"), 250 * USDC, 0, 0)
+    );
     assert_eq!(n(&r["tokens_unsent"]), N_TOTAL / 20 * 19);
     ix.assert_solvent(&[&id]).await;
     set_mode(&ix, "accept").await;
@@ -451,7 +478,11 @@ async fn cancel_and_abandon_end_an_unseeded_launch() -> anyhow::Result<()> {
     let late_seed = ix.seed(&ix.creator, &id, 250 * USDC).await?;
     assert!(has_code(&late_seed, "R_INSTANT_STATE"));
     let r = ix.inst(&id).await;
-    assert_eq!(n(&r["deposit_refundable"]), n(&r["deposit_paid"]) - 80_000_000_000_000_000_000_000, "minus record storage and the factory deposit");
+    assert_eq!(
+        n(&r["deposit_refundable"]),
+        n(&r["deposit_paid"]) - 80_000_000_000_000_000_000_000,
+        "minus record storage and the factory deposit"
+    );
     ix.call(&ix.creator, "reclaim_deposit", lid(&id)).await?.into_result()?;
     let id2 = ix.user("c2", 0).await?;
     let second = ix.create_ready(&id2, params("CNC2"), None).await?;
