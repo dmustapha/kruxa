@@ -1,0 +1,12 @@
+cluster: devnet (devnet) mode: F0 launch: 3
+commit_genesis ok (STANDALONE core stand-in (spec NOT committed on NEAR))
+fund G 23sDvYyXvtv4m39uE5B5nrfG4YvFd5DQ6UoSt9HuaWUo: VyRHFvUHuCrVUE95GB2MocEc59pcGP5dsGmJ3Js52m6SBd9b6ZC3t8Un5GLJHgypjbpFaFsSE3P1ACVk57xJT5b
+Receipts: 9PpKCcmKXAvdHH226rBCy281XbU1LGaTg6Z5urLuf6F6, mTXi4f4dxC9kcZK6XfC1fVRsTNkrMw7ot8nTAo26oH3
+tx1 create: 3WrUuJwZx94ypVyNzKZrtDCF3y6mEDfF9T3vc82P1uLNUoQSpbBUyh7iwTGXKjXyQUdJqv3Ydv18CY4LWCzPcBNn
+Retrying transaction v1.signer-prod.testnet:F9NmkLiM9GLfShvNigdWjSek5EfPTEvHdLC7gCDuj1N4 with new nonce.
+Receipts: BuRR1HcxvLqYuWwZ1Nod8MWeuumZEZHbiH5deNSseAFY, QuRkpj5hwF959gnpQhHteEnaZwr6ihdkhpr1JuuHnTn
+Simulation failed. 
+Message: Transaction simulation failed: Blockhash not found. 
+Logs: 
+[]. 
+Catch the `SendTransactionError` and call `getLogs()` on it for full details.

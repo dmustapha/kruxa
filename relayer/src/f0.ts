@@ -13,9 +13,13 @@ export interface SignBackend {
   label: string;
   /** Inputs of the offline derivation, published in the ceremony record so verify C27 can recompute the key. */
   derivation?: { signer_root: string; predecessor: string; path: string };
+  /** One entry per live sign call: what the real signer returned, how long it took and what it cost. */
+  signLog?: SignLogEntry[];
   derivedPub(): Promise<Uint8Array>;
   sign(message: Uint8Array): Promise<Uint8Array>;
 }
+
+export interface SignLogEntry { tx: string; ms: number; response: string; gas_burnt_tgas: number; near_burnt: string }
 
 export class PolicyMismatch extends Error {
   constructor() { super("E_POLICY_MISMATCH: message hash is not the compile() output"); }
@@ -75,18 +79,26 @@ export async function nearBackend(launch: bigint): Promise<SignBackend> {
   const path = `kruxa:genesis:${launch}`;
   const rootPk = (await account.viewFunction({ contractId: TESTNET_SIGNER, methodName: "public_key", args: { domain_id: 1 } })) as string;
   const pub = derivedKeyBytes(rootPk, k.account_id, path);
+  const signLog: SignLogEntry[] = [];
   return {
+    signLog,
     derivation: { signer_root: rootPk, predecessor: k.account_id, path },
     label: `NEAR testnet ${TESTNET_SIGNER} (predecessor ${k.account_id}, path ${path})`,
     derivedPub: async () => pub,
     sign: async (message) => {
+      const t0 = Date.now();
       const out = await account.functionCall({
         contractId: TESTNET_SIGNER, methodName: "sign", gas: SIGN_GAS, attachedDeposit: 1n,
         args: { request: { payload_v2: { Eddsa: hex(message) }, path, domain_id: 1 } },
       });
       const status = out.status as { SuccessValue?: string };
       if (!status.SuccessValue) throw new Error(`sign failed: ${JSON.stringify(out.status).slice(0, 200)}`);
-      const parsed = JSON.parse(Buffer.from(status.SuccessValue, "base64").toString("utf8")) as { signature?: number[]; Ed25519?: { signature?: number[] } };
+      const text = Buffer.from(status.SuccessValue, "base64").toString("utf8");
+      const outcomes = [out.transaction_outcome, ...out.receipts_outcome];
+      const gas = outcomes.reduce((n, o) => n + Number(o.outcome.gas_burnt), 0);
+      const burnt = outcomes.reduce((n, o) => n + BigInt(o.outcome.tokens_burnt), 0n);
+      signLog.push({ tx: out.transaction.hash as string, ms: Date.now() - t0, response: text.slice(0, 400), gas_burnt_tgas: gas / 1e12, near_burnt: (Number(burnt) / 1e24).toFixed(6) });
+      const parsed = JSON.parse(text) as { signature?: number[]; Ed25519?: { signature?: number[] } };
       const raw = parsed.signature ?? parsed.Ed25519?.signature;
       if (!raw || raw.length !== 64) throw new Error("unexpected signature shape (UNVERIFIED response format)");
       return Uint8Array.from(raw);

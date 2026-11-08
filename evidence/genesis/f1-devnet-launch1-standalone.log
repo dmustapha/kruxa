@@ -1,0 +1,18 @@
+cluster: devnet (devnet) mode: F1 launch: 1
+commit_genesis ok (STANDALONE core stand-in (spec NOT committed on NEAR))
+fund G 4YvqU7GVBV52TMRbX3tYbKAKKsVSLAo3zDjyJ1fB8RSp: 2gLZTmDwbSNANjXpoLwUrMbaM8M7m6a7QU3dqFw7yHiSQ9Z8mGjgc51henQcQth4Lk8Rf9hY6kTUL6RAYZac9XUZ
+tx1 create: 56Lp7n8B6neJ48BWxNz1LR6GKJX6Jci54y7Tmr6HmXGSXnFAaTPnhp4X1sTok28r9DEKmiE9sDSWMFx9b4qaMkEX
+tx2 seal: 5fkDBfz5fiPt7ib3poXQq5AnSnPaiPxU3WAwLvSwW83kUp4UkUVkzPThXhWFXYgTE43QjSTLhQsdyPUfQumyPTie
+mint: CW9AH5Su5K2kZahvMu934WXqpP8FJT1uv3bbrtHgPcYj
+mint_authority: null
+freeze_authority: null
+extensions: none
+g_lamports_after: 890880
+space: 82
+owner: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
+supply: 50000000000 (sum of buckets: 50000000000)
+latency_ms: 3806
+sign_ms: 5,5
+signed by per-launch key (destroyed) 4YvqU7GVBV52TMRbX3tYbKAKKsVSLAo3zDjyJ1fB8RSp
+confirm_genesis ok
+record: evidence/genesis/f1-devnet-launch1-standalone.json

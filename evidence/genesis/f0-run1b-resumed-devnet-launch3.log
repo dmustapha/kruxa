@@ -1,0 +1,20 @@
+cluster: devnet (devnet) mode: F0 launch: 3
+commit_genesis ok (STANDALONE core stand-in (spec NOT committed on NEAR))
+RESUME: mint exists unsealed, G holds 896130 lamports; skipping tx1
+Receipts: D2pPKrhkLh4WEPaX3h7WMQUdFu52f7jDU9TP6QGJw5X, AjvsrLqFVy2DEE77DGLxZGqgyDT4Lgbh7XrctEK75fXb
+tx2 seal: 3R3RLhnegHvxPccAdP1fHRKBietssU9Ckvz7u4iDcLqaPFk1WrjWM3ExpNVkpjwKp1nPkekduggfmsczXWLfiFAZ
+mint: FPmxR6EmzFtPJUoj7ScaW3vQxZiU5LujSt7oqSQSaCxq
+mint_authority: null
+freeze_authority: null
+extensions: none
+g_lamports_after: 890880
+space: 82
+owner: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
+supply: 50000000000 (sum of buckets: 50000000000)
+latency_ms: 17040
+sign_ms: 14420
+signed by derived key 23sDvYyXvtv4m39uE5B5nrfG4YvFd5DQ6UoSt9HuaWUo
+F0_SIGN {"tx":"4DWu8Jm9R6xMkhwha7Mf6tZCENEirwnBFKzRkXYJhSHd","ms":14407,"response":"{\"scheme\":\"Ed25519\",\"signature\":[120,196,67,243,182,185,223,204,101,226,186,79,143,58,239,107,208,135,130,149,133,97,150,185,222,2,81,55,31,252,36,226,5,246,141,98,10,182,47,186,95,181,32,218,56,246,69,164,28,78,196,232,164,82,204,138,149,4,85,196,149,106,181,10]}","gas_burnt_tgas":16.188247803096,"near_burnt":"0.000866"}
+signature verified against the derived key (offline, before broadcast)
+confirm_genesis ok
+record: evidence/genesis/f0-run1b-resumed-devnet-launch3.json

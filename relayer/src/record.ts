@@ -7,7 +7,7 @@ import type { Leaf } from "./merkle.js";
 export interface RecordExtras {
   cluster: string; mode: string; launchId: bigint; leaves: Leaf[]; core: string;
   squads?: { multisig: string; members: string[]; threshold: number; time_lock: number };
-  f0?: { signer_root: string; predecessor: string; path: string }; sources: string;
+  f0?: { signer_root: string; predecessor: string; path: string; sign_log?: unknown }; sources: string;
 }
 
 /** Public ceremony record consumed by scripts/verify_solana.py. Contains no secrets. */

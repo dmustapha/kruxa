@@ -13,14 +13,14 @@ import { JITO_MAINNET } from "./solana-bytes.js";
 import { createVault, readOnChain } from "../../tools/squads/vault.js";
 
 interface Args {
-  launch: bigint; mode: "F1" | "F0"; cluster: Cluster; core?: string; record?: string; squadsMultisig?: string; squadsTimeLock?: number; holders: number;
+  launch: bigint; mode: "F1" | "F0"; cluster: Cluster; core?: string; record?: string; squadsMultisig?: string; squadsTimeLock?: number; holders: number; priorTx1?: string;
 }
 
 const USAGE = "usage: genesis --launch N --mode F1|F0 [--cluster devnet|local] [--core ACCOUNT | (standalone)] [--squads-multisig PUBKEY | --squads-time-lock S] [--record FILE]";
 
 function parseArgs(argv: string[]): Args {
   const get = (k: string) => { const i = argv.indexOf(k); return i >= 0 ? argv[i + 1] : undefined; };
-  const known = new Set(["--launch", "--mode", "--cluster", "--core", "--record", "--squads-multisig", "--squads-time-lock", "--holders"]);
+  const known = new Set(["--launch", "--mode", "--cluster", "--core", "--record", "--squads-multisig", "--squads-time-lock", "--holders", "--prior-tx1"]);
   const bad = argv.filter((a) => a.startsWith("--") && !known.has(a));
   const launch = get("--launch"), mode = get("--mode") ?? "F1", cluster = get("--cluster") ?? "devnet";
   if (!launch || !/^\d+$/.test(launch) || !["F1", "F0"].includes(mode) || !["devnet", "local"].includes(cluster) || bad.length) {
@@ -28,7 +28,7 @@ function parseArgs(argv: string[]): Args {
     process.exit(64);
   }
   const tl = get("--squads-time-lock");
-  return { launch: BigInt(launch), mode: mode as Args["mode"], cluster: cluster as Cluster, core: get("--core"), record: get("--record"), squadsMultisig: get("--squads-multisig"), squadsTimeLock: tl ? Number(tl) : undefined, holders: Number(get("--holders") ?? 0) };
+  return { launch: BigInt(launch), mode: mode as Args["mode"], cluster: cluster as Cluster, core: get("--core"), record: get("--record"), squadsMultisig: get("--squads-multisig"), squadsTimeLock: tl ? Number(tl) : undefined, holders: Number(get("--holders") ?? 0), priorTx1: get("--prior-tx1") };
 }
 
 function loadFunder(): Keypair {
@@ -62,19 +62,20 @@ async function main(): Promise<void> {
   const signer = await makeSigner(a.mode, a.launch);
   const gPub = new PublicKey(signer.pub()).toBase58();
   const t0 = Date.now();
-  const r = await runCeremony({ conn, cluster: a.cluster, core, signer, launchId: a.launch, funder, priceMicroLamports: 1000, jitoProgram: process.env.JITO_PROGRAM ?? JITO_MAINNET, metadataUri, log: console.log });
+  const r = await runCeremony({ conn, cluster: a.cluster, core, signer, launchId: a.launch, funder, priceMicroLamports: 1000, jitoProgram: process.env.JITO_PROGRAM ?? JITO_MAINNET, metadataUri, priorTx1: a.priorTx1, log: console.log });
   const v = r.view;
   console.log(`mint: ${r.mint}\nmint_authority: ${v.mintAuthority}\nfreeze_authority: ${v.freezeAuthority}\nextensions: ${v.space === 82 ? "none" : "PRESENT"}`);
   console.log(`g_lamports_after: ${await conn.getBalance(new PublicKey(gPub))}\nspace: ${v.space}\nowner: ${v.owner}\nsupply: ${v.supply} (sum of buckets: ${r.compiled.supply})`);
   console.log(`latency_ms: ${Date.now() - t0}\nsign_ms: ${r.timing.signMs.join(",")}`);
   console.log(`signed by ${a.mode === "F0" ? "derived key" : "per-launch key (destroyed)"} ${gPub}`);
+  if (a.mode === "F0") for (const e of (signer as F0Signer).backend.signLog ?? []) console.log(`F0_SIGN ${JSON.stringify(e)}`);
   if (a.mode === "F0") console.log("signature verified against the derived key (offline, before broadcast)");
   console.log("confirm_genesis ok");
   if (holders.length) await claimTest(conn, funder, holders, r, a.launch);
   if (a.record) {
     const sq = await readOnChain(conn, new PublicKey(multisig));
     const f0 = signer.mode === "F0" ? (signer as F0Signer).backend.derivation : undefined;
-    writeRecord(a.record, r, { cluster: a.cluster, mode: a.mode, launchId: a.launch, leaves, core: core.label, squads: { multisig, members: sq.members, threshold: sq.threshold, time_lock: sq.timeLock }, f0, sources: core.label });
+    writeRecord(a.record, r, { cluster: a.cluster, mode: a.mode, launchId: a.launch, leaves, core: core.label, squads: { multisig, members: sq.members, threshold: sq.threshold, time_lock: sq.timeLock }, f0: f0 && { ...f0, sign_log: (signer as F0Signer).backend.signLog }, sources: core.label });
     console.log(`record: ${a.record}`);
   }
 }

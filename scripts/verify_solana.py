@@ -17,6 +17,7 @@ import merkle  # noqa: E402
 import sol  # noqa: E402
 
 PRODUCTION_TIME_LOCK = 172_800
+G_DUST_MAX = 890_880 + 5_000
 TAMPER_FIELDS = ["mint", "g_pub", "launch_id", "name", "symbol", "decimals", "reserve_amount", "max_total_claim", "max_num_nodes",
                  "merkle_root", "reserve_owner", "spec_hash"]
 SKIPS = {"C1": "needs core genesis views (Task 4.4)", "C2": "needs core ledger views (Task 4.4)", "C10": "needs the hosted metadata JSON",
@@ -275,13 +276,13 @@ def c_g(rpc, rec, r):
         r.ok("C15", "G history is the ceremony only (%d signatures)" % len(sigs))
     a = rpc.account(g)
     lam = a["lamports"] if a else 0
-    if lam > 5000:
-        r.bad("C16", "g_pub", "<=5000 lamports", lam)
+    if lam > G_DUST_MAX:
+        r.bad("C16", "g_pub", "<=%d lamports" % G_DUST_MAX, lam)
     else:
-        r.ok("C16", "G lamports %d <= 5000" % lam)
+        r.ok("C16", "G lamports %d <= %d (rent-exempt floor 890,880 + 5,000; a system account cannot be left lower without a sweep)" % (lam, G_DUST_MAX))
 
 
-def c_txs(rpc, rec, params, out, r):
+def c_txs(rpc, rec, raw, params, out, r):
     allow = {sol.SYSTEM, sol.COMPUTE_BUDGET, sol.TOKENKEG, sol.ATA, sol.METAPLEX, sol.b58e(params.jito_program)}
     good = True
     for name, sig in zip(("tx1", "tx2"), rec["sigs"]):
@@ -289,7 +290,9 @@ def c_txs(rpc, rec, params, out, r):
         if not t or t["meta"]["err"] is not None:
             r.bad("C17", "g_pub", name + " succeeded", "missing or failed"); return
         msg = base64.b64decode(t["transaction"][0])[65:]
-        if msg != out[name]:
+        # each transaction carries its own blockhash (the MPC signer can take a minute); recompile with the one it used
+        want = gc.compile_genesis(raw, params, sol.parse_message(msg)["blockhash"], rec["price"])[name]
+        if msg != want:
             r.bad("C17", "spec_hash", "compile() bytes", "on-chain %s message differs" % name); good = False
         pm = sol.parse_message(msg)
         for i in pm["instructions"]:
@@ -345,7 +348,7 @@ def run_checks(rpc, rec, charter, production):
     c_distributor(rpc, rec, spec, params, out, r)
     c_squads(rpc, rec, spec, out, charter, production, r)
     c_g(rpc, rec, r)
-    c_txs(rpc, rec, params, out, r)
+    c_txs(rpc, rec, raw, params, out, r)
     c_merkle(rec, spec, r)
     c_f0(rec, r)
     r.ok("C28", "two-RPC agreement enforced on every read (2 RPCs)") if len(rpc.urls) == 2 else r.skip("C28", "single RPC; pass --rpc2")

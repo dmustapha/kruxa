@@ -1,0 +1,61 @@
+{
+  "format": "kruxa-genesis-record/2",
+  "cluster": "devnet",
+  "mode": "F0",
+  "launch_id": "4",
+  "core": "STANDALONE core stand-in (spec NOT committed on NEAR)",
+  "mint": "9NM5NNYYKfd77wwYxkLytAwo5nE2smeJ1gYX6QVRuxyU",
+  "g_pub": "Bphf5Y8WChnJFF7KmetZsFeMBq6qH3jES1FYrfNcFVW4",
+  "spec_hex": "011100000067732d636f6d70696c65722f312e302e300d000000736f6c616e612d6465766e6574ce59db5080fc2c6d3bcf7ca90712d3c2e5e6c28f27f0dfbb9953bdb0894c03ab01000000340a0000007374616e64616c6f6e65000000000000000001a0cd23448fe72b6663c3a97e2a388d889ac54d35d40accf38f0af658efd6270501000000347c556442485ada3287058d6deb3685039455c4e9a922fff0f6af3be971975ae706ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a90600743ba40b000000110000004b727578612052656865617273616c2034040000004b525834423e61b3160185975b4185f48898b962507527616127ff86834b6be8900d49732bcd3e14dca8fdb18ca3d4e958bb1c4df002598ae6e5d80fc9d9824a6b5dc450010100020000000000743ba40b000000010000000000000000af221d91d65dcf810a4002d662a9285c75d1bd84e31369d24efccfaf5d6c2fac000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005a00",
+  "spec_hash": "3f5371021328b173b0c019c0cd86f379a0b0d893e567aae6e7127545545378ab",
+  "params": {
+    "jito_program": "mERKcfxMC5SqJn4Ld4BUris3WKZZ1ojjWJ3A3J5CKxv",
+    "metadata_uri": "https://kruxa.example/rehearsal/4.json",
+    "clock_ts": "1794147961"
+  },
+  "blockhash": "BNuGaFXeovCuRVbefWXYozTyVHEFAHcaYPMifqshhop9",
+  "price": 1000,
+  "sigs": [
+    "2gchDSPHuVVkbsajz4wmUfLwiNfTeiauy92a5sDF14pfkFQ4LxE1UfPAupiZEgrvdBAHwEcP1vLdFibyCi2ZXzqQ",
+    "3xuEhUFCVeCoPduWqopdgZNKzohBwXZqq7pqYrgwX1dkB23ftAX5rDTqkuwhR6WttPdfEW1X6GNyL2snArmV9Wxx"
+  ],
+  "slot": 520050563,
+  "ceremony_hash": "64a2ffbfa608b225b38ce56f8f818656ea0f1ce182399e12ce6feacfc5d4451a",
+  "sign_ms": [
+    15398,
+    21190
+  ],
+  "leaves": [],
+  "squads": {
+    "multisig": "CneX72zHFJsd71BBZ39xAuBH8zBySsWo6RedYr6j6A1Z",
+    "members": [
+      "3foiPWxXqjY7wjLs66JnQpojKrEKXHPu66Gv3wTrxq4k",
+      "4aTU5yBGipNZogGWM17nGyGxZJoFC6bsPUY39mebd6Uk",
+      "5WwpmFpgqfYS7N6eGW1Q6REqrppaUaJwXxfvrRUjgrWS"
+    ],
+    "threshold": 2,
+    "time_lock": 172800
+  },
+  "f0": {
+    "signer_root": "ed25519:6vSEtQxrQj6txUMh33WC4ERyCWmNMRTdufDWAaDY3Un2",
+    "predecessor": "7218da57019c05386280b3a4196e7654279e32c66e129889e17a653fc229cc85",
+    "path": "kruxa:genesis:4",
+    "sign_log": [
+      {
+        "tx": "CnEuxMKFqptd2LgPx7Hm56ESTqai5LPUKC45YkBR1cZ8",
+        "ms": 15390,
+        "response": "{\"scheme\":\"Ed25519\",\"signature\":[84,46,8,138,247,115,164,31,232,129,237,126,132,10,69,37,174,114,254,28,36,91,191,152,75,103,105,50,87,116,43,166,101,150,155,151,225,209,57,109,84,229,96,41,112,87,50,25,241,195,93,199,188,97,97,27,98,133,73,111,69,113,212,11]}",
+        "gas_burnt_tgas": 17.214925377882,
+        "near_burnt": "0.000969"
+      },
+      {
+        "tx": "HzPfzixgCA42ZEtkndCSaWuzvXJJ3WAdqX5uPgeEaoxk",
+        "ms": 21179,
+        "response": "{\"scheme\":\"Ed25519\",\"signature\":[148,61,150,42,226,61,65,168,126,123,128,209,135,15,233,110,85,100,177,199,234,202,94,61,85,212,219,70,146,55,110,125,0,10,129,85,69,155,201,126,163,58,95,173,60,196,139,187,241,64,151,109,145,44,167,103,37,31,20,43,227,224,110,1]}",
+        "gas_burnt_tgas": 16.140013976679,
+        "near_burnt": "0.000862"
+      }
+    ]
+  },
+  "spec_source": "STANDALONE core stand-in (spec NOT committed on NEAR)"
+}
