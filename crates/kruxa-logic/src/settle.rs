@@ -24,6 +24,12 @@ pub fn phase_at(now: u64, opens_at: u64, commit_end: u64, walk_end: u64) -> Phas
     }
 }
 
+/// Walk is open from `opens_at` (inclusive) until `walk_end` (exclusive). `settle` needs `phase_at(..) == Ready`, i.e. `now >= walk_end`,
+/// so at every instant at most one of the two is possible: they read the same clock and cannot straddle.
+pub fn walk_window_open(now: u64, opens_at: u64, walk_end: u64) -> bool {
+    now >= opens_at && now < walk_end
+}
+
 /// Launch fee = min(max_fee, 3% of A, max(ceil(1.5% of A), min_fee)). Rounded so the platform never loses a unit.
 pub fn launch_fee(accepted: u128, r: &Rules) -> Result<u128, MathError> {
     let rate = bps_ceil(accepted, r.launch_fee_bps)?;
@@ -129,6 +135,26 @@ mod tests {
         assert_eq!(3 * s.spend - a.accepted, 2, "residue 2 micro goes to LP");
         assert_eq!(3 * s.spend + 3 * s.refund, total);
         assert_eq!(1_000 - 3 * s.tokens, 1, "token dust of 1 base unit goes to LP");
+    }
+
+    /// A-TIMESTAMP-BOUNDARY (pure side): at `walk_end - 1` Walk is open and settle is not; at `walk_end` exactly, settle is open and Walk is not.
+    #[test]
+    fn a_timestamp_boundary_walk_and_settle_never_both_open() {
+        let (opens, commit_end, walk_end) = (100u64, 200, 300);
+        let settle_open = |now| phase_at(now, opens, commit_end, walk_end) == Phase::Ready;
+        assert!(walk_window_open(walk_end - 1, opens, walk_end) && !settle_open(walk_end - 1));
+        assert!(!walk_window_open(walk_end, opens, walk_end) && settle_open(walk_end), "settle at exactly walk_end allowed, Walk refused");
+        assert!(walk_window_open(opens, opens, walk_end) && !walk_window_open(opens - 1, opens, walk_end), "Walk opens at opens_at");
+        for now in 0..400u64 {
+            let both = walk_window_open(now, opens, walk_end) && settle_open(now);
+            assert!(!both, "Walk and settle both open at {now}");
+            if now >= opens {
+                assert!(
+                    walk_window_open(now, opens, walk_end) || settle_open(now),
+                    "after opens_at one of them is always possible ({now})"
+                );
+            }
+        }
     }
 
     // ---- W1-DC-2 named tests (S1-B 2.6, 11.2): three equal buyers make every division inexact ----

@@ -25,9 +25,7 @@ pub const ONE_YOCTO: NearToken = NearToken::from_yoctonear(1);
 pub const GAS_OUT: Gas = Gas::from_tgas(20);
 pub const GAS_CB: Gas = Gas::from_tgas(25);
 pub const CREATION_TIMEOUT_NS: u64 = 600_000_000_000;
-pub const FREEZE_MAX_NS: u64 = 7 * 86_400_000_000_000;
-pub const CAP_TIMELOCK_NS: u64 = 7 * 86_400_000_000_000;
-pub const GLOBAL_CAP_USDC: u128 = 3_000_000_000;
+pub use kruxa_logic::{CAP_TIMELOCK_NS, FREEZE_MAX_NS, GLOBAL_CAP_USDC};
 pub const FACTORY_DEPOSIT_YOCTO: u128 = 60_000_000_000_000_000_000_000;
 
 #[derive(BorshStorageKey)]
@@ -123,10 +121,7 @@ impl Contract {
 
     /// Pause level with the FROZEN auto-expiry applied on read: no transaction is needed to lift it.
     pub(crate) fn pause_level(&self) -> PauseLevel {
-        match self.cfg.pause {
-            PauseLevel::Frozen if env::block_timestamp() >= self.cfg.frozen_until => PauseLevel::Paused,
-            p => p,
-        }
+        kruxa_logic::pause_at(self.cfg.pause.into(), self.cfg.frozen_until, env::block_timestamp()).into()
     }
 
     /// New risk is blocked while PAUSED or FROZEN.

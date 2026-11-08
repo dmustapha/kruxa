@@ -1,4 +1,4 @@
-use kruxa_logic::{hex, Derived, Rules, TrialParams};
+use kruxa_logic::{hex, Derived, Rules, StatusClass, TrialParams, VerdictInputs};
 use near_sdk::{bs58, near, AccountId};
 
 /// Who owns a position. A 64-hex Intents signer is a Solana key only if `deliver` says so (RECONCILED row 13).
@@ -50,6 +50,26 @@ pub enum PauseLevel {
     Frozen,
 }
 
+impl From<PauseLevel> for kruxa_logic::Pause {
+    fn from(p: PauseLevel) -> Self {
+        match p {
+            PauseLevel::None => Self::None,
+            PauseLevel::Paused => Self::Paused,
+            PauseLevel::Frozen => Self::Frozen,
+        }
+    }
+}
+
+impl From<kruxa_logic::Pause> for PauseLevel {
+    fn from(p: kruxa_logic::Pause) -> Self {
+        match p {
+            kruxa_logic::Pause::None => Self::None,
+            kruxa_logic::Pause::Paused => Self::Paused,
+            kruxa_logic::Pause::Frozen => Self::Frozen,
+        }
+    }
+}
+
 #[near(serializers = [borsh])]
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum TokenRoute {
@@ -84,6 +104,19 @@ pub enum Status {
     /// Reason bitset: 1 below soft cap, 2 below min funders, 4 cancelled.
     Failed(u8),
     Dissolved,
+}
+
+impl Status {
+    pub fn class(&self) -> StatusClass {
+        match self {
+            Status::Creating => StatusClass::Creating,
+            Status::CreationFailed => StatusClass::CreationFailed,
+            Status::Open => StatusClass::Open,
+            Status::Passed => StatusClass::Passed,
+            Status::Failed(_) => StatusClass::Failed,
+            Status::Dissolved => StatusClass::Dissolved,
+        }
+    }
 }
 
 #[near(serializers = [borsh])]
@@ -149,6 +182,22 @@ pub struct LaunchState {
     pub book_hash: [u8; 32],
     pub ledger: Ledger,
     pub settlement: Option<Settlement>,
+}
+
+impl LaunchState {
+    /// The one place the verdict inputs are assembled: `settle`, `cancel_trial` and the `get_verdict_inputs` view all call it,
+    /// so the hash stored in the settlement is exactly the hash a judge recomputes.
+    pub fn verdict_inputs(&self, ch: &Charter) -> VerdictInputs {
+        VerdictInputs {
+            launch_id: ch.launch_id,
+            charter_hash: self.charter_hash,
+            total_active: self.total_active,
+            active_funders: self.active_funders,
+            soft_cap: ch.params.soft_cap,
+            min_funders: ch.params.min_funders,
+            cancelled: self.cancelled,
+        }
+    }
 }
 
 #[near(serializers = [borsh])]

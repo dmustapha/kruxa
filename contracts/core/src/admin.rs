@@ -6,7 +6,7 @@ use near_sdk::{env, near};
 
 use crate::events::emit;
 use crate::model::PauseLevel;
-use crate::{fail, Contract, CAP_TIMELOCK_NS, FREEZE_MAX_NS};
+use crate::{fail, Contract};
 
 impl Contract {
     fn require_owner(&self) {
@@ -38,7 +38,7 @@ impl Contract {
     pub fn freeze(&mut self) {
         self.require_owner_or_guardian();
         self.cfg.pause = PauseLevel::Frozen;
-        self.cfg.frozen_until = env::block_timestamp() + FREEZE_MAX_NS;
+        self.cfg.frozen_until = kruxa_logic::frozen_until(env::block_timestamp());
         emit("frozen", json!({ "by": env::predecessor_account_id(), "until": self.cfg.frozen_until.to_string() }));
     }
 
@@ -61,14 +61,14 @@ impl Contract {
     /// Raising a cap is timelocked 7 days and public.
     pub fn queue_global_cap(&mut self, value: U128) {
         self.require_owner();
-        let at = env::block_timestamp() + CAP_TIMELOCK_NS;
+        let at = kruxa_logic::timelock_effective_at(env::block_timestamp());
         self.cfg.pending_global_cap = Some((value.0, at));
         emit("global_cap_queued", json!({ "value": value.0.to_string(), "effective_at": at.to_string() }));
     }
 
     pub fn apply_global_cap(&mut self) {
         match self.cfg.pending_global_cap {
-            Some((v, at)) if env::block_timestamp() >= at => {
+            Some((v, at)) if kruxa_logic::timelock_elapsed(at, env::block_timestamp()) => {
                 self.cfg.global_cap = v;
                 self.cfg.pending_global_cap = None;
                 emit("global_cap_applied", json!({ "value": v.to_string() }));
@@ -81,14 +81,14 @@ impl Contract {
     /// Per-launch hard cap for NEW launches only (existing Charters are snapshots).
     pub fn queue_launch_cap(&mut self, value: U128) {
         self.require_owner();
-        let at = env::block_timestamp() + CAP_TIMELOCK_NS;
+        let at = kruxa_logic::timelock_effective_at(env::block_timestamp());
         self.cfg.pending_launch_cap = Some((value.0, at));
         emit("launch_cap_queued", json!({ "value": value.0.to_string(), "effective_at": at.to_string() }));
     }
 
     pub fn apply_launch_cap(&mut self) {
         match self.cfg.pending_launch_cap {
-            Some((v, at)) if env::block_timestamp() >= at => {
+            Some((v, at)) if kruxa_logic::timelock_elapsed(at, env::block_timestamp()) => {
                 self.cfg.rules.max_hard_cap = v;
                 self.cfg.pending_launch_cap = None;
                 emit("launch_cap_applied", json!({ "value": v.to_string() }));

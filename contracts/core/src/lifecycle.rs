@@ -1,7 +1,7 @@
 use crate::ContractExt;
 use kruxa_logic::{
     allocate, bond_required, check_pass_conservation, inputs_hash, phase_at, settle_position, validate_params, verdict, Buckets, Outcome,
-    Phase, RuleCode, TrialParams, VerdictInputs,
+    Phase, RuleCode, TrialParams,
 };
 use kruxa_math::{mul_div_floor, secs_to_ns};
 use near_sdk::json_types::{U128, U64};
@@ -174,15 +174,7 @@ impl Contract {
         if phase_at(now, ch.opens_at, ch.commit_end, ch.walk_end) != Phase::Ready {
             fail(RuleCode::RTooEarly, "walk tail is still running");
         }
-        let inputs = VerdictInputs {
-            launch_id: id,
-            charter_hash: st.charter_hash,
-            total_active: st.total_active,
-            active_funders: st.active_funders,
-            soft_cap: ch.params.soft_cap,
-            min_funders: ch.params.min_funders,
-            cancelled: st.cancelled,
-        };
+        let inputs = st.verdict_inputs(&ch);
         match verdict(&inputs) {
             Outcome::Fail(reasons) => self.finish_fail(&ch, &mut st, reasons),
             Outcome::Pass => {
@@ -324,7 +316,7 @@ impl Contract {
             lp_quote: 0,
             stream: 0,
             excess_pool: 0,
-            inputs_hash: [0; 32],
+            inputs_hash: inputs_hash(&st.verdict_inputs(ch)),
             book_hash: st.book_hash,
         });
         self.active_by_creator.remove(&ch.creator);

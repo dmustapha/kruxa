@@ -36,6 +36,20 @@ pub struct Env {
     pub treasury: Account,
     pub relay_fees: Account,
     pub next_id: std::cell::Cell<u64>,
+    /// Last status seen per launch, so `assert_invariants` can check the stage only ever moves forward (I4).
+    pub last_status: std::cell::RefCell<std::collections::HashMap<u64, String>>,
+    /// Every NEP-297 `EVENT_JSON:` payload the harness has seen, in order (feeds `book_log`).
+    pub events: std::cell::RefCell<Vec<Value>>,
+}
+
+/// The only legal stage moves (I4). `Failed(n)` carries its reason bits, which never change once set.
+pub fn legal_transition(prev: &str, now: &str) -> bool {
+    let kind = |s: &str| s.split('(').next().unwrap_or("").to_string();
+    prev == now
+        || matches!(
+            (kind(prev).as_str(), kind(now).as_str()),
+            ("Creating", "CreationFailed" | "Open") | ("Open", "Passed" | "Failed") | ("Failed", "Dissolved")
+        )
 }
 
 /// True if any log of the execution carries the rule code (events and panics both start with it).
@@ -97,8 +111,21 @@ impl Env {
             .transact()
             .await?
             .into_result()?;
-        let env =
-            Env { worker, core, usdc, intents, factory, owner, guardian, creator, treasury, relay_fees, next_id: std::cell::Cell::new(1) };
+        let env = Env {
+            worker,
+            core,
+            usdc,
+            intents,
+            factory,
+            owner,
+            guardian,
+            creator,
+            treasury,
+            relay_fees,
+            next_id: std::cell::Cell::new(1),
+            last_status: Default::default(),
+            events: Default::default(),
+        };
         for who in [env.core.id().clone(), env.intents.id().clone(), env.treasury.id().clone(), env.creator.id().clone()] {
             env.register(&env.usdc, &who).await?;
         }
@@ -164,6 +191,37 @@ impl Env {
         Ok(())
     }
 
+    /// Keeps the contract's events from a finished call so a test can replay them (P-RECOMPUTE).
+    fn record(&self, r: &ExecutionFinalResult) {
+        let mut seen = self.events.borrow_mut();
+        for log in r.logs() {
+            if let Some(json) = log.strip_prefix("EVENT_JSON:") {
+                seen.extend(serde_json::from_str::<Value>(json));
+            }
+        }
+    }
+
+    /// The `contributed` and `walked` events of one launch, as the JSON lines `kruxa-sim fold` reads.
+    pub fn book_log(&self, id: u64) -> Vec<String> {
+        let want = id.to_string();
+        let is_book = |e: &&Value| matches!(e["event"].as_str(), Some("contributed" | "walked")) && e["data"][0]["launch_id"] == want;
+        self.events.borrow().iter().filter(is_book).map(Value::to_string).collect()
+    }
+
+    /// W1-DC-4: every `get_invariants` field of every launch created through this Env must be true, and the stage may only move
+    /// Creating -> (CreationFailed | Open) -> (Passed | Failed) -> Dissolved. Called after every step the harness sends.
+    pub async fn assert_invariants(&self) {
+        for id in 1..self.next_id.get() {
+            let inv = self.view("get_invariants", json!({ "launch_id": id.to_string() })).await;
+            assert_eq!(inv["all_ok"], true, "launch {id}: invariants broken: {inv}");
+            let now = self.state(id).await["status"].as_str().unwrap().to_string();
+            let prev = self.last_status.borrow_mut().insert(id, now.clone());
+            if let Some(prev) = prev {
+                assert!(legal_transition(&prev, &now), "launch {id}: illegal stage move {prev} -> {now} (I4)");
+            }
+        }
+    }
+
     /// Pre-deploys the token account the real factory would create, then calls create_trial. Returns the launch id.
     pub async fn create_launch(&self, p: &TrialParams) -> anyhow::Result<u64> {
         let required: String = self.core.view("required_deposit").args_json(json!({ "params": p })).await?.json()?;
@@ -197,6 +255,7 @@ impl Env {
         }
         res.into_result()?;
         self.next_id.set(id + 1);
+        self.assert_invariants().await;
         Ok(id)
     }
 
@@ -248,13 +307,17 @@ impl Env {
 
     /// Sends USDC to core with a commit message (native path).
     pub async fn commit_native(&self, who: &Account, id: u64, amount: u128, deliver: Option<&str>) -> ExecutionFinalResult {
-        who.call(self.usdc.id(), "ft_transfer_call")
+        let r = who
+            .call(self.usdc.id(), "ft_transfer_call")
             .args_json(json!({ "receiver_id": self.core.id(), "amount": amount.to_string(), "msg": msg(id, deliver, None) }))
             .deposit(NearToken::from_yoctonear(1))
             .gas(GAS)
             .transact()
             .await
-            .unwrap()
+            .unwrap();
+        self.record(&r);
+        self.assert_invariants().await;
+        r
     }
 
     /// S3 path through the mock Verifier: a signed-transfer-shaped payload with the flat `msg` key.
@@ -282,10 +345,16 @@ impl Env {
     }
 
     pub async fn worker_call(&self, who: &Account, to: &AccountId, method: &str, args: Value) -> ExecutionFinalResult {
-        who.call(to, method).args_json(args).gas(GAS).transact().await.unwrap()
+        let r = who.call(to, method).args_json(args).gas(GAS).transact().await.unwrap();
+        self.record(&r);
+        self.assert_invariants().await;
+        r
     }
 
     pub async fn call(&self, who: &Account, method: &str, args: Value, deposit: NearToken) -> ExecutionFinalResult {
-        who.call(self.core.id(), method).args_json(args).deposit(deposit).gas(GAS).transact().await.unwrap()
+        let r = who.call(self.core.id(), method).args_json(args).deposit(deposit).gas(GAS).transact().await.unwrap();
+        self.record(&r);
+        self.assert_invariants().await;
+        r
     }
 }

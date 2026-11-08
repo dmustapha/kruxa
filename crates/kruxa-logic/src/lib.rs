@@ -3,14 +3,23 @@
 //! tests import kruxa-logic; kruxa-logic never imports an I/O or chain crate.
 #![forbid(unsafe_code)]
 
+pub mod book;
+pub mod controls;
 pub mod ledger;
 pub mod rules;
 pub mod settle;
 pub mod verdict;
 
-pub use ledger::{check_flow, check_pass_conservation, Buckets, LedgerTotals};
-pub use rules::{bond_required, validate_params, Derived, FeeTerms, RuleCode, RuleViolation, Rules, TrialParams};
-pub use settle::{allocate, launch_fee, phase_at, settle_position, Allocation, Phase, PositionSettlement};
+pub use book::{fold_book, BookEvent, FoldError, Folded};
+pub use controls::{
+    frozen_until, pause_at, timelock_effective_at, timelock_elapsed, Pause, CAP_TIMELOCK_NS, DAY_NS, FREEZE_MAX_NS, GLOBAL_CAP_USDC,
+};
+pub use ledger::{
+    check_flow, check_pass_conservation, i2_position_count, i3_inputs_frozen, i4_status_monotone, i5_no_overpay, BookSums, Buckets,
+    LedgerTotals, StatusClass,
+};
+pub use rules::{bond_required, validate_all, validate_params, Derived, FeeTerms, RuleCode, RuleViolation, Rules, TrialParams};
+pub use settle::{allocate, launch_fee, phase_at, settle_position, walk_window_open, Allocation, Phase, PositionSettlement};
 pub use verdict::{book_next, hex, inputs_hash, verdict, Outcome, VerdictInputs};
 
 /// The one name constant (RULING R6). No other crate or account may hard-code the string.

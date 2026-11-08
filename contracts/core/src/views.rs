@@ -1,7 +1,7 @@
 use crate::ContractExt;
 use kruxa_logic::{
-    bond_required, check_flow, check_pass_conservation, hex, inputs_hash, phase_at, validate_params, Buckets, LedgerTotals, TrialParams,
-    VerdictInputs,
+    bond_required, check_flow, check_pass_conservation, hex, i2_position_count, i3_inputs_frozen, i4_status_monotone, i5_no_overpay,
+    inputs_hash, phase_at, validate_params, BookSums, Buckets, LedgerTotals, TrialParams,
 };
 use near_sdk::json_types::{U128, U64};
 use near_sdk::serde_json::{json, to_value, Value};
@@ -29,6 +29,11 @@ impl Contract {
                 "profile": c.profile, "global_cap": c.global_cap.to_string(), "global_held": c.global_held.to_string(), "pause": format!("{:?}", self.pause_level()),
                 "pending_global_cap": c.pending_global_cap.map(|(v, t)| json!({ "value": v.to_string(), "effective_at": t.to_string() })),
                 "rules": to_value(&c.rules).expect("rules serialize") })
+    }
+
+    /// The rule constants every new Charter snapshots (alias of the `rules` object in `get_config`).
+    pub fn get_rule_set(&self) -> Value {
+        to_value(&self.cfg.rules).expect("rules serialize")
     }
 
     pub fn get_charter(&self, launch_id: U64) -> Option<Value> {
@@ -78,15 +83,7 @@ impl Contract {
     /// The exact numbers a judge feeds to the pure verdict function. Frozen once the launch is settled.
     pub fn get_verdict_inputs(&self, launch_id: U64) -> Option<Value> {
         let (ch, st) = (self.charters.get(&launch_id.0)?, self.states.get(&launch_id.0)?);
-        let i = VerdictInputs {
-            launch_id: launch_id.0,
-            charter_hash: st.charter_hash,
-            total_active: st.total_active,
-            active_funders: st.active_funders,
-            soft_cap: ch.params.soft_cap,
-            min_funders: ch.params.min_funders,
-            cancelled: st.cancelled,
-        };
+        let i = st.verdict_inputs(ch);
         Some(json!({ "inputs": to_value(i).expect("inputs serialize"), "inputs_hash": hex(&inputs_hash(&i)) }))
     }
 
@@ -97,6 +94,20 @@ impl Contract {
                      "launch_fee": s.launch_fee.to_string(), "lp_quote": s.lp_quote.to_string(), "stream": s.stream.to_string(), "excess_pool": s.excess_pool.to_string(),
                      "inputs_hash": hex(&s.inputs_hash), "book_hash": hex(&s.book_hash) }),
         )
+    }
+
+    /// Stream-lite status: the unlocked cap at this block, what was drawn, what may be drawn now. Valid once the launch has PASSED.
+    pub fn stream_status(&self, launch_id: U64) -> Option<Value> {
+        let (ch, st) = (self.charters.get(&launch_id.0)?, self.states.get(&launch_id.0)?);
+        let s = st.settlement.as_ref().filter(|s| s.pass)?;
+        let dur = kruxa_math::days_to_ns(ch.params.stream_days as u64).unwrap_or(0);
+        let now = env::block_timestamp();
+        let cap = kruxa_math::linear_unlocked(st.ledger.stream_total, s.settled_at, dur, now).unwrap_or(0);
+        let out = st.ledger.stream_drawn + st.ledger.stream_inflight;
+        Some(json!({ "recipient": ch.stream_recipient, "total": st.ledger.stream_total.to_string(), "cap": cap.to_string(),
+                     "drawn": st.ledger.stream_drawn.to_string(), "inflight": st.ledger.stream_inflight.to_string(),
+                     "drawable": cap.saturating_sub(out).to_string(), "starts_at": s.settled_at.to_string(),
+                     "ends_at": s.settled_at.saturating_add(dur).to_string(), "paused": self.pause_level() != PauseLevel::None }))
     }
 
     pub fn preview_contribution(&self, launch_id: U64, holder: String, amount: U128, relay_fee: Option<U128>) -> Value {
@@ -116,9 +127,9 @@ impl Contract {
         U128(bond_required(d.max_holders) + self.cfg.factory_deposit)
     }
 
-    /// Ledger identities L1 and L4, evaluated on the stored counters.
+    /// Ledger identities L1, L3, L4 and I2 to I5 (S1-B 3.4). L3, I2 and I5 walk the position records, which are bounded by the holder cap.
     pub fn get_invariants(&self, launch_id: U64) -> Option<Value> {
-        let st = self.states.get(&launch_id.0)?;
+        let (st, ch) = (self.states.get(&launch_id.0)?, self.charters.get(&launch_id.0)?);
         let l = &st.ledger;
         let totals = LedgerTotals {
             credited: l.credited,
@@ -128,22 +139,66 @@ impl Contract {
             refunded: l.refunded,
             spent: l.spent_native + l.spent_intents,
         };
+        let sums = self.sum_positions(launch_id.0, st);
         let l1 = check_flow(&totals);
-        let l4 = if st.status == Status::Passed {
-            check_pass_conservation(
-                &Buckets {
-                    launch_fee_due: l.launch_fee_due,
-                    lp_seed_due: l.lp_seed_due,
-                    stream_total: l.stream_total,
-                    excess_pool: l.excess_pool,
-                },
-                totals.open,
-                totals.spent,
-            )
-            .err()
-        } else {
-            None
-        };
-        Some(json!({ "l1_ok": l1.is_ok(), "l1_err": l1.err(), "l4_ok": l4.is_none(), "l4_err": l4 }))
+        let l3 = sums.l3_ok.then_some(()).ok_or("L3: a position does not sum to its contribution");
+        let l4 = if st.status == Status::Passed { check_pass_conservation(&sums_buckets(l), totals.open, totals.spent) } else { Ok(()) };
+        let i2 = i2_position_count(&BookSums {
+            verdict_reached: st.settlement.is_some(),
+            total_active: st.total_active,
+            active_funders: st.active_funders,
+            positions_unsettled: st.positions_unsettled,
+            ledger_open: totals.open,
+            sum_open: sums.sum_open,
+            count_open_unsettled: sums.count_open_unsettled,
+        });
+        let recorded = st.settlement.as_ref().map(|s| (s.total_active, s.inputs_hash));
+        let i3 = i3_inputs_frozen(recorded, st.total_active, inputs_hash(&st.verdict_inputs(ch)));
+        let reasons = if let Status::Failed(r) = st.status { r } else { 0 };
+        let i4 = i4_status_monotone(st.status.class(), st.settlement.as_ref().map(|s| (s.pass, s.reasons)), reasons);
+        let i5 = i5_no_overpay(&[
+            ("position: refunded + inflight + due > contributed", sums.position_overpay, 0),
+            ("position: claimed > entitled", sums.claim_overpay, 0),
+            ("launch fee paid + inflight > due", l.launch_fee_paid + l.launch_fee_inflight, l.launch_fee_due),
+            ("stream drawn + inflight > total", l.stream_drawn + l.stream_inflight, l.stream_total),
+            ("relay fee paid + inflight > collected", l.relay_fee_paid + l.relay_fee_inflight, l.relay_fee_total),
+        ]);
+        let checks = [("l1", &l1), ("l3", &l3), ("l4", &l4), ("i2", &i2), ("i3", &i3), ("i4", &i4), ("i5", &i5)];
+        let mut out = near_sdk::serde_json::Map::new();
+        for (name, r) in checks {
+            out.insert(format!("{name}_ok"), json!(r.is_ok()));
+            out.insert(format!("{name}_err"), json!(r.as_ref().err()));
+        }
+        out.insert("all_ok".into(), json!(checks.iter().all(|(_, r)| r.is_ok())));
+        Some(Value::Object(out))
+    }
+}
+
+/// What one pass over a launch's position records yields.
+struct PositionSums {
+    l3_ok: bool,
+    sum_open: u128,
+    count_open_unsettled: u32,
+    /// Total by which positions exceed their contribution (0 when none does).
+    position_overpay: u128,
+    claim_overpay: u128,
+}
+
+fn sums_buckets(l: &Ledger) -> Buckets {
+    Buckets { launch_fee_due: l.launch_fee_due, lp_seed_due: l.lp_seed_due, stream_total: l.stream_total, excess_pool: l.excess_pool }
+}
+
+impl Contract {
+    fn sum_positions(&self, id: u64, st: &LaunchState) -> PositionSums {
+        let mut s = PositionSums { l3_ok: true, sum_open: 0, count_open_unsettled: 0, position_overpay: 0, claim_overpay: 0 };
+        for seq in 0..st.holder_count {
+            let Some(p) = self.seq_index.get(&(id, seq)).and_then(|h| self.positions.get(&(id, h.clone()))) else { continue };
+            s.l3_ok &= p.conserved();
+            s.sum_open += p.open();
+            s.count_open_unsettled += u32::from(p.open() > 0 && !p.settled);
+            s.position_overpay += (p.refunded + p.inflight() + p.owed()).saturating_sub(p.contributed);
+            s.claim_overpay += p.claimed.saturating_sub(p.tokens_entitled + p.bonus_entitled);
+        }
+        s
     }
 }

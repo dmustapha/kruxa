@@ -165,6 +165,14 @@ mod tests {
             prop_assert_eq!(mul_div_floor(a, b, d), Ok(a * b / d));
         }
 
+        /// W1-DC-6: cap(end) == total, cap never exceeds total, and an empty stream or an instant one are the two edges.
+        #[test]
+        fn linear_unlock_reaches_total_exactly_at_the_end(total in any::<u128>(), t0 in 0u64..1u64 << 40, dur in 1u64..1u64 << 40, probe in 0u64..1u64 << 41) {
+            prop_assert_eq!(linear_unlocked(total, t0, dur, t0 + dur), Ok(total));
+            prop_assert!(linear_unlocked(total, t0, dur, t0 + probe).unwrap() <= total);
+            prop_assert_eq!(linear_unlocked(total, t0, dur, t0), Ok(0));
+        }
+
         #[test]
         fn linear_unlock_monotone(total in 0u128..u64::MAX as u128, t0 in 0u64..1000, dur in 1u64..1000, n1 in 0u64..3000, n2 in 0u64..3000) {
             let (lo, hi) = if n1 <= n2 { (n1, n2) } else { (n2, n1) };

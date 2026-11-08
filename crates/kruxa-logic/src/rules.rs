@@ -543,6 +543,20 @@ pub fn validate_params(p: &TrialParams, r: &Rules, global_headroom: u128, brand_
     Ok(Derived { n_total, n_sale, n_creator, n_backer, n_lp, wallet_cap, max_total_held, max_holders })
 }
 
+/// Every stage's first violation, in the fixed check order (text, buckets, fees, raise, window/stream, global cap). Where
+/// `validate_params` stops at the first failure, this shows a creator or a judge ALL the stages a preset breaks.
+pub fn validate_all(p: &TrialParams, r: &Rules, global_headroom: u128, brand_ok: bool) -> Vec<RuleViolation> {
+    let mut out: Vec<RuleViolation> =
+        [check_text(p, brand_ok), check_buckets(p, r), check_fees(p, r), check_raise(p, r).map(|_| ()), check_window(p, r)]
+            .into_iter()
+            .filter_map(Result::err)
+            .collect();
+    if p.hard_cap > global_headroom {
+        out.push(RuleViolation::new(RuleCode::RCapGlobal, "hard_cap", p.hard_cap, format!("global headroom {global_headroom}")));
+    }
+    out
+}
+
 /// Position-storage bond the creator attaches (refundable): max_holders x bytes x 1e-5 NEAR + record overhead.
 pub const POSITION_BYTES: u128 = 330;
 pub const LAUNCH_RECORD_BYTES: u128 = 3_000;
@@ -655,6 +669,21 @@ mod tests {
     }
 
     #[test]
+    fn validate_all_lists_every_stage_a_hostile_preset_breaks() {
+        let base = TrialParams::example("ABCD");
+        assert!(validate_all(&base, &Rules::ladder(), 3_000 * USDC, false).is_empty());
+        let hostile =
+            TrialParams { creator_bps: 1_900, backer_bps: 700, sale_bps: 5_400, lp_bps: 2_000, commit_secs: 86_399, ..base.clone() };
+        let codes: Vec<RuleCode> = validate_all(&hostile, &Rules::ladder(), 3_000 * USDC, false).iter().map(|v| v.code).collect();
+        assert_eq!(codes, vec![RuleCode::RAlloc, RuleCode::RWindow]);
+        assert_eq!(
+            validate_params(&hostile, &Rules::ladder(), 3_000 * USDC, false).unwrap_err().code,
+            RuleCode::RAlloc,
+            "first-failure API unchanged"
+        );
+    }
+
+    #[test]
     fn boundaries_are_inclusive() {
         let base = TrialParams::example("ABCD");
         assert!(ok(&TrialParams { soft_cap: 350 * USDC, ..base.clone() }).is_ok());
@@ -699,6 +728,11 @@ mod tests {
         );
         assert_eq!((r.max_oversub_bps, r.max_relay_fee_abs, r.max_relay_fee_bps), (20_000, USDC / 2, 500), "open: DN-2, DN-1 as built");
         assert_eq!(Rules::demo_clock().max_hard_cap, r.max_hard_cap, "the demo clock never loosens the cap");
+        // W1-DC-17: the standard preset passes, and a different platform share (2_000, the pre-D-4 value) is refused.
+        assert!(ok(&TrialParams::example("ABCD")).is_ok());
+        let mut old = TrialParams::example("ABCD");
+        old.fees.platform_bps = 2_000;
+        assert_eq!(code(&old), RuleCode::RPlatformFixed);
     }
 
     #[test]

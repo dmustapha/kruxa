@@ -1,5 +1,5 @@
 use crate::ContractExt;
-use kruxa_logic::{book_next, hex, phase_at, Phase, RuleCode, RuleViolation};
+use kruxa_logic::{book_next, hex, phase_at, walk_window_open, Phase, RuleCode, RuleViolation};
 use kruxa_math::bps_floor;
 use near_sdk::json_types::{U128, U64};
 use near_sdk::serde_json::{self, json};
@@ -293,7 +293,7 @@ impl Contract {
     pub(crate) fn walk_inner(&mut self, id: u64, holder: HolderId) -> PromiseOrValue<bool> {
         let (mut st, ch) = (self.state(id), self.charter(id));
         let now = env::block_timestamp();
-        if st.status != Status::Open || now >= ch.walk_end || now < ch.opens_at {
+        if st.status != Status::Open || !walk_window_open(now, ch.opens_at, ch.walk_end) {
             fail(RuleCode::RWalkClosed, "Walk is open from opens_at until walk_end");
         }
         let key = (id, holder.clone());
@@ -320,9 +320,7 @@ impl Contract {
         );
         self.positions.insert(key, pos);
         self.save_state(id, st);
-        match self.pay_due(id, &holder) {
-            Some(p) => PromiseOrValue::Promise(p),
-            None => PromiseOrValue::Value(true),
-        }
+        self.pay_due(id, &holder);
+        PromiseOrValue::Value(true)
     }
 }
