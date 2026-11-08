@@ -48,6 +48,7 @@ export async function runCeremony(i: CeremonyInput): Promise<CeremonyResult> {
   await fund(conn, i.funder, new PublicKey(signer.pub()), i.fundLamports);
   const { blockhash, lastValidBlockHeight } = await conn.getLatestBlockhash("confirmed");
   const compiled = compileGenesis(spec, blockhash, i.priceMicroLamports);
+  signer.expect?.([compiled.tx1, compiled.tx2]);
   await assertCluster(conn, i.cluster);
   const s1 = await sendSigned(conn, compiled.tx1, signer, blockhash, lastValidBlockHeight);
   log(`tx1 create: ${s1}`);

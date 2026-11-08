@@ -8,6 +8,8 @@ export const VERDICTS: Record<string, "PASS" | "FAIL"> = { "1": "PASS", "2": "FA
 
 /** The Jito program requires start and end strictly in the future at new_distributor time. */
 export const START_DELAY_SEC = 75n;
+/** F0 needs headroom for two MPC round trips (mainnet p95 15 s each) before tx2 lands. */
+export const F0_START_DELAY_SEC = 150n;
 
 export interface Holders { test: Keypair; leaves: Leaf[] }
 
@@ -20,7 +22,7 @@ export function makeHolders(): Holders {
   return { test, leaves: [{ claimant: test.publicKey.toBytes(), unlocked: 5_000_000n, locked: 0n }, ...fill] };
 }
 
-export interface SpecEnv { jitoProgram: string; reserveOwner?: string; nowSec: bigint }
+export interface SpecEnv { jitoProgram: string; reserveOwner?: string; nowSec: bigint; delaySec: bigint }
 
 export function buildLaunchSpec(launchId: bigint, gPub: Uint8Array, holders: Holders, env: SpecEnv): GenesisSpec {
   const tree = buildMerkle(holders.leaves);
@@ -31,7 +33,7 @@ export function buildLaunchSpec(launchId: bigint, gPub: Uint8Array, holders: Hol
     reserveOwner: env.reserveOwner ? b58d(env.reserveOwner) : pk("reserve"), lpOwner: pk("lp"), clawbackOwner: pk("clawback"),
     reserveAmount: 200_000_000_000n, lpAmount: 100_000_000_000n, jitoProgram: b58d(env.jitoProgram || JITO_MAINNET),
     merkleRoot: tree.root, maxTotalClaim: total, maxNumNodes: BigInt(holders.leaves.length),
-    startTs: env.nowSec + START_DELAY_SEC, endTs: env.nowSec + START_DELAY_SEC + 60n, clawbackTs: env.nowSec + 90n * 86_400n,
+    startTs: env.nowSec + env.delaySec, endTs: env.nowSec + env.delaySec + 60n, clawbackTs: env.nowSec + 90n * 86_400n,
   };
 }
 

@@ -5,7 +5,7 @@ import { claimOnce } from "./claim.js";
 import { assertCluster, rpcFor, type Cluster } from "./cluster.js";
 import { attemptRefused, runCeremony } from "./ceremony.js";
 import { MockCore } from "./core.js";
-import { buildLaunchSpec, makeHolders, START_DELAY_SEC, VERDICTS } from "./launches.js";
+import { buildLaunchSpec, makeHolders, F0_START_DELAY_SEC, START_DELAY_SEC, VERDICTS } from "./launches.js";
 import { F1Signer, type GenesisSigner } from "./signer.js";
 import { JITO_MAINNET } from "./solana-bytes.js";
 
@@ -55,26 +55,28 @@ async function main(): Promise<void> {
   const holders = makeHolders();
   const funder = await makeFunder(conn, a.cluster);
   const nowSec = BigInt(Math.floor(Date.now() / 1000));
+  const delaySec = a.mode === "F0" ? F0_START_DELAY_SEC : START_DELAY_SEC;
   const t0 = Date.now();
   const specTimeMs = Number(nowSec) * 1000;
   const signer = await makeSigner(a.mode, a.launch);
   const gPub = new PublicKey(signer.pub()).toBase58();
   const r = await runCeremony({
     conn, cluster: a.cluster, core, signer, funder, priceMicroLamports: 1000, fundLamports: 40_000_000, log: console.log,
-    buildSpec: (g) => buildLaunchSpec(a.launch, g, holders, { jitoProgram: jito, reserveOwner: a.reserveOwner, nowSec }),
+    buildSpec: (g) => buildLaunchSpec(a.launch, g, holders, { jitoProgram: jito, reserveOwner: a.reserveOwner, nowSec, delaySec }),
   });
   const v = r.view;
   console.log(`mint: ${r.mint}\nmint_authority: ${v.mintAuthority}\nfreeze_authority: ${v.freezeAuthority}\nextensions: ${v.space === 82 ? "none" : "PRESENT"}`);
   console.log(`space: ${v.space}\nowner: ${v.owner}\nsupply: ${v.supply} (sum of buckets: ${r.compiled.supply})\nlatency_ms: ${Date.now() - t0}`);
   console.log(`signed by ${a.mode === "F0" ? "derived key" : "per-launch key (destroyed)"} ${gPub}`);
+  if (a.mode === "F0") console.log("signature verified against the derived key (offline, before broadcast)");
   console.log("confirm_genesis ok");
-  if (a.claimTest) await claimTest(conn, funder, holders, jito, r.compiled, r.mint, a.launch, specTimeMs);
+  if (a.claimTest) await claimTest(conn, funder, holders, jito, r.compiled, r.mint, a.launch, specTimeMs, delaySec);
 }
 
 async function claimTest(conn: Connection, funder: Keypair, h: ReturnType<typeof makeHolders>, jito: string,
-  c: Awaited<ReturnType<typeof runCeremony>>["compiled"], mint: string, launch: bigint, startedAt: number): Promise<void> {
+  c: Awaited<ReturnType<typeof runCeremony>>["compiled"], mint: string, launch: bigint, startedAt: number, delaySec: bigint): Promise<void> {
   console.log("merkle root matches core");
-  const waitMs = Number(START_DELAY_SEC + 3n) * 1000 - (Date.now() - startedAt);
+  const waitMs = Number(delaySec + 3n) * 1000 - (Date.now() - startedAt);
   if (waitMs > 0) await new Promise((r) => setTimeout(r, waitMs));
   const got = await claimOnce(conn, funder, h.test, h.leaves, jito, new PublicKey(mint), new PublicKey(c.accounts.distributor), new PublicKey(c.accounts.vault), launch);
   console.log(`claim ok: ${got}`);
