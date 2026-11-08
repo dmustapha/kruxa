@@ -21,6 +21,18 @@ export interface FeeTerms {
 export interface LaunchSummary {
   launch_id: string;
   symbol: string;
+  /** IR-A1 */
+  name?: string | null;
+  /** IR-A10: computed phase string; the UI derives one (phase.ts) when absent. */
+  phase?: string | null;
+  opens_at?: number | null;
+  commit_end?: number | null;
+  walk_end?: number | null;
+  total_active?: string;
+  funders?: number;
+  soft_cap?: string | null;
+  min_funders?: number | null;
+  progress_bps?: number | null;
   creator: string;
   payout_recipient: string;
   status: string;
@@ -54,7 +66,21 @@ export interface PoolInfo {
 export type SafetyStatus = 'pass' | 'warn' | 'fail' | 'unknown';
 export interface SafetyIndicator { id: string; label: string; status: SafetyStatus; basis: 'event' | 'derived' | 'not_indexed'; detail?: string }
 
+/** IR-A5: per-window stats. Optional until the API ships them; windows.ts derives them from swaps otherwise. */
+export interface WindowStats { change_pct: number | null; buys: number; sells: number; buy_volume?: number; sell_volume?: number; volume?: number; traders?: number }
+export type WindowKey = '5m' | '1h' | '6h' | '24h';
+export const WINDOWS: readonly WindowKey[] = ['5m', '1h', '6h', '24h'];
+export const WINDOW_SECONDS: Record<WindowKey, number> = { '5m': 300, '1h': 3600, '6h': 21600, '24h': 86400 };
+
+/** IR-A4: genesis on Solana. Every field optional; absent means the indexer does not know. */
+export interface GenesisInfo {
+  network?: string; path?: 'F0' | 'F1' | string; stage?: 'none' | 'spec_committed' | 'mint_created' | 'authorities_set' | 'distributor_set' | 'claims_open' | string;
+  spec_hash?: string | null; mint?: string | null; tx_create?: string | null; tx_authority?: string | null; distributor?: string | null; root?: string | null;
+  verified_checks?: string[]; updated_at?: number | null;
+}
+
 export interface TokenStats {
+  windows?: Partial<Record<WindowKey, WindowStats>>;
   last_price?: number | null;
   change_24h_pct?: number | null;
   high_24h?: number | null;
@@ -74,6 +100,8 @@ export interface TokenPageData {
   safety: SafetyIndicator[];
   /** REQ-UI-1: external venues (the Meteora pool) when one exists. */
   external_pools?: ExternalPool[] | null;
+  /** IR-A4 */
+  genesis?: GenesisInfo | null;
   as_of: AsOf;
   source: DataSource;
 }
@@ -113,7 +141,8 @@ export interface PoolDepth { pool: PoolInfo; ladder: DepthRung[]; as_of: AsOf; s
 
 export interface CreatorEarnings { market_fees_creator_slice?: string; claimed?: string; claimable_estimate?: string; stream_drawn?: string }
 export interface CreatorLaunch { launch: LaunchSummary; role: 'creator' | 'payout_recipient' | 'both'; earnings: CreatorEarnings; stream?: StreamMeter | null }
-export interface CreatorDesk { account: string; launches: CreatorLaunch[]; as_of: AsOf; source: DataSource }
+export interface CreatorClaim { launch_id: string; kind: 'stream_draw' | 'creator_claimed'; amount: string; block_height: number; receipt_id: string; time: number; source: DataSource }
+export interface CreatorDesk { account: string; launches: CreatorLaunch[]; claims?: CreatorClaim[]; as_of: AsOf; source: DataSource }
 
 /** Market contract `creator_status` view (chain read). */
 export interface CreatorStatus { recipient: string; accrued: string; unlocked: string; paid: string; claimable: string; epochs?: number }
@@ -128,6 +157,7 @@ export interface VerdictInputs {
   total_active: string; funders: number; soft_cap?: string | null; min_funders?: number | null;
   margin_to_soft_cap?: string | null; margin_funders?: number | null; book_hash_folded: string; inputs_hash?: string | null;
 }
-export interface LaunchDetail extends LaunchSummary { charter_hash: string; verdict_inputs: VerdictInputs; verdict_reasons?: string[] }
+export interface EventRef { event: string; block_height: number; receipt_id: string; log_index?: number; time?: number; source: DataSource }
+export interface LaunchDetail extends LaunchSummary { charter_hash: string; verdict_inputs: VerdictInputs; verdict_reasons?: string[]; timeline?: EventRef[]; genesis?: GenesisInfo | null }
 
 export interface StreamMeter { recipient?: string; total: string; drawn: string; unlocked?: string | null; drawable_estimate?: string | null; starts_at: number; ends_at?: number | null; progress_bps?: number | null }
