@@ -26,7 +26,7 @@ Legs are SEQUENTIAL (seed first, token leg only after the seed leg was consumed,
 Creating --factory ok + supply ok--> TokenReady --seed accepted--> Seeded --open_instant--> Handoff --seed and token legs consumed--> Open
    |                                    |                              |                        |
    +--factory or supply fail--> CreationFailed                         |                        +--a leg refused--> Handoff (retry open_instant)
-                                        +--cancel_instant (creator) / abandon_instant (anyone, 24 u)--> Abandoned
+                                        +--abandon_instant (creator any time, anyone after 24 u)--> Abandoned
                                                                        +--abort_instant (creator, 72 u after the seed, seed leg NOT consumed)--> Aborted
 ```
 No edge leaves `Open`. No edge returns a seed once the market consumed it. `Open` is recorded when the token leg callback confirms (`opened_at` = that block time, within seconds of the market's `opened_ns`).
@@ -40,13 +40,11 @@ No edge leaves `Open`. No edge returns a seed once the market consumed it. `Open
 | `finalize_creation(launch_id) -> Promise` | any | recovery: re-run the verification when still `Creating` 10 minutes after create (`R_TOO_EARLY` before) |
 | `ft_on_transfer(sender_id, amount, msg)` | the USDC contract | op `seed_instant` (section 4). Never panics |
 | `open_instant(launch_id) -> u8` | ANY | needs `Seeded` or `Handoff`, not paused, market set (`R_NO_MARKET`). Locks `market` on first use. Debit first, then sends ONE leg (seed, or the token leg once the seed was consumed). Returns 1. Nothing to send or a leg in flight: `R_INSTANT_STATE` |
-| `cancel_instant(launch_id)` | creator | status `TokenReady` only. Becomes `Abandoned`; deposit refundable minus the factory deposit and record storage |
-| `abandon_instant(launch_id)` | any | status `TokenReady` and 24 u after creation (`R_TOO_EARLY`). Same effect as cancel |
+| `abandon_instant(launch_id)` | creator any time; anyone else 24 u after creation (`R_TOO_EARLY`) | status `TokenReady` only (`R_INSTANT_STATE`). Becomes `Abandoned`; deposit refundable minus the factory deposit and record storage. The token stays in the launcher and is never listed |
 | `abort_instant(launch_id) -> Promise` | creator | status `Seeded` or `Handoff`, 72 u after the seed (`R_TOO_EARLY`), `seed_sent == 0` and `seed_inflight == 0` (`R_INSTANT_STATE`: IL-8). Becomes `Aborted`; pays the whole seed (including the launch fee) back to the creator (owed on failure); the token is dead and its allocation never vests |
-| `reclaim_deposit(launch_id) -> Promise` | creator | pays `deposit_refundable` after `CreationFailed`, `Abandoned` or `Aborted` (debit first; failure becomes `owed_near`). `R_NOTHING_TO_CLAIM` when zero |
+| `reclaim_deposit(launch_id) -> Promise` | creator | pays `deposit_refundable` after `CreationFailed`, `Abandoned` or `Aborted` as a plain NEAR transfer (debit first). `R_NOTHING_TO_CLAIM` when zero. LIMIT: a NEAR transfer that fails (the creator account no longer exists) bounces back to the launcher and is not tracked as owed |
 | `claim_vested(launch_id, amount?) -> Promise` | payout recipient only (`R_NOT_AUTHORIZED`) | pays `amount` (default all) of `unlocked(now) - claimed` in the launch token. `amount > claimable` panics `STREAM_CAP: requested X > claimable Y` (same string and cap semantics as core `draw`). Nothing claimable (cliff not over, or already claimed) with no amount: `R_NOTHING_TO_CLAIM`. Debit before outbound; a failed transfer becomes an owed token balance |
 | `claim_owed(token_id) -> Promise` | the owed account | pays tokens or USDC an outbound transfer failed to deliver |
-| `claim_owed_near() -> Promise` | the owed account | same for a failed NEAR refund |
 | `withdraw_platform() -> Promise` | treasury or owner | pays accrued launch fees (USDC) to the treasury (owed on failure) |
 | `pause()` | owner or guardian | blocks `create_instant`, seed acceptance, `open_instant`. Exits stay open |
 | `freeze()` | owner or guardian | also blocks exits; auto-expires to paused after 7 days |
@@ -54,10 +52,10 @@ No edge leaves `Open`. No edge returns a seed once the market consumed it. `Open
 | `open_beta()` | owner | one-way; opens the creator gate (`R_NOTHING` if already open). Procedural precondition: $KRUXA genesis done and BLK-1 closed |
 | `set_market(account)` | owner | before the first `open_instant`; locked afterwards (`R_NOTHING`) |
 | `reserve_symbol(symbol)` | owner | adds a symbol to the reserved list (event `symbol_reserved`); `KRUXA` and the core reserved list are built in |
-| `lower_seed_cap(kind, value)` | owner or guardian | instant lowering of `kind` = `aggregate` (unconsumed seeds) or `per_launch` (max seed) |
-| `queue_seed_cap(kind, value)` / `apply_seed_cap(kind)` | owner / any | 7-day timelock raise (`R_NOT_YET`, `R_NOTHING`) |
+| `set_seed_cap(kind, value)` | owner or guardian | `kind` = `aggregate` (unconsumed seeds) or `per_launch` (max seed). A value BELOW the current cap applies at once (not below the minimum seed, `R_CAP_GLOBAL`). A value at or above it is owner only and queued for 7 days (event `cap_queued`) |
+| `apply_seed_cap(kind)` | any | applies the queued raise after the timelock (`R_NOT_YET`, `R_NOTHING`) |
 
-Exits that stay open while PAUSED: `claim_vested`, `claim_owed`, `claim_owed_near`, `reclaim_deposit`, `abort_instant`, `cancel_instant`, `abandon_instant`, `withdraw_platform`. Only FROZEN closes them.
+Exits that stay open while PAUSED: `claim_vested`, `claim_owed`, `reclaim_deposit`, `abort_instant`, `abandon_instant`, `withdraw_platform`. Only FROZEN closes them. Gas: attach 300 Tgas to `open_instant` (it reserves 90 Tgas for the seed leg and 150 Tgas for the callback that sends the token leg).
 
 ## 4. Messages
 
@@ -102,11 +100,10 @@ Deposit (`required_deposit()`): factory deposit 0.06 NEAR + record storage 0.02 
 - `get_instant(launch_id)` -> `null` or `{launch_id, mode:"instant", status, creator, payout_recipient, name, symbol, token, total_supply, n_alloc, n_pool, creator_alloc_bps, cliff_days, vest_days, seed_q, launch_fee, pool_seed_q, terms, charter_hash, created_at_ns, seeded_at_ns, opened_at_ns, seed_due, seed_inflight, seed_sent, fee_held, tokens_unsent, tokens_inflight, tokens_sent, alloc_claimed, deposit_paid, deposit_refundable}`
 - `get_phase(launch_id)` -> `{status, step ("create"|"seed"|"open"|"done"|"dead"), next_action ("seed"|"open_instant"|"retry_open_instant"|"none"), can_cancel, can_abandon_at_ns, can_abort_at_ns}`
 - `get_vesting(launch_id)` -> `{recipient, total, unlocked, claimed, claimable, cliff_end_ns, vest_end_ns}` (zeros before `Open`)
-- `instants_by_creator(account)` -> `[launch_id]`
-- `declared_wallets(launch_id)` -> `[creator, payout_recipient]` (the market's self-buy block uses the same two)
-- `owed_of(account, token_id)` / `owed_near_of(account)` -> string
-- `solvency_report()` -> `{expected_usdc_custody, expected_token_custody:[{token, amount}], inflight_usdc, ok_*}`: expected balances AT REST (nothing in flight); a test or the indexer compares with `ft_balance_of(launcher)`; custody >= expected means solvent (donations only add)
-- `get_invariants()` -> `{usdc_custody_identity, supply_conservation (IL-1), vest_bounds (IL-5), claimed_le_unlocked, counters_non_negative, market_locked_consistent}` all booleans
+
+- `owed_of_account(account, token_id)` -> string (an owed token or USDC balance)
+
+- `get_invariants(launch_id?)` -> `{usdc_custody_identity, usdc_custody (expected, at rest), usdc_expected, owed_usdc, seeds_held_le_cap, market_locked_consistent}`; with `launch_id` also `{token, token_custody (expected, at rest), token_custody_identity, supply_conservation (IL-1), claimed_le_unlocked, vest_bounds (IL-5)}`. A test or the indexer compares `usdc_custody` and `token_custody` with `ft_balance_of(launcher)`: custody >= expected means solvent, donations only add. Expected balances exclude amounts in flight to the market
 
 ## 8. Rule codes
 
@@ -129,7 +126,7 @@ Deposit (`required_deposit()`): factory deposit 0.06 NEAR + record storage 0.02 
 | `fee_credited` | `launch_id, amount` (launch fee moved to the platform once the seed was consumed) |
 | `platform_withdrawn` | `to, amount` |
 | `deposit_reclaimed` | `launch_id, to, amount` |
-| `owed_credited` / `owed_claimed` | `account, token, amount, reason` (`token` is `"NEAR"` for the NEAR variants) |
+| `owed_credited` / `owed_claimed` | `account, token, amount, reason` |
 | `paused` / `frozen` / `unpaused` | `by` / `by, until` / none |
 | `beta_opened` | `by` |
 | `market_set` | `market` |

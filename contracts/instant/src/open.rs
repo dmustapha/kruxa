@@ -52,11 +52,13 @@ impl Launcher {
         if !r.market_prepared {
             r.market_prepared = true;
             let _ = Promise::new(market.clone()).transfer(NearToken::from_yoctonear(MARKET_STORAGE_YOCTO));
-            let _ = ext_ft::ext(r.token.clone())
-                .with_attached_deposit(NearToken::from_yoctonear(TOKEN_REG_YOCTO))
-                .with_static_gas(GAS_STORAGE)
-                .storage_deposit(Some(market.clone()), Some(true));
         }
+        // Every attempt registers the market again: NEP-145 returns the deposit when it is already registered, so a retry
+        // after a refused token leg can never be stuck behind a failed first registration.
+        let _ = ext_ft::ext(r.token.clone())
+            .with_attached_deposit(NearToken::from_yoctonear(TOKEN_REG_YOCTO))
+            .with_static_gas(GAS_STORAGE)
+            .storage_deposit(Some(market.clone()), Some(true));
         let _ = ext_ft::ext(r.token.clone())
             .with_attached_deposit(ONE_YOCTO)
             .with_static_gas(GAS_LEG)
