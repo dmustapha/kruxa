@@ -9,3 +9,5 @@ node_modules/
 *.keys
 keys/
 evidence/*.tmp
+*.tsbuildinfo
+next-env.d.ts
