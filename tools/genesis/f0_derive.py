@@ -9,7 +9,7 @@ L = 2**252 + 27742317777372353535851937790883648493
 D = (-121665 * pow(121666, P - 2, P)) % P
 ALPHA = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
 SIGNER = "v1.signer-prod.testnet"
-RPC = "https://rpc.testnet.near.org"
+RPC = "https://test.rpc.fastnear.com"
 
 
 def b58d(s):
