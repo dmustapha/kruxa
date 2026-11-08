@@ -295,3 +295,368 @@ async fn a_pause_cannot_hold_the_verdict_hostage_but_it_does_hold_creator_payout
     env.call(&env.creator, "consolidate", lid(id), ZERO).await.into_result()?;
     Ok(())
 }
+
+/// W-REFUND-PARTIAL: a holder with a native leg and an Intents leg; the Intents leg is refused. Only that leg is re-credited.
+#[tokio::test]
+async fn refund_partial_native_ok_intents_fails_recredits_only_the_failed_leg() -> anyhow::Result<()> {
+    let env = Env::new().await?;
+    let id = env.create_launch(&params("PART")).await?;
+    let alice = env.user("alice", 1_000 * USDC).await?;
+    env.fund_intents(alice.id().as_str(), 40 * USDC).await?;
+    assert!(env.commit_native(&alice, id, 40 * USDC, None).await.is_success());
+    let s3 = env.s3_payload(alice.id().as_str(), id, 40 * USDC, Some(msg(id, None, None))).await;
+    assert!(s3.is_success(), "{:?}", s3.failures());
+    let key = json!({ "launch_id": id.to_string(), "holder": format!("near:{}", alice.id()) });
+    let pos = env.view("get_position", key.clone()).await;
+    assert_eq!((pos["open_native"].as_str(), pos["open_intents"].as_str()), (Some("40000000"), Some("40000000")));
+    env.intents.call("set_fail_transfers").args_json(json!({ "fail": true })).transact().await?.into_result()?;
+    env.call(&alice, "walk", lid(id), ONE).await.into_result()?;
+    assert_eq!(env.usdc_balance(alice.id()).await, 1_000 * USDC - 40 * USDC + 40 * USDC, "the native leg paid");
+    let pos = env.view("get_position", key.clone()).await;
+    assert_eq!(
+        (
+            pos["due_native"].as_str(),
+            pos["due_intents"].as_str(),
+            pos["inflight"].as_str(),
+            pos["refunded"].as_str(),
+            pos["conserved"].as_bool()
+        ),
+        (Some("0"), Some("40000000"), Some("0"), Some("40000000"), Some(true)),
+        "only the Intents leg is owed again"
+    );
+    let led = env.view("get_ledger", lid(id)).await;
+    assert_eq!(
+        (led["due_intents"].as_str(), led["refunded"].as_str(), led["inflight_intents"].as_str()),
+        (Some("40000000"), Some("40000000"), Some("0"))
+    );
+    env.intents.call("set_fail_transfers").args_json(json!({ "fail": false })).transact().await?.into_result()?;
+    env.call(&env.creator, "claim_refund", key.clone(), ZERO).await.into_result()?;
+    assert_eq!(env.intents_balance(alice.id().as_str()).await, 40 * USDC, "the retry paid the Intents leg once");
+    assert_eq!(env.usdc_balance(alice.id()).await, 1_000 * USDC, "and did not pay the native leg again");
+    assert!(!env.call(&alice, "claim_refund", json!({ "launch_id": id.to_string(), "holder": null }), ZERO).await.json::<bool>()?);
+    Ok(())
+}
+
+async fn failed_launch_with_five_buyers(env: &Env, symbol: &str) -> anyhow::Result<(u64, Vec<near_workspaces::Account>)> {
+    let id = env.create_launch(&params(symbol)).await?;
+    let mut users = Vec::new();
+    for i in 0..5 {
+        let u = env.user(&format!("u{i}"), 1_000 * USDC).await?;
+        assert!(env.commit_native(&u, id, 30 * USDC, None).await.is_success());
+        users.push(u);
+    }
+    env.advance_to(id, "Ready").await;
+    assert!(!env.call(&env.creator, "settle", lid(id), ZERO).await.json::<bool>()?, "150 USDC is below the soft cap");
+    Ok((id, users))
+}
+
+/// A-REENTRANCY-REFUND: the token calls claim_refund again from inside ft_transfer, before core's callback runs.
+#[tokio::test]
+async fn reentrant_refund_cannot_pay_twice() -> anyhow::Result<()> {
+    let env = Env::new().await?;
+    let (id, users) = failed_launch_with_five_buyers(&env, "REEN").await?;
+    let key = json!({ "launch_id": id.to_string(), "holder": format!("near:{}", users[0].id()) });
+    env.usdc
+        .call("set_reenter")
+        .args_json(json!({ "account": env.core.id(), "method": "claim_refund", "args": key.to_string() }))
+        .transact()
+        .await?
+        .into_result()?;
+    env.call(&users[1], "claim_refund", key.clone(), ZERO).await.into_result()?;
+    assert_eq!(env.usdc_balance(users[0].id()).await, 1_000 * USDC, "refunded exactly once, not twice");
+    assert_eq!(env.view("get_position", key).await, serde_json::Value::Null, "a fully paid position record is deleted");
+    assert_eq!(env.view("get_ledger", lid(id)).await["refunded"], "30000000", "the ledger shows one refund of 30 USDC, not two");
+    Ok(())
+}
+
+/// W-DOUBLE-REFUND: a second claim, by the holder or by a keeper, is a harmless no-op.
+#[tokio::test]
+async fn double_refund_pays_exactly_once() -> anyhow::Result<()> {
+    let env = Env::new().await?;
+    let (id, users) = failed_launch_with_five_buyers(&env, "DBLE").await?;
+    let key = json!({ "launch_id": id.to_string(), "holder": format!("near:{}", users[0].id()) });
+    assert!(env.call(&users[0], "claim_refund", key.clone(), ZERO).await.json::<bool>()?);
+    assert!(!env.call(&users[0], "claim_refund", key.clone(), ZERO).await.json::<bool>()?);
+    assert!(!env.call(&env.creator, "claim_refund", key, ZERO).await.json::<bool>()?);
+    assert_eq!(env.usdc_balance(users[0].id()).await, 1_000 * USDC);
+    assert_eq!(env.view("get_ledger", lid(id)).await["refunded"], "30000000");
+    Ok(())
+}
+
+async fn settle_and_sweep(env: &Env, id: u64, settler: &near_workspaces::Account) -> anyhow::Result<()> {
+    env.advance_to(id, "Ready").await;
+    env.call(settler, "settle", lid(id), ZERO).await.into_result()?;
+    env.call(settler, "settle_positions_page", json!({ "launch_id": id.to_string(), "from_seq": 0, "limit": 25 }), ZERO)
+        .await
+        .into_result()?;
+    env.call(settler, "sweep_residue", lid(id), ZERO).await.into_result()?;
+    Ok(())
+}
+
+/// A-DUST: dust-sized commits are refused and refunded; odd-sized commits settle with the rounding residue going to the LP bucket only.
+#[tokio::test]
+async fn a_dust() -> anyhow::Result<()> {
+    let env = Env::new().await?;
+    let id = env.create_launch(&params("DUST")).await?;
+    let dust = env.user("dusty", 1_000 * USDC).await?;
+    for amount in [1u128, 1_000, 19_999_999] {
+        let r = env.commit_native(&dust, id, amount, None).await;
+        assert!(has_code(&r, "R_MIN_CONTRIBUTION"), "{amount}: {:?}", r.logs());
+    }
+    assert_eq!(env.usdc_balance(dust.id()).await, 1_000 * USDC, "every dust attempt came back whole");
+    let state = env.state(id).await;
+    assert_eq!(
+        (state["total_active"].as_str(), state["active_funders"].as_u64(), state["holder_count"].as_u64()),
+        (Some("0"), Some(0), Some(0))
+    );
+    // 11 buyers of 99.999999 USDC: 1,099.999989 against a 1,000 cap, every division inexact
+    for i in 0..11 {
+        let u = env.user(&format!("d{i}"), 200 * USDC).await?;
+        assert!(env.commit_native(&u, id, 99_999_999, None).await.is_success());
+    }
+    settle_and_sweep(&env, id, &env.creator).await?;
+    let (st, led) = (env.view("get_settlement", lid(id)).await, env.view("get_ledger", lid(id)).await);
+    let get = |v: &serde_json::Value, k: &str| v[k].as_str().unwrap().parse::<u128>().unwrap();
+    let spent = get(&led, "spent_native");
+    let residue = spent - get(&st, "accepted");
+    assert!(residue < 11, "rounding residue is under one micro-USDC per buyer, got {residue}");
+    assert_eq!(get(&led, "lp_seed_due"), get(&st, "lp_quote") + residue, "the residue went to the LP bucket");
+    assert_eq!(
+        (get(&led, "excess_pool"), get(&led, "stream_total")),
+        (0, get(&st, "stream")),
+        "creator stream and platform fee are unchanged by dust"
+    );
+    assert_eq!(get(&led, "launch_fee_due"), get(&st, "launch_fee"));
+    Ok(())
+}
+
+/// A-TIMESTAMP-BOUNDARY (sandbox side; the exact-equality side is the pure test `a_timestamp_boundary_walk_and_settle_never_both_open`).
+#[tokio::test]
+async fn a_timestamp_boundary() -> anyhow::Result<()> {
+    let env = Env::new().await?;
+    let id = env.create_launch(&params("TIME")).await?;
+    let mut users = Vec::new();
+    for i in 0..12 {
+        let u = env.user(&format!("t{i}"), 1_000 * USDC).await?;
+        assert!(env.commit_native(&u, id, 40 * USDC, None).await.is_success());
+        users.push(u);
+    }
+    env.advance_to(id, "Closing").await;
+    let early = env.call(&env.creator, "settle", lid(id), ZERO).await;
+    assert!(has_code(&early, "R_TOO_EARLY"), "settle is closed while the Walk tail runs");
+    env.call(&users[0], "walk", lid(id), ONE).await.into_result()?;
+    env.advance_to(id, "Ready").await;
+    assert!(has_code(&env.call(&users[1], "walk", lid(id), ONE).await, "R_WALK_CLOSED"), "Walk is closed once settle is open");
+    let r = env.call(&env.creator, "settle", lid(id), ZERO).await;
+    assert!(r.is_success(), "{:?}", r.failures());
+    assert!(r.json::<bool>()?, "11 buyers and 440 USDC left: still PASS");
+    assert_eq!(env.state(id).await["active_funders"], 11, "the one Walk inside the tail counted; the one after it did not");
+    Ok(())
+}
+
+/// A-DONATION: USDC sent straight to core (no commit message) credits nothing and cannot rescue a failing book.
+#[tokio::test]
+async fn a_donation() -> anyhow::Result<()> {
+    let env = Env::new().await?;
+    let id = env.create_launch(&params("DONA")).await?;
+    let mut buyers = Vec::new();
+    for i in 0..5 {
+        let u = env.user(&format!("b{i}"), 1_000 * USDC).await?;
+        assert!(env.commit_native(&u, id, 30 * USDC, None).await.is_success());
+        buyers.push(u);
+    }
+    let rich = env.user("whale", 5_000 * USDC).await?;
+    let inputs_before = env.view("get_verdict_inputs", lid(id)).await;
+    let ledger_before = env.view("get_ledger", lid(id)).await;
+    rich.call(env.usdc.id(), "ft_transfer")
+        .args_json(json!({ "receiver_id": env.core.id(), "amount": (2_000 * USDC).to_string() }))
+        .deposit(ONE)
+        .transact()
+        .await?
+        .into_result()?;
+    assert_eq!(env.usdc_balance(env.core.id()).await, (150 + 2_000) * USDC, "the donation really arrived");
+    assert_eq!(env.view("get_verdict_inputs", lid(id)).await, inputs_before, "verdict inputs unchanged by a donation");
+    assert_eq!(env.view("get_ledger", lid(id)).await, ledger_before, "credited, open and bucket counters unchanged");
+    env.advance_to(id, "Ready").await;
+    assert!(!env.call(&env.creator, "settle", lid(id), ZERO).await.json::<bool>()?, "2,150 USDC held, 150 committed: still FAIL");
+    for u in &buyers {
+        env.call(u, "claim_refund", json!({ "launch_id": id.to_string(), "holder": null }), ZERO).await.into_result()?;
+        assert_eq!(env.usdc_balance(u.id()).await, 1_000 * USDC, "refunds are exactly the commits");
+    }
+    Ok(())
+}
+
+/// A-SLOT-SPAM: minimum-size positions can fill the holder slots (each costs the attacker a refundable $20), never more than the bond covers.
+#[tokio::test]
+async fn a_slot_spam() -> anyhow::Result<()> {
+    let env = Env::new().await?;
+    let mut p = params("SLOT");
+    p.hard_cap = 500 * USDC; // max_holders = min(500, ceil(2 * 500 / 20)) = 50
+    p.commit_secs = 3_600;
+    let id = env.create_launch(&p).await?;
+    let max_holders = env.view("get_charter", lid(id)).await["derived"]["max_holders"].as_u64().unwrap();
+    assert_eq!(max_holders, 50);
+    for i in 0..max_holders {
+        let h = sol_holder(i as u8 + 1);
+        env.fund_intents(&h.hex, 20 * USDC).await?;
+        assert!(env.commit_s3(&h, id, 20 * USDC, 0).await.is_success(), "slot {i}");
+    }
+    let extra = sol_holder(200);
+    env.fund_intents(&extra.hex, 20 * USDC).await?;
+    let r = env.commit_s3(&extra, id, 20 * USDC, 0).await;
+    assert!(has_code(&r, "R_CAP_HOLDERS"), "{:?}", r.logs());
+    assert_eq!(env.intents_balance(&extra.hex).await, 20 * USDC, "the 51st attempt is refunded in full");
+    let st = env.state(id).await;
+    assert_eq!(
+        (st["positions_live"].as_u64(), st["holder_count"].as_u64()),
+        (Some(max_holders), Some(max_holders)),
+        "records never exceed the cap"
+    );
+    assert!(
+        st["bond"].as_str().unwrap().parse::<u128>()? >= kruxa_logic::bond_required(max_holders as u32),
+        "the creator bond covers every slot"
+    );
+    Ok(())
+}
+
+/// What a launch ends with, independent of who called what and in which order.
+async fn final_book(env: &Env, id: u64, users: &[near_workspaces::Account]) -> (serde_json::Value, Vec<(String, String, String, String)>) {
+    let mut st = env.view("get_settlement", lid(id)).await;
+    let obj = st.as_object_mut().unwrap();
+    obj.remove("settled_at");
+    obj.remove("book_hash"); // the rolling hash is order-dependent BY DESIGN; the verdict and the money are not
+    let mut rows = Vec::new();
+    for u in users {
+        let p = env.view("get_position", json!({ "launch_id": id.to_string(), "holder": format!("near:{}", u.id()) })).await;
+        let f = |k: &str| p[k].as_str().unwrap_or("-").to_string();
+        rows.push((
+            u.id().to_string(),
+            f("spent"),
+            f("tokens_entitled"),
+            (f("due_native").parse::<u128>().unwrap_or(0) + f("refunded").parse::<u128>().unwrap_or(0)).to_string(),
+        ));
+    }
+    (st, rows)
+}
+
+/// A-FRONTRUN-FINALIZE: the same buyers and amounts, committed in the opposite order, settled by a stranger who also pokes the
+/// lazy per-position settlement in a different order, end in the identical verdict, buckets and per-holder amounts.
+#[tokio::test]
+async fn a_frontrun_finalize() -> anyhow::Result<()> {
+    let env = Env::new().await?;
+    let mut users = Vec::new();
+    for i in 0..13 {
+        users.push(env.user(&format!("f{i}"), 1_000 * USDC).await?);
+    }
+    let amount = |i: usize| (60 + 3 * i as u128) * USDC; // 60..96 USDC, 1,014 in total: oversubscribed, inexact shares
+    let first = env.create_launch(&params("ONE")).await?;
+    for (i, u) in users.iter().enumerate() {
+        assert!(env.commit_native(u, first, amount(i), None).await.is_success());
+    }
+    settle_and_sweep(&env, first, &env.creator).await?;
+    let a = final_book(&env, first, &users).await;
+    let second = env.create_launch(&params("TWO")).await?;
+    for (i, u) in users.iter().enumerate().rev() {
+        assert!(env.commit_native(u, second, amount(i), None).await.is_success());
+    }
+    env.advance_to(second, "Ready").await;
+    let stranger = &users[5];
+    env.call(stranger, "settle", lid(second), ZERO).await.into_result()?;
+    env.call(&users[9], "claim_refund", json!({ "launch_id": second.to_string(), "holder": null }), ZERO).await.into_result()?;
+    for from in [10u32, 5, 0] {
+        env.call(&users[3], "settle_positions_page", json!({ "launch_id": second.to_string(), "from_seq": from, "limit": 5 }), ZERO)
+            .await
+            .into_result()?;
+    }
+    env.call(stranger, "sweep_residue", lid(second), ZERO).await.into_result()?;
+    let b = final_book(&env, second, &users).await;
+    let strip = |mut v: serde_json::Value| {
+        v.as_object_mut().unwrap().remove("inputs_hash"); // carries launch_id and charter_hash, which legitimately differ per launch
+        v
+    };
+    assert_eq!(strip(a.0), strip(b.0), "verdict and the four buckets are identical");
+    assert_eq!(a.1, b.1, "every holder gets the same spend, tokens and refund");
+    Ok(())
+}
+
+/// W1-DC-9: the ruled caps are what the contract enforces, raising them waits 7 days, only the owner can queue a raise.
+#[tokio::test]
+async fn caps_are_the_ruled_values_and_raising_is_timelocked() -> anyhow::Result<()> {
+    let env = Env::new().await?;
+    let cfg = env.view("get_config", json!({})).await;
+    assert_eq!(
+        (cfg["global_cap"].as_str(), cfg["rules"]["max_hard_cap"].as_str()),
+        (Some("3000000000"), Some("1000000000")),
+        "$3,000 global, $1,000 per launch"
+    );
+    let p = params("CAPA");
+    let required: String = env.core.view("required_deposit").args_json(json!({ "params": p })).await?.json()?;
+    let create = |p: TrialParams| {
+        let (creator, core, dep) = (env.creator.clone(), env.core.id().clone(), required.parse::<u128>().unwrap());
+        async move {
+            creator
+                .call(&core, "create_trial")
+                .args_json(json!({ "params": p, "stream_recipient": null }))
+                .deposit(NearToken::from_yoctonear(dep))
+                .gas(GAS)
+                .transact()
+                .await
+                .unwrap()
+        }
+    };
+    let over = create(TrialParams { hard_cap: 1_000 * USDC + 1, ..p.clone() }).await;
+    assert!(has_code(&over, "R_HARD_CAP"), "$1,000 + 1 micro per launch is refused: {:?}", over.failures());
+    env.call(&env.owner, "lower_global_cap", json!({ "value": (400 * USDC).to_string() }), ZERO).await.into_result()?;
+    assert!(has_code(&create(p.clone()).await, "R_CAP_GLOBAL"), "a launch whose hard cap exceeds the global headroom is refused");
+    assert!(has_code(
+        &env.call(&env.guardian, "queue_global_cap", json!({ "value": (9_000 * USDC).to_string() }), ZERO).await,
+        "R_NOT_AUTHORIZED"
+    ));
+    assert!(
+        has_code(&env.call(&env.owner, "lower_global_cap", json!({ "value": (900 * USDC).to_string() }), ZERO).await, "R_CAP_GLOBAL"),
+        "lowering cannot raise"
+    );
+    env.call(&env.owner, "queue_global_cap", json!({ "value": (3_000 * USDC).to_string() }), ZERO).await.into_result()?;
+    let queued = env.view("get_config", json!({})).await["pending_global_cap"].clone();
+    let effective: u128 = queued["effective_at"].as_str().unwrap().parse()?;
+    let now = env.worker.view_block().await?.timestamp() as u128;
+    let seven_days: u128 = 7 * 86_400 * 1_000_000_000;
+    assert!(
+        effective >= now && effective - now <= seven_days + 120 * 1_000_000_000 && effective + 120 * 1_000_000_000 >= now + seven_days,
+        "applies in 7 days: {queued}"
+    );
+    assert!(has_code(&env.call(&env.owner, "apply_global_cap", json!({}), ZERO).await, "R_NOT_YET"));
+    env.call(&env.owner, "queue_launch_cap", json!({ "value": (2_000 * USDC).to_string() }), ZERO).await.into_result()?;
+    assert!(has_code(&env.call(&env.owner, "apply_launch_cap", json!({}), ZERO).await, "R_NOT_YET"), "the per-launch cap raise waits too");
+    Ok(())
+}
+
+/// W-WALK-FLIP and "a failed payout leaves verdict inputs unchanged": one Walk takes a passing book under the soft cap, the refund
+/// leg fails, and the verdict inputs still reflect the Walk (the money is re-credited as owed, the book is not).
+#[tokio::test]
+async fn walk_flips_pass_to_fail_and_a_failed_payout_leaves_verdict_inputs_unchanged() -> anyhow::Result<()> {
+    let env = Env::new().await?;
+    let id = env.create_launch(&params("FLIP")).await?;
+    let mut users = Vec::new();
+    for i in 0..11 {
+        let u = env.user(&format!("w{i}"), 1_000 * USDC).await?;
+        assert!(env.commit_native(&u, id, 32 * USDC, None).await.is_success()); // 352 USDC, 11 funders: would PASS
+        users.push(u);
+    }
+    let inputs = |v: &serde_json::Value| {
+        (v["inputs"]["total_active"].as_str().unwrap().to_string(), v["inputs"]["active_funders"].as_u64().unwrap())
+    };
+    assert_eq!(inputs(&env.view("get_verdict_inputs", lid(id)).await), ("352000000".to_string(), 11));
+    env.usdc.call("unregister").args_json(json!({ "account_id": users[0].id() })).transact().await?.into_result()?;
+    let _ = env.call(&users[0], "walk", lid(id), ONE).await; // the Walk lands, the refund transfer fails, the callback re-credits
+    let after = env.view("get_verdict_inputs", lid(id)).await;
+    assert_eq!(inputs(&after), ("320000000".to_string(), 10), "the failed payout did not undo the Walk in the verdict inputs");
+    let pos = env.view("get_position", json!({ "launch_id": id.to_string(), "holder": format!("near:{}", users[0].id()) })).await;
+    assert_eq!((pos["due_native"].as_str(), pos["inflight"].as_str()), (Some("32000000"), Some("0")), "the money is owed again, not lost");
+    env.advance_to(id, "Ready").await;
+    let r = env.call(&env.creator, "settle", lid(id), ZERO).await;
+    assert!(!r.json::<bool>()?, "320 USDC is below the 350 soft cap: the Walk flipped PASS to FAIL");
+    assert_eq!(env.state(id).await["status"], "Failed(1)");
+    assert_eq!(env.view("get_verdict_inputs", lid(id)).await, after, "settle did not change the inputs either");
+    Ok(())
+}
