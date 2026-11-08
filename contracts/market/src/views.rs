@@ -31,12 +31,13 @@ fn quote_json(r: Result<Swap, MarketError>, before: Reserves) -> Value {
 impl Market {
     pub fn get_config(&self) -> Value {
         json!({ "owner": self.owner, "guardian": self.guardian, "treasury": self.treasury, "usdc": self.usdc, "core": self.core, "paused": self.paused,
-                "max_pool_reserve_q": s(self.max_pool_q), "max_global_reserve_q": s(self.max_global_q), "global_q": s(self.global_q) })
+                "max_pool_reserve_q": s(self.max_pool_q), "max_global_reserve_q": s(self.max_global_q), "global_q": s(self.global_q),
+                "launcher": self.launcher, "max_instant_reserve_q": s(self.max_instant_q), "instant_q": s(self.instant_q) })
     }
 
     pub fn get_pool(&self, launch_id: U64) -> Value {
         let Some(p) = self.pools.get(&launch_id.0) else { return Value::Null };
-        json!({ "launch_id": s(p.launch_id as u128), "token": p.token, "quote": self.usdc, "state": if p.open { "Open" } else { "AwaitToken" },
+        json!({ "launch_id": s(p.launch_id as u128), "mode": p.mode.as_str(), "creator": p.creator, "token": p.token, "quote": self.usdc, "state": if p.open { "Open" } else { "AwaitToken" },
                 "q": s(p.q), "t": s(p.t), "opened_ns": s(p.opened_ns as u128), "payout_recipient": p.payout_recipient,
                 "total_supply": s(p.total_supply), "charter_hash": p.charter_hash, "mint_authority": p.mint_authority, "freeze_authority": p.freeze_authority, "terms": p.terms })
     }
@@ -77,7 +78,7 @@ impl Market {
     pub fn get_invariants(&self) -> Value {
         let usdc_rhs = self.global_q + self.creator_unpaid + self.platform_unpaid + self.owed_total_of(&self.usdc);
         json!({ "usdc_custody_identity": self.custody_of(&self.usdc) == usdc_rhs, "usdc_custody": s(self.custody_of(&self.usdc)), "usdc_expected": s(usdc_rhs),
-                "global_q": s(self.global_q), "parked_count": self.parked_count })
+                "instant_q_matches": self.instant_q <= self.global_q, "global_q": s(self.global_q), "parked_count": self.parked_count })
     }
 
     /// Per-pool checks: token custody matches the reserve (plus owed), and k never fell below the opening k.

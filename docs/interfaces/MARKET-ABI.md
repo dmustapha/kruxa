@@ -1,6 +1,6 @@
 # Market ABI (owner: workstream M; readers: A core, I indexer, U2 market UI)
 
-Status: FROZEN 1.0.0 for M-A (Market-lite). Source: ARCHITECTURE 5.1, 5.8, 5.9; PRD 4b.2, C5. Contract: `contracts/market`, account `market.kruxa.near`.
+Status: 1.1.0 (additive over the FROZEN 1.0.0; see section "1.1.0 instant launch delta" at the end; every 1.1.0 feature is OFF until the owner calls `set_launcher`, so 1.0.0 behaviour is unchanged). Source: ARCHITECTURE 5.1, 5.8, 5.9; PRD 4b.2, C5. Contract: `contracts/market`, account `market.kruxa.near`.
 All u128 and u64 values are decimal strings in JSON. USDC is 6 decimals (micro-USDC). All `ft_on_transfer` messages are JSON objects with `"v":1` and an `"op"`.
 Unknown fields are ignored. States are `AwaitToken` (seed landed, token leg not yet) and `Open`. Any bad message, wrong token, pause (for buys and opens), cap breach or unmet `min_out` REFUSES: `ft_on_transfer` returns the full amount (the token contract refunds the sender) and logs a rule code. `ft_on_transfer` never panics.
 
@@ -57,3 +57,21 @@ All outbound payments follow debit-before-outbound: the counter moves first, the
 ## Fee router (the one place the split lives: `kruxa_logic::FeeTerms`; math in `crates/kruxa-market`)
 Per swap: `fee_total = ceil(q_leg * rate_ppm / 1e6)`. `rate` = `total_fee_bps` after the opening window; inside the window it decays linearly from `opening_fee_start_bps` to `total_fee_bps` over `opening_decay_minutes` (all the surcharge goes to LP). The base part is cut by bps into creator, platform, holders, referral (floor), LP takes the remainder (dust). M-A routing: holders slice and referral slice are redirected to LP (no Hold Vault, no referral lots), reported as `red_holders` and `red_referral`, so in events `holders = 0` and `referral = 0` and `creator + platform + holders + lp + referral == fee_total` always.
 Creator and platform slices leave the pool reserve into custody counters; LP slice stays in the quote reserve (permanent). Epochs: 24 h from `opened_ns`. Creator vest: of each epoch's creator slice `fee_vest_bps` vests linearly over `fee_vest_days` from the epoch close, the rest is claimable at once.
+
+## 1.1.0 instant launch delta (CHANGE-ORDER-7; readers: launcher, indexer, U2)
+Inert by default: with no launcher set the market behaves exactly as 1.0.0, except the launch-id namespace check (ids at or above 1_000_000_000 are refused from core, which never issues them).
+
+| Item | Rule |
+|---|---|
+| Second sender | `set_launcher(account)`: OWNER only. Refused (`R_LAUNCHER_LOCKED`) once any launcher pool exists, and refused if the account equals core, USDC or the treasury. Until then the owner may re-point it (a mistake is fixable before first use); after the first launcher pool it is locked forever (no unset, no change). Core stays an allowed sender. `get_config().launcher` is `null` until set |
+| Namespace | `sender == core` needs `launch_id < 1_000_000_000`; `sender == launcher` needs `launch_id >= 1_000_000_000`. Any other sender: `R_NOT_AUTHORIZED`; right sender, wrong range: `R_ID_NAMESPACE`. Both `seed_quote` and `open_pool_token` |
+| `mode` | `"trial"` or `"instant"`, derived from the authenticated sender of the `seed_quote` leg (core -> trial, launcher -> instant), NEVER from the message. Stored per pool, emitted in `pool_opened`, returned by `get_pool` and the quote views. The token leg must come from the same issuer as the seed (a launcher leg cannot join a core seed) |
+| `creator` | optional `creator` account in `seed_quote` (CO-7); stored, emitted in `pool_opened`, shown by `get_pool`. Absent for old messages (`null`) |
+| Seed caps (instant) | `seed_quote` from the launcher is refused `R_MARKET_CAP` if `amount > max_pool_reserve_q`, or `global_q + amount > max_global_reserve_q`, or `instant_q + amount > max_instant_reserve_q`. Trial seeds are NOT cap-checked (core's raise caps bound them; refusing a trial seed could strand a passed launch) |
+| Instant sub-cap | `max_instant_reserve_q` (default 5_000_000_000 = $5,000, inside the $15,000 global; set in `new`). `instant_q` is the sum of instant pools' quote reserves; a buy that would take it above the cap is refused `R_MARKET_CAP`. Sells always work |
+| Self-buy block | on instant pools a `buy` is refused `R_SELF_BUY` when `sender_id`, or the `receiver`, equals the pool `creator` or `payout_recipient`. Sells and claims are unaffected. Honest limit: a second wallet is not stopped |
+| `new` | gains optional `max_instant_reserve_q` (omit for the default) |
+| Views | `get_config` gains `launcher`, `max_instant_reserve_q`, `instant_q`; `get_pool` gains `mode`, `creator`; `get_invariants` gains `instant_q_matches` (internal check `instant_q <= global_q`) |
+| New rule codes | `R_ID_NAMESPACE`, `R_SELF_BUY`, `R_LAUNCHER_LOCKED` |
+| Not in this build | `trade_from_ns` / `R_NOT_YET_TRADING` (announced open, CO-7 2.7, "cut first"): the field is ignored if sent |
+| State layout | new config fields and two new pool fields change the borsh layout: a fresh deploy (testnet redeploy; mainnet market is not live) |

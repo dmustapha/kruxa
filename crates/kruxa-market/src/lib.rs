@@ -21,6 +21,8 @@ pub const RESERVE_BOUND_Q: u128 = 1_000_000_000_000_000_000;
 /// Interim DN-17 caps in micro-USDC.
 pub const MAX_POOL_RESERVE_Q: u128 = 5_000_000_000;
 pub const MAX_GLOBAL_RESERVE_Q: u128 = 15_000_000_000;
+/// Instant-launch pools together, inside the global cap (CO-7 D-4).
+pub const MAX_INSTANT_RESERVE_Q: u128 = 5_000_000_000;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum MarketError {

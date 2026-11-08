@@ -3,6 +3,26 @@ use kruxa_market::EpochAccrual;
 use near_sdk::json_types::{U128, U64};
 use near_sdk::{near, AccountId};
 
+/// Which authenticated issuer opened the pool. Derived from the handoff sender, never from the message.
+#[near(serializers = [borsh])]
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum Mode {
+    Trial,
+    Instant,
+}
+
+impl Mode {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Mode::Trial => "trial",
+            Mode::Instant => "instant",
+        }
+    }
+}
+
+/// Launch ids below this belong to core (trial), at or above it to the instant launcher.
+pub const INSTANT_ID_BASE: u64 = 1_000_000_000;
+
 /// Per-pool fee ledger (ARCHITECTURE 5.1 FeeLedger, M-A subset). Slices are in micro-USDC.
 #[near(serializers = [borsh])]
 #[derive(Clone, Default)]
@@ -22,6 +42,8 @@ pub struct FeeLedger {
 #[derive(Clone)]
 pub struct Pool {
     pub launch_id: u64,
+    pub mode: Mode,
+    pub creator: Option<AccountId>,
     pub token: AccountId,
     pub payout_recipient: AccountId,
     pub total_supply: u128,
@@ -50,6 +72,7 @@ pub struct Msg {
     pub receiver: Option<AccountId>,
     pub token: Option<AccountId>,
     pub payout_recipient: Option<AccountId>,
+    pub creator: Option<AccountId>,
     pub total_supply: Option<U128>,
     pub charter_hash: Option<String>,
     pub mint_authority: Option<String>,
