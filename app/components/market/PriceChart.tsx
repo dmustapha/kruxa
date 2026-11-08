@@ -60,7 +60,7 @@ export function PriceChart({ candles, interval, onInterval, stream, onRetry, sym
         upColor: p.up, downColor: p.down, borderUpColor: p.up, borderDownColor: p.down, wickUpColor: p.up, wickDownColor: p.down,
         priceFormat: { type: 'custom', formatter: (x: number) => fmtPrice(x).replace('$', ''), minMove: 1e-10 },
       });
-      const v = c.addSeries(HistogramSeries, { priceFormat: { type: 'volume' }, priceScaleId: '', color: withAlpha(p.muted, 0.35) });
+      const v = c.addSeries(HistogramSeries, { priceFormat: { type: 'volume' }, priceScaleId: '', color: withAlpha(p.muted, 0.35), lastValueVisible: false, priceLineVisible: false });
       v.priceScale().applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
       chart.current = c; price.current = s; volume.current = v;
       mq = window.matchMedia('(prefers-color-scheme: light)');

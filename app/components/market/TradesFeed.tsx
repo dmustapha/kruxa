@@ -11,7 +11,7 @@ export function TradesFeed({ trades, nowSec, onRetry }: { trades: Section<TradeL
         {(d) => d.items.length === 0 ? (
           <EmptyState title="No swaps yet">Trades appear here as soon as the pool records a swap. This list is read from the market&apos;s swap events.</EmptyState>
         ) : (
-          <div className="mkt-tablewrap" tabIndex={0} role="region" aria-label="Recent trades, scrollable">
+          <div className="mkt-tablewrap mkt-scroll" tabIndex={0} role="region" aria-label="Recent trades, scrollable">
             <table className="mkt-table">
               <caption className="mkt-sr">Most recent swaps, newest first</caption>
               <thead><tr><th scope="col">Side</th><th scope="col" className="num">Price</th><th scope="col" className="num">Tokens</th><th scope="col" className="num">USDC</th><th scope="col" className="mkt-hide-sm">Trader</th><th scope="col" className="num">Time</th></tr></thead>

@@ -15,7 +15,10 @@ export function fmtUnits(raw: string | bigint | null | undefined, decimals = 6, 
 
 export const fmtUsdcMicro = (raw: string | bigint | null | undefined, maxFrac = 2): string => {
   const s = fmtUnits(raw, 6, maxFrac);
-  return s === 'unknown' ? s : `$${s}`;
+  if (s === 'unknown') return s;
+  // Money always shows at least two decimals ($0.60, not $0.6), unless the caller asked for none.
+  const padded = maxFrac >= 2 && !s.includes('.') ? `${s}.00` : maxFrac >= 2 && /\.\d$/.test(s) ? `${s}0` : s;
+  return `$${padded}`;
 };
 
 /** Compact token amounts: 794.35B, 24.3M, 1,234. Input is base units with 6 decimals. */

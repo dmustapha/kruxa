@@ -5,7 +5,8 @@ describe('format', () => {
   it('formats base units without losing precision', () => {
     expect(fmtUnits('123456789012345678901234567890', 6, 2)).toBe('123,456,789,012,345,678,901,234.56');
     expect(fmtUsdcMicro('26571793')).toBe('$26.57');
-    expect(fmtUsdcMicro('1000000')).toBe('$1');
+    expect(fmtUsdcMicro('1000000')).toBe('$1.00');
+    expect(fmtUsdcMicro('600000')).toBe('$0.60');
     expect(fmtUsdcMicro(null)).toBe('unknown');
     expect(fmtUnits('abc')).toBe('unknown');
   });

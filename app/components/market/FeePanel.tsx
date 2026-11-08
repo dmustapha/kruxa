@@ -9,7 +9,7 @@ export function FeePanel({ page, facts, nowSec }: { page: TokenPageData; facts: 
   const t = facts.terms;
   const payout = page.creator?.payout_recipient ?? page.launch.payout_recipient;
   const win = t && facts.openedAtSec ? openingWindow(t, facts.openedAtSec, nowSec) : null;
-  const creatorOfVolume = t ? (t.total_fee_bps * t.creator_bps) / 10_000 : null;
+  const creatorOfVolume = t ? (t.total_fee_bps * t.creator_bps) / 1_000_000 : null;
   return (
     <Panel title="Fees" id="mkt-fee-h">
       {!t ? (

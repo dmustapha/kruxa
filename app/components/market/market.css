@@ -138,3 +138,5 @@ main:has(.mkt-root) { max-width: 1240px; padding-top: 20px; }
 .mkt-root button:focus-visible, .mkt-root a:focus-visible, .mkt-root input:focus-visible, .mkt-root summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .mkt-disclosure { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); margin-top: 24px; padding-top: 12px; }
 .mkt-root details > summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; color: var(--muted); font-size: 13px; }
+.mkt-scroll { max-height: 440px; overflow-y: auto; }
+.mkt-scroll thead th { position: sticky; top: 0; background: var(--mkt-panel); }
