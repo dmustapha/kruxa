@@ -45,3 +45,24 @@ The holders (15%) and referral (10%) slices have no Solana-side primitive: they 
 2. `cd services/venue && VAULT_FUND_SOL=0.06 npx tsx ../../spikes/meteora/src/spike.ts devnet` (about 4 minutes, resumable via `state.devnet.json`).
 3. Copy the devnet rows from `results.devnet.json` into this table and flip the Devnet column to [VERIFIED-DEVNET] with signatures.
 4. Not covered by the script: custom-program PDA claim, delegate claim, DBC-1 to DBC-4 (S-3), Raydium CPMM and Orca lock notes (see DECISION-fallback-raydium-cpmm.md).
+
+## Devnet run 2026-11-08 (VERIFIED on Solana devnet, real DAMM v2 and Squads v4 programs)
+
+Run by the coordinator from `services/venue` with `VAULT_FUND_SOL=0.06 npx tsx ../../spikes/meteora/src/spike.ts devnet`. Funded with 1 devnet SOL (faucet SOL forwarded from the genesis relayer devnet key; tx 4VsHyxy7JMeDPsZ5fr7a8CSret8LM2j5nLx2iqMwR3er6YkZRGPVae6qoLgheJJHSAU8FqhNqW4Hywwv75kf7BGB). Signatures below are devnet signatures and can be looked up on a devnet explorer. Total spend 0.130111 SOL (play money). The `ws error 429` line is a websocket subscription rate limit and did not affect results.
+
+```
+net=devnet payer=8K2kQuuavjCo7QTREyKMUDJfpAHVyV6PqJooW56nDBCA balance=1.000000 SOL
+PASS a-create-pool-external-mint 4D7mHkjehMqA5iqydJMnTyQ2v1JygSVAfxaWR1zdDPJRXHuaiMxap9ArwHuW8PmVwsDSPKbTdsRWXzQDgvsCqNbi plain SPL base 4Ne1ZQhC21XJZBRpsv5wHqyVn5pRK7ayMMkDMEVoX2SX (mint+freeze auth null), test USDC; collectFeeMode=1
+PASS b-permanent-lock 4D7mHkjehMqA5iqydJMnTyQ2v1JygSVAfxaWR1zdDPJRXHuaiMxap9ArwHuW8PmVwsDSPKbTdsRWXzQDgvsCqNbi permanentLockedLiquidity=583337269021023124047623965365 in same tx as create
+PASS dm4-protocol-fee 4D7mHkjehMqA5iqydJMnTyQ2v1JygSVAfxaWR1zdDPJRXHuaiMxap9ArwHuW8PmVwsDSPKbTdsRWXzQDgvsCqNbi pool.poolFees.protocolFeePercent=20 (read from created pool; fixed by program, not set by creator)
+PASS f-cost-pool1 4D7mHkjehMqA5iqydJMnTyQ2v1JygSVAfxaWR1zdDPJRXHuaiMxap9ArwHuW8PmVwsDSPKbTdsRWXzQDgvsCqNbi payer balance delta 0.016510 SOL (tx fee, pool, position, vaults, NFT rent; ATAs pre-existed)
+PASS b-fee-claim-locked-position 2pihB5maYmXsuWPECY1BUpTWpH9SR1YRSLDhMoNMBLmXopAeqbxRrzz72c6ahYywLeGmwJbDGE6gyj3gLAprWezv,5MoX6Sa5YaXkwSAtR7sFQXCEQ5RS6rZkj43siZqsFTHuQxDZP1pnNofCDYLsAbhcWA6j755V8fBnzUaiNntJ4VT6 keypair owner claimed 119999 raw quote after 1 swap on a permanently locked position
+PASS e-fee-scheduler 2pihB5maYmXsuWPECY1BUpTWpH9SR1YRSLDhMoNMBLmXopAeqbxRrzz72c6ahYywLeGmwJbDGE6gyj3gLAprWezv,5MoX6Sa5YaXkwSAtR7sFQXCEQ5RS6rZkj43siZqsFTHuQxDZP1pnNofCDYLsAbhcWA6j755V8fBnzUaiNntJ4VT6,ghXqvJb8JvEVDtGSWb8QdKnuszqr9ncNr6icTj8oepKKonQJ9NTvHyTQ4g11rgygyCky23P9gE6dPvmZtjjkWjT,4ku4F4iTAb1UXnc5cjcy9AtE8rrJvvqwQLWGUrjRCeE9bZ8iuqxxdjQSRqNyfJANEMhM7XZ7Cd4s5ztachHwcTcN 1 USDC swap at t0 yielded 119999 LP fee, same swap after 60s yielded 8000; ratio 15.0 (schedule 1500 to 100 bps over 6 periods, linear)
+PASS d-two-owner-split 3PcfAdeZbtJRHLApT7nChaxcCm1PmfdeTYhfjKRSJayEVvkepEYKgDF2Ws4DhEz15vkK83D3Pvvsrm9mLcR2q6Vm,5s6MizLMwSWZPDP18vv4HWsGh2XgbLsbS46xkYjMen6T5BY9LphfRxFte17bkm23mv5RobDVXvmzHqf7Ta9UyEaJ,2uMFji8X41DRVB1WTQG1c12sv3uG21PvfjaZd8F8K3fajjYwZiqk5A35D2EXNvkKNVrCGdqo8f4eV6aYvuCjqBzr split_position2 numerator 50% of a permanently LOCKED position to a second owner EY83tmmVJmxH18ganTTzKVFwPAMy8oC6vH9vsqa5iSaL: second position lockedLiquidity=291668634510511562023811982682; second owner claim gained 4000
+PASS c0-squads-multisig 26cxoWLLicAtsFPECTKG25p1VbzbLwxN2gmYuYZjrDatMVRJ1zcoEFBvoqppwUunP6J5JVP7kkFApPzkxtb8zgCw 1-of-1 multisig AbTuhsXjhacUYrksgymKrFwA231rL6p8uuubF67mRpG8 timeLock 20s, vault 8at6bgUimHqikuAhTVv55UGW5oRymPU5auf1EXzgMVmt
+PASS c-vault-creates-and-locks 2ok2uXZtsiH3pn12eKRXDgXAFDeD1KLmR74WxBE8d7vdJERaFgtMKSUN6Ntkw1UvB2uwZdCNtdxWWj4pr9PdFdnJ,3ypREpZcfKkpTFTrPHMnKyjjw17eVMNhzRQGUxBoMTLfYfuQs1edcgUB6DgZqX5FKkK2stBHaDhnSR5BeCYd74kK,39MJpCLU7VRvnPtwT3HEXBPUoquomkKALEPTSUiojh4nSV4TJatZvBLf6TMR6nPRUTLggTmAhPdSPcG75G1sZDLg kruxa-venue plan executed as Squads vault tx (ephemeral signer for NFT); NFT owner=8at6bgUimHqikuAhTVv55UGW5oRymPU5auf1EXzgMVmt (vault); locked=583337269021023124047623965365; early execute: rejected (TimeLockNotReleased); pool cost from vault 0.016500 SOL
+PASS c-vault-claims-fees 3KJ2SEDwyY2uuMPPgwevHp1E42o6EZAKLZVbQFFzNXTYPDmbWYkMrKrZMwLNF3sGy28VWFp1bCHdMgb2bmDxqAZU,5tT8Es8nnDyuPwGnhWff9JM4e3z9dhwybb4fUE6yXXMkZR3igEABjNNzke6HgqhffL23qf1wDCoVtTizo9QuaevF,2zergtWNE9Y2XXcLu3GfEZGNuFdcewRccPsugJpL29crgxbUyTx8ce8op1VCj5ozAYmfvR3Wdy8BFSHMpeGUphdY,4Ld1XytjxmTmxzu2qQfF3nA3P3G4gfuKc3FxzmGqEUXFj6hMphsb2vucaC3XPyzKrFYFfibF5Zeqry72T31Aj59E Squads-vault-owned permanently locked position claimed 119999 raw quote to the vault ATA via a vault transaction
+spent 0.130111 SOL total
+```
+
+Not run in this pass: position owned by a PDA of Kruxa's own program; delegate keypair claiming on the owner's behalf; DBC checks; DexScreener, GeckoTerminal and Jupiter indexing (not testable on devnet).
