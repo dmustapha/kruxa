@@ -6,7 +6,7 @@ Each ADR records a choice already made during PRD and architecture work. The Rej
 - Context: the money math, the verdict and the allocation must run in the contract, in the simulator, in the verifier and (as a mirror) in a browser, and a judge must be able to recompute them. near-sdk 5.30 refuses native builds, so contract code cannot be unit-tested natively.
 - Decision: `kruxa-math` (U256 mul_div, linear unlock) and `kruxa-logic` (rules, verdict, allocation, settlement, hashes, ledger identities) take only integers and byte strings. The contract, `kruxa-sim` and the sandbox tests depend on them; they depend on nothing outward. The `kruxa-types` crate of RECONCILED 2.1 is folded into `kruxa-logic::rules` because Charter structs need `AccountId` and so live in the contract, while everything numeric is account-free.
 - Rejected: one contract crate with the logic inline. It could only be tested through the 40-second sandbox, so rounding and boundary bugs would be found slowly, and the simulator could not share the code. Also rejected: a separate `kruxa-types` crate, because it would have to either pull near-sdk into the pure layer or duplicate the structs.
-- Consequence: 25 native tests run in milliseconds and the same code produces the verdict on chain and in `scripts/verify.sh`. The cost is a mirror in TypeScript for the browser, pinned to the Rust output by test vectors.
+- Consequence: 50 native tests run in milliseconds and the same code produces the verdict on chain and in `scripts/verify.sh`. The cost is a mirror in TypeScript for the browser, pinned to the Rust output by test vectors.
 - Where: `crates/kruxa-math`, `crates/kruxa-logic`, ARCHITECTURE.md 1.3.
 
 ## ADR-002: One monolith core contract for Wave 1; the market is a second contract later
@@ -120,7 +120,7 @@ Each ADR records a choice already made during PRD and architecture work. The Rej
 - Context: typed views need `JsonSchema` on every nested type, including the pure crates' types, which would add a dependency to the pure layer.
 - Decision: views build `serde_json::Value`; the contract is built with `--no-abi`; the TypeScript types are written by hand.
 - Rejected: generating an ABI now. It is a size and dependency cost with no Wave 1 consumer.
-- Consequence: the wasm is larger than the 350 KB budget of S1-A (456,999 bytes measured, 4.57 NEAR of contract storage stake); typed views are a Wave 1b size lever.
+- Consequence: the wasm is larger than the 350 KB budget of S1-A (462,222 bytes measured, 4.62 NEAR of contract storage stake); typed views are a Wave 1b size lever.
 - Where: `contracts/core/src/views.rs`, `scripts/lint.sh`.
 
 ## ADR-018: The app refuses mainnet unless Dami's confirmation token is set

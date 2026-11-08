@@ -75,7 +75,7 @@ Deadline context: feature freeze Nov 12, repo public + X post Nov 13, one-shot s
 | rustc / cargo | 1.95.0 (local default is 1.91.1; see 1.6) | contract and logic build | installed locally for this run: `rustc 1.95.0 (59807616e 2026-04-14)` |
 | near-sdk | =5.30.1, default-features off, no `universal-accounts` | contract SDK | compiled and run; S1-A 1.3; mainnet and sandbox both report protocol 88 [VERIFIED 2026-11-08, CO-3] |
 | cargo-near | 0.23.0 | wasm build with feature lowering | installed and used: `cargo near build non-reproducible-wasm --no-abi` |
-| near-workspaces | =0.24.0 | sandbox integration tests | run: 19 sandbox tests |
+| near-workspaces | =0.24.0 | sandbox integration tests | run: 34 sandbox tests |
 | uint | =0.10.2 | U256 | compiled and tested |
 | proptest | =1.12.0 | property tests | run |
 | sha2 | 0.10 | inputs_hash, book_hash | compiled |
