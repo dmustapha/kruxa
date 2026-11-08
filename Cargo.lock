@@ -1887,6 +1887,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "mock-ft-ret"
+version = "0.1.0"
+dependencies = [
+ "near-sdk",
+]
+
+[[package]]
 name = "mock-intents"
 version = "0.1.0"
 dependencies = [

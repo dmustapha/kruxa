@@ -137,10 +137,9 @@ async fn the_instant_sub_cap_stops_instant_launches_from_crowding_out_trial_pool
     let r = ix.open(&b_creator, &b).await?;
     assert!(has_code(&r, "R_MARKET_CAP"), "the second seed would pass the $300 instant aggregate: {:?}", r.logs());
     assert_eq!(ix.status(&b).await, "Handoff");
-    // buys on the first pool stop at the sub-cap
+    // M-01: the sub-cap limits seeds, not trading, so buying past it does not block anyone
     let bob = trader(&ix, "bob", "SUBA", 1_000 * USDC).await?;
-    let big = buy(&ix, &bob, &a, 100 * USDC, None).await;
-    assert!(has_code(&big, "R_MARKET_CAP"), "{:?}", big.logs());
+    buy(&ix, &bob, &a, 100 * USDC, None).await.into_result()?;
     buy(&ix, &bob, &a, 40 * USDC, None).await.into_result()?;
     Ok(())
 }

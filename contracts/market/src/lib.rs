@@ -43,12 +43,14 @@ pub struct Market {
     paused: bool,
     max_pool_q: u128,
     max_global_q: u128,
-    /// Instant pools only: aggregate quote reserve cap, inside the global cap (CO-7 D-4).
+    /// Instant pools only: cap on the SUM OF SEEDS, inside the global cap (CO-7 D-4). Trading growth is not counted (M-01).
     max_instant_q: u128,
     /// Account of the instant launcher, the second allowed handoff sender. None = instant mode off.
     launcher: Option<AccountId>,
     launcher_pools: u32,
     instant_q: u128,
+    /// Sum of the seeds (opening quote reserves) of instant pools: the only thing `max_instant_q` limits (M-01).
+    instant_seeded_q: u128,
     /// Sum of every pool's quote reserve.
     global_q: u128,
     /// Creator slices accrued and not yet paid or debited, all pools.
@@ -96,6 +98,7 @@ impl Market {
             launcher: None,
             launcher_pools: 0,
             instant_q: 0,
+            instant_seeded_q: 0,
             global_q: 0,
             creator_unpaid: 0,
             platform_unpaid: 0,
@@ -178,10 +181,15 @@ impl Market {
     }
 
     pub(crate) fn owed_debit(&mut self, account: &AccountId, token: &AccountId, amount: u128) {
-        let v = self.owed_of(account, token) - amount;
-        self.owed.insert((account.clone(), token.clone()), v);
-        let tot = self.owed_total_of(token) - amount;
-        self.owed_total.insert(token.clone(), tot);
+        let key = (account.clone(), token.clone());
+        match self.owed_of(account, token) - amount {
+            0 => self.owed.remove(&key),
+            v => self.owed.insert(key, v),
+        };
+        match self.owed_total_of(token) - amount {
+            0 => self.owed_total.remove(token),
+            v => self.owed_total.insert(token.clone(), v),
+        };
         self.custody_sub(token, amount);
     }
 }

@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["crates/kruxa-instant", "contracts/instant", "crates/kruxa-math", "crates/kruxa-logic", "crates/kruxa-market", "contracts/core", "contracts/market", "contracts/mock-ft", "contracts/mock-intents", "contracts/mock-factory", "contracts/mock-market", "tools/kruxa-sim", "tools/market-sim", "tools/swarm-sim", "tests"]
+members = ["crates/kruxa-instant", "contracts/instant", "crates/kruxa-math", "crates/kruxa-logic", "crates/kruxa-market", "contracts/core", "contracts/market", "contracts/market/mock-ft-ret", "contracts/mock-ft", "contracts/mock-intents", "contracts/mock-factory", "contracts/mock-market", "tools/kruxa-sim", "tools/market-sim", "tools/swarm-sim", "tests"]
 
 [workspace.package]
 edition = "2021"

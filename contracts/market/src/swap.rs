@@ -8,7 +8,7 @@ use crate::{Market, MarketExt, GAS_CB, GAS_OUT, MAX_PARKED, ONE_YOCTO};
 use kruxa_market::{quote_buy, quote_sell, record_creator_fee, validate_market_terms, MarketError, Routing, Swap};
 use near_sdk::json_types::U128;
 use near_sdk::serde_json::{self, json};
-use near_sdk::{env, log, near, AccountId, Promise, PromiseOrValue};
+use near_sdk::{env, is_promise_success, log, near, AccountId, Promise, PromiseOrValue};
 
 type Refusal = &'static str;
 
@@ -37,7 +37,7 @@ impl Market {
     /// Callback of every swap payout. Never panics: a failed `ft_transfer` turns the payout into an owed balance.
     #[private]
     pub fn resolve_payout(&mut self, token: AccountId, account: AccountId, amount: U128, reason: String) -> U128 {
-        if env::promise_result_checked(0, 0).is_err() {
+        if !is_promise_success() {
             self.owed_credit(&account, &token, amount.0);
             emit("owed_credited", json!({ "account": account, "token": token, "amount": amount.0.to_string(), "reason": reason }));
         }
@@ -84,6 +84,7 @@ impl Market {
             self.check_instant_seed(amount)?;
             self.launcher_pools += 1;
             self.instant_q += amount;
+            self.instant_seeded_q += amount;
         }
         let pool = Pool {
             launch_id: id,
@@ -178,9 +179,10 @@ impl Market {
         }
     }
 
-    /// Seed-time caps for instant pools (trial seeds are bounded by core's raise caps; refusing one could strand a passed launch).
+    /// Seed-time caps for instant pools: one seed within the per-pool cap and the sum of seeds within the instant sub-cap. Neither the global
+    /// reserve nor trading growth is counted, so trading cannot grief seeding. Trial seeds are bounded by core's raise caps; refusing one could strand a passed launch.
     fn check_instant_seed(&self, amount: u128) -> Result<(), Refusal> {
-        if amount > self.max_pool_q || self.global_q + amount > self.max_global_q || self.instant_q + amount > self.max_instant_q {
+        if amount > self.max_pool_q || self.instant_seeded_q + amount > self.max_instant_q {
             return Err("R_MARKET_CAP");
         }
         Ok(())
@@ -213,9 +215,6 @@ impl Market {
         let s = quote_buy(pool.reserves(), amount, min_out, &pool.terms, now.saturating_sub(pool.opened_ns), Routing::M_A)
             .map_err(market_code)?;
         if s.after.q > self.max_pool_q || self.global_q - pool.q + s.after.q > self.max_global_q {
-            return Err("R_MARKET_CAP");
-        }
-        if pool.mode == Mode::Instant && self.instant_q - pool.q + s.after.q > self.max_instant_q {
             return Err("R_MARKET_CAP");
         }
         self.custody_add(token, amount);
