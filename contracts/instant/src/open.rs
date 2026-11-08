@@ -3,17 +3,17 @@
 use crate::ext::ext_ft;
 use crate::model::*;
 use crate::{events::emit, fail, Launcher, LauncherExt};
-use crate::{GAS_LEG, GAS_SEED_CB, GAS_STORAGE, GAS_TOKEN_CB, MARKET_STORAGE_YOCTO, ONE_YOCTO, SEC_NS, TOKEN_REG_YOCTO};
+use crate::{GAS_LEG, GAS_SEED_CB, GAS_STORAGE, GAS_TOKEN_CB, MARKET_STORAGE_YOCTO, ONE_YOCTO, TOKEN_REG_YOCTO};
 use kruxa_logic::hex;
 use near_sdk::json_types::{U128, U64};
 use near_sdk::serde_json::json;
 use near_sdk::{env, near, AccountId, NearToken, Promise};
 
 impl Launcher {
-    fn seed_msg(&self, r: &Instant, trade_from_ns: u64) -> String {
+    fn seed_msg(&self, r: &Instant) -> String {
         json!({ "v": 1, "op": "seed_quote", "launch_id": r.launch_id.to_string(), "token": r.token, "payout_recipient": r.payout_recipient,
                 "creator": r.creator, "total_supply": r.derived.n_total.to_string(), "charter_hash": hex(&r.charter_hash),
-                "supply_model": "near_factory_fixed", "trade_from_ns": trade_from_ns.to_string(), "terms": r.params.fees })
+                "supply_model": "near_factory_fixed", "terms": r.params.fees })
         .to_string()
     }
 
@@ -25,8 +25,7 @@ impl Launcher {
         self.seed_due_total -= amount;
         let usdc = self.cfg.usdc.clone();
         self.custody_sub(&usdc, amount);
-        r.trade_from_ns = env::block_timestamp() + r.params.trade_delay_secs as u64 * SEC_NS;
-        let msg = self.seed_msg(r, r.trade_from_ns);
+        let msg = self.seed_msg(r);
         emit("instant_handoff", json!({ "launch_id": r.launch_id.to_string(), "leg": "Seed", "amount": amount.to_string(), "market": market }));
         let _ = ext_ft::ext(usdc)
             .with_attached_deposit(ONE_YOCTO)
@@ -145,7 +144,7 @@ impl Launcher {
         emit(
             "instant_opened",
             json!({ "launch_id": r.launch_id.to_string(), "token": r.token, "market": self.cfg.market, "q": r.seed_sent.to_string(),
-                    "t": r.tokens_sent.to_string(), "trade_from_ns": r.trade_from_ns.to_string(), "opened_at": r.opened_at.to_string() }),
+                    "t": r.tokens_sent.to_string(), "opened_at": r.opened_at.to_string() }),
         );
     }
 }

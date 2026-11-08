@@ -20,9 +20,9 @@ impl Launcher {
                 "name": r.params.name, "symbol": r.params.symbol, "token": r.token, "total_supply": s(r.derived.n_total), "n_alloc": s(r.derived.n_alloc),
                 "n_pool": s(r.derived.n_pool), "creator_alloc_bps": r.params.creator_alloc_bps, "cliff_days": r.params.cliff_days,
                 "vest_days": r.params.vest_days, "seed_q": s(r.params.seed_q), "launch_fee": s(r.derived.launch_fee), "pool_seed_q": s(r.derived.pool_seed_q),
-                "open_price_micro_per_token": s(r.derived.open_price), "trade_delay_secs": r.params.trade_delay_secs, "terms": r.params.fees,
+                "open_price_micro_per_token": s(r.derived.open_price), "terms": r.params.fees,
                 "charter_hash": kruxa_logic::hex(&r.charter_hash), "created_at_ns": r.created_at.to_string(), "seeded_at_ns": r.seeded_at.to_string(),
-                "opened_at_ns": r.opened_at.to_string(), "trade_from_ns": r.trade_from_ns.to_string(), "seed_due": s(r.seed_due),
+                "opened_at_ns": r.opened_at.to_string(), "seed_due": s(r.seed_due),
                 "seed_inflight": s(r.seed_inflight), "seed_sent": s(r.seed_sent), "fee_held": s(r.fee_held), "tokens_unsent": s(r.tokens_unsent()),
                 "tokens_inflight": s(r.tokens_inflight), "tokens_sent": s(r.tokens_sent), "alloc_claimed": s(r.claimed), "deposit_paid": s(r.deposit_paid),
                 "deposit_refundable": s(r.deposit_refundable) })
@@ -98,7 +98,7 @@ impl Launcher {
         let unit = self.cfg.unit_ns;
         Some(json!({ "status": r.status, "step": step, "next_action": next, "can_cancel": r.status == Status::TokenReady,
                      "can_abandon_at_ns": (r.created_at + crate::ABANDON_UNITS * unit).to_string(),
-                     "can_abort_at_ns": (r.seeded_at + crate::ABORT_UNITS * unit).to_string(), "trade_from_ns": r.trade_from_ns.to_string() }))
+                     "can_abort_at_ns": (r.seeded_at + crate::ABORT_UNITS * unit).to_string() }))
     }
 
     pub fn get_vesting(&self, launch_id: U64) -> Option<Value> {

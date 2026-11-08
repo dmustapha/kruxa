@@ -139,7 +139,6 @@ impl Launcher {
             created_at: now,
             seeded_at: 0,
             opened_at: 0,
-            trade_from_ns: 0,
             seed_total: 0,
             seed_due: 0,
             seed_inflight: 0,
@@ -163,7 +162,7 @@ impl Launcher {
             json!({ "launch_id": id.to_string(), "mode": "instant", "creator": creator, "payout_recipient": payout, "symbol": params.symbol, "name": params.name,
                     "total_supply": derived.n_total.to_string(), "token_decimals": TOKEN_DECIMALS, "creator_alloc": derived.n_alloc.to_string(),
                     "pool_tokens": derived.n_pool.to_string(), "cliff_days": params.cliff_days, "vest_days": params.vest_days,
-                    "seed_q": params.seed_q.to_string(), "launch_fee": derived.launch_fee.to_string(), "trade_delay_secs": params.trade_delay_secs,
+                    "seed_q": params.seed_q.to_string(), "launch_fee": derived.launch_fee.to_string(),
                     "terms": params.fees, "charter_hash": hex(&r.charter_hash) }),
         );
         self.save(r);

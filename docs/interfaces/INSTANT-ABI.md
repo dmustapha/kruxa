@@ -66,8 +66,8 @@ Seed (creator -> launcher), `USDC.ft_transfer_call(receiver_id: launcher, amount
 Accepted only if: predecessor is the configured USDC (`R_UNEXPECTED_TOKEN`), message valid (`R_BAD_MSG`), launch exists and status is `TokenReady` (`R_INSTANT_STATE`), `sender_id == creator` (`R_NOT_CREATOR`), `amount == seed_q` exactly (`R_SEED_AMOUNT`), aggregate unconsumed seeds + amount <= cap (`R_CAP_GLOBAL`), not paused (`R_PAUSED`). Accepted: returns `"0"`, status `Seeded`, `fee_held = launch_fee`, `seed_due = seed_q - launch_fee`. Refused: returns the full amount.
 
 Launcher -> market, seed leg (`USDC.ft_transfer_call(market, seed_due, msg)`):
-`{"v":1,"op":"seed_quote","launch_id":"1000000007","token":"abc.factory.near","payout_recipient":"alice.near","creator":"alice.near","total_supply":"1000000000000000","charter_hash":"<64 hex>","supply_model":"near_factory_fixed","trade_from_ns":"<ns>","terms":{FeeTerms}}`
-No `mint_authority` / `freeze_authority` (there is no Solana mint). `trade_from_ns` = block time of the send + `trade_delay_secs`; the market enforces it only if it implements the optional field (MARKET-ABI 1.1.0 may ignore it; the UI must read it from `get_pool` before showing "opens in").
+`{"v":1,"op":"seed_quote","launch_id":"1000000007","token":"abc.factory.near","payout_recipient":"alice.near","creator":"alice.near","total_supply":"1000000000000000","charter_hash":"<64 hex>","supply_model":"near_factory_fixed","terms":{FeeTerms}}`
+No `mint_authority` / `freeze_authority` (there is no Solana mint). There is NO announced-open delay in this release: the market (ABI 1.1.0) does not implement `trade_from_ns`, so the launcher does not offer `trade_delay_secs` (CO-7 2.7 listed it as cut-first; dropping it keeps the charter honest). Trading starts when the pool opens; the opening-fee decay (500 bps falling to the base over 60 minutes, surcharge to LP) is the only anti-snipe tool besides the declared-wallet self-buy block.
 Token leg (`token.ft_transfer_call(market, n_pool, msg)`): `{"v":1,"op":"open_pool_token","launch_id":"1000000007"}`. Before the token leg the launcher registers the market on the token (`storage_deposit`, 0.00125 NEAR) and forwards 0.05 NEAR to the market for pool storage, once.
 
 ## 5. Parameters
@@ -75,7 +75,7 @@ Token leg (`token.ft_transfer_call(market, n_pool, msg)`): `{"v":1,"op":"open_po
 `InstantParams` JSON (omitted fields take the default):
 ```
 { "name": "My Coin", "symbol": "MYC", "creator_alloc_bps": 500, "cliff_days": 7, "vest_days": 90,
-  "seed_q": "250000000", "fees": {FeeTerms}, "trade_delay_secs": 600 }
+  "seed_q": "250000000", "fees": {FeeTerms} }
 ```
 | Field | Range | Default | Code |
 |---|---|---|---|
@@ -85,7 +85,6 @@ Token leg (`token.ft_transfer_call(market, n_pool, msg)`): `{"v":1,"op":"open_po
 | `cliff_days` | 7..=30 and <= `vest_days` | 7 | `R_VEST` |
 | `vest_days` | 30..=365 | 90 | `R_VEST` |
 | `seed_q` | 100 000 000..=`per_launch` cap (1 000 000 000) micro-USDC, and above the launch fee | 250 000 000 | `R_SEED_RANGE` |
-| `trade_delay_secs` | 0..=3600 | 600 | `R_DELAY` |
 | `fees` | the trial rules (`kruxa_logic` fee checks) plus `validate_market_terms`; default = standard 50/15/15/10/10, total 100 bps, opening 500 bps decaying over 60 minutes, creator fee vest 50% over 90 days | see left | `R_FEE_TOTAL`, `R_CREATOR_SHARE`, `R_CREATOR_TAKE`, `R_PLATFORM_FLOOR`, `R_PLATFORM_FIXED`, `R_HOLDER_RANGE`, `R_LP_RANGE`, `R_HOLDER_LP_FLOOR`, `R_REFERRAL`, `R_SPLIT_SUM`, `R_FEE_VEST`, `R_OPENING`, `R_FEE_TERMS` |
 
 Derived: `n_total = 1_000_000_000 * 10^6` base units (the trial default supply; a test pins it to `TrialParams::example`), `n_alloc = floor(n_total * creator_alloc_bps / 10000)`, `n_pool = n_total - n_alloc` (exact). `pool_seed_q = seed_q - launch_fee`. Opening price per whole token = `pool_seed_q * 10^6 / n_pool` micro-USDC.
@@ -100,7 +99,7 @@ Deposit (`required_deposit()`): factory deposit 0.06 NEAR + record storage 0.02 
 - `get_config()` -> `{owner, guardian, treasury, usdc, factory, market, market_locked, profile, creator_gate, paused ("None"|"Paused"|"Frozen"), launch_fee, factory_deposit, seed_min, seed_max, seed_cap_aggregate, pending_caps, unit_ns, next_launch_id, platform_unpaid}`
 - `required_deposit()` -> yocto string
 - `preview_instant(params, creator?, payout_recipient?)` -> `{ok, violations:[{code, field, got, limit}], required_deposit, n_total, n_alloc, n_pool, pool_seed_q, launch_fee, open_price_micro_per_token}` (with `creator` it also reports gate, pause, rate limit and symbol availability)
-- `get_instant(launch_id)` -> `null` or `{launch_id, mode:"instant", status, creator, payout_recipient, name, symbol, token, total_supply, n_alloc, n_pool, creator_alloc_bps, cliff_days, vest_days, seed_q, launch_fee, pool_seed_q, trade_delay_secs, terms, charter_hash, created_at_ns, seeded_at_ns, opened_at_ns, trade_from_ns, seed_due, seed_inflight, seed_sent, fee_held, tokens_unsent, tokens_inflight, tokens_sent, alloc_claimed, deposit_paid, deposit_refundable}`
+- `get_instant(launch_id)` -> `null` or `{launch_id, mode:"instant", status, creator, payout_recipient, name, symbol, token, total_supply, n_alloc, n_pool, creator_alloc_bps, cliff_days, vest_days, seed_q, launch_fee, pool_seed_q, terms, charter_hash, created_at_ns, seeded_at_ns, opened_at_ns, trade_from_ns, seed_due, seed_inflight, seed_sent, fee_held, tokens_unsent, tokens_inflight, tokens_sent, alloc_claimed, deposit_paid, deposit_refundable}`
 - `get_phase(launch_id)` -> `{status, step ("create"|"seed"|"open"|"done"|"dead"), next_action ("seed"|"open_instant"|"retry_open_instant"|"none"), can_cancel, can_abandon_at_ns, can_abort_at_ns}`
 - `get_vesting(launch_id)` -> `{recipient, total, unlocked, claimed, claimable, cliff_end_ns, vest_end_ns}` (zeros before `Open`)
 - `instants_by_creator(account)` -> `[launch_id]`
@@ -111,19 +110,19 @@ Deposit (`required_deposit()`): factory deposit 0.06 NEAR + record storage 0.02 
 
 ## 8. Rule codes
 
-`R_PAUSED`, `R_FROZEN`, `R_CREATOR_GATE`, `R_RATE_LIMIT`, `R_SYMBOL`, `R_SYMBOL_RESERVED`, `R_ALLOC`, `R_VEST`, `R_SEED_RANGE`, `R_DELAY`, `R_SEED_AMOUNT`, `R_CAP_GLOBAL`, `R_FEE_*` (as listed in section 5), `R_DEPOSIT`, `R_NOT_CREATOR`, `R_NOT_AUTHORIZED`, `R_UNEXPECTED_TOKEN`, `R_BAD_MSG`, `R_INSTANT_STATE`, `R_TOO_EARLY`, `R_NOTHING_TO_CLAIM`, `R_NOTHING`, `R_NOT_YET`, `R_NO_MARKET`, `R_NO_LAUNCH`, `R_MATH`, and the string `STREAM_CAP` (claim above the claimable amount).
+`R_PAUSED`, `R_FROZEN`, `R_CREATOR_GATE`, `R_RATE_LIMIT`, `R_SYMBOL`, `R_SYMBOL_RESERVED`, `R_ALLOC`, `R_VEST`, `R_SEED_RANGE`, `R_SEED_AMOUNT`, `R_CAP_GLOBAL`, `R_FEE_*` (as listed in section 5), `R_DEPOSIT`, `R_NOT_CREATOR`, `R_NOT_AUTHORIZED`, `R_UNEXPECTED_TOKEN`, `R_BAD_MSG`, `R_INSTANT_STATE`, `R_TOO_EARLY`, `R_NOTHING_TO_CLAIM`, `R_NOTHING`, `R_NOT_YET`, `R_NO_MARKET`, `R_NO_LAUNCH`, `R_MATH`, and the string `STREAM_CAP` (claim above the claimable amount).
 
 ## 9. Events (NEP-297, standard `kruxa`, version `1.0.0`, emitted by the launcher account)
 
 | Event | Data |
 |---|---|
-| `instant_created` | `launch_id, mode:"instant", creator, payout_recipient, symbol, name, total_supply, token_decimals, creator_alloc, pool_tokens, cliff_days, vest_days, seed_q, launch_fee, trade_delay_secs, terms, charter_hash` |
+| `instant_created` | `launch_id, mode:"instant", creator, payout_recipient, symbol, name, total_supply, token_decimals, creator_alloc, pool_tokens, cliff_days, vest_days, seed_q, launch_fee, terms, charter_hash` |
 | `instant_token_ready` | `launch_id, token` |
 | `instant_creation_failed` | `launch_id, code:"R_TOKEN_CREATE", reason` |
 | `instant_seeded` | `launch_id, seed, launch_fee` |
 | `instant_handoff` | `launch_id, leg ("Seed"/"Token"), amount, market` |
 | `instant_leg_resolved` | `launch_id, leg, amount, used, unused` |
-| `instant_opened` | `launch_id, token, market, q, t, trade_from_ns, opened_at` |
+| `instant_opened` | `launch_id, token, market, q, t, opened_at` |
 | `instant_abandoned` | `launch_id, by, refundable_deposit` |
 | `instant_aborted` | `launch_id, by, refunded_seed, refundable_deposit` |
 | `alloc_claimed` | `launch_id, recipient, amount, claimed_total, unlocked_total` |
@@ -145,4 +144,4 @@ IL-1 supply conservation at `TokenReady` (both views checked); IL-2 no mint meth
 
 ## 11. What this file depends on in the market (ABI 1.1.0, workstream M)
 
-`set_launcher(launcher)` called by the market owner; `seed_quote` from the launcher accepted for ids >= 1e9 with `creator` in the message; seed-time cap check `R_MARKET_CAP`; `R_SELF_BUY` for creator and payout recipient on buys; `R_ID_NAMESPACE` on the wrong id range; `pool_opened` and `get_pool` carry `mode` and `creator`. Optional: `trade_from_ns`.
+`set_launcher(launcher)` called by the market owner; `seed_quote` from the launcher accepted for ids >= 1e9 with `creator` in the message; seed-time cap check `R_MARKET_CAP`; `R_SELF_BUY` for creator and payout recipient on buys; `R_ID_NAMESPACE` on the wrong id range; `pool_opened` and `get_pool` carry `mode` and `creator`. `trade_from_ns` (announced open) is not in market 1.1.0 and not used.

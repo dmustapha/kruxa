@@ -22,8 +22,6 @@ pub const DEFAULT_VEST_DAYS: u16 = 90;
 pub const MIN_SEED_Q: u128 = 100_000_000;
 pub const MAX_SEED_Q: u128 = 1_000_000_000;
 pub const DEFAULT_SEED_Q: u128 = 250_000_000;
-pub const MAX_DELAY_SECS: u32 = 3_600;
-pub const DEFAULT_DELAY_SECS: u32 = 600;
 
 /// Standard 50/15/15/10/10 split, 1.00% total, with the DN-26 opening decay (500 bps over 60 minutes).
 pub fn default_fees() -> FeeTerms {
@@ -42,9 +40,6 @@ fn d_vest() -> u16 {
 fn d_seed() -> u128 {
     DEFAULT_SEED_Q
 }
-fn d_delay() -> u32 {
-    DEFAULT_DELAY_SECS
-}
 
 /// What the creator passes to `create_instant`. Omitted fields take the defaults.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, BorshSerialize, BorshDeserialize)]
@@ -61,8 +56,6 @@ pub struct InstantParams {
     pub seed_q: u128,
     #[serde(default = "default_fees")]
     pub fees: FeeTerms,
-    #[serde(default = "d_delay")]
-    pub trade_delay_secs: u32,
 }
 
 impl InstantParams {
@@ -75,7 +68,6 @@ impl InstantParams {
             vest_days: d_vest(),
             seed_q: d_seed(),
             fees: default_fees(),
-            trade_delay_secs: d_delay(),
         }
     }
 }
@@ -173,9 +165,6 @@ fn check_money(p: &InstantParams, l: &Limits, out: &mut Vec<Violation>) {
         out.push(Violation::new(code::SEED_RANGE, "seed_q", p.seed_q, format!("{}..={}", l.seed_min, l.seed_max)));
     } else if p.seed_q <= l.launch_fee {
         out.push(Violation::new(code::SEED_RANGE, "seed_q", p.seed_q, format!("> launch fee {}", l.launch_fee)));
-    }
-    if p.trade_delay_secs > MAX_DELAY_SECS {
-        out.push(Violation::new(code::DELAY, "trade_delay_secs", p.trade_delay_secs, format!("0..={MAX_DELAY_SECS}")));
     }
 }
 
@@ -283,7 +272,6 @@ mod tests {
             (code::VEST, InstantParams { cliff_days: 31, vest_days: 365, ..base.clone() }),
             (code::SEED_RANGE, InstantParams { seed_q: 99_999_999, ..base.clone() }),
             (code::SEED_RANGE, InstantParams { seed_q: 1_000_000_001, ..base.clone() }),
-            (code::DELAY, InstantParams { trade_delay_secs: 3_601, ..base.clone() }),
             ("R_FEE_TOTAL", InstantParams { fees: FeeTerms { total_fee_bps: 201, ..default_fees() }, ..base.clone() }),
             ("R_SPLIT_SUM", InstantParams { fees: FeeTerms { referral_bps: 900, ..default_fees() }, ..base.clone() }),
             ("R_OPENING", InstantParams { fees: FeeTerms { opening_decay_minutes: 0, ..default_fees() }, ..base.clone() }),

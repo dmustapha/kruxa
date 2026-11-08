@@ -220,7 +220,6 @@ async fn create_instant_refuses_each_rule_with_its_code() -> anyhow::Result<()> 
         ("R_VEST", json!({ "name": "A", "symbol": "VSTB", "cliff_days": 6 })),
         ("R_SEED_RANGE", json!({ "name": "A", "symbol": "SEDA", "seed_q": "99999999" })),
         ("R_SEED_RANGE", json!({ "name": "A", "symbol": "SEDB", "seed_q": "1000000001" })),
-        ("R_DELAY", json!({ "name": "A", "symbol": "DLYA", "trade_delay_secs": 3601 })),
         ("R_FEE_TOTAL", json!({ "name": "A", "symbol": "FEEA", "fees": { "total_fee_bps": 201, "creator_bps": 5000, "platform_bps": 1500, "holders_bps": 1500, "lp_bps": 1000, "referral_bps": 1000, "opening_fee_start_bps": 0, "opening_decay_minutes": 0, "fee_vest_bps": 5000, "fee_vest_days": 90 } })),
     ];
     for (code, p) in cases {

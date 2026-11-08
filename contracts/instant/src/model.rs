@@ -111,7 +111,6 @@ pub struct Instant {
     pub created_at: u64,
     pub seeded_at: u64,
     pub opened_at: u64,
-    pub trade_from_ns: u64,
     /// The creator's whole seed, launch fee included.
     pub seed_total: u128,
     pub seed_due: u128,
