@@ -10,7 +10,16 @@ export const glossary: Page = {
   blocks: [
     table(
       ['Term', 'Plain meaning'],
-      ['Trial', 'A launch that is refundable until its deadline.'],
+      ['Trial launch', 'A launch that is refundable until its deadline and trades only after PASS.'],
+      ['Instant launch', 'A higher-risk launch mode: the token is created and trades once the creator seeds and opens a pool. No trial, verdict, Walk or buyer refund. NEAR only, being built.'],
+      ['Badge', 'The label on every launch: TRIAL-VERIFIED or INSTANT (NO TRIAL), plus status labels.'],
+      ['Pool seed', 'The creator\'s own USDC that opens an Instant pool. It is not withdrawable.'],
+      ['Creator allocation', 'The share of an Instant token\'s supply held for the creator, at most 10%, unlocking after a cliff and then linearly.'],
+      ['Cliff', 'The period after the pool opens in which none of the allocation unlocks (7 to 30 days).'],
+      ['Launcher', 'The contract that creates Instant tokens and holds the creator allocation until it unlocks.'],
+      ['Opening fee', 'An extra fee at the start of trading that falls to the base fee, with the surcharge going to liquidity.'],
+      ['Freeze', 'A guardian action that can block exits for up to 7 days. It expires by itself.'],
+      ['Trial', 'Short for Trial launch.'],
       ['Charter', 'The fixed terms of one launch, hashed so buyers can see what they agreed to. See [The Charter](/docs/charter).'],
       ['Commit', 'Putting USDC into a trial.'],
       ['Walk', 'Taking your whole position back before the Walk deadline. All or nothing.'],

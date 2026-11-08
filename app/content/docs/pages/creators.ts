@@ -2,16 +2,26 @@ import type { Page } from '../../types';
 import { h2, note, ol, p, table, ul } from '../../blocks';
 import { FACTS as F, effectiveSplit, slicePctOfVolume } from '../facts';
 
+const I = F.instant;
+const usd = (n: number) => `$${n.toLocaleString('en-US')}`;
+
 const eff = effectiveSplit(F.split);
 
 export const creators: Page = {
   slug: 'creators',
   title: 'For creators',
   group: 'Use',
-  summary: 'How to open a trial, what you choose, what the contract fixes, and what you cannot do.',
+  summary: 'How to pick a launch mode, how to open a Trial or an Instant launch, what the contracts fix, and what you cannot do.',
   blocks: [
-    note('warn', 'On mainnet only the owner can open a trial until the capped beta opens. Before then the Studio shows "beta closed" and testnet is open to anyone. No independent audit has covered the contracts.', 'Who can launch'),
-    h2('How to launch'),
+    note('warn', 'On mainnet only the owner can open a Trial until the capped beta opens, and an Instant launch is refused for every account, including the owner, until then. Before then the Studio shows "beta closed" and testnet is open to anyone. No independent audit has covered the contracts.', 'Who can launch'),
+    h2('Pick a mode'),
+    table(
+      ['If you want', 'Pick'],
+      ['Buyers to commit refundable money first, with a verdict and a Walk, and a Solana mint after PASS', '**Trial launch** (recommended)'],
+      ['Your token to exist and trade now, with your own USDC as the opening liquidity, and no trial for buyers', '**Instant launch** (higher risk, NEAR only, being built)'],
+    ),
+    p('Buyers see the mode in a badge on every page that shows your token. An Instant launch carries the badge INSTANT (NO TRIAL), and buyers of it get no refund. Choose Instant only if you accept that.'),
+    h2('How to launch a Trial'),
     ol(
       'Open the Studio and pick a preset: supply, bucket split, caps, windows, stream length and fee terms.',
       'The Studio calls the `preview_charter` view. It needs no wallet and shows the result or the rule codes. A hostile preset (for example a creator allocation above 20%, or a zero window) is refused with `R_ALLOC` or `R_WINDOW` before you sign anything.',
@@ -37,6 +47,7 @@ export const creators: Page = {
       ['Stream length', `${F.streamDays.min} to ${F.streamDays.max} days`],
       ['Symbol', '2 to 12 characters, A-Z and 0-9. KRUXA, USDC, USDT, NEAR, WNEAR, SOL, ETH, BTC and DAI are reserved (`R_SYMBOL`)'],
     ),
+    p(`The Studio starts from ${F.studioDefault.commitHours} hours to commit, a ${F.studioDefault.tailHours} hour Walk tail and a ${F.studioDefault.streamDays} day stream. The contract floors are ${F.commitHours.min} hours and ${F.tailHours.min} hour.`),
     p('The soft cap must be reachable: minimum backers times the minimum buy cannot exceed it (`R_PASSABLE`). You can have one active trial at a time (`R_ACTIVE_TRIAL`).'),
     h2('Payout recipient'),
     ul(
@@ -55,6 +66,34 @@ export const creators: Page = {
     p(`Nothing is earned before PASS. On FAIL you earn nothing and the platform earns nothing. The launch fee is ${F.launchFeePct}% of the accepted raise (minimum $${F.launchFeeMinUsdc}); at a $1,000 raise that is $15.`),
     note('warn', `The contract caps the **declared** creator slice at ${F.creatorTakeMaxPctOfVolume.toFixed(2)}% of trading volume. That is not the same as "the creator can take at most 1%". Wallets a creator controls could also capture parts of the holder and referral slices once those exist. The hard bound on everything a creator-controlled set of wallets could extract is 80% of the fee, which is 1.60% of volume at the ${F.tradeFeePctMax.toFixed(2)}% maximum fee. The holder and referral payouts are not built in this release, so today the working creator share is the ${F.split.creator}% slice.`, 'The creator maximum, stated precisely'),
     p('None of this is a promise of income. No income, volume or return is claimed anywhere in these docs.'),
+    h2('Launch an Instant token'),
+    note('unproven', 'The Instant launcher is being built. Its interface is a draft (INSTANT-ABI 1.0.0), it is not deployed, and on mainnet it will refuse every account, including the owner, until the capped beta opens. Everything below is the design as written in the interface and the launcher code.', 'Being built'),
+    ol(
+      `Create: call \`create_instant\` with a NEAR deposit of about ${I.depositNear} NEAR. The excess is sent back. The \`preview_instant\` view shows the rule codes and the deposit before you sign.`,
+      `Seed: send your own USDC to the launcher, exactly the amount you declared. It must be between ${usd(I.seedUsdc.min)} and ${usd(I.seedUsdc.max)} (default ${usd(I.seedUsdc.default)}).`,
+      'Open: anyone calls `open_instant`. The pool starts trading.',
+    ),
+    table(
+      ['Parameter', 'Bound', 'Default', 'Rule code'],
+      ['Symbol', '2 to 12 characters, A-Z and 0-9, not reserved, not already used by the launcher', 'required', '`R_SYMBOL`, `R_SYMBOL_RESERVED`'],
+      ['Name', '1 to 32 printable characters', 'required', '`R_SYMBOL`'],
+      ['Supply', `${I.supplyWhole.toLocaleString('en-US')} whole tokens, ${I.tokenDecimals} decimals, fixed`, 'fixed', 'not a choice'],
+      ['Your allocation', `0% to ${I.allocBpsMax / 100}% of supply`, `${I.allocBpsDefault / 100}%`, '`R_ALLOC`'],
+      ['Cliff', `${I.cliffDays.min} to ${I.cliffDays.max} days, and no longer than the unlock`, `${I.cliffDays.default} days`, '`R_VEST`'],
+      ['Unlock (linear, after the cliff)', `${I.vestDays.min} to ${I.vestDays.max} days from the moment the pool opens`, `${I.vestDays.default} days`, '`R_VEST`'],
+      ['Pool seed', `${usd(I.seedUsdc.min)} to ${usd(I.seedUsdc.max)} of your USDC`, usd(I.seedUsdc.default), '`R_SEED_RANGE`, `R_SEED_AMOUNT`'],
+      ['Fee terms', 'The same bounds as a Trial. Default 1.00% fee, 50 / 15 / 15 / 10 / 10 split, opening fee 5% falling over 60 minutes.', 'standard', '`R_FEE_*`'],
+    ),
+    ul(
+      `**Launch fee:** a flat ${usd(I.launchFeeMainnetUsdc)} on mainnet, taken from your seed before the pool opens, so the pool opens with the seed minus the fee. It is zero on testnet.`,
+      `**Rate limit:** one Instant launch per account per ${I.rateLimitHours} hours (\`R_RATE_LIMIT\`).`,
+      '**Reserved symbols:** KRUXA, USDC, USDT, NEAR, WNEAR, SOL, ETH, BTC and DAI are refused, and the owner can reserve more.',
+      '**Your seed is not withdrawable.** It becomes the pool\'s opening liquidity and the market has no method to take liquidity out. You can only get it back if you abort before the market has consumed any of it, at least 72 hours after seeding.',
+      `**Your allocation** is held by the launcher. Nothing unlocks before the cliff (${I.cliffDays.default} days by default, up to ${I.cliffDays.max}). After it, the payout recipient can claim what has unlocked. Claiming more reverts with \`STREAM_CAP\`.`,
+      '**Self-buy block:** your creator account and your payout recipient cannot buy your own pool (`R_SELF_BUY`). This does not stop you using other wallets. Nothing can.',
+      '**Payout recipient:** your account by default, or a separate NEAR account chosen at creation. It is fixed, and it receives both the allocation and the fee share.',
+    ),
+    note('warn', 'Your allocation unlocks to you and you can sell it. Buyers can see that on the token page. A creator who sells into buyers, or who launches again and again from new accounts, is something the contracts bound but do not prevent.', 'What you are choosing'),
     h2('What you cannot do'),
     ul(
       'Draw anything before PASS, or more than the stream cap after it. Over-cap draws revert with `STREAM_CAP`.',
@@ -64,6 +103,7 @@ export const creators: Page = {
       'Block a Walk, change a stored verdict, or move a buyer\'s funds.',
       'Create an exemption list, allowlist or fee waiver. None exists.',
       'Open a second trial while one is active, or use a reserved symbol.',
+      'In an Instant launch: withdraw the seed, mint more tokens, unlock your allocation faster, or buy your own pool from a declared wallet.',
       'Cancel and keep anything: a creator cancel makes the verdict FAIL with reason `CANCELLED`, and everyone is refunded.',
     ),
     note('info', `Sybil wallets are not defended against. The contract counts accounts, not people, so a creator could fund their own launch from other wallets. What it costs them: the ${F.launchFeePct}% launch fee, locked liquidity, and the fact that every backer can still Walk. No sybil-resistance claim is made.`, 'A limit we state'),

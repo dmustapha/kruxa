@@ -26,6 +26,8 @@ export const privacy: Page = {
       ['1Click API (NEAR Intents)', 'Quotes for Solana-origin deposits', 'The quote request, including the addresses you supply'],
       ['Your wallet', 'Signing', 'Whatever you choose to sign. Read each prompt.'],
     ),
+    h2('What a creator publishes'),
+    p('When you create a Trial or an Instant launch, your account, the token name and symbol, the payout recipient, the terms and your seed are written to a public blockchain. They cannot be edited or removed.'),
     h2('Blockchain data is public and permanent'),
     p('Your commits, Walks, claims, token balances and addresses are written to public blockchains. We cannot edit or delete them, and anyone can link them to your address.'),
     h2('Your choices'),

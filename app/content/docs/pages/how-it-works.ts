@@ -2,16 +2,42 @@ import type { Page } from '../../types';
 import { code, h2, h3, note, ol, p, table, ul } from '../../blocks';
 import { FACTS as F, STATUS_DATE } from '../facts';
 
+const I = F.instant;
+const usd = (n: number) => `$${n.toLocaleString('en-US')}`;
+
 const s = F.split;
 
 export const howItWorks: Page = {
   slug: 'how-it-works',
   title: 'How it works',
   group: 'Start',
-  summary: 'A launch is a refundable trial first. Buyers can leave before a verdict that anyone can recompute.',
+  summary: 'Two launch modes: a refundable Trial launch with a verdict anyone can recompute, and an Instant launch that trades at once with no trial and no refund.',
   blocks: [
-    note('warn', `Status on ${STATUS_DATE}, from the project documents: the contracts are tested in a sandbox. Nothing here is claimed to be live on mainnet, and the capped beta is closed. Mainnet is real money. Check the labels on each launch (SANDBOX, TESTNET, DEVNET, MAINNET) before you act.`, 'Where this runs today'),
-    h2('The short version'),
+    note('warn', `Status on ${STATUS_DATE}, from the project documents: the contracts are tested in a sandbox. Nothing here is claimed to be live on mainnet, and the capped beta is closed. The Instant launcher is being built: its interface is a draft and it is not deployed. Mainnet is real money. Check the labels on each launch (SANDBOX, TESTNET, DEVNET, MAINNET) before you act.`, 'Where this runs today'),
+    h2('Two ways to launch'),
+    p('A creator picks one mode when they create a launch. Every launch page shows which mode it is, in a badge, so you can tell them apart before you act.'),
+    ul(
+      '**Trial launch.** Buyers commit refundable USDC first. A rule decides PASS or FAIL. The token trades only after PASS. Buyers can Walk before the verdict.',
+      '**Instant launch (higher risk).** The token is created now and trades as soon as the pool opens. The creator seeds the pool with their own USDC. There is no trial, no verdict, no Walk and no refund for buyers.',
+    ),
+    table(
+      ['', 'Trial launch', 'Instant launch'],
+      ['Badge', 'TRIAL-VERIFIED once it has passed', 'INSTANT (NO TRIAL)'],
+      ['Refund for buyers', 'Yes, until the Walk deadline. Pull refunds on FAIL.', '**None.** A buyer holds a token that can lose all of its value.'],
+      ['Walk', 'Yes, all or nothing, until the Walk deadline', 'None'],
+      ['Verdict', 'PASS or FAIL from three recorded numbers, recomputable', 'None. Nobody commits before it opens.'],
+      ['When it trades', 'Only after PASS', `As soon as the pool opens. Anyone can open it once the creator has seeded it.`],
+      ['Where the money comes from', 'Buyers commit USDC during the trial', `The creator seeds the pool with ${usd(I.seedUsdc.min)} to ${usd(I.seedUsdc.max)} of their own USDC. It stays in the pool for good.`],
+      ['Creator draws', 'A proceeds stream after PASS, never above `STREAM_CAP`', `No proceeds. A token allocation of up to ${I.allocBpsMax / 100}% that unlocks after a ${I.cliffDays.min} day cliff over ${I.vestDays.min} to ${I.vestDays.max} days.`],
+      ['What the creator cannot do', 'Draw before PASS or above the cap, loosen terms, buy their own launch, change the payout recipient', 'Withdraw the seed, mint more tokens, unlock faster, change the payout recipient, buy their own launch from a declared wallet'],
+      ['Supply', 'Fixed, factory token (its publisher can update the code)', 'Fixed, same factory token caveat'],
+      ['Liquidity', 'In the pool contract; no withdrawal method', 'The same'],
+      ['Solana', 'A Solana mint after PASS', 'None. NEAR only for now.'],
+      ['What is bounded', 'Caps, windows, the stream, the fee split, the verdict rule', 'Allocation size and unlock rate, seed size, one launch per account per day, fee split, caps'],
+      ['What is not bounded', 'The token\'s price, sybil wallets', 'The token\'s price (it can fall to near zero), buying at open by undeclared wallets, bots at open, wash trading and fake volume, serial launches from new accounts'],
+    ),
+    note('warn', 'An Instant launch is not a safer or lighter Trial. It removes the refund and the verdict. The only protections are the ones the contracts enforce, listed under [Security and trust](/docs/security).', 'Read this before you buy an Instant token'),
+    h2('The Trial launch in short'),
     ol(
       'A creator opens a **trial**: a time window, a soft cap, a hard cap and a minimum number of backers, all written into a Charter that cannot be loosened later.',
       'Buyers **commit** USDC during the commit window.',
@@ -21,7 +47,7 @@ export const howItWorks: Page = {
       'On PASS buyers claim tokens, the creator\'s proceeds start to **stream** at a capped rate, and a Solana mint can be created once.',
       'After PASS the token can trade in Kruxa\'s own capped pool on NEAR (the **market**).',
     ),
-    h2('The windows and limits'),
+    h2('Trial launch: the windows and limits'),
     p('These are the bounds the contract enforces for every launch today (the "ladder" rules in `crates/kruxa-logic/src/rules.rs`). A creator picks values inside them.'),
     table(
       ['What', 'Bound', 'Rule code if broken'],
@@ -39,7 +65,7 @@ export const howItWorks: Page = {
       ['Backer bonus vest', `${F.backerVestDays} days, linear`, 'fixed by the rules'],
     ),
     note('info', `Raising the $${F.perLaunchCapUsdc.toLocaleString('en-US')} and $${F.globalCapUsdc.toLocaleString('en-US')} caps is queued for ${F.capRaiseTimelockDays} days and is public. Lowering them is immediate.`, 'Caps'),
-    p(`The Studio form starts from ${F.studioDefault.commitHours} hours to commit, a ${F.studioDefault.tailHours} hour Walk tail and a ${F.studioDefault.streamDays} day stream. These are form defaults taken from the app code, not contract requirements.`),
+    p(`The Studio form starts from ${F.studioDefault.commitHours} hours to commit, a ${F.studioDefault.tailHours} hour Walk tail and a ${F.studioDefault.streamDays} day stream. These are form defaults, not contract requirements. The contract floors are ${F.commitHours.min} hours to commit and ${F.tailHours.min} hour of Walk tail.`),
     h2('Commit'),
     p('A NEAR buyer sends USDC with one transfer call that names the launch. The contract checks that the call came from the real USDC contract, that the launch is open, that the amount meets the minimum and that your wallet stays under its cap. If any check fails, the full amount is returned and nothing is stranded.'),
     p('A creator or payout recipient cannot commit to their own launch (`R_SELF_BUY`). A buyer with only a Solana wallet can commit through NEAR Intents. That path is described, with its proof status, on [For buyers](/docs/buyers).'),
@@ -97,10 +123,26 @@ export const howItWorks: Page = {
       'A token launched here cannot be traded across chains. There is no Intents quote for new tokens.',
     ),
     p('Full numbers are on [Fees](/docs/fees).'),
+    h2('The Instant launch in detail'),
+    note('unproven', 'The launcher contract and its interface are a draft (INSTANT-ABI 1.0.0, 2026-11-08). It has not been deployed or signed, and nothing about it is on mainnet. Treat everything in this section as how it is being built, not as something you can use yet.', 'Being built'),
+    p('Instant launch is NEAR only. There is no Solana mint for an Instant token.'),
+    ol(
+      `The creator calls \`create_instant\` with a NEAR deposit (about ${I.depositNear} NEAR). The launcher creates a fixed-supply factory token of ${I.supplyWhole.toLocaleString('en-US')} whole tokens and checks that the full supply is where it should be.`,
+      `The creator sends their USDC seed (${usd(I.seedUsdc.min)} to ${usd(I.seedUsdc.max)}, default ${usd(I.seedUsdc.default)}) to the launcher. On mainnet a flat ${usd(I.launchFeeMainnetUsdc)} launch fee is taken from it, and the pool opens with the rest. On testnet the fee is zero.`,
+      'Anyone calls `open_instant`. The launcher hands the seed and the pool share of tokens to the market contract, in that order. If a leg is refused it can be retried.',
+      'The pool trades. The opening fee starts at 5% and falls to the base fee over 60 minutes, and the extra goes to liquidity.',
+    ),
+    ul(
+      `The creator's allocation is at most ${I.allocBpsMax / 100}% of supply (default ${I.allocBpsDefault / 100}%). Everything else goes to the pool.`,
+      `The allocation is held by the launcher, not by the creator. It unlocks after a cliff of ${I.cliffDays.min} to ${I.cliffDays.max} days (default ${I.cliffDays.default}) and then linearly over ${I.vestDays.min} to ${I.vestDays.max} days (default ${I.vestDays.default}), counted from the moment the pool opens. A claim above what has unlocked reverts with \`STREAM_CAP\`.`,
+      'No method sends pool tokens or the seed anywhere except the market. The market has no method to withdraw liquidity.',
+      `If the creator has not opened the pool, they can cancel or abandon before the seed is accepted, and abort ${I.abortHours} hours after seeding only while the market has consumed none of the seed. Once the pool is open nothing returns the seed.`,
+      'The market contract can still be upgraded by the project owner\'s phase 0 key. That is disclosed on [Security and trust](/docs/security).',
+    ),
     h2('The three waits'),
     table(
       ['Wait', 'Applies to', 'Length'],
-      ['Trial window', 'every launch and every buyer', `commit window plus Walk tail (${F.commitHours.min} hours to 30 days, then ${F.tailHours.min} to ${F.tailHours.max} hours)`],
+      ['Trial window', 'every Trial launch and its buyers', `commit window plus Walk tail (${F.commitHours.min} hours to 30 days, then ${F.tailHours.min} to ${F.tailHours.max} hours)`],
       ['Squads timelock', 'Kruxa\'s own reserve only', '48 hours'],
       ['Cap timelock', 'changing the caps only', `${F.capRaiseTimelockDays} days`],
     ),

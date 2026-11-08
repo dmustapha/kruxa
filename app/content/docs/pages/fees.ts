@@ -2,6 +2,8 @@ import type { Page } from '../../types';
 import { h2, note, p, table, ul } from '../../blocks';
 import { FACTS as F, effectiveSplit, slicePctOfVolume } from '../facts';
 
+const I = F.instant;
+
 const s = F.split;
 const eff = effectiveSplit(s);
 const pct = (slice: number) => `${slicePctOfVolume(F.tradeFeePctStandard, slice).toFixed(2)}%`;
@@ -16,6 +18,8 @@ export const fees: Page = {
     table(
       ['Fee', 'Who pays', 'Amount', 'When'],
       ['Launch fee', 'taken from the raise', `${F.launchFeePct}% of the accepted raise, minimum $${F.launchFeeMinUsdc}, maximum $${F.launchFeeMaxUsdc.toLocaleString('en-US')}. At a $1,000 raise: $15.`, 'only on PASS. Zero on FAIL.'],
+      ['Instant launch fee', 'the creator, taken from the pool seed', `a flat $${I.launchFeeMainnetUsdc} USDC on mainnet, zero on testnet. The pool opens with the seed minus this fee.`, 'when the seed is accepted. Being built, not deployed.'],
+      ['Instant creation deposit', 'the creator', `about ${I.depositNear} NEAR, covering the factory token, storage and the market's setup. Excess is sent back; parts of it are kept if the launch fails.`, 'at `create_instant`'],
       ['Relay fee', 'a Solana-origin buyer who asks someone else to submit the call', `flat, quoted before you sign, at most the lower of $${F.relayFeeCeilingUsdc.toFixed(2)} or ${F.relayFeeCeilingPct}% of the amount`, 'at commit. Never refunded. NEAR buyers pay none.'],
       ['Intents withdrawal fee', 'a buyer moving funds to a Solana address', `fixed ${F.intentsSolanaWithdrawFeeUsdc.toFixed(2)} USDC per withdrawal. The platform never pays it.`, 'when you withdraw to Solana. 0.15% at a $20 amount.'],
       ['Trade fee', 'every buyer and seller on the Kruxa pool', `typically ${F.tradeFeePctStandard.toFixed(2)}%, set in the Charter between ${F.tradeFeePctMin}% and ${F.tradeFeePctMax.toFixed(2)}%`, 'on each trade after the market opens'],
@@ -51,6 +55,8 @@ export const fees: Page = {
       'Every trade needs a minimum-out amount greater than zero, so a price move past your limit refuses the trade instead of filling it.',
       'The fee is rounded up on the way in and paid amounts round down, with leftover dust going to liquidity.',
     ),
+    h2('Instant launches use the same trade fee'),
+    p(`An Instant launch uses the same fee terms, the same split and the same minimum-out rule as a Trial launch. Its default opening fee starts at ${I.openingFeeStartBps / 100}% and falls to the base fee over ${I.openingDecayMinutes} minutes, and the surcharge goes to liquidity. In this release the holders and referral slices are redirected to liquidity here too. The creator also holds a token allocation that unlocks over time, which is not a fee. See [For creators](/docs/creators).`),
     h2('What no fee does'),
     ul(
       'A Walk returns your principal to your own account. A relay fee you already paid is not returned.',

@@ -1,5 +1,6 @@
 // Every number the docs quote, in one place. app/content/docs/facts.test.ts checks these against
-// crates/kruxa-logic/src/rules.rs (Rules::ladder and FeeTerms::standard) so the prose cannot drift from the code.
+// crates/kruxa-logic/src/rules.rs (Rules::ladder and FeeTerms::standard), the instant launcher constants and the committed
+// attack gallery file, so the prose cannot drift from the code or the evidence.
 export const STATUS_DATE = '2026-11-08';
 
 export const FACTS = {
@@ -14,7 +15,7 @@ export const FACTS = {
   walletCapPct: { min: 0.5, max: 5 },
   commitHours: { min: 24, max: 720 },
   tailHours: { min: 1, max: 48 },
-  studioDefault: { commitHours: 24, tailHours: 6, streamDays: 30 },
+  studioDefault: { commitHours: 72, tailHours: 6, streamDays: 30 },
   openDelayDays: 7,
   streamDays: { min: 30, max: 365 },
   supplyWhole: { min: 10_000_000, max: 1_000_000_000_000 },
@@ -48,6 +49,36 @@ export const FACTS = {
   solanaClaimRentSol: 0.004,
   intentsLegSeconds: { low: 90, high: 97 },
   intentsStallMinutes: 35,
+  instant: {
+    supplyWhole: 1_000_000_000,
+    tokenDecimals: 6,
+    allocBpsMax: 1_000,
+    allocBpsDefault: 500,
+    cliffDays: { min: 7, max: 30, default: 7 },
+    vestDays: { min: 30, max: 365, default: 90 },
+    seedUsdc: { min: 100, max: 1_000, default: 250 },
+    seedAggregateCapUsdc: 3_000,
+    launchFeeMainnetUsdc: 10,
+    launchFeeTestnetUsdc: 0,
+    depositNear: 0.13125,
+    rateLimitHours: 24,
+    abandonHours: 24,
+    abortHours: 72,
+    openingFeeStartBps: 500,
+    openingDecayMinutes: 60,
+  },
+  gallery: {
+    file: 'evidence/attack-gallery/attack-gallery.json',
+    network: 'SANDBOX',
+    generatedAt: '2026-11-08T14:11:38Z',
+    total: 43,
+    refused: 32,
+    noEffect: 9,
+    bounded: 2,
+    failed: 0,
+    succeededUnexpectedly: 0,
+    attackTransactions: 119,
+  },
   test1Tx: '3KLVemdjr387BsqJiuuV9By9VXzeri6GRFwy3HMRT6ko',
 } as const;
 
