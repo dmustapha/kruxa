@@ -1,7 +1,8 @@
 // Stage 2: one full instant launch on testnet (DEMO PROFILE): create, seed, open (at 260 Tgas, the C-01 sample), buy, sell,
 // refused self-buys, a vesting claim after the 70 s demo cliff; then a failed launch (market paused, abort, reclaim).
 import fs from 'fs';
-import { ROOT, id, call, view, snapshot, sleep, tgas, ensureAccount, deployWasm, yocto, N_TOTAL, USDC, append } from './lib.mjs';
+import path from 'path';
+import { EVID, ROOT, id, call, view, snapshot, sleep, tgas, ensureAccount, deployWasm, yocto, N_TOTAL, USDC, append } from './lib.mjs';
 
 const W = (n) => new URL(`../../target/near/${n}/${n}.wasm`, import.meta.url).pathname;
 const L = id('demo-instant'), M = id('demo-market'), U = id('usdc'), F = id('factory');
@@ -62,7 +63,7 @@ if (only.includes('A')) {
   await call('claim_vested all claimable (creator-a)', CA, L, 'claim_vested', { launch_id: lid });
   console.log('creator-a ALPHA balance', await view(tok('ALPHA'), 'ft_balance_of', { account_id: CA }));
   await snapshot('after vesting claim', L, M, lid);
-  fs.writeFileSync(new URL('../../evidence/instant-testnet/flow-a.json', import.meta.url).pathname, JSON.stringify({ launch_id: lid, token: tok('ALPHA'), creator: CA, buyer: BUY }, null, 2));
+  fs.writeFileSync(path.join(EVID, 'flow-a.json'), JSON.stringify({ launch_id: lid, token: tok('ALPHA'), creator: CA, buyer: BUY }, null, 2));
 }
 
 if (only.includes('B')) {

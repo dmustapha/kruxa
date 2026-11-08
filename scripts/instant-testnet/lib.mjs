@@ -7,7 +7,7 @@ import { connect, KeyPair, keyStores, utils } from 'near-api-js';
 export const ROOT = process.env.KXI_ROOT || 'kxi-root-0811.testnet';
 if (!ROOT.endsWith('.testnet')) throw new Error('refusing: testnet only');
 const SECRETS = path.join(process.env.HOME, '.kruxa-secrets', 'instant-testnet');
-const EVID = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../../evidence/instant-testnet');
+export const EVID = process.env.KXI_EVID || path.resolve(path.dirname(new URL(import.meta.url).pathname), '../../evidence/instant-testnet');
 export const RPC = process.env.KXI_RPC || 'https://test.rpc.fastnear.com';
 export const USDC = 1_000_000n;
 export const N_TOTAL = 1_000_000_000_000_000n;

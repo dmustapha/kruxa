@@ -63,9 +63,50 @@ Findings (details in `findings.jsonl`):
 ## 4. The fixed launcher (main after the ws/instant2 merge) on testnet
 Account `demo-instant-v2.kxi-root-0811.testnet`, wasm built from merged main (270,698 B). Review M-02 on a real `.testnet` account:
 `new` with profile `Mainnet` is refused `R_PROFILE` (tx `6298ezeyU19k8jeRPjELDJyux79F3n89jVTXMSPJvEH1`), `prod` is refused (tx `92A3b1rSvVmL6d9hMmSpJbKoPsjL8CkQBwhHPaYxWdb1`), and `mainnet` on a `.testnet` account is refused `R_PROFILE` (tx `6LNgCs3zkAZf6BHZNM7Zs5yWgiMP5oTnhhSoifkhNME1`); `demo` is accepted (tx `7zxtzXDwCsinyi92Mz3ffVCf2eLPaZJR1dJpMqCu8bSo`).
-The sections 1 to 3 ran on the PRE-fix wasm (sha256 in `accounts.json`). The `GAS_FACTORY` finding (section 3, item 1) is still open on merged main: the constant is still 80 Tgas.
+The sections 1 to 3 ran on the PRE-fix wasm (sha256 in `accounts.json`). The `GAS_FACTORY` finding (section 3, item 1) was fixed afterwards (110 Tgas on main) and confirmed on testnet in section 5.
+
+## 5. Run 2: fixed launcher + market 1.1.2 against the REAL factory, end to end
+Fresh throwaway root `kxi-root-1108.testnet` (funded from two helper accounts, 29 NEAR), no mock factory. Evidence: `evidence/instant-testnet/run2/` (`txlog.jsonl`, `snapshots.jsonl`, `findings.jsonl`, `accounts.json`). Driver: `scripts/instant-testnet/real-flow.mjs` (`KXI_ROOT=kxi-root-1108.testnet KXI_EVID=<evidence dir> node fund.mjs`, then `node real-flow.mjs`; stages `ONLY=SETUP,FULL,FAIL`). `get_invariants` (launcher, launch, market, pool) was true in all 13 snapshots.
+| Role | Account / wasm sha256 |
+|---|---|
+| Launcher, demo profile, `GAS_FACTORY` 110 Tgas (273,845 B) | `demo-instant.kxi-root-1108.testnet`, `cb9646ad465e1b3f0c68ef7183ed9f2116b97a7a267155f8e4d41e43941c4678` |
+| Market 1.1.2, fresh account (257,446 B) | `demo-market.kxi-root-1108.testnet`, `ba88891316b68cf50eb82d80e72af346c931ced55f70c06e65d8f1e00b45718e` |
+| Mock USDC, guardian, treasury | `usdc.`, `guardian.`, `treasury.kxi-root-1108.testnet` |
+| Creators, trader | `creator-a.`, `creator-b.`, `buyer.kxi-root-1108.testnet` |
+Deploy and init: launcher `BbFDvjALoGL6knZFhdFquFT82Noe1qPCqkKQ8unnYY5M` / `28Y1zcdZ8z4GCEWApcipH2TatNuo1YJjXx5YLvgtoZPa`, market `Sb25F6gQVK2N1zR1hBfUUt8YQG93zi3dpwmWGqPVZd3` / `GRF8xMJKguFFu74gehMV33Jti7mMFzhTr4ezNzaHEr3`, `set_launcher` `ADQuTTEYedoZdEu8Kpkpjhmaiurfi2groCYmwwAXHm7F`, `set_market` `4NBHWWsjPpGcZ5vuYcBBiu9CF8snAKZ71qdHcPCpkwot`.
+
+### 5a. Full launch KXIA1108 (token `kxia1108.token.primitives.testnet`, launch id 1000000000)
+| Step | Tx | Result |
+|---|---|---|
+| create_instant (creator-a, real factory) | `8iAM6A8x2UHwRgTjMdhkomLCtyuQn178fauMu6kwViGB` | TokenReady, finding 1 of section 3 is closed |
+| seed 250 USDC | `3XRdkw8QddNACMRLQUh1CW9ZWPUrVcDFb8q1NYbofZtm` | Seeded |
+| claim_vested before open | `ELgaHhedkbQYpySDBkCRzFm9K5TgqjL2tNHQDdEd9WGC` | refused `R_INSTANT_STATE` |
+| open_instant by a stranger, 260 Tgas | `7R1u9VaRwtY5uHryRik1LCcZKY2BXgkkLeheseqTfnc3` | Open, market registered on the token (0.00125 NEAR) |
+| buy 20 USDC | `A3uaUJJBS654gLPhKAXL2KhexDF6QYMEVMxrcSih89ai` | buyer holds KXIA1108 |
+| sell half | `FhMfvRMoadFmPc4j2B88EtatJ9dkpMGmwdbUAxYgFBiU` | USDC back |
+| self-buy by the creator | `B7a8ogaF3npLqZzKHvCJmMxHQrZ6RQat4zEuhPKQd7XT` | refused `R_SELF_BUY`, USDC returned |
+| self-buy via receiver field | `HogKFya1PMV3TcEc9qsPv2a6ofKTbLuTaoA5SZwij6rc` | refused `R_SELF_BUY` |
+| claim_vested by a stranger | `B8aDWLeAzg6gxQhzsSdfpsrrtpVscKN3ZDeSmQoGABUE` | refused `R_NOT_AUTHORIZED` |
+| claim_vested above claimable | `6FFkqPXumUbcqJjVE3PWGLsLfgesk3BXMo6U1TU38Gq7` | refused `STREAM_CAP` |
+| claim_vested after the 70 s cliff | `FpWuPPpmPxh81Y1n6YGHxTA8dvrmw3fmUMu9Z7ZB1KnQ` | paid 18,630,575.515833 KXIA1108 of 50,000,000 |
+
+### 5b. Failed launch KXIB1108 (launch id 1000000001)
+| Step | Tx | Result |
+|---|---|---|
+| create_instant (creator-b) | `3hzhTvsbSexgefucyfdb4FsmvauKqBaJtfwezYLuN9CA` | TokenReady |
+| seed 250 USDC | `4te9zADeUmSZRWxisQ9qFpTNcBePsLCGQcYAGamWb9FJ` | Seeded |
+| market.pause (guardian) | `FGjEVHSVhhSgwDCRKV4R5VneUomUzfGDfyGYTmx4aVSi` | paused |
+| open_instant against the paused market | `EwY3PNsN8RWjJtLh7yqvvSiFZ1vHB8CJsLpDuoiWW8HK` | seed leg refused `R_PAUSED`, seed back at the launcher |
+| abort too early / by a stranger | `5EZ3mwmHzoHcRqyqY2F6DXXTMbR89zzLXq4aExCYUMwg` / `6i2cBbt5JbYJ8MRYSgeLPDHHDLidNYhBd9ikmPenuBiu` | `R_TOO_EARLY` / `R_NOT_AUTHORIZED` |
+| abort_instant by the creator | `DCSu2tfqmkhpWX5gmhAC5vkbcC4vRM4y9gein93YXKLS` | Aborted, 250 USDC back to creator-b |
+| reclaim_deposit | `JA6AF5G8HUc4hjjm8WZDrRokftig4tdMhwqEn6pQpTWC` | NEAR deposit paid back |
+| market.unpause | `3Kw3yZb8LibbeNM7gYXnbSgbvjigGvmDf66N33ByE9B8` | live again |
+
+### 5c. Notes on the log
+- The creator account ran out of NEAR before the first vesting claim (0.6 NEAR funding minus the 0.13 deposit and 300 Tgas reservations). That is test-account funding, not a contract issue; it was topped up from the root and the claim repeated. In `txlog.jsonl` the three `success: false` claim rows with no rule code (`D5G4g9EzY5Qct5rjEnqAVTXNrxbonYKHJqsZAvesB9b8`, `3SPci8odUzR23zyErNR7EfgtrwxcWBM42bFWtjDXht6C`, `J5t7o96EtxUyjdJpHUeA7PNdLQTqzpLQQyjZqgdhghwq`) are: rejected client side for balance, and two malformed calls from the ad hoc retry (launch id sent as a number; the launcher refused the JSON). Nothing else is unexpected.
+- Rows marked `success: false` with a rule code are the expected refusals.
 
 ## Not done here
 - No sandbox-style wait for the freeze expiry or the 7-day cap timelock: both are 7 real days even on the demo profile.
-- The launcher flow against the real factory stopped at creation (finding 1), so seed, open and trading on a real factory token were not run through the launcher.
+- Run 2 (section 5) covers seed, open and trading on a real factory token through the launcher. Cap timelock and freeze expiry remain untested on testnet.
 - Mainnet: nothing was signed or deployed.

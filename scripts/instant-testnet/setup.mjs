@@ -1,7 +1,8 @@
 // Stage 1: accounts, contracts, wiring. DEMO PROFILE (10-second days): throwaway TESTNET accounts only, labelled demo-*.
 import crypto from 'crypto';
 import fs from 'fs';
-import { ROOT, id, ensureAccount, deployWasm, call, snapshot, view, tgas, append, USDC } from './lib.mjs';
+import path from 'path';
+import { EVID, ROOT, id, ensureAccount, deployWasm, call, snapshot, view, tgas, append, USDC } from './lib.mjs';
 
 const W = (n) => new URL(`../../target/near/${n}/${n}.wasm`, import.meta.url).pathname;
 const A = { owner: ROOT, guardian: id('guardian'), treasury: id('treasury'), usdc: id('usdc'), factory: id('factory'),
@@ -17,7 +18,7 @@ for (const who of [A.launcher, A.market, A.treasury, A.creatorA, A.creatorB, A.b
   await call(`register ${who} on mock USDC`, ROOT, A.usdc, 'storage_deposit', { account_id: who }, { deposit: '2000000000000000000000', gas: tgas(30) });
 await call('market.set_launcher(launcher)', ROOT, A.market, 'set_launcher', { account: A.launcher }, { gas: tgas(30) });
 await call('launcher.set_market(market)', ROOT, A.launcher, 'set_market', { account: A.market }, { gas: tgas(30) });
-fs.writeFileSync(new URL('../../evidence/instant-testnet/accounts.json', import.meta.url).pathname, JSON.stringify({
+fs.writeFileSync(path.join(EVID, 'accounts.json'), JSON.stringify({
   network: 'NEAR TESTNET (play money)', profile: 'demo (10-second days): throwaway demo accounts, never a public deployment', accounts: A,
   wasm_sha256: { launcher: sha('kruxa_instant_contract'), market: sha('kruxa_market_contract'), mock_ft: sha('mock_ft'), mock_factory: sha('mock_factory') } }, null, 2));
 console.log(JSON.stringify(await view(A.launcher, 'get_config')).slice(0, 600));

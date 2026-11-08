@@ -1,7 +1,8 @@
 // Funds the throwaway root from testnet helper accounts (play money). Usage: node fund.mjs
 import { ROOT, exists, loadKey, newKey, acct, balanceNear, sleep, append, yocto } from './lib.mjs';
-const helpers = ['a', 'b'].map((x) => `kxi-fund-${x}-0811.testnet`);
-for (const h of helpers) {
+const TAG = ROOT.replace(/^kxi-root-/, '').replace(/\.testnet$/, '');
+const helpers = ['a', 'b'].map((x) => `kxi-fund-${x}-${TAG}.testnet`);
+for (const h of [ROOT, ...helpers]) {
   if (await exists(h)) { console.log(h, 'exists'); continue; }
   const kp = newKey(h);
   const r = await fetch('https://helper.testnet.near.org/account', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ newAccountId: h, newAccountPublicKey: kp.getPublicKey().toString() }) });
