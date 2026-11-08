@@ -198,7 +198,8 @@ async fn open_market_against_the_real_market_opens_the_pool_and_a_buy_works() ->
 }
 
 async fn storage_registered(env: &Env, symbol: &str, who: &near_workspaces::AccountId) -> bool {
-    let v: Value = env.worker.view(&env.token_id(symbol), "storage_balance_of").args_json(json!({ "account_id": who })).await.unwrap().json().unwrap();
+    let v: Value =
+        env.worker.view(&env.token_id(symbol), "storage_balance_of").args_json(json!({ "account_id": who })).await.unwrap().json().unwrap();
     !v.is_null()
 }
 
@@ -229,7 +230,13 @@ async fn the_creator_deposit_includes_the_registration_reserve_and_a_failed_laun
     env.call(&env.creator, "cancel_trial", lid(id), ZERO).await.into_result()?;
     env.call(&env.creator, "dissolve", lid(id), ZERO).await.into_result()?;
     let r = env.call(&env.creator, "reclaim_bond", lid(id), ZERO).await;
-    let paid = r.logs().iter().filter_map(|l| l.strip_prefix("EVENT_JSON:")).filter_map(|j| serde_json::from_str::<Value>(j).ok()).find(|e| e["event"] == "bond_reclaimed").map(|e| num(&e["data"][0], "amount"));
+    let paid = r
+        .logs()
+        .iter()
+        .filter_map(|l| l.strip_prefix("EVENT_JSON:"))
+        .filter_map(|j| serde_json::from_str::<Value>(j).ok())
+        .find(|e| e["event"] == "bond_reclaimed")
+        .map(|e| num(&e["data"][0], "amount"));
     assert_eq!(paid, Some(bond + reg), "the unused registration reserve comes back with the bond");
     Ok(())
 }
