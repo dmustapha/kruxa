@@ -10,3 +10,6 @@ export * from './series';
 export * from './facts';
 export * from './stream';
 export * from './hooks';
+export * from './quote';
+export * from './wallet-bridge';
+export * from './epochs';

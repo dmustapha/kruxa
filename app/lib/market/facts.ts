@@ -8,6 +8,7 @@ export interface MarketFacts {
   market: string;
   token: string | null;
   terms: FeeTerms | null;
+  totalSupply: string | null;
   openedAtSec: number | null;
   /** Where the terms and token came from, for the badge text. */
   basis: 'api' | 'chain' | 'none';
@@ -16,18 +17,19 @@ export interface MarketFacts {
 export function resolveFacts(page: TokenPageData, chain: ChainPool | null): MarketFacts {
   const p = page.pool;
   const market = p.market ?? MARKET_CONFIG.marketAccount;
-  if (p.fee_terms && p.token) return { market, token: p.token, terms: p.fee_terms, openedAtSec: p.opened_at ?? null, basis: 'api' };
+  if (p.fee_terms && p.token) return { market, token: p.token, terms: p.fee_terms, totalSupply: p.total_supply ?? chain?.total_supply ?? null, openedAtSec: p.opened_at ?? null, basis: 'api' };
   if (chain && chain.state === 'Open') {
     const ns = Number(chain.opened_ns);
     return {
       market,
       token: p.token ?? chain.token,
       terms: p.fee_terms ?? chain.terms,
+      totalSupply: p.total_supply ?? chain.total_supply,
       openedAtSec: p.opened_at ?? (Number.isFinite(ns) ? Math.floor(ns / 1e9) : null),
       basis: 'chain',
     };
   }
-  return { market, token: p.token ?? null, terms: p.fee_terms ?? null, openedAtSec: p.opened_at ?? null, basis: p.fee_terms || p.token ? 'api' : 'none' };
+  return { market, token: p.token ?? null, terms: p.fee_terms ?? null, totalSupply: p.total_supply ?? null, openedAtSec: p.opened_at ?? null, basis: p.fee_terms || p.token ? 'api' : 'none' };
 }
 
 /** The five slices as shares of the base fee, straight from the terms. */

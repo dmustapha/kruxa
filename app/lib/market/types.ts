@@ -47,6 +47,8 @@ export interface PoolInfo {
   market?: string | null;
   /** REQ-UI-1: FeeTerms as logged by pool_opened. */
   fee_terms?: FeeTerms | null;
+  /** REQ-UI-1: total supply in base units (market cap needs it). */
+  total_supply?: string | null;
 }
 
 export type SafetyStatus = 'pass' | 'warn' | 'fail' | 'unknown';
@@ -108,7 +110,7 @@ export interface DepthRung { side: 'buy' | 'sell'; amount_in: string; amount_out
 export interface PoolDepth { pool: PoolInfo; ladder: DepthRung[]; as_of: AsOf; source: DataSource }
 
 export interface CreatorEarnings { market_fees_creator_slice?: string; claimed?: string; claimable_estimate?: string; stream_drawn?: string }
-export interface CreatorLaunch { launch: LaunchSummary; role: 'creator' | 'payout_recipient' | 'both'; earnings: CreatorEarnings }
+export interface CreatorLaunch { launch: LaunchSummary; role: 'creator' | 'payout_recipient' | 'both'; earnings: CreatorEarnings; stream?: StreamMeter | null }
 export interface CreatorDesk { account: string; launches: CreatorLaunch[]; as_of: AsOf; source: DataSource }
 
 /** Market contract `creator_status` view (chain read). */
@@ -119,3 +121,11 @@ export type StreamEvent =
   | { kind: 'candle'; candle: Candle & { launch_id?: string } }
   | { kind: 'launch'; launch: LaunchSummary }
   | { kind: 'hello' };
+
+export interface VerdictInputs {
+  total_active: string; funders: number; soft_cap?: string | null; min_funders?: number | null;
+  margin_to_soft_cap?: string | null; margin_funders?: number | null; book_hash_folded: string; inputs_hash?: string | null;
+}
+export interface LaunchDetail extends LaunchSummary { charter_hash: string; verdict_inputs: VerdictInputs; verdict_reasons?: string[] }
+
+export interface StreamMeter { recipient?: string; total: string; drawn: string; unlocked?: string | null; drawable_estimate?: string | null; starts_at: number; ends_at?: number | null; progress_bps?: number | null }

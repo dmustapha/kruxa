@@ -1,6 +1,6 @@
 // Typed reads of the indexer API. Every function throws ApiError with a stable `kind` so the UI can render honest states.
 import { MARKET_CONFIG } from './config';
-import type { CandleSeries, CreatorDesk, HolderList, Interval, PoolDepth, TokenPageData, TradeList } from './types';
+import type { CandleSeries, CreatorDesk, LaunchDetail, HolderList, Interval, PoolDepth, TokenPageData, TradeList } from './types';
 
 export type ApiErrorKind = 'not_found' | 'unavailable' | 'bad_response';
 export class ApiError extends Error {
@@ -33,3 +33,4 @@ export const fetchHolders = (launchId: string, limit = 10, f: Fetcher = fetch, s
   getJson<HolderList>(`/api/token/${id(launchId)}/holders?limit=${limit}`, f, s);
 export const fetchDepth = (launchId: string, f: Fetcher = fetch, s?: AbortSignal) => getJson<PoolDepth>(`/api/token/${id(launchId)}/depth`, f, s);
 export const fetchCreatorDesk = (account: string, f: Fetcher = fetch, s?: AbortSignal) => getJson<CreatorDesk>(`/api/creator/${encodeURIComponent(account)}`, f, s);
+export const fetchLaunch = (launchId: string, f: Fetcher = fetch, s?: AbortSignal) => getJson<LaunchDetail>(`/api/launch/${id(launchId)}`, f, s);
