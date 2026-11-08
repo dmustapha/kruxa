@@ -1,0 +1,13 @@
+[package]
+name = "kruxa-market"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+kruxa-math = { path = "../kruxa-math" }
+kruxa-logic = { path = "../kruxa-logic" }
+
+[dev-dependencies]
+proptest = { workspace = true }
