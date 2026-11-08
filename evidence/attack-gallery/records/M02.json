@@ -46,7 +46,7 @@
       "role": "attack",
       "rule_code": "R_NOT_AUTHORIZED",
       "status": "succeeded",
-      "tx": "UxYAmcBYnpY9C9gmQjebuTma6eQkw5hHZHCqGa3NaB1"
+      "tx": "NzKof27LcwnoSMAv3fr8gfKHPTpzaXn1mZdGGTM85iw"
     },
     {
       "expected_rule_code": "R_DUP_LAUNCH",
@@ -55,7 +55,7 @@
       "role": "attack",
       "rule_code": "R_DUP_LAUNCH",
       "status": "succeeded",
-      "tx": "Ap3LgxStxz3PEB2FJ99djpKvPoQakbBf1Vh1CoFNkbwf"
+      "tx": "5BYo5W4fbobV5ajmKPVgQg6q8UyeCCo5o7vafapQriP2"
     }
   ]
 }
