@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Kruxa indexer read API
-  version: 1.1.0
+  version: 1.2.0
   description: |
     Read-only JSON API over the Kruxa indexer (workstream I). Nothing here is authoritative:
     every number is a convenience view folded from NEP-297 `EVENT_JSON` logs (standard `kruxa`,
@@ -28,6 +28,16 @@ info:
       `open` = open, not closing, not new;
       `passed` = verdict PASS; `failed` = verdict FAIL, creation failed or dissolved.
       `all` (default) returns every stage. `has_market=true` narrows to launches whose pool is open.
+    - Launch type (1.2.0, CHANGE-ORDER-7): `mode` is `trial` or `instant`. For a launch with an open pool `mode` is the market's authenticated pool `mode`
+      (derived from the sender, never from a message); before the pool opens it is the launcher's `instant_created` event, or `trial` for core launches.
+      Instant ids start at 1000000000 (always strings in JSON). An instant launch has NO verdict, NO Walk and NO trial: `verdict` is null, `funders` is 0,
+      `total_active` is "0", `soft_cap` is null, `verdict_inputs` is null, `genesis` is null. Its lifecycle is carried by `phase`:
+      `instant_creating` (token being made), `instant_pending_seed` (token ready, waiting for the creator's seed), `instant_pending_open` (seeded, pool legs not yet consumed),
+      `instant_open` (pool open, trading), `instant_failed` (creation failed, abandoned or aborted). `stage` for instant launches is `launching`, `trading` or `failed`.
+    - Tabs with instant launches (1.2.0): the five trial tabs are unchanged and exclusive; every launch is in exactly one tab. Instant launches add `launching`
+      (instant_creating, instant_pending_seed, instant_pending_open), join `trading` (instant_open) and join `failed` (instant_failed). `tab=all` lists every launch except
+      instant_failed ones, which CO-7 keeps out of the default feed; pass `include_failed=true` or `tab=failed` to see them. `launch_type=all|trial|instant` (alias `mode`) filters
+      by launch type; with `launch_type=trial` every tab and count is exactly what 1.1.0 returned.
     - Candle price is quote (USDC) per whole token, a decimal number; `v` is quote volume in whole USDC.
       Candle shape is TradingView-datafeed compatible (`t,o,h,l,c,v`, `t` in unix seconds, bucket start, UTC).
 servers:
@@ -59,11 +69,19 @@ paths:
       parameters:
         - name: stage
           in: query
-          schema: { type: string, enum: [all, new, open, closing, passed, failed], default: all }
+          schema: { type: string, enum: [all, new, open, closing, passed, failed, launching, trading], default: all }
         - name: tab
           in: query
           description: lifecycle tab (see Phase and tab above); combines with `stage` by intersection
-          schema: { type: string, enum: [all, live, walk, trading, passed, failed], default: all }
+          schema: { type: string, enum: [all, live, walk, launching, trading, passed, failed], default: all }
+        - name: launch_type
+          in: query
+          description: 'trial, instant or all (default). `mode` is accepted as an alias.'
+          schema: { type: string, enum: [all, trial, instant], default: all }
+        - name: include_failed
+          in: query
+          description: with `tab=all`, also list instant_failed launches
+          schema: { type: boolean, default: false }
         - name: q
           in: query
           description: case-insensitive substring over name, symbol, creator account, payout recipient account and numeric launch id
@@ -290,7 +308,7 @@ paths:
           schema: { type: string }
         - name: scope
           in: query
-          schema: { type: string, enum: [core, market] }
+          schema: { type: string, enum: [core, market, launcher] }
       responses:
         '200':
           description: log entries
@@ -406,11 +424,12 @@ components:
         symbol: { type: string }
         creator: { type: string }
         payout_recipient: { type: string, description: 'Charter stream_recipient, defaults to the creator' }
-        status: { type: string, enum: [creating, open, passed, failed, creation_failed, dissolved] }
+        mode: { type: string, enum: [trial, instant], description: 'launch type; the market pool mode once a pool is open' }
+        status: { type: string, enum: [creating, open, passed, failed, creation_failed, dissolved, token_ready, seeded, handoff, trading, abandoned, aborted], description: 'token_ready, seeded, handoff, trading, abandoned and aborted are instant statuses (INSTANT-ABI); creating and creation_failed are shared' }
         name: { type: string, nullable: true, description: 'token name from charter_created, null until emitted' }
-        stage: { type: string, enum: [new, open, closing, passed, failed] }
-        phase: { type: string, enum: [SCHEDULED, OPEN, WALK_WINDOW, AWAITING_SETTLE, PASS, TRADING, FAIL, DISSOLVED] }
-        tab: { type: string, enum: [live, walk, trading, passed, failed] }
+        stage: { type: string, enum: [new, open, closing, passed, failed, launching, trading] }
+        phase: { type: string, enum: [SCHEDULED, OPEN, WALK_WINDOW, AWAITING_SETTLE, PASS, TRADING, FAIL, DISSOLVED, instant_creating, instant_pending_seed, instant_pending_open, instant_open, instant_failed] }
+        tab: { type: string, enum: [live, walk, launching, trading, passed, failed] }
         created_at: { type: integer, nullable: true }
         opens_at: { type: integer, nullable: true }
         commit_end: { type: integer, nullable: true }
@@ -464,8 +483,9 @@ components:
           required: [charter_hash, verdict_inputs]
           properties:
             charter_hash: { type: string }
-            genesis: { $ref: '#/components/schemas/Genesis' }
-            verdict_inputs: { $ref: '#/components/schemas/VerdictInputs' }
+            genesis: { allOf: [ { $ref: '#/components/schemas/Genesis' } ], nullable: true, description: 'null for instant launches (no Solana mint)' }
+            verdict_inputs: { allOf: [ { $ref: '#/components/schemas/VerdictInputs' } ], nullable: true, description: 'null for instant launches (no trial, no verdict)' }
+            instant: { allOf: [ { $ref: '#/components/schemas/InstantInfo' } ], nullable: true, description: 'present for instant launches only' }
             verdict_reasons: { type: array, items: { type: string }, description: 'FAIL reasons as logged' }
             allocation: { allOf: [ { $ref: '#/components/schemas/Allocation' } ], nullable: true }
             walked_total: { $ref: '#/components/schemas/Amount' }
@@ -490,7 +510,8 @@ components:
       properties:
         id:
           type: string
-          enum: [verdict_passed, lp_in_pool, mint_authority_null, freeze_authority_null, payout_recipient_declared, market_not_paused, creator_fee_within_bound, verdict_inputs_hash_present]
+          enum: [verdict_passed, lp_in_pool, mint_authority_null, freeze_authority_null, payout_recipient_declared, market_not_paused, creator_fee_within_bound, verdict_inputs_hash_present, fixed_supply, creator_allocation_vesting, solana_mint_none]
+          description: 'instant launches get lp_in_pool, fixed_supply, creator_allocation_vesting, solana_mint_none, payout_recipient_declared, market_not_paused and creator_fee_within_bound; never the verdict or authority tiles'
         label: { type: string }
         status: { type: string, enum: [pass, warn, fail, unknown] }
         basis: { type: string, enum: [event, derived, not_indexed], description: '`not_indexed` means no logged event carries the fact, so status is `unknown` and is never guessed' }
@@ -546,6 +567,56 @@ components:
         sell_volume: { type: number, description: 'whole USDC' }
         volume: { type: number, description: 'whole USDC' }
         unique_traders: { type: integer }
+    Vesting:
+      type: object
+      description: creator allocation vesting folded from instant_created, instant_opened and alloc_claimed; the launcher's get_vesting view is the authority
+      required: [total, unlocked, claimed, claimable]
+      properties:
+        recipient: { type: string }
+        total: { $ref: '#/components/schemas/Amount' }
+        cliff_days: { type: integer }
+        vest_days: { type: integer }
+        creator_alloc_bps: { type: integer }
+        cliff_end: { type: integer, nullable: true, description: 'unix seconds, null before the pool opens' }
+        vest_end: { type: integer, nullable: true }
+        unlocked: { $ref: '#/components/schemas/Amount' }
+        claimed: { $ref: '#/components/schemas/Amount' }
+        claimable: { $ref: '#/components/schemas/Amount' }
+        next_unlock_at: { type: integer, nullable: true, description: 'cliff end while locked, else null (vesting is linear after the cliff)' }
+        day_seconds: { type: integer, description: 'seconds per vesting day assumed by this API (86400 except on the demo profile)' }
+    InstantInfo:
+      type: object
+      required: [status, steps, seed, vesting]
+      properties:
+        status: { type: string }
+        token: { type: string, nullable: true }
+        supply_model: { type: string, example: near_factory_fixed }
+        solana_mint: { type: string, enum: [none], description: 'instant launches have no Solana mint' }
+        total_supply: { allOf: [ { $ref: '#/components/schemas/Amount' } ], nullable: true }
+        creator_alloc: { $ref: '#/components/schemas/Amount' }
+        pool_tokens: { $ref: '#/components/schemas/Amount' }
+        seed:
+          type: object
+          properties:
+            seed_q: { $ref: '#/components/schemas/Amount' }
+            launch_fee: { $ref: '#/components/schemas/Amount' }
+            pool_seed_q: { $ref: '#/components/schemas/Amount' }
+            note: { type: string, example: 'locked in the pool permanently, not withdrawable' }
+        vesting: { $ref: '#/components/schemas/Vesting' }
+        steps:
+          type: array
+          description: Created, Seeded, Trading with the receipt that proves each (null until it happens)
+          items:
+            type: object
+            required: [step, done]
+            properties:
+              step: { type: string, enum: [created, seeded, trading] }
+              done: { type: boolean }
+              block_height: { type: integer, nullable: true }
+              receipt_id: { type: string, nullable: true }
+              time: { type: integer, nullable: true }
+        failure: { type: string, nullable: true, description: 'creation_failed, abandoned or aborted when the launch is dead' }
+        source: { $ref: '#/components/schemas/Source' }
     Genesis:
       type: object
       description: |
@@ -554,7 +625,12 @@ components:
         `committed` (spec hash logged), `confirmed` (mint logged). Any fact no event carries is `null` or `unknown`, never guessed.
       required: [stage, network, path, verdict_inputs, mint_authority, freeze_authority, verified_checks, source]
       properties:
-        stage: { type: string, enum: [none, pending, committed, confirmed] }
+        stage: { type: string, enum: [none, pending, committed, confirmed, aborted] }
+        merkle_root: { type: string, nullable: true }
+        signatures: { type: array, items: { type: string }, description: 'confirm signatures as logged by genesis_confirmed' }
+        slot: { type: string, nullable: true }
+        ceremony_hash: { type: string, nullable: true }
+        leaf_count: { type: integer, nullable: true }
         network: { type: string, nullable: true, example: solana-devnet }
         path: { type: string, nullable: true, enum: [F0, F1, null] }
         spec_hash: { type: string, nullable: true }
@@ -581,7 +657,37 @@ components:
     Stats:
       type: object
       required: [launches, volume, basis, as_of, source]
+      description: '`launches`, `committed` and `volume` are TRIAL-only (as in 1.1.0, when only trials existed). `instant` and `combined` are new in 1.2.0 and never mix into the trial figures.'
       properties:
+        instant:
+          type: object
+          properties:
+            launches:
+              type: object
+              properties:
+                total: { type: integer }
+                by_phase: { type: object, additionalProperties: { type: integer } }
+                open: { type: integer }
+                failed: { type: integer }
+            seeds_declared: { $ref: '#/components/schemas/Amount', description: 'sum of seed_q over instant launches that reached an open pool' }
+            alloc_claimed: { $ref: '#/components/schemas/Amount' }
+            volume:
+              type: object
+              properties:
+                trades: { type: integer }
+                quote_volume: { type: number }
+                unique_traders: { type: integer }
+                fees_total: { $ref: '#/components/schemas/Amount' }
+            source: { $ref: '#/components/schemas/Source' }
+        combined:
+          type: object
+          description: all modes together, for headline counters only
+          properties:
+            launches: { type: integer }
+            trades: { type: integer }
+            quote_volume: { type: number }
+            by_mode: { type: object, additionalProperties: { type: integer } }
+            source: { $ref: '#/components/schemas/Source' }
         launches:
           type: object
           properties:
@@ -629,7 +735,7 @@ components:
             required: [event, scope, contract, summary, data, block_height, receipt_id, time, source]
             properties:
               event: { type: string, example: paused }
-              scope: { type: string, enum: [core, market] }
+              scope: { type: string, enum: [core, market, launcher] }
               contract: { type: string }
               summary: { type: string }
               data: { type: object, additionalProperties: true }
@@ -644,7 +750,8 @@ components:
       type: object
       required: [launch, pool, safety, stats, genesis, external_pools, as_of, source]
       properties:
-        genesis: { $ref: '#/components/schemas/Genesis' }
+        genesis: { allOf: [ { $ref: '#/components/schemas/Genesis' } ], nullable: true, description: 'null for instant launches' }
+        instant: { allOf: [ { $ref: '#/components/schemas/InstantInfo' } ], nullable: true, description: 'present for instant launches: steps, creator allocation vesting, seed' }
         external_pools:
           type: array
           description: venues where the token also trades, only when an indexed `external_pool` event names one; empty otherwise
@@ -707,6 +814,8 @@ components:
         launch_id: { type: string }
         side: { type: string, enum: [buy, sell] }
         trader: { type: string }
+        declared: { type: boolean, description: 'true when the trader is the launch creator or payout recipient account' }
+        declared_as: { type: string, enum: [creator, payout_recipient, both], nullable: true }
         amount_in: { $ref: '#/components/schemas/Amount' }
         amount_out: { $ref: '#/components/schemas/Amount' }
         price: { type: number, description: quote per whole token }
@@ -746,6 +855,7 @@ components:
       required: [items, basis, as_of, source]
       properties:
         basis: { type: string, example: 'trial claims plus net market flow, indexed estimate' }
+        unclaimed_allocation: { allOf: [ { $ref: '#/components/schemas/Amount' } ], nullable: true, description: 'instant launches: creator allocation still held by the launcher (locked or claimable), not in `items`' }
         holder_count: { type: integer }
         items:
           type: array
@@ -799,6 +909,7 @@ components:
         launch: { $ref: '#/components/schemas/LaunchSummary' }
         role: { type: string, enum: [creator, payout_recipient, both] }
         stream: { allOf: [ { $ref: '#/components/schemas/StreamMeter' } ], nullable: true }
+        allocation: { allOf: [ { $ref: '#/components/schemas/Vesting' } ], nullable: true, description: 'instant launches: creator allocation vest meter' }
         earnings:
           type: object
           properties:
@@ -806,6 +917,7 @@ components:
             claimed: { $ref: '#/components/schemas/Amount' }
             claimable_estimate: { $ref: '#/components/schemas/Amount' }
             stream_drawn: { $ref: '#/components/schemas/Amount' }
+            alloc_claimed: { $ref: '#/components/schemas/Amount' }
     CreatorDesk:
       type: object
       required: [account, launches, totals, claims, as_of, source]
@@ -820,6 +932,7 @@ components:
             stream_drawn: { $ref: '#/components/schemas/Amount' }
             market_fees_creator_slice: { $ref: '#/components/schemas/Amount' }
             claimed: { $ref: '#/components/schemas/Amount' }
+            alloc_claimed: { $ref: '#/components/schemas/Amount' }
         claims:
           type: array
           items:
@@ -827,7 +940,7 @@ components:
             required: [launch_id, kind, amount, block_height, receipt_id, time, source]
             properties:
               launch_id: { type: string }
-              kind: { type: string, enum: [stream_draw, creator_claimed] }
+              kind: { type: string, enum: [stream_draw, creator_claimed, alloc_claim] }
               amount: { $ref: '#/components/schemas/Amount' }
               block_height: { type: integer }
               receipt_id: { type: string }
@@ -872,7 +985,7 @@ components:
         source: { $ref: '#/components/schemas/Source' }
     VerifyData:
       type: object
-      required: [launch_id, charter_hash, book_hash_folded, fold_ok, ledger_consistent, events, as_of, source]
+      required: [launch_id, fold_ok, ledger_consistent, events, as_of, source]
       properties:
         launch_id: { type: string }
         charter_hash: { type: string }
@@ -881,7 +994,8 @@ components:
         book_hash_stored: { type: string, nullable: true, description: 'hash from a chain get_state view, null until such a comparison runs' }
         fold_ok: { type: boolean, nullable: true, description: 'null until a chain view comparison runs; the indexer does not recompute the book hash' }
         fold_note: { type: string }
-        ledger_consistent: { type: boolean, description: 'indexed positions sum to total_active and the active holder count equals funders' }
+        mode: { type: string, enum: [trial, instant] }
+        ledger_consistent: { type: boolean, nullable: true, description: 'null for instant launches (no book). Otherwise: 'indexed positions sum to total_active and the active holder count equals funders' }
         book_events: { type: integer }
         verdict: { type: string, enum: [PASS, FAIL], nullable: true }
         event_count: { type: integer }
