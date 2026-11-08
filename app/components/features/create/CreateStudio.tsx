@@ -101,6 +101,14 @@ export function CreateStudio() {
     return () => { live = false; };
   }, [signer]);
 
+  const wanted = search.get('preset');
+  useEffect(() => {
+    if (!wanted) return;
+    const p = presetById(wanted);
+    setPresetId(p.id);
+    setForm((f) => formFromPreset(p, p.id === 'hostile' ? undefined : { symbol: f.symbol, name: f.name }));
+  }, [wanted]);
+
   const parsed = useMemo(() => paramsFromForm(form), [form]);
   const rules = profile === 'demo' ? DEMO_RULES : LADDER_RULES;
   const violations = useMemo(() => (parsed.ok ? validateAll(parsed.params, rules) : []), [parsed, rules]);

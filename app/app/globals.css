@@ -199,3 +199,4 @@ main { max-width: 1200px; } .hdr-in, .strip-in, .site-footer .in { max-width: 12
 @media (min-width: 960px) { .studio { grid-template-columns: minmax(300px, 380px) 1fr; align-items: start; } .studio-left { position: sticky; top: 112px; } }
 .summary { margin: 8px 0 0; padding: 8px 12px; background: var(--sunk); border-radius: 8px; color: var(--fg); font-size: 0.875rem; } .sumlist { margin: 0; padding-left: 18px; } .sumlist li { color: var(--fg); margin: 6px 0; font-size: 0.875rem; }
 .bar { display: flex; height: 12px; border-radius: 99px; overflow: hidden; margin: 8px 0 12px; border: 1px solid var(--line); }
+@media (max-width: 719px) { .hero-strip { padding: 8px 0 12px; margin-bottom: 8px; } .hero-strip .placeholder h1 { font-size: 1.1rem !important; } .hero-strip .eyebrow { display: none; } }

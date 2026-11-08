@@ -24,7 +24,11 @@ const write = (k: string, v: string | null) => { try { if (v === null) localStor
 function Hero() {
   const [collapsed, setCollapsed] = useState(false);
   const [rules, setRules] = useState(true);
-  useEffect(() => { setCollapsed(read(LS.hero) === '1'); setRules(read(LS.rules) !== '1'); }, []);
+  useEffect(() => {
+    const pref = read(LS.hero);
+    setCollapsed(pref === null ? window.matchMedia('(max-width: 719px)').matches : pref === '1');
+    setRules(read(LS.rules) !== '1');
+  }, []);
   return (
     <section className="hero-strip" aria-labelledby="hero-h">
       <div className="grow">
@@ -35,7 +39,7 @@ function Hero() {
       <div className="row">
         <Link className="btn btn-primary" href="/create">Create a trial</Link>
         <Link className="btn" href="/docs/how-it-works">How it works</Link>
-        <button type="button" className="btn-quiet" aria-expanded={!collapsed} onClick={() => { setCollapsed(!collapsed); write(LS.hero, collapsed ? null : '1'); }}>{collapsed ? 'Show intro' : 'Hide intro'}</button>
+        <button type="button" className="btn-quiet" aria-expanded={!collapsed} onClick={() => { setCollapsed(!collapsed); write(LS.hero, collapsed ? '0' : '1'); }}>{collapsed ? 'Show intro' : 'Hide intro'}</button>
       </div>
       {!collapsed && rules && (
         <div style={{ flexBasis: '100%' }}>
