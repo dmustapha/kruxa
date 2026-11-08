@@ -26,7 +26,7 @@ function Hero() {
   const [rules, setRules] = useState(true);
   useEffect(() => {
     const pref = read(LS.hero);
-    setCollapsed(pref === null ? window.matchMedia('(max-width: 719px)').matches : pref === '1');
+    setCollapsed(pref === null ? (window.matchMedia?.('(max-width: 719px)').matches ?? false) : pref === '1');
     setRules(read(LS.rules) !== '1');
   }, []);
   return (
