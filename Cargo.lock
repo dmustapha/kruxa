@@ -1693,6 +1693,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "kruxa-instant-contract"
+version = "0.1.0"
+dependencies = [
+ "kruxa-instant",
+ "kruxa-logic",
+ "kruxa-math",
+ "near-sdk",
+]
+
+[[package]]
 name = "kruxa-logic"
 version = "0.1.0"
 dependencies = [
