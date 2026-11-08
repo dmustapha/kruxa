@@ -2,6 +2,7 @@ import type { Page } from '../../types';
 import { h2, p } from '../../blocks';
 import { FACTS as F } from '../facts';
 
+const I = F.instant;
 const q = (question: string, answer: string) => [h2(question), p(answer)];
 
 export const faq: Page = {
@@ -10,12 +11,19 @@ export const faq: Page = {
   group: 'Reference',
   summary: 'Short answers, each pointing to the page that has the detail.',
   blocks: [
-    ...q('Can I lose money?', 'Yes. The principal you commit can be returned if you Walk or if the trial fails, minus any fee already paid. After a PASS you hold a token that can lose all of its value, and nothing here supports its price. Kruxa has had no independent audit. See [Security and trust](/docs/security).'),
+    ...q('Can I lose money?', 'Yes. The principal you commit can be returned if you Walk or if the trial fails, minus any fee already paid. After a PASS you hold a token that can lose all of its value, and nothing here supports its price. Kruxa has had no independent audit. On an Instant launch there is no refund at all and the token can lose all of its value. See [Security and trust](/docs/security).'),
+    ...q('What is an Instant launch?', `A second launch mode, higher risk. The token is created now and trades as soon as the creator\'s own USDC seed ($${I.seedUsdc.min} to $${I.seedUsdc.max}) opens the pool. There is no trial, no verdict, no Walk and no refund. It is NEAR only, and it is being built: the interface is a draft and nothing is deployed. See [How it works](/docs/how-it-works).`),
+    ...q('Can I get a refund on an Instant launch?', 'No. Nothing in the contracts returns a buyer\'s money. You can sell back into the pool at its price.'),
+    ...q('Can an Instant creator pull the liquidity?', 'No contract method exists that withdraws it. The seed goes into the market pool for good. The market and the launcher can still be upgraded by the project owner\'s phase 0 key, which is disclosed, and the price can still fall to near zero.'),
+    ...q('Is an Instant launch safer than other launchpads?', 'Do not compare. We make no such claim. Read what the contracts enforce and what they do not on [Security and trust](/docs/security).'),
+    ...q('Can an Instant token creator sell their tokens?', `Yes, what has unlocked. The allocation is at most ${I.allocBpsMax / 100}% of supply, locked for a cliff of ${I.cliffDays.min} to ${I.cliffDays.max} days and then unlocked linearly over ${I.vestDays.min} to ${I.vestDays.max} days. The creator can sell it and can move it to other wallets once claimed.`),
+    ...q('Is there an Instant launch on Solana?', 'No. Instant launches are NEAR only for now. There is no Solana mint for them.'),
+    ...q('Can my exit be blocked?', `A pause blocks new launches and new buys but not exits. A guardian freeze can block exits too, and it expires by itself after ${F.frozenExpiryDays} days. That limit is in the committed attack gallery as bounded, not prevented. See [Security and trust](/docs/security).`),
     ...q('What is a trial?', 'A launch with a deadline and a verdict. Buyers commit, can leave until the Walk deadline, and the token\'s Solana mint is created only if the verdict is PASS. See [How it works](/docs/how-it-works).'),
     ...q('What is the Walk?', 'Your right to take your whole position back before the Walk deadline. Nobody can block it or redirect the money. See [For buyers](/docs/buyers).'),
     ...q('Do I get 100% of my money back?', `Your principal, yes, to your own account. Not 100% of everything: a relay fee already paid is not returned, and moving funds to a Solana address costs a fixed ${F.intentsSolanaWithdrawFeeUsdc.toFixed(2)} USDC.`),
     ...q('Who decides PASS or FAIL?', 'A rule, not a person. PASS needs total active commits at least the soft cap, active backers at least the minimum, and no creator cancel. Anyone can recompute it. See [Verify a launch](/docs/verify).'),
-    ...q('Can the creator take the money and leave?', 'Not at once. The creator draws nothing before PASS, and after PASS the contract allows only the streamed amount. A larger draw reverts with `STREAM_CAP`. The creator also cannot change the payout recipient after the trial opens.'),
+    ...q('Can the creator take the money and leave?', 'In a Trial launch, not at once. The creator draws nothing before PASS, and after PASS the contract allows only the streamed amount. A larger draw reverts with `STREAM_CAP`. The creator also cannot change the payout recipient after the trial opens.'),
     ...q('What is the most a creator can earn from trading?', `The contract caps the declared creator slice at ${F.creatorTakeMaxPctOfVolume.toFixed(2)}% of volume. Creator-controlled wallets could capture other slices once those exist, bounded by 80% of the fee. See [Fees](/docs/fees). No income is promised.`),
     ...q('Is there a sybil defense?', 'No. The backer count counts accounts. A creator could fund their own launch from other wallets, which costs them the launch fee and locked liquidity.'),
     ...q('Why is the token created before the verdict?', 'The NEAR-side token is created when the trial opens. Only the Solana mint waits for PASS.'),

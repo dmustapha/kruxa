@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { stripInline } from '@/components/docs/markup';
 import { DOC_PAGES, docBySlug, docNav, neighbours } from '@/content/docs';
 import { LEGAL_PAGES } from '@/content/legal';
+import { FACTS } from '@/content/docs/facts';
 import type { Block, Page } from '@/content/types';
 
 const ALL: Page[] = [...DOC_PAGES, ...LEGAL_PAGES];
@@ -121,11 +122,46 @@ describe('docs facts that must appear', () => {
     const v = docBySlug('verify')!.blocks.find((b) => b.t === 'table' && b.head[0] === 'Code') as Extract<Block, { t: 'table' }>;
     expect(v.rows.map((r) => r[0])).toEqual(['0', '1', '2', '3', '4', '64']);
   });
-  it('security gallery section makes no claim of results', () => {
+  it('security gallery numbers come from the committed evidence file, never invented', () => {
     const t = textOf(docBySlug('security')!);
-    expect(t).toContain('being built');
-    expect(/\b\d+\s*(of|\/)\s*\d+\s*(attacks|blocked)/i.test(t)).toBe(false);
+    expect(t).toContain(FACTS.gallery.file);
+    expect(t).toContain(FACTS.gallery.generatedAt);
+    expect(t).toContain('not by an independent party');
+    expect(/GALLERY\s+\d+\s*\/\s*\d+/.test(t)).toBe(false);
+    for (const id of ['A16', 'A19']) expect(t).toContain(id);
   });
+  it('security page says instant tokens can lose all value and names what is not prevented', () => {
+    const t = textOf(docBySlug('security')!).toLowerCase();
+    for (const n of ['lose all of its value', 'sniping', 'wash trading', 'serial launches', 'self-dealing'.replace('self-dealing', 'buying their own launch'), 'freeze', 'not prevented']) expect(t, n).toContain(n);
+  });
+});
+
+describe('instant launch is described honestly', () => {
+  it('how-it-works has the comparison table with both modes and the main rows', () => {
+    const t = docBySlug('how-it-works')!.blocks.find((b) => b.t === 'table' && b.head[1] === 'Trial launch') as Extract<Block, { t: 'table' }>;
+    expect(t.head).toEqual(['', 'Trial launch', 'Instant launch']);
+    const rows = t.rows.map((r) => r[0]);
+    for (const r of ['Refund for buyers', 'Walk', 'Verdict', 'When it trades', 'What the creator cannot do', 'What is bounded', 'What is not bounded']) expect(rows).toContain(r);
+  });
+  it('every page that mentions Instant mode labels it as being built and NEAR only somewhere', () => {
+    const pages = DOC_PAGES.filter((pg) => /Instant launch/.test(textOf(pg)));
+    expect(pages.length).toBeGreaterThanOrEqual(5);
+    for (const pg of ['how-it-works', 'creators', 'buyers']) {
+      const t = textOf(docBySlug(pg)!);
+      expect(t, pg).toContain('Being built');
+    }
+    expect(textOf(docBySlug('how-it-works')!)).toContain('NEAR only');
+  });
+  it('never claims instant tokens are protected, refundable, or on Solana', () => {
+    for (const pg of ALL) {
+      const t = textOf(pg);
+      expect(/instant[^.]{0,60}(is|are) (protected|refundable|rug-?proof)/i.test(t), pg.slug).toBe(false);
+      expect(/\brug-?proof\b|\bno rug\b|cannot be rugged/i.test(t), pg.slug).toBe(false);
+    }
+  });
+});
+
+describe('docs facts that must appear (continued)', () => {
   it('fee page lists the 50/15/15/10/10 split', () => {
     expect(textOf(docBySlug('fees')!)).toContain('50 / 15 / 15 / 10 / 10');
   });
