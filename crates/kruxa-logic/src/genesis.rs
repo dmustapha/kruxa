@@ -10,8 +10,8 @@ pub const GENESIS_SPEC_VERSION: u8 = 1;
 pub const GENESIS_COMPILER_VERSION: &str = "gs-compiler/1.0.0";
 /// Classic SPL Token program id `TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA` as bytes.
 pub const TOKEN_PROGRAM: [u8; 32] = [
-    6, 221, 246, 225, 215, 101, 161, 147, 217, 203, 225, 70, 206, 235, 121, 172, 28, 180, 133, 237, 95, 91, 55, 145, 58, 140, 245, 133, 126, 255, 0,
-    169,
+    6, 221, 246, 225, 215, 101, 161, 147, 217, 203, 225, 70, 206, 235, 121, 172, 28, 180, 133, 237, 95, 91, 55, 145, 58, 140, 245, 133,
+    126, 255, 0, 169,
 ];
 pub const MAX_SIGS: usize = 4;
 pub const MAX_ATTEST_LOG: usize = 64;
@@ -90,7 +90,8 @@ pub fn mint_address(base: &[u8; 32], seed: &str, owner: &[u8; 32]) -> [u8; 32] {
 
 /// Leaf layout `hashv([0], hashv([claimant, amount_unlocked u64 LE, amount_locked u64 LE]))` (Jito, UNVERIFIED until T-D1).
 pub fn leaf_hash(claimant: &[u8; 32], unlocked: u64, locked: u64) -> [u8; 32] {
-    let inner: [u8; 32] = Sha256::new().chain_update(claimant).chain_update(unlocked.to_le_bytes()).chain_update(locked.to_le_bytes()).finalize().into();
+    let inner: [u8; 32] =
+        Sha256::new().chain_update(claimant).chain_update(unlocked.to_le_bytes()).chain_update(locked.to_le_bytes()).finalize().into();
     Sha256::new().chain_update([0u8]).chain_update(inner).finalize().into()
 }
 

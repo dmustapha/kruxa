@@ -36,9 +36,8 @@ impl MockMarket {
         let parsed: Value = serde_json::from_str(&msg).unwrap_or(Value::Null);
         let op = parsed["op"].as_str().unwrap_or("").to_string();
         let well_formed = parsed["v"] == 1 && matches!(op.as_str(), "seed_quote" | "open_pool_token") && parsed["launch_id"].is_string();
-        let refused = !well_formed
-            || (self.mode == "refuse_token" && op == "open_pool_token")
-            || (self.mode == "refuse_seed" && op == "seed_quote");
+        let refused =
+            !well_formed || (self.mode == "refuse_token" && op == "open_pool_token") || (self.mode == "refuse_seed" && op == "seed_quote");
         self.legs.push(
             json!({ "token_contract": env::predecessor_account_id(), "sender": sender_id, "amount": amount.0.to_string(), "msg": parsed, "refused": refused })
                 .to_string(),

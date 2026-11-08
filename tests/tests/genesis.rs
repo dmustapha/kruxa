@@ -116,7 +116,11 @@ async fn only_the_relayer_can_use_the_three_methods_and_it_holds_no_other_power(
         (&stranger, "commit_genesis", commit_args(r.id)),
         (&r.env.owner, "commit_genesis", commit_args(r.id)),
         (&stranger, "build_root_page", r.page(0, 0)),
-        (&stranger, "confirm_genesis", json!({ "launch_id": r.id.to_string(), "mint": hex(&[0; 32]), "sigs": ["s"], "slot": "1", "ceremony_hash": hex(&[0; 32]) })),
+        (
+            &stranger,
+            "confirm_genesis",
+            json!({ "launch_id": r.id.to_string(), "mint": hex(&[0; 32]), "sigs": ["s"], "slot": "1", "ceremony_hash": hex(&[0; 32]) }),
+        ),
         (&stranger, "attest_log_append", json!({ "launch_id": r.id.to_string(), "attestation_hash": hex(&[1; 32]) })),
         (&stranger, "abort_genesis", json!({ "launch_id": r.id.to_string(), "reason": "x" })),
         (&r.relayer, "open_beta", json!({})),
@@ -172,16 +176,24 @@ async fn full_ceremony_commit_pages_confirm() -> anyhow::Result<()> {
     assert_eq!((spec.mint_authority_none, spec.freeze_authority_none, spec.extensions_allowed), (true, true, false));
     assert_eq!((spec.genesis_key_pubkey, spec.mint_address, spec.max_num_nodes), (G_PUB, mint, 6));
     // confirm
-    assert!(has_code(&r.call(&r.relayer, "confirm_genesis", confirm(hex(&[9; 32]))).await, "R_GENESIS_ARG"), "mint must be the committed address");
+    assert!(
+        has_code(&r.call(&r.relayer, "confirm_genesis", confirm(hex(&[9; 32]))).await, "R_GENESIS_ARG"),
+        "mint must be the committed address"
+    );
     let ok = r.call(&r.relayer, "confirm_genesis", confirm(hex(&mint))).await;
     assert!(ok.is_success(), "{:?}", ok.failures());
     let g = r.genesis().await;
-    assert_eq!((g["status"].as_str(), g["slot"].as_str(), g["tx_sigs"].as_array().map(Vec::len)), (Some("Confirmed"), Some("777"), Some(2)));
+    assert_eq!(
+        (g["status"].as_str(), g["slot"].as_str(), g["tx_sigs"].as_array().map(Vec::len)),
+        (Some("Confirmed"), Some("777"), Some(2))
+    );
     assert_eq!(g["ceremony_hash"], hex(&[4; 32]));
     assert!(has_code(&r.call(&r.relayer, "confirm_genesis", confirm(hex(&mint))).await, "R_GENESIS_STATE"), "confirm is one-shot");
     let abort = r.call(&r.relayer, "abort_genesis", json!({ "launch_id": r.id.to_string(), "reason": "late" })).await;
     assert!(has_code(&abort, "R_GENESIS_STATE"), "no abort after confirm");
-    r.call(&r.relayer, "attest_log_append", json!({ "launch_id": r.id.to_string(), "attestation_hash": hex(&[1; 32]) })).await.into_result()?;
+    r.call(&r.relayer, "attest_log_append", json!({ "launch_id": r.id.to_string(), "attestation_hash": hex(&[1; 32]) }))
+        .await
+        .into_result()?;
     assert_eq!(r.genesis().await["attest_log"], json!([hex(&[1; 32])]));
     Ok(())
 }
@@ -191,20 +203,32 @@ async fn a_launch_without_solana_buyers_commits_an_empty_tree_at_once() -> anyho
     let r = round("GENE", 12, 0, true).await?;
     r.call(&r.relayer, "commit_genesis", commit_args(r.id)).await.into_result()?;
     let g = r.genesis().await;
-    assert_eq!((g["root_ready"].as_bool(), g["merkle_root"].as_str(), g["expected_leaves"].as_u64()), (Some(true), Some(hex(&[0; 32]).as_str()), Some(0)));
+    assert_eq!(
+        (g["root_ready"].as_bool(), g["merkle_root"].as_str(), g["expected_leaves"].as_u64()),
+        (Some(true), Some(hex(&[0; 32]).as_str()), Some(0))
+    );
     Ok(())
 }
 
 #[tokio::test]
 async fn abort_before_confirm_is_final_for_the_relayer_and_the_guardian_can_do_it() -> anyhow::Result<()> {
     let r = round("GENF", 12, 0, true).await?;
-    assert!(has_code(&r.call(&r.env.guardian, "abort_genesis", json!({ "launch_id": r.id.to_string(), "reason": "x" })).await, "R_GENESIS_STATE"), "nothing to abort yet");
+    assert!(
+        has_code(
+            &r.call(&r.env.guardian, "abort_genesis", json!({ "launch_id": r.id.to_string(), "reason": "x" })).await,
+            "R_GENESIS_STATE"
+        ),
+        "nothing to abort yet"
+    );
     r.call(&r.relayer, "commit_genesis", commit_args(r.id)).await.into_result()?;
-    r.call(&r.env.guardian, "abort_genesis", json!({ "launch_id": r.id.to_string(), "reason": "relayer host compromised" })).await.into_result()?;
+    r.call(&r.env.guardian, "abort_genesis", json!({ "launch_id": r.id.to_string(), "reason": "relayer host compromised" }))
+        .await
+        .into_result()?;
     let g = r.genesis().await;
     assert_eq!((g["status"].as_str(), g["abort_reason"].as_str()), (Some("Aborted"), Some("relayer host compromised")));
     assert!(has_code(&r.call(&r.relayer, "commit_genesis", commit_args(r.id)).await, "R_GENESIS_ALREADY"), "one-shot even after an abort");
-    let confirm = json!({ "launch_id": r.id.to_string(), "mint": hex(&[0; 32]), "sigs": ["s"], "slot": "1", "ceremony_hash": hex(&[0; 32]) });
+    let confirm =
+        json!({ "launch_id": r.id.to_string(), "mint": hex(&[0; 32]), "sigs": ["s"], "slot": "1", "ceremony_hash": hex(&[0; 32]) });
     assert!(has_code(&r.call(&r.relayer, "confirm_genesis", confirm).await, "R_GENESIS_STATE"));
     Ok(())
 }
@@ -243,9 +267,16 @@ async fn a_plan_that_keeps_an_authority_or_allows_extensions_is_refused_at_creat
 #[tokio::test]
 async fn solana_allocations_page_lists_only_solana_holders_after_settlement() -> anyhow::Result<()> {
     let r = round("GENI", 8, 6, true).await?;
-    let rows: Vec<Value> = r.env.view("solana_allocations_page", json!({ "launch_id": r.id.to_string(), "from_seq": 0, "limit": 50 })).await.as_array().unwrap().clone();
+    let rows: Vec<Value> = r
+        .env
+        .view("solana_allocations_page", json!({ "launch_id": r.id.to_string(), "from_seq": 0, "limit": 50 }))
+        .await
+        .as_array()
+        .unwrap()
+        .clone();
     assert_eq!(rows.len(), 6);
-    let mut got: Vec<(String, String)> = rows.iter().map(|v| (v["pubkey"].as_str().unwrap().to_string(), v["amount"].as_str().unwrap().to_string())).collect();
+    let mut got: Vec<(String, String)> =
+        rows.iter().map(|v| (v["pubkey"].as_str().unwrap().to_string(), v["amount"].as_str().unwrap().to_string())).collect();
     got.sort();
     let mut want: Vec<(String, String)> = r.leaves.iter().map(|(k, a)| (hex(k), a.to_string())).collect();
     want.sort();

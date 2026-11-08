@@ -5,7 +5,8 @@
 use crate::ContractExt;
 use base64::Engine as _;
 use kruxa_logic::genesis::{
-    leaf_hash, mint_address, Disclosure, GenesisMode, GenesisSpec, MAX_ATTEST_LOG, MAX_SIGS, ROLE_DISTRIBUTOR, ROLE_LP_MIRROR, TOKEN_PROGRAM,
+    leaf_hash, mint_address, Disclosure, GenesisMode, GenesisSpec, MAX_ATTEST_LOG, MAX_SIGS, ROLE_DISTRIBUTOR, ROLE_LP_MIRROR,
+    TOKEN_PROGRAM,
 };
 use kruxa_logic::{hex, RuleCode};
 use near_sdk::json_types::U64;
@@ -131,7 +132,8 @@ impl Contract {
         if plan.lp_mirror_to_solana {
             buckets.push((ROLE_LP_MIRROR, to_u64(ch.derived.n_lp)));
         }
-        let (chain, cluster) = if self.cfg.profile == "mainnet" { ("solana-mainnet", MAINNET_GENESIS_HASH) } else { ("solana-devnet", DEVNET_GENESIS_HASH) };
+        let (chain, cluster) =
+            if self.cfg.profile == "mainnet" { ("solana-mainnet", MAINNET_GENESIS_HASH) } else { ("solana-devnet", DEVNET_GENESIS_HASH) };
         let mut cluster_hash = [0u8; 32];
         cluster_hash.copy_from_slice(&near_sdk::bs58::decode(cluster).into_vec().expect("static base58"));
         GenesisSpec {
@@ -298,7 +300,10 @@ impl Contract {
         g.tx_sigs = sigs.clone();
         g.slot = slot.0;
         g.ceremony_hash = Some(unhex32(&ceremony_hash));
-        emit("genesis_confirmed", json!({ "launch_id": id.to_string(), "mint": mint, "sigs": sigs, "slot": slot.0.to_string(), "ceremony_hash": ceremony_hash }));
+        emit(
+            "genesis_confirmed",
+            json!({ "launch_id": id.to_string(), "mint": mint, "sigs": sigs, "slot": slot.0.to_string(), "ceremony_hash": ceremony_hash }),
+        );
         self.save_state(id, st);
     }
 
@@ -364,7 +369,10 @@ impl Contract {
         (from_seq..from_seq.saturating_add(limit.min(50)))
             .filter_map(|s| self.seq_index.get(&(id, s)))
             .filter_map(|h| match h {
-                HolderId::Solana(pk) => self.positions.get(&(id, h.clone())).map(|p| json!({ "pubkey": hex(pk), "amount": (p.tokens_entitled + p.bonus_entitled).to_string() })),
+                HolderId::Solana(pk) => self
+                    .positions
+                    .get(&(id, h.clone()))
+                    .map(|p| json!({ "pubkey": hex(pk), "amount": (p.tokens_entitled + p.bonus_entitled).to_string() })),
                 HolderId::Near(_) => None,
             })
             .collect()

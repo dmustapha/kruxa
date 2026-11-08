@@ -216,6 +216,13 @@ impl Env {
         Ok(())
     }
 
+    /// Task 2.6: with BENCH=1 every harness call prints `BENCH <method> <tgas>` (total gas burnt over all receipts of the call).
+    fn bench(&self, label: &str, r: &ExecutionFinalResult) {
+        if std::env::var("BENCH").is_ok() {
+            println!("BENCH {} {:.1}", label, r.total_gas_burnt.as_gas() as f64 / 1e12);
+        }
+    }
+
     /// Keeps the contract's events from a finished call so a test can replay them (P-RECOMPUTE).
     fn record(&self, r: &ExecutionFinalResult) {
         let mut seen = self.events.borrow_mut();
@@ -315,7 +322,12 @@ impl Env {
 
     /// Real Verifier only: puts `amount` of mock USDC into `who`'s Intents account through the normal NEP-141 deposit (`msg` = the account).
     pub async fn deposit_real_intents(&self, who: &str, amount: u128) -> anyhow::Result<()> {
-        self.usdc.call("mint").args_json(json!({ "account_id": self.owner.id(), "amount": amount.to_string() })).transact().await?.into_result()?;
+        self.usdc
+            .call("mint")
+            .args_json(json!({ "account_id": self.owner.id(), "amount": amount.to_string() }))
+            .transact()
+            .await?
+            .into_result()?;
         self.owner
             .call(self.usdc.id(), "ft_transfer_call")
             .args_json(json!({ "receiver_id": self.intents.id(), "amount": amount.to_string(), "msg": who }))
@@ -328,8 +340,16 @@ impl Env {
     }
 
     /// S3 with a REAL raw_ed25519 signature: the holder signs the payload string; anyone submits it to `execute_intents`.
-    pub async fn s3_real(&self, h: &SolHolder, token: &AccountId, amount: u128, msg: Option<String>, nonce_seed: u8) -> ExecutionFinalResult {
-        let mut intent = json!({ "intent": "transfer", "receiver_id": self.core.id(), "tokens": { format!("nep141:{}", token): amount.to_string() } });
+    pub async fn s3_real(
+        &self,
+        h: &SolHolder,
+        token: &AccountId,
+        amount: u128,
+        msg: Option<String>,
+        nonce_seed: u8,
+    ) -> ExecutionFinalResult {
+        let mut intent =
+            json!({ "intent": "transfer", "receiver_id": self.core.id(), "tokens": { format!("nep141:{}", token): amount.to_string() } });
         if let Some(m) = msg {
             intent["msg"] = json!(m);
             intent["min_gas"] = json!("50000000000000");
@@ -397,6 +417,7 @@ impl Env {
             .await
             .unwrap();
         self.record(&r);
+        self.bench("ft_on_transfer(commit_native, incl. usdc ft_transfer_call)", &r);
         self.assert_invariants().await;
         r
     }
@@ -428,6 +449,7 @@ impl Env {
     pub async fn worker_call(&self, who: &Account, to: &AccountId, method: &str, args: Value) -> ExecutionFinalResult {
         let r = who.call(to, method).args_json(args).gas(GAS).transact().await.unwrap();
         self.record(&r);
+        self.bench(method, &r);
         self.assert_invariants().await;
         r
     }
@@ -435,6 +457,7 @@ impl Env {
     pub async fn call(&self, who: &Account, method: &str, args: Value, deposit: NearToken) -> ExecutionFinalResult {
         let r = who.call(self.core.id(), method).args_json(args).deposit(deposit).gas(GAS).transact().await.unwrap();
         self.record(&r);
+        self.bench(method, &r);
         self.assert_invariants().await;
         r
     }

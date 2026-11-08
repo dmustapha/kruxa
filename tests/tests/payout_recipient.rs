@@ -35,7 +35,10 @@ async fn charter_created_carries_the_fields_the_indexer_needs() -> anyhow::Resul
     let e = events.iter().find(|e| e["event"] == "charter_created").expect("charter_created event");
     let d = &e["data"][0];
     assert_eq!(d["soft_cap"], p.soft_cap.to_string());
-    assert_eq!((d["min_funders"].as_u64(), d["stream_days"].as_u64(), d["token_decimals"].as_u64()), (Some(p.min_funders as u64), Some(p.stream_days as u64), Some(6)));
+    assert_eq!(
+        (d["min_funders"].as_u64(), d["stream_days"].as_u64(), d["token_decimals"].as_u64()),
+        (Some(p.min_funders as u64), Some(p.stream_days as u64), Some(6))
+    );
     assert_eq!(d["payout_recipient"], json!(payee.id()));
     Ok(())
 }

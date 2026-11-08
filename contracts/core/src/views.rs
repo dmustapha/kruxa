@@ -186,7 +186,12 @@ struct PositionSums {
 }
 
 fn sums_buckets(l: &Ledger) -> Buckets {
-    Buckets { launch_fee_due: l.launch_fee_due, lp_seed_due: l.lp_seed_due + l.lp_seed_inflight + l.lp_seed_sent, stream_total: l.stream_total, excess_pool: l.excess_pool }
+    Buckets {
+        launch_fee_due: l.launch_fee_due,
+        lp_seed_due: l.lp_seed_due + l.lp_seed_inflight + l.lp_seed_sent,
+        stream_total: l.stream_total,
+        excess_pool: l.excess_pool,
+    }
 }
 
 impl Contract {

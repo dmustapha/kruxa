@@ -91,7 +91,10 @@ impl Contract {
         st.ledger.lp_tokens_inflight += tokens;
         self.save_state(id, st);
         self.cfg.market_locked = true;
-        emit("market_handoff", json!({ "launch_id": id.to_string(), "market": market, "lp_seed": seed.to_string(), "lp_tokens": tokens.to_string() }));
+        emit(
+            "market_handoff",
+            json!({ "launch_id": id.to_string(), "market": market, "lp_seed": seed.to_string(), "lp_tokens": tokens.to_string() }),
+        );
         let mut sent = 0;
         if seed > 0 {
             self.send_leg(self.cfg.usdc.clone(), &market, seed, seed_msg, id, MarketLeg::Seed);
@@ -135,7 +138,10 @@ impl Contract {
         );
         let ch = self.charter(id);
         if done && tokens_sent == ch.derived.n_lp && seed_total > 0 {
-            emit("market_opened", json!({ "launch_id": id.to_string(), "lp_seed": seed_total.to_string(), "lp_tokens": tokens_sent.to_string(), "market": self.cfg.market }));
+            emit(
+                "market_opened",
+                json!({ "launch_id": id.to_string(), "lp_seed": seed_total.to_string(), "lp_tokens": tokens_sent.to_string(), "market": self.cfg.market }),
+            );
         }
         self.save_state(id, st);
     }

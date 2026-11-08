@@ -277,7 +277,13 @@ impl Contract {
     /// Native USDC that belongs to the fee and stream buckets (the LP bucket stays untouched).
     fn native_free(l: &Ledger) -> u128 {
         let held = l.spent_native + l.consolidated;
-        let reserved = l.lp_seed_due + l.lp_seed_inflight + l.lp_seed_sent + l.launch_fee_paid + l.launch_fee_inflight + l.stream_drawn + l.stream_inflight;
+        let reserved = l.lp_seed_due
+            + l.lp_seed_inflight
+            + l.lp_seed_sent
+            + l.launch_fee_paid
+            + l.launch_fee_inflight
+            + l.stream_drawn
+            + l.stream_inflight;
         held.saturating_sub(reserved)
     }
 

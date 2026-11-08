@@ -66,10 +66,15 @@ async fn real_verifier_fake_token_is_refused_and_refunded() -> anyhow::Result<()
     let (env, id, h) = setup("RVC", 11).await?;
     let root = env.worker.root_account()?;
     let fake = root.create_subaccount("fake").initial_balance(NearToken::from_near(50)).transact().await?.into_result()?;
-    let fake = fake.deploy(&std::fs::read(format!("{}/../target/near/mock_ft/mock_ft.wasm", env!("CARGO_MANIFEST_DIR")))?).await?.into_result()?;
+    let fake =
+        fake.deploy(&std::fs::read(format!("{}/../target/near/mock_ft/mock_ft.wasm", env!("CARGO_MANIFEST_DIR")))?).await?.into_result()?;
     fake.call("new").args_json(json!({ "owner_id": env.owner.id(), "total_supply": "0" })).transact().await?.into_result()?;
     env.register(&fake, env.intents.id()).await?;
-    fake.call("mint").args_json(json!({ "account_id": env.owner.id(), "amount": (100 * USDC).to_string() })).transact().await?.into_result()?;
+    fake.call("mint")
+        .args_json(json!({ "account_id": env.owner.id(), "amount": (100 * USDC).to_string() }))
+        .transact()
+        .await?
+        .into_result()?;
     env.owner
         .call(fake.id(), "ft_transfer_call")
         .args_json(json!({ "receiver_id": env.intents.id(), "amount": (100 * USDC).to_string(), "msg": h.hex }))
@@ -79,7 +84,12 @@ async fn real_verifier_fake_token_is_refused_and_refunded() -> anyhow::Result<()
         .await?
         .into_result()?;
     let r = env.s3_real(&h, fake.id(), 60 * USDC, Some(msg(id, Some(&h.key()), None)), 21).await;
-    let back: String = env.intents.view("mt_balance_of").args_json(json!({ "account_id": h.hex, "token_id": format!("nep141:{}", fake.id()) })).await?.json()?;
+    let back: String = env
+        .intents
+        .view("mt_balance_of")
+        .args_json(json!({ "account_id": h.hex, "token_id": format!("nep141:{}", fake.id()) }))
+        .await?
+        .json()?;
     assert_eq!(back, (100 * USDC).to_string(), "the fake token went back to the signer: {:?}", r.logs());
     assert_eq!(env.state(id).await["total_active"], "0", "nothing was credited");
     Ok(())
