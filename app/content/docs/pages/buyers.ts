@@ -1,0 +1,67 @@
+import type { Page } from '../../types';
+import { code, h2, h3, note, ol, p, table, ul } from '../../blocks';
+import { FACTS as F } from '../facts';
+
+export const buyers: Page = {
+  slug: 'buyers',
+  title: 'For buyers',
+  group: 'Use',
+  summary: 'Commit, Walk, refunds and claims, for NEAR wallets and for Solana-only wallets.',
+  blocks: [
+    note('warn', 'Tokens can lose all of their value. Kruxa has had no independent audit. Mainnet is real money. A launch can pass its verdict and the token can still fall to nothing. Read [Risk (draft)](/legal/risk).', 'Before you commit'),
+    h2('Commit from a NEAR wallet'),
+    ol(
+      'Hold USDC on NEAR. If you hold something else, swap to USDC first. The app links a route but does not swap for you.',
+      `Connect your wallet when you press Commit. Pick an amount of at least $${F.minBuyUsdc}. The page shows your wallet cap and the launch's remaining room.`,
+      'Your wallet signs one USDC `ft_transfer_call` with 1 yoctoNEAR and at least 50 Tgas.',
+      'Your position appears in the Portfolio, with a Walk button until the deadline.',
+    ),
+    p('If a check fails, the full amount comes back to you. A commit in the wrong phase never panics and never strands money.'),
+    h2('Walk'),
+    ul(
+      'Press Walk before the Walk deadline. The whole position leaves the verdict inputs immediately.',
+      'Your principal goes to your own NEAR account. A NEAR buyer pays no relay fee.',
+      'If the money leg fails, the amount is re-credited and you can retry the refund.',
+      'You may commit again while the commit window is still open. You then count as a new backer.',
+      'Walk is closed at and after the deadline (`R_WALK_CLOSED`).',
+    ),
+    h2('After the verdict'),
+    h3('PASS'),
+    p(`Claim your tokens. Attach at least ${F.tokenClaimNearAttach} NEAR so the token contract can register you. If the trial was oversubscribed you also get the excess refunded. The backer bonus vests over ${F.backerVestDays} days.`),
+    h3('FAIL'),
+    p('Claim your refund. Anyone can trigger it for you, but the money can only go to the destination stored in your position.'),
+    h2('Refunds, in plain words'),
+    table(
+      ['Where your refund lands', 'What is taken out'],
+      ['Your NEAR account (you committed from NEAR)', 'nothing'],
+      ['Your own Intents account (you committed from Solana)', 'the relay fee you already paid is not returned'],
+      ['A Solana address (you move it on)', `a fixed ${F.intentsSolanaWithdrawFeeUsdc.toFixed(2)} USDC withdrawal fee, shown before you sign. At the $${F.minBuyUsdc} minimum that is 0.15%.`],
+    ),
+    p('What you get back is your principal minus the fees shown. The platform never pays your withdrawal fee.'),
+    h2('Solana-only buyers (Phantom, no NEAR account)'),
+    note('unproven', `This path runs through NEAR Intents and is an unproven path. Two of its legs ran live on mainnet on 2026-11-08, but the receipt files are not yet committed to the repo, and the signing step for a Phantom wallet has never been run. The app labels these legs DRY QUOTE or RECORDED until the Test 1 receipts are committed. Do not rely on it for money you cannot lose.`),
+    ol(
+      'Your first object is an Intents account named by the 64-character hex of your Solana public key. It is your account. Refunds and failures there are between you and Intents.',
+      'Step 1: the app requests a quote that delivers USDC to that Intents account and sets a refund address to your Solana address. You send SOL or USDC from Phantom to the quoted deposit address.',
+      `Step 2: the app shows the flat relay fee and the net amount. The relay fee is capped at the lower of $${F.relayFeeCeilingUsdc.toFixed(2)} or ${F.relayFeeCeilingPct}% of the amount, and the net amount must still meet the $${F.minBuyUsdc} minimum. Phantom signs one message. Anyone can submit it. You can submit it yourself to avoid the fee.`,
+      'Walk is one more signed message (`walk_signed`). The refund lands in your Intents account.',
+      `To get funds back to Phantom you sign one more withdrawal and pay the fixed ${F.intentsSolanaWithdrawFeeUsdc.toFixed(2)} USDC fee.`,
+      `After PASS, tokens arrive on Solana. You claim with a Merkle proof and a refundable ${F.solanaClaimRentSol} SOL deposit that came out of your contribution.`,
+    ),
+    h3('What was proven on 2026-11-08, and what was not'),
+    table(
+      ['Item', 'Status', 'Facts'],
+      ['OV4: Intents deposit credit', 'proven live on mainnet', `0.002 SOL through a 1Click quote credited 0.17742 USDC in about ${F.intentsLegSeconds.low} seconds. A SOL deposit to a Solana-USDC token credited 0.131942 USDC in ${F.intentsLegSeconds.high} seconds.`],
+      ['OV15: withdraw to a Solana address', 'proven live on mainnet', `\`ft_withdraw\` of 60000 micro-USDC landed 30000 micro-USDC at a fresh Solana address. The fixed ${F.intentsSolanaWithdrawFeeUsdc.toFixed(2)} USDC bridge fee is the difference. An earlier attempt of exactly 30000 netted zero. NEAR transaction \`${F.test1Tx}\`.`],
+      ['Latency tail', 'seen once', `A 0.05 USDC swap stalled for about ${F.intentsStallMinutes} minutes and then completed (0.049988 credited). Normal legs took about 90 seconds.`],
+      ['OV3: Phantom byte-exact signing', 'unproven', 'The signed payload has never been checked with a real Phantom wallet.'],
+      ['Solflare and Backpack signing', 'unproven', 'Only Phantom is in scope for OV3.'],
+      ['Test 1 receipt files in the repo', 'not committed yet', 'The files `evidence/test1-ov4.json` and `evidence/test1-ov15.json` are listed as pending in PROOF-DEBTS.md.'],
+    ),
+    p('Until the receipts are committed, treat the facts above as the project\'s own report, not as independently checkable evidence.'),
+    note('info', `Funds can sit in Intents for a while. Plan for a delay of about ${F.intentsStallMinutes} minutes in the worst case seen. A Solana holder after PASS has fixed-supply protection and claims, not a refund right.`, 'Funds in motion'),
+    h2('Check before you commit'),
+    code('./scripts/verify.sh <launch_id>', 'bash'),
+    p('See [Verify a launch](/docs/verify). The label on every launch tells you whether it is SANDBOX, TESTNET, DEVNET or MAINNET.'),
+  ],
+};
