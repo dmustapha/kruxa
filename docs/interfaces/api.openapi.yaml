@@ -1,0 +1,701 @@
+openapi: 3.0.3
+info:
+  title: Kruxa indexer read API
+  version: 1.0.0
+  description: |
+    Read-only JSON API over the Kruxa indexer (workstream I). Nothing here is authoritative:
+    every number is a convenience view folded from NEP-297 `EVENT_JSON` logs (standard `kruxa`,
+    version 1.0.0) of the core and market contracts. A judge can rebuild the fold from raw
+    events; the launch `book_hash_folded` is checked against the contract's `book_hash`.
+    The app degrades to direct RPC reads and baked snapshots if this service is down.
+
+    Conventions
+    - Base path `/api`. No authentication, no write methods, no keys held.
+    - Amounts are decimal strings of integers in base units (USDC has 6 decimals, launch tokens 6 decimals) so u128 never loses precision.
+    - Times are unix seconds (integers). Chain nanosecond values are divided by 1e9 and floored.
+    - Every object that carries numbers has `source`: `"chain"` when every contributing event came from a NEAR block, `"fixture"` when any contributing event came from the offline fixture generator. UI must label fixture numbers as fixture data.
+    - Every response carries `as_of` (the last indexed final block) so freshness is visible.
+    - Errors are `{ "error": { "code": string, "message": string } }` with HTTP 400, 404 or 503.
+    - Stage definitions (exclusive, evaluated at request time against `now`):
+      `closing` = status open and (commit window ended, or fewer than 6 h to `walk_end`);
+      `new` = open, not closing, opened less than 6 h ago;
+      `open` = open, not closing, not new;
+      `passed` = verdict PASS; `failed` = verdict FAIL, creation failed or dissolved.
+      `all` (default) returns every stage. `has_market=true` narrows to launches whose pool is open.
+    - Candle price is quote (USDC) per whole token, a decimal number; `v` is quote volume in whole USDC.
+      Candle shape is TradingView-datafeed compatible (`t,o,h,l,c,v`, `t` in unix seconds, bucket start, UTC).
+servers:
+  - url: http://localhost:8787
+    description: local dev (default `PORT=8787`)
+tags:
+  - name: feed
+  - name: token
+  - name: creator
+  - name: portfolio
+  - name: verify
+  - name: ops
+paths:
+  /api/health:
+    get:
+      tags: [ops]
+      summary: Health and freshness
+      description: Never 5xx while the process is alive. `status` is `ok` when the head lag is within `max_lag_blocks`, `stale` otherwise, `fixture` when the store was built from the offline generator.
+      responses:
+        '200':
+          description: freshness report
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Health' }
+  /api/launches:
+    get:
+      tags: [feed]
+      summary: Launch feed (new, open, closing, passed, failed) with search and filters
+      parameters:
+        - name: stage
+          in: query
+          schema: { type: string, enum: [all, new, open, closing, passed, failed], default: all }
+        - name: q
+          in: query
+          description: case-insensitive substring over symbol, creator account and numeric launch id
+          schema: { type: string, maxLength: 64 }
+        - name: creator
+          in: query
+          schema: { type: string }
+        - name: has_market
+          in: query
+          schema: { type: boolean }
+        - name: min_raised
+          in: query
+          description: minimum `total_active` in base units
+          schema: { type: string, pattern: '^[0-9]+$' }
+        - name: sort
+          in: query
+          schema: { type: string, enum: [newest, raised, funders, ending_soon, volume_24h], default: newest }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+        - name: cursor
+          in: query
+          description: opaque `next_cursor` from the previous page
+          schema: { type: string }
+      responses:
+        '200':
+          description: a page of launches
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LaunchList' }
+        '400': { $ref: '#/components/responses/Error' }
+  /api/launch/{id}:
+    get:
+      tags: [feed]
+      summary: Launch detail (charter, verdict inputs, margin, allocation)
+      parameters: [ { $ref: '#/components/parameters/LaunchId' } ]
+      responses:
+        '200':
+          description: launch detail
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LaunchDetail' }
+        '404': { $ref: '#/components/responses/Error' }
+  /api/token/{id}:
+    get:
+      tags: [token]
+      summary: Token page data in one call (summary, creator, payout recipient, pool, safety indicators)
+      parameters: [ { $ref: '#/components/parameters/LaunchId' } ]
+      responses:
+        '200':
+          description: token page summary
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TokenPage' }
+        '404': { $ref: '#/components/responses/Error' }
+  /api/token/{id}/candles:
+    get:
+      tags: [token]
+      summary: OHLCV candles
+      parameters:
+        - $ref: '#/components/parameters/LaunchId'
+        - name: interval
+          in: query
+          schema: { type: string, enum: ['1m', '5m', '1h', '1d'], default: '1m' }
+        - name: from
+          in: query
+          description: unix seconds, inclusive
+          schema: { type: integer, minimum: 0 }
+        - name: to
+          in: query
+          description: unix seconds, exclusive
+          schema: { type: integer, minimum: 0 }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 2000, default: 500 }
+        - name: fill
+          in: query
+          description: when true, empty buckets between the first and last candle are filled flat at the previous close with v=0 and `filled=true`
+          schema: { type: boolean, default: false }
+      responses:
+        '200':
+          description: candles ascending by `t`
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CandleSeries' }
+        '400': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+  /api/token/{id}/trades:
+    get:
+      tags: [token]
+      summary: Trades feed from market `swap` events, newest first
+      parameters:
+        - $ref: '#/components/parameters/LaunchId'
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+        - name: before
+          in: query
+          description: opaque `next_cursor` from the previous page
+          schema: { type: string }
+        - name: trader
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: trades
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TradeList' }
+        '404': { $ref: '#/components/responses/Error' }
+  /api/token/{id}/holders:
+    get:
+      tags: [token]
+      summary: Holders of the launch token as folded from trial claims and market swaps
+      description: Balances are trial-claimed plus net market flow. They are an indexed estimate, not a token-contract read (`basis` says so).
+      parameters:
+        - $ref: '#/components/parameters/LaunchId'
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+      responses:
+        '200':
+          description: holders by balance descending
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HolderList' }
+        '404': { $ref: '#/components/responses/Error' }
+  /api/token/{id}/depth:
+    get:
+      tags: [token]
+      summary: Pool depth (reserves and a constant-product price-impact ladder)
+      description: The ladder is computed from the latest indexed reserves with the constant-product formula and the fee in `fee_bps`. It is a quote estimate, never an execution guarantee; the contract's `min_out` is the protection.
+      parameters: [ { $ref: '#/components/parameters/LaunchId' } ]
+      responses:
+        '200':
+          description: depth
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PoolDepth' }
+        '404': { $ref: '#/components/responses/Error' }
+  /api/creator/{account}:
+    get:
+      tags: [creator]
+      summary: Creator desk (launches, earnings, claims, stream meter)
+      description: Includes launches where `account` is the creator or the payout recipient. `payout_recipient` is shown per launch (PRD 4b.2).
+      parameters:
+        - name: account
+          in: path
+          required: true
+          schema: { type: string, minLength: 2, maxLength: 128 }
+      responses:
+        '200':
+          description: creator desk
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CreatorDesk' }
+        '404': { $ref: '#/components/responses/Error' }
+  /api/export/creator/{account}/claims.csv:
+    get:
+      tags: [creator]
+      summary: Creator claims and stream draws as CSV
+      parameters:
+        - name: account
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: CSV with header `launch_id,kind,amount,block_height,receipt_id,time,source`
+          content:
+            text/csv:
+              schema: { type: string }
+  /api/portfolio/{account}:
+    get:
+      tags: [portfolio]
+      summary: Portfolio by account (positions, funds in motion, claims, market balances)
+      parameters:
+        - name: account
+          in: path
+          required: true
+          description: a NEAR account id or a holder key (`near:<account>` or `sol:<base58>`)
+          schema: { type: string, minLength: 2, maxLength: 128 }
+      responses:
+        '200':
+          description: portfolio
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Portfolio' }
+  /api/verify/{id}:
+    get:
+      tags: [verify]
+      summary: Verify data (hashes, folded book check, event references)
+      description: Lets a reader recompute the fold. `fold_ok` is true when the folded book hash equals the one the contract logged on its latest `contributed` or `walked` event. The independent check remains `verify.sh`.
+      parameters: [ { $ref: '#/components/parameters/LaunchId' } ]
+      responses:
+        '200':
+          description: verify data
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VerifyData' }
+        '404': { $ref: '#/components/responses/Error' }
+  /api/export/launches.csv:
+    get:
+      tags: [feed]
+      summary: Open launch dataset (CSV)
+      responses:
+        '200':
+          description: CSV with header `launch_id,symbol,creator,status,total_active,funders,verdict,source`
+          content:
+            text/csv:
+              schema: { type: string }
+  /api/export/trades.csv:
+    get:
+      tags: [token]
+      summary: Open trades dataset (CSV)
+      parameters:
+        - name: launch_id
+          in: query
+          schema: { type: string, pattern: '^[0-9]+$' }
+      responses:
+        '200':
+          description: CSV with header `launch_id,time,side,trader,amount_in,amount_out,price,fee_total,block_height,receipt_id,source`
+          content:
+            text/csv:
+              schema: { type: string }
+  /api/stream:
+    get:
+      tags: [token]
+      summary: Server-sent events price stream
+      description: |
+        `text/event-stream`. Events: `hello` (once, with `as_of`), `trade` (a `Trade`), `candle` (the updated 1m `Candle` plus `launch_id`),
+        `launch` (a `LaunchSummary` after any state change), `heartbeat` every 15 s. Each event has an `id` (the event store sequence number).
+        A reconnecting client sends `Last-Event-ID` and receives the events after it that are still in the 1000-event ring buffer.
+        A fixture-sourced event has `"source":"fixture"` in its JSON.
+      parameters:
+        - name: launch_id
+          in: query
+          description: filter to one launch; omit for all
+          schema: { type: string, pattern: '^[0-9]+$' }
+      responses:
+        '200':
+          description: event stream
+          content:
+            text/event-stream:
+              schema: { type: string }
+components:
+  parameters:
+    LaunchId:
+      name: id
+      in: path
+      required: true
+      description: launch id (u64 as decimal)
+      schema: { type: string, pattern: '^[0-9]{1,20}$' }
+  responses:
+    Error:
+      description: error
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorBody' }
+  schemas:
+    ErrorBody:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string, example: not_found }
+            message: { type: string }
+    Source:
+      type: string
+      enum: [chain, fixture]
+      description: '`fixture` when any contributing event came from the offline generator'
+    AsOf:
+      type: object
+      required: [block_height, block_time]
+      properties:
+        block_height: { type: integer, nullable: true, description: 'last indexed final block, null for an empty store' }
+        block_time: { type: integer, nullable: true, description: unix seconds of that block }
+    Amount:
+      type: string
+      pattern: '^[0-9]+$'
+      description: base-unit integer as a decimal string
+    Health:
+      type: object
+      required: [status, network, source, as_of, head_height, lag_blocks, max_lag_blocks, event_count, state_hash, uptime_s]
+      properties:
+        status: { type: string, enum: [ok, stale, fixture] }
+        network: { type: string, example: testnet, description: 'testnet, mainnet or fixture' }
+        source: { $ref: '#/components/schemas/Source' }
+        data_source: { type: string, example: neardata, description: 'neardata, rpc or fixture' }
+        as_of: { $ref: '#/components/schemas/AsOf' }
+        head_height: { type: integer, nullable: true, description: 'chain head seen by the tailer; null offline' }
+        lag_blocks: { type: integer, nullable: true }
+        max_lag_blocks: { type: integer }
+        event_count: { type: integer }
+        launch_count: { type: integer }
+        trade_count: { type: integer }
+        state_hash: { type: string, description: 'sha256 hex of the canonical read model; equal inputs give equal hash' }
+        last_error: { type: string, nullable: true }
+        uptime_s: { type: integer }
+    LaunchSummary:
+      type: object
+      required: [launch_id, symbol, creator, payout_recipient, status, stage, total_active, funders, source]
+      properties:
+        launch_id: { type: string }
+        symbol: { type: string }
+        creator: { type: string }
+        payout_recipient: { type: string, description: 'Charter stream_recipient, defaults to the creator' }
+        status: { type: string, enum: [creating, open, passed, failed, creation_failed, dissolved] }
+        stage: { type: string, enum: [new, open, closing, passed, failed] }
+        created_at: { type: integer, nullable: true }
+        opens_at: { type: integer, nullable: true }
+        commit_end: { type: integer, nullable: true }
+        walk_end: { type: integer, nullable: true }
+        total_active: { $ref: '#/components/schemas/Amount' }
+        funders: { type: integer }
+        soft_cap: { allOf: [ { $ref: '#/components/schemas/Amount' } ], nullable: true }
+        min_funders: { type: integer, nullable: true }
+        progress_bps: { type: integer, nullable: true, description: 'total_active over soft_cap in basis points, capped at 20000' }
+        verdict: { type: string, enum: [PASS, FAIL], nullable: true }
+        has_market: { type: boolean }
+        last_price: { type: number, nullable: true }
+        volume_24h: { type: number, description: 'quote volume in whole USDC over the last 24 h' }
+        last_block: { type: integer }
+        source: { $ref: '#/components/schemas/Source' }
+    LaunchList:
+      type: object
+      required: [items, next_cursor, as_of, source]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/LaunchSummary' }
+        next_cursor: { type: string, nullable: true }
+        total: { type: integer, description: 'matches before paging' }
+        as_of: { $ref: '#/components/schemas/AsOf' }
+        source: { $ref: '#/components/schemas/Source' }
+    VerdictInputs:
+      type: object
+      required: [total_active, funders, book_hash_folded]
+      properties:
+        total_active: { $ref: '#/components/schemas/Amount' }
+        funders: { type: integer }
+        soft_cap: { allOf: [ { $ref: '#/components/schemas/Amount' } ], nullable: true }
+        min_funders: { type: integer, nullable: true }
+        margin_to_soft_cap: { type: string, nullable: true, description: 'signed integer string: total_active minus soft_cap' }
+        margin_funders: { type: integer, nullable: true, description: 'funders minus min_funders' }
+        book_hash_folded: { type: string, description: 'hex, latest book_hash logged by the contract (contributed or walked)' }
+        inputs_hash: { type: string, nullable: true, description: 'hex, from the verdict event' }
+    Allocation:
+      type: object
+      properties:
+        accepted: { $ref: '#/components/schemas/Amount' }
+        launch_fee: { $ref: '#/components/schemas/Amount' }
+        lp_quote: { $ref: '#/components/schemas/Amount' }
+        stream: { $ref: '#/components/schemas/Amount' }
+        excess_pool: { $ref: '#/components/schemas/Amount' }
+    LaunchDetail:
+      allOf:
+        - $ref: '#/components/schemas/LaunchSummary'
+        - type: object
+          required: [charter_hash, verdict_inputs]
+          properties:
+            charter_hash: { type: string }
+            verdict_inputs: { $ref: '#/components/schemas/VerdictInputs' }
+            verdict_reasons: { type: array, items: { type: string }, description: 'FAIL reasons as logged' }
+            allocation: { allOf: [ { $ref: '#/components/schemas/Allocation' } ], nullable: true }
+            walked_total: { $ref: '#/components/schemas/Amount' }
+            contributed_total: { $ref: '#/components/schemas/Amount' }
+            timeline:
+              type: array
+              description: lifecycle events in order, each with the receipt that proves it
+              items: { $ref: '#/components/schemas/EventRef' }
+    EventRef:
+      type: object
+      required: [event, block_height, receipt_id, source]
+      properties:
+        event: { type: string, example: trial_opened }
+        block_height: { type: integer }
+        receipt_id: { type: string }
+        log_index: { type: integer }
+        time: { type: integer }
+        source: { $ref: '#/components/schemas/Source' }
+    SafetyIndicator:
+      type: object
+      required: [id, label, status, basis]
+      properties:
+        id:
+          type: string
+          enum: [verdict_passed, lp_in_pool, mint_authority_null, freeze_authority_null, payout_recipient_declared, market_not_paused, creator_fee_within_bound, verdict_inputs_hash_present]
+        label: { type: string }
+        status: { type: string, enum: [pass, warn, fail, unknown] }
+        basis: { type: string, enum: [event, derived, not_indexed], description: '`not_indexed` means no logged event carries the fact, so status is `unknown` and is never guessed' }
+        detail: { type: string }
+    PoolInfo:
+      type: object
+      required: [open, paused]
+      properties:
+        open: { type: boolean }
+        paused: { type: boolean }
+        opened_at: { type: integer, nullable: true }
+        quote_reserve: { allOf: [ { $ref: '#/components/schemas/Amount' } ], nullable: true }
+        token_reserve: { allOf: [ { $ref: '#/components/schemas/Amount' } ], nullable: true }
+        fee_bps: { type: integer, nullable: true }
+        price: { type: number, nullable: true, description: 'reserve ratio, quote per whole token' }
+        tvl_quote: { type: number, nullable: true, description: 'twice the quote reserve, whole USDC' }
+    TokenPage:
+      type: object
+      required: [launch, pool, safety, stats, as_of, source]
+      properties:
+        launch: { $ref: '#/components/schemas/LaunchSummary' }
+        pool: { $ref: '#/components/schemas/PoolInfo' }
+        stats:
+          type: object
+          properties:
+            last_price: { type: number, nullable: true }
+            change_24h_pct: { type: number, nullable: true }
+            high_24h: { type: number, nullable: true }
+            low_24h: { type: number, nullable: true }
+            volume_24h: { type: number }
+            trades_24h: { type: integer }
+            fees_total: { $ref: '#/components/schemas/Amount' }
+        creator:
+          type: object
+          properties:
+            account: { type: string }
+            payout_recipient: { type: string }
+            creator_claimed: { $ref: '#/components/schemas/Amount' }
+        safety:
+          type: array
+          items: { $ref: '#/components/schemas/SafetyIndicator' }
+        as_of: { $ref: '#/components/schemas/AsOf' }
+        source: { $ref: '#/components/schemas/Source' }
+    Candle:
+      type: object
+      required: [t, o, h, l, c, v, source]
+      properties:
+        t: { type: integer, description: bucket start, unix seconds UTC }
+        o: { type: number }
+        h: { type: number }
+        l: { type: number }
+        c: { type: number }
+        v: { type: number, description: quote volume in whole USDC }
+        n: { type: integer, description: trade count }
+        filled: { type: boolean, description: 'true for a synthetic flat bucket (fill=true)' }
+        source: { $ref: '#/components/schemas/Source' }
+    CandleSeries:
+      type: object
+      required: [launch_id, interval, candles, as_of, source]
+      properties:
+        launch_id: { type: string }
+        interval: { type: string, enum: ['1m', '5m', '1h', '1d'] }
+        candles:
+          type: array
+          items: { $ref: '#/components/schemas/Candle' }
+        as_of: { $ref: '#/components/schemas/AsOf' }
+        source: { $ref: '#/components/schemas/Source' }
+    Trade:
+      type: object
+      required: [launch_id, side, trader, amount_in, amount_out, price, fee_total, block_height, receipt_id, time, source]
+      properties:
+        launch_id: { type: string }
+        side: { type: string, enum: [buy, sell] }
+        trader: { type: string }
+        amount_in: { $ref: '#/components/schemas/Amount' }
+        amount_out: { $ref: '#/components/schemas/Amount' }
+        price: { type: number, description: quote per whole token }
+        quote_amount: { $ref: '#/components/schemas/Amount' }
+        token_amount: { $ref: '#/components/schemas/Amount' }
+        fee_total: { $ref: '#/components/schemas/Amount' }
+        fee_slices:
+          type: object
+          description: five-slice fee cut when logged
+          properties:
+            creator: { $ref: '#/components/schemas/Amount' }
+            platform: { $ref: '#/components/schemas/Amount' }
+            holders: { $ref: '#/components/schemas/Amount' }
+            lp: { $ref: '#/components/schemas/Amount' }
+            referral: { $ref: '#/components/schemas/Amount' }
+        quote_reserve_after: { $ref: '#/components/schemas/Amount' }
+        token_reserve_after: { $ref: '#/components/schemas/Amount' }
+        block_height: { type: integer }
+        receipt_id: { type: string }
+        time: { type: integer }
+        source: { $ref: '#/components/schemas/Source' }
+    TradeList:
+      type: object
+      required: [items, next_cursor, as_of, source]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/Trade' }
+        next_cursor: { type: string, nullable: true }
+        as_of: { $ref: '#/components/schemas/AsOf' }
+        source: { $ref: '#/components/schemas/Source' }
+    HolderList:
+      type: object
+      required: [items, basis, as_of, source]
+      properties:
+        basis: { type: string, example: 'trial claims plus net market flow, indexed estimate' }
+        holder_count: { type: integer }
+        items:
+          type: array
+          items:
+            type: object
+            required: [holder, balance, share_bps]
+            properties:
+              holder: { type: string }
+              balance: { $ref: '#/components/schemas/Amount' }
+              share_bps: { type: integer }
+              is_creator: { type: boolean }
+              is_pool: { type: boolean }
+        as_of: { $ref: '#/components/schemas/AsOf' }
+        source: { $ref: '#/components/schemas/Source' }
+    PoolDepth:
+      type: object
+      required: [pool, ladder, as_of, source]
+      properties:
+        pool: { $ref: '#/components/schemas/PoolInfo' }
+        ladder:
+          type: array
+          description: hypothetical trades of growing size against the latest reserves
+          items:
+            type: object
+            required: [side, amount_in, amount_out, price_impact_bps]
+            properties:
+              side: { type: string, enum: [buy, sell] }
+              amount_in: { $ref: '#/components/schemas/Amount' }
+              amount_out: { $ref: '#/components/schemas/Amount' }
+              avg_price: { type: number }
+              price_impact_bps: { type: integer }
+        as_of: { $ref: '#/components/schemas/AsOf' }
+        source: { $ref: '#/components/schemas/Source' }
+    StreamMeter:
+      type: object
+      description: Stream-lite meter folded from `pass_allocated` and `payout_resolved` events at `now`. The contract's `stream_status` view is the authority for what is drawable.
+      required: [total, drawn, unlocked, drawable_estimate, starts_at, ends_at]
+      properties:
+        recipient: { type: string }
+        total: { $ref: '#/components/schemas/Amount' }
+        drawn: { $ref: '#/components/schemas/Amount' }
+        unlocked: { $ref: '#/components/schemas/Amount' }
+        drawable_estimate: { $ref: '#/components/schemas/Amount' }
+        starts_at: { type: integer }
+        ends_at: { type: integer }
+        progress_bps: { type: integer }
+    CreatorLaunch:
+      type: object
+      required: [launch, role, earnings]
+      properties:
+        launch: { $ref: '#/components/schemas/LaunchSummary' }
+        role: { type: string, enum: [creator, payout_recipient, both] }
+        stream: { allOf: [ { $ref: '#/components/schemas/StreamMeter' } ], nullable: true }
+        earnings:
+          type: object
+          properties:
+            market_fees_creator_slice: { $ref: '#/components/schemas/Amount' }
+            claimed: { $ref: '#/components/schemas/Amount' }
+            claimable_estimate: { $ref: '#/components/schemas/Amount' }
+            stream_drawn: { $ref: '#/components/schemas/Amount' }
+    CreatorDesk:
+      type: object
+      required: [account, launches, totals, claims, as_of, source]
+      properties:
+        account: { type: string }
+        launches:
+          type: array
+          items: { $ref: '#/components/schemas/CreatorLaunch' }
+        totals:
+          type: object
+          properties:
+            stream_drawn: { $ref: '#/components/schemas/Amount' }
+            market_fees_creator_slice: { $ref: '#/components/schemas/Amount' }
+            claimed: { $ref: '#/components/schemas/Amount' }
+        claims:
+          type: array
+          items:
+            type: object
+            required: [launch_id, kind, amount, block_height, receipt_id, time, source]
+            properties:
+              launch_id: { type: string }
+              kind: { type: string, enum: [stream_draw, creator_claimed] }
+              amount: { $ref: '#/components/schemas/Amount' }
+              block_height: { type: integer }
+              receipt_id: { type: string }
+              time: { type: integer }
+              source: { $ref: '#/components/schemas/Source' }
+        as_of: { $ref: '#/components/schemas/AsOf' }
+        source: { $ref: '#/components/schemas/Source' }
+    PortfolioPosition:
+      type: object
+      required: [launch, contributed, walked, status]
+      properties:
+        launch: { $ref: '#/components/schemas/LaunchSummary' }
+        contributed: { $ref: '#/components/schemas/Amount' }
+        walked: { $ref: '#/components/schemas/Amount' }
+        active: { $ref: '#/components/schemas/Amount' }
+        tokens_claimed: { $ref: '#/components/schemas/Amount' }
+        status:
+          type: string
+          enum: [active, walked, awaiting_settle, refundable, claimable, claimed]
+        market_balance: { $ref: '#/components/schemas/Amount' }
+        market_value_quote: { type: number, nullable: true }
+    Portfolio:
+      type: object
+      required: [account, positions, funds_in_motion, as_of, source]
+      properties:
+        account: { type: string }
+        positions:
+          type: array
+          items: { $ref: '#/components/schemas/PortfolioPosition' }
+        funds_in_motion:
+          type: array
+          description: payouts logged as `payout_resolved` with ok=false or deposits rejected and refunded
+          items:
+            type: object
+            properties:
+              launch_id: { type: string }
+              kind: { type: string }
+              amount: { $ref: '#/components/schemas/Amount' }
+              ok: { type: boolean }
+              receipt_id: { type: string }
+        as_of: { $ref: '#/components/schemas/AsOf' }
+        source: { $ref: '#/components/schemas/Source' }
+    VerifyData:
+      type: object
+      required: [launch_id, charter_hash, book_hash_folded, fold_ok, events, as_of, source]
+      properties:
+        launch_id: { type: string }
+        charter_hash: { type: string }
+        inputs_hash: { type: string, nullable: true }
+        book_hash_folded: { type: string }
+        book_hash_stored: { type: string, nullable: true, description: 'hash the contract logged on the latest book event' }
+        fold_ok: { type: boolean }
+        verdict: { type: string, enum: [PASS, FAIL], nullable: true }
+        event_count: { type: integer }
+        events:
+          type: array
+          items: { $ref: '#/components/schemas/EventRef' }
+        recompute:
+          type: string
+          example: './scripts/verify.sh 1 --launch 7'
+        as_of: { $ref: '#/components/schemas/AsOf' }
+        source: { $ref: '#/components/schemas/Source' }
