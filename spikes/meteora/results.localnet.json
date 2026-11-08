@@ -1,0 +1,85 @@
+[
+  {
+    "id": "a-create-pool-external-mint",
+    "ok": true,
+    "sigs": [
+      "3T12KDH3SuWtp9iix85zb4xdQEzAR2jCaZ439CR2aJW7AW2GQfpjTVS6G6tLd7VH4EKfDvrUYbuYnSJwH6AutbEu"
+    ],
+    "detail": "plain SPL base 9B93RzhkiXSQZemjbpH2H4NV9QxVpg4BoW6J5fDzeRau (mint+freeze auth null), test USDC; collectFeeMode=1"
+  },
+  {
+    "id": "b-permanent-lock",
+    "ok": true,
+    "sigs": [
+      "3T12KDH3SuWtp9iix85zb4xdQEzAR2jCaZ439CR2aJW7AW2GQfpjTVS6G6tLd7VH4EKfDvrUYbuYnSJwH6AutbEu"
+    ],
+    "detail": "permanentLockedLiquidity=583337269021023124047623965365 in same tx as create"
+  },
+  {
+    "id": "f-cost-pool1",
+    "ok": true,
+    "sigs": [
+      "3T12KDH3SuWtp9iix85zb4xdQEzAR2jCaZ439CR2aJW7AW2GQfpjTVS6G6tLd7VH4EKfDvrUYbuYnSJwH6AutbEu"
+    ],
+    "detail": "payer balance delta 0.022616 SOL (tx fee, pool, position, vaults, NFT rent; ATAs pre-existed)"
+  },
+  {
+    "id": "b-fee-claim-locked-position",
+    "ok": true,
+    "sigs": [
+      "3irqRn4L3auTvx1uJo4N5WJC4ytUAQg7WKKJRmz5kGeAB5X96obG8J4J7s8811WaiYAompmSxhcXCaqZKdMgDFAz",
+      "4iojiSpKFi5HbKcnWHhfJ7mUqAeu2BTbmhzFSRPp7T8QA89wYhQz2RLbrDkQfqLbTExFeD8xrhsvWcsuCPfptvkq"
+    ],
+    "detail": "keypair owner claimed 119999 raw quote after 1 swap on a permanently locked position"
+  },
+  {
+    "id": "e-fee-scheduler",
+    "ok": true,
+    "sigs": [
+      "3irqRn4L3auTvx1uJo4N5WJC4ytUAQg7WKKJRmz5kGeAB5X96obG8J4J7s8811WaiYAompmSxhcXCaqZKdMgDFAz",
+      "4iojiSpKFi5HbKcnWHhfJ7mUqAeu2BTbmhzFSRPp7T8QA89wYhQz2RLbrDkQfqLbTExFeD8xrhsvWcsuCPfptvkq",
+      "2KGZCHBf2CqrjCBhUTCwZXVVm55RGqLbnrVYWrDfYFo2bFYCQiW272r7dvepv1F9K6h4bZ56xWa7gV11yNiBDovp",
+      "2EXJRsDo3w6kxNtACaSuGMF95qHprt83mygWHLwXFkBba3GH3qWy2QEXhZcq9R9cAjwRP3bXqsLjKqTsBEk8rQt2"
+    ],
+    "detail": "1 USDC swap at t0 yielded 119999 LP fee, same swap after 60s yielded 8000; ratio 15.0 (schedule 1500 to 100 bps over 6 periods, linear)"
+  },
+  {
+    "id": "d-two-owner-split",
+    "ok": true,
+    "sigs": [
+      "5WaXWVgJek3Dm6gd6f9mEiBcix8Thh3iWUr24NRcmrWuJwSgcCKkmvhsUDCP7mRV8GemUBhj6FK1kLUGACkG8iqx",
+      "3VTEDhCPXG1Fo7VQKP9dUo4TsZWMRHruhnxhq5hj452VVpiydsMP4XwutXV5mDgRP1PMjayNi9BhyxjZBxZtufRh",
+      "34o5xhcrjXQpbojVZcwFpXdG3jtoRaUcCMM9S5KbzNgRmnymuWUrufNywxMaWPeRZfNfEF2TwRNxpvNXTkTWwaAV"
+    ],
+    "detail": "split_position2 numerator 50% of a permanently LOCKED position to a second owner C37jr77KHEqMNkbrAzKsYibYKT7DYzaMGgqbn9kcszs8: second position lockedLiquidity=291668634510511562023811982682; second owner claim gained 4000"
+  },
+  {
+    "id": "c0-squads-multisig-devnet",
+    "ok": true,
+    "sigs": [
+      "4auDykBcBB4KpKEyFsXnVCUSAKF7tUWLevViGa3QqYQCyWnFY4bSwPxf2tgymzWaYE6sXJV3JtXfGHL3RUmn6aVm"
+    ],
+    "detail": "1-of-1 multisig EZs4zBgLnKxmFYAEiCrnK2EZHaThFEsT4tfvEVQNJGsG timeLock 20s, vault CuFcMJqq4Dg4JKayigHpXivfnCzrZV6pVMGJAgxzPTWc"
+  },
+  {
+    "id": "c-vault-creates-and-locks",
+    "ok": true,
+    "sigs": [
+      "5VHveenRvBCwBmgzmfuQunmaoqMbn2JpMQ52V8YNkAdyzzYCyY4XbdmPptP5GnCFefCHZGuUbDcD9YP5pS5RHZri",
+      "4eBvpcH4J9LidqaMqxxZAtWe8UMZZNRMfrerugNuBXfvKsLfP1rso5g7Y5rHsHMbGMFfmRjCR8fNEFRYu52NLbZN",
+      "2VmF6PMvhTuSGKLuJAd9nxKVHW3s4pLKqbe4n6YRox8SSC5QxrqVkuh1DuxiEyJceBYcjnun1nPyz5odEfaQBzLQ"
+    ],
+    "detail": "kruxa-venue plan executed as Squads vault tx (ephemeral signer for NFT); NFT owner=CuFcMJqq4Dg4JKayigHpXivfnCzrZV6pVMGJAgxzPTWc (vault); locked=583337269021023124047623965365; early execute: rejected: Simulation failed. \nMessage: Transaction simulation failed: Error processing Ins; pool cost from vault 0.022606 SOL"
+  },
+  {
+    "id": "c-vault-claims-fees",
+    "ok": true,
+    "sigs": [
+      "36M1F6bKqAhfPq556g6SXzKAJgDEg3sduPBR6kTM8s38xXqJMxhJWJQKqoLtMBm2x5f84428xVLRGTmn1jt4xJLj",
+      "3jw1oPnixY5uwmK6CX49B96c2PyjzFp6fEcN8n128jPSHnveN81nN4WDhC3L1KL62VmUBzu4sP6gWj6QQBj9zmrK",
+      "4JuxA2pTM4AbkTZq7URx2ANCTmWgbJg8f9dJGreEpX8KBLs2DhRDkS8fYcBd1eppwWthwntMkRxRZnSizgmmVGYE",
+      "RGZVq1j4sxu2EbLLToWUVFTiZxd2oW3LZUnEGwU3kN5f9bBVze6RFJVkZcPu3VLD7FBbMR5aaSSFAr8ZYC9UgAm"
+    ],
+    "detail": "Squads-vault-owned permanently locked position claimed 119999 raw quote to the vault ATA via a vault transaction"
+  }
+]
