@@ -64,7 +64,7 @@ export function VerifyView() {
 
       {snap.status === 'loading' && <LoadingBlock label="Reading the contract" />}
       {snap.status === 'unavailable' && (
-        <div role="alert" className="state state-error"><h3>Could not read the chain</h3><p>{snap.message}</p><button type="button" onClick={load}>Try again</button><p className="hint">Offline? Use the command below, or the boundary vectors on the <Link href="/demo">demo page</Link>.</p></div>
+        <div role="alert" className="state state-error"><h3>Could not read the chain</h3><p>{snap.message}</p><button type="button" onClick={load}>Try again</button><p className="hint">Offline? Use the command below.</p></div>
       )}
       {snap.status === 'ok' && (
         <section className="card" aria-labelledby="res-h">

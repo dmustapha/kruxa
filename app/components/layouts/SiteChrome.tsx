@@ -8,8 +8,6 @@ const NAV = [
   { href: '/create', label: 'Create' },
   { href: '/portfolio', label: 'Portfolio' },
   { href: '/creator', label: 'Creator' },
-  { href: '/proof', label: 'Proof' },
-  { href: '/demo', label: 'Demo' },
 ];
 
 /** The honesty strip sits on every page and links to /charter. The limits are above the fold, not in a footer. */
@@ -49,7 +47,6 @@ export function SiteFooter() {
     <footer className="site-footer">
       <div className="in">
         <Link href="/charter">Charter and disclosures</Link>
-        <Link href="/proof">Proof</Link>
         <span>Read-only until you press an action. Browsing and verifying never ask for a wallet.</span>
         <NetworkBadge />
       </div>

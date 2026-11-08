@@ -33,3 +33,6 @@ export const createTrialNear = (a: CreateArgs): SignAndSendInput =>
 
 export const nearCliCommand = (receiver: string, method: string, args: Record<string, unknown>): string =>
   `near call ${receiver} ${method} '${JSON.stringify(args)}' --accountId <your-account> --networkId ${CONFIG.network}`;
+
+/** Creator trading-fee claim on the market contract (payout recipient only; pull based; minimum 1 USDC). */
+export const claimMarketFees = (launchId: string): SignAndSendInput => fc(CONFIG.market, 'claim', { launch_id: launchId }, 100, '0');

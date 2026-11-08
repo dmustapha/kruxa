@@ -28,7 +28,7 @@ export default function Landing() {
         <div className="grid grid-2">
           <div className="card">
             <h3>Exercised on NEAR testnet and Solana devnet</h3>
-            <p>The trial contract (commit, Walk, settle, refunds, claims, capped stream), the pure verdict logic, the indexer, and the Meteora devnet venue spike. See <Link href="/proof">Proof</Link> for each row with its label.</p>
+            <p>The trial contract (commit, Walk, settle, refunds, claims, capped stream), the pure verdict logic, the indexer, and the Meteora devnet venue spike.</p>
           </div>
           <div className="card">
             <h3>Not proven, or not claimed</h3>

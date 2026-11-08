@@ -15,6 +15,8 @@ export const CONFIG = {
   usdc: pick(process.env.NEXT_PUBLIC_USDC_ACCOUNT, 'usdc.kruxa.testnet'),
   intents: pick(process.env.NEXT_PUBLIC_INTENTS_ACCOUNT, 'intents.kruxa.testnet'),
   factory: pick(process.env.NEXT_PUBLIC_FACTORY_ACCOUNT, 'factory.kruxa.testnet'),
+  /** Market-lite contract (docs/interfaces/MARKET-ABI.md). The testnet account name is a placeholder until it is deployed. */
+  market: pick(process.env.NEXT_PUBLIC_MARKET_ACCOUNT, 'market.kruxa.testnet'),
   /** The Intents token id of USDC that the core contract accepts (`usdc_token_id`). Config, not a guess: set it to the deployed value. */
   usdcTokenId: pick(process.env.NEXT_PUBLIC_USDC_TOKEN_ID, 'nep141:usdc.kruxa.testnet'),
   /** Indexer read API base (docs/interfaces/api.openapi.yaml). */
