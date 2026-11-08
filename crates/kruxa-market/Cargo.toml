@@ -8,6 +8,7 @@ publish.workspace = true
 [dependencies]
 kruxa-math = { path = "../kruxa-math" }
 kruxa-logic = { path = "../kruxa-logic" }
+borsh = { workspace = true }
 
 [dev-dependencies]
 proptest = { workspace = true }

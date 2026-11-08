@@ -6,7 +6,7 @@ use kruxa_math::{linear_unlocked, mul_div_floor, BPS, DAY_NS};
 
 pub const EPOCH_NS: u64 = DAY_NS;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, borsh::BorshSerialize, borsh::BorshDeserialize)]
 pub struct EpochAccrual {
     pub epoch: u32,
     pub amount: u128,
