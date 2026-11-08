@@ -3,8 +3,9 @@
 // The library draws to a canvas, so it is imported on the client only. The "TradingView" attribution logo stays on
 // (layout.attributionLogo) and a text link is printed under the chart, as the licence NOTICE requires.
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { IChartApi, ISeriesApi, UTCTimestamp } from 'lightweight-charts';
-import { fmtPrice, fmtUsd } from '@/lib/market/format';
+import type { IChartApi, ISeriesApi, ISeriesMarkersPluginApi, Time, UTCTimestamp } from 'lightweight-charts';
+import { MARKER_LABEL, type ChartMarker, type MarkerKind } from '@/lib/market/markers';
+import { fmtCompact, fmtPrice, fmtUsd } from '@/lib/market/format';
 import type { Section } from '@/lib/market/hooks';
 import type { StreamState } from '@/lib/market/stream';
 import { INTERVALS, type Candle, type Interval } from '@/lib/market/types';
@@ -25,15 +26,26 @@ interface Props {
   stream: StreamState;
   onRetry(): void;
   symbol: string;
+  /** Price (USDC per token) or market cap (price x total supply). The same series, rescaled. */
+  mode: 'price' | 'mc';
+  onMode(m: 'price' | 'mc'): void;
+  /** Whole tokens; null when the API does not report total supply, which disables the market cap view. */
+  supply: number | null;
+  markers: ChartMarker[];
 }
+const fmtAxis = (mode: 'price' | 'mc') => (x: number): string => (mode === 'mc' ? `$${fmtCompact(x)}` : fmtPrice(x));
+const MARK_STYLE: Record<MarkerKind, { shape: 'arrowDown' | 'circle' | 'square'; color: string }> = {
+  creator_sell: { shape: 'arrowDown', color: '#ff8f85' }, creator_claim: { shape: 'circle', color: '#e6b450' }, stream_draw: { shape: 'square', color: '#8fb2ee' },
+};
 
 const LIVE_TEXT: Record<StreamState, string> = { connecting: 'Connecting', live: 'Live', reconnecting: 'Reconnecting', unsupported: 'Live updates unavailable' };
 
-export function PriceChart({ candles, interval, onInterval, stream, onRetry, symbol }: Props) {
+export function PriceChart({ candles, interval, onInterval, stream, onRetry, symbol, mode, onMode, supply, markers }: Props) {
   const host = useRef<HTMLDivElement>(null);
   const chart = useRef<IChartApi | null>(null);
   const price = useRef<ISeriesApi<'Candlestick'> | null>(null);
   const volume = useRef<ISeriesApi<'Histogram'> | null>(null);
+  const markerApi = useRef<ISeriesMarkersPluginApi<Time> | null>(null);
   const painted = useRef<{ key: string; n: number }>({ key: '', n: 0 });
   const [ready, setReady] = useState(false);
   const data = candles.status === 'ready' ? candles.data : null;
@@ -44,7 +56,7 @@ export function PriceChart({ candles, interval, onInterval, stream, onRetry, sym
     let disposed = false;
     let mq: MediaQueryList | undefined;
     let onTheme: (() => void) | undefined;
-    void import('lightweight-charts').then(({ createChart, CandlestickSeries, HistogramSeries, ColorType }) => {
+    void import('lightweight-charts').then(({ createChart, CandlestickSeries, HistogramSeries, ColorType, createSeriesMarkers }) => {
       if (disposed || !host.current) return;
       const p = readPalette(el);
       const c = createChart(el, {
@@ -62,7 +74,7 @@ export function PriceChart({ candles, interval, onInterval, stream, onRetry, sym
       });
       const v = c.addSeries(HistogramSeries, { priceFormat: { type: 'volume' }, priceScaleId: '', color: withAlpha(p.muted, 0.35), lastValueVisible: false, priceLineVisible: false });
       v.priceScale().applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
-      chart.current = c; price.current = s; volume.current = v;
+      chart.current = c; price.current = s; volume.current = v; markerApi.current = createSeriesMarkers(s, []);
       mq = window.matchMedia('(prefers-color-scheme: light)');
       onTheme = () => {
         const q = readPalette(el);
@@ -76,16 +88,19 @@ export function PriceChart({ candles, interval, onInterval, stream, onRetry, sym
       disposed = true;
       if (mq && onTheme) mq.removeEventListener('change', onTheme);
       chart.current?.remove();
-      chart.current = null; price.current = null; volume.current = null; painted.current = { key: '', n: 0 };
+      chart.current = null; price.current = null; volume.current = null; markerApi.current = null; painted.current = { key: '', n: 0 };
       setReady(false);
     };
   }, []);
 
   useEffect(() => {
     if (!ready || !data || !price.current || !volume.current) return;
-    const toBar = (c: Candle) => ({ time: c.t as UTCTimestamp, open: c.o, high: c.h, low: c.l, close: c.c });
+    const k = mode === 'mc' && supply ? supply : 1;
+    price.current.applyOptions({ priceFormat: { type: 'custom', formatter: (x: number) => (mode === 'mc' ? fmtCompact(x) : fmtPrice(x).replace('$', '')), minMove: mode === 'mc' ? 0.01 : 1e-10 } });
+    chart.current?.applyOptions({ localization: { priceFormatter: fmtAxis(mode) } });
+    const toBar = (c: Candle) => ({ time: c.t as UTCTimestamp, open: c.o * k, high: c.h * k, low: c.l * k, close: c.c * k });
     const toVol = (c: Candle) => ({ time: c.t as UTCTimestamp, value: c.v, color: withAlpha(c.c >= c.o ? readPalette(host.current!).up : readPalette(host.current!).down, 0.4) });
-    const key = `${interval}:${data[0]?.t ?? 0}`;
+    const key = `${interval}:${mode}:${data[0]?.t ?? 0}`;
     const prev = painted.current;
     if (key !== prev.key || data.length < prev.n) {
       price.current.setData(data.map(toBar));
@@ -95,7 +110,12 @@ export function PriceChart({ candles, interval, onInterval, stream, onRetry, sym
       for (const c of data.slice(Math.max(0, prev.n - 1))) { price.current.update(toBar(c)); volume.current.update(toVol(c)); }
     }
     painted.current = { key, n: data.length };
-  }, [data, interval, ready]);
+  }, [data, interval, ready, mode, supply]);
+
+  useEffect(() => {
+    if (!ready || !markerApi.current) return;
+    markerApi.current.setMarkers(markers.map((m) => ({ time: m.time as UTCTimestamp, position: m.position, shape: MARK_STYLE[m.kind].shape, color: MARK_STYLE[m.kind].color, text: m.text })));
+  }, [markers, ready]);
 
   const last = data && data.length ? data[data.length - 1]! : null;
   const label = useMemo(() => (last ? `${symbol} price chart, ${interval} candles. Last close ${fmtPrice(last.c)} USDC, ${data!.length} candles.` : `${symbol} price chart, no candles yet.`), [last, symbol, interval, data]);
@@ -106,7 +126,11 @@ export function PriceChart({ candles, interval, onInterval, stream, onRetry, sym
         <div className="mkt-seg" role="group" aria-label="Candle interval">
           {INTERVALS.map((i) => <button key={i} type="button" aria-pressed={interval === i} onClick={() => onInterval(i)}>{i}</button>)}
         </div>
-        {last && <span className="mkt-muted mkt-mono" style={{ fontSize: 12 }}>O {fmtPrice(last.o)} H {fmtPrice(last.h)} L {fmtPrice(last.l)} C {fmtPrice(last.c)}</span>}
+        <div className="mkt-seg" role="group" aria-label="Chart value">
+          <button type="button" aria-pressed={mode === 'price'} onClick={() => onMode('price')}>Price</button>
+          <button type="button" aria-pressed={mode === 'mc'} disabled={!supply} onClick={() => onMode('mc')} title={supply ? undefined : 'Total supply is not reported by the API, so market cap is unknown.'}>Market cap</button>
+        </div>
+        {last && <span className="mkt-muted mkt-mono" style={{ fontSize: 12 }}>{(['O', 'H', 'L', 'C'] as const).map((l) => `${l} ${fmtAxis(mode)(last[l.toLowerCase() as 'o' | 'h' | 'l' | 'c'] * (mode === 'mc' && supply ? supply : 1))}`).join(' ')}</span>}
       </div>
       {candles.status === 'error' && <SectionError message={candles.message} onRetry={onRetry} />}
       <div className="mkt-chart" role="img" aria-label={label}>
@@ -114,6 +138,12 @@ export function PriceChart({ candles, interval, onInterval, stream, onRetry, sym
         {candles.status === 'loading' && <div className="mkt-chart-empty"><Skeleton lines={4} height={28} /></div>}
         {data && data.length === 0 && <div className="mkt-chart-empty"><span>No trades have been indexed for this {interval} range yet, so there are no candles to draw.</span></div>}
       </div>
+      {markers.length > 0 && (
+        <p className="mkt-legend" aria-label="Chart markers">
+          {([...new Set(markers.map((m) => m.kind))] as MarkerKind[]).map((k) => <span key={k}><span className="mkt-legend-key">{k === 'creator_sell' ? 'S' : k === 'creator_claim' ? 'C' : 'D'}</span> {MARKER_LABEL[k]}</span>)}
+          <span className="mkt-muted"> Known creator accounts only, not wallets they may control.</span>
+        </p>
+      )}
       <p className="mkt-attrib">Charts by <a href="https://www.tradingview.com/" target="_blank" rel="noopener noreferrer">TradingView Lightweight Charts</a> (Apache-2.0). Candles are Kruxa&apos;s own, built from this pool&apos;s swap events; volume is in USDC.</p>
       {data && data.length > 0 && (
         <details>

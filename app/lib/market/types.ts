@@ -161,3 +161,5 @@ export interface EventRef { event: string; block_height: number; receipt_id: str
 export interface LaunchDetail extends LaunchSummary { charter_hash: string; verdict_inputs: VerdictInputs; verdict_reasons?: string[]; timeline?: EventRef[]; genesis?: GenesisInfo | null }
 
 export interface StreamMeter { recipient?: string; total: string; drawn: string; unlocked?: string | null; drawable_estimate?: string | null; starts_at: number; ends_at?: number | null; progress_bps?: number | null }
+
+export interface VerifyData { launch_id: string; charter_hash: string; inputs_hash?: string | null; book_hash_folded: string; book_hash_stored?: string | null; fold_ok?: boolean | null; ledger_consistent: boolean; recompute?: string; events: EventRef[]; source: DataSource }

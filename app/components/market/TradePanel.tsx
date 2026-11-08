@@ -22,14 +22,15 @@ interface Props {
   reserves: { q: string | null | undefined; t: string | null | undefined };
   nowSec: number;
   onSubmitted(): void;
+  initialSide?: Side;
 }
 type Phase = { s: 'idle' } | { s: 'signing' } | { s: 'sent'; txHash?: string } | { s: 'error'; message: string };
 
 const BUY_QUICK = ['5', '25', '100'];
 
-export function TradePanel({ page, facts, reserves, nowSec, onSubmitted }: Props) {
+export function TradePanel({ page, facts, reserves, nowSec, onSubmitted, initialSide }: Props) {
   const { guard, sessions, adapters, openChooser } = useWallet();
-  const [side, setSide] = useState<Side>('buy');
+  const [side, setSide] = useState<Side>(initialSide ?? 'buy');
   const [amount, setAmount] = useState('');
   const [slip, setSlip] = useState('1');
   const [phase, setPhase] = useState<Phase>({ s: 'idle' });
@@ -54,7 +55,8 @@ export function TradePanel({ page, facts, reserves, nowSec, onSubmitted }: Props
   const openingNote = win ? `${fmtBps(Math.round(win.appliedBps))} now, base ${fmtBps(win.baseBps)}` : null;
 
   const blockedReason: string | null =
-    !pool.open ? 'Trading opens when the pool opens. No pool has been indexed for this launch.'
+    page.source === 'fixture' ? 'Fixture data: nothing here is on a chain, so trading is off.'
+    : !pool.open ? 'Trading opens when the pool opens. No pool has been indexed for this launch.'
     : side === 'buy' && pool.paused ? 'Buys are paused on this market. Sells, claims and withdrawals are never paused.'
     : side === 'sell' && !facts.token ? 'The launch token account is not reported by the indexer and could not be read from chain, so a sell cannot be built.'
     : !guard.signingEnabled ? (guard.lockReason ?? 'Signing is locked on this network.')

@@ -6,7 +6,7 @@ import { getChainPool, getCreatorStatus, type ChainPool } from './chain';
 import { resolveFacts, type MarketFacts } from './facts';
 import { applyTradeToSeries, prependTrade, upsertCandle } from './series';
 import { openStream, type StreamState } from './stream';
-import type { Candle, CreatorEarnings, CreatorStatus, StreamMeter, HolderList, Interval, PoolDepth, LaunchDetail, TokenPageData, Trade, TradeList } from './types';
+import type { Candle, CreatorEarnings, CreatorClaim, CreatorStatus, StreamMeter, HolderList, Interval, PoolDepth, LaunchDetail, TokenPageData, Trade, TradeList } from './types';
 
 export type Section<T> = { status: 'loading' } | { status: 'ready'; data: T } | { status: 'error'; kind: ApiError['kind']; message: string };
 const loading = <T,>(): Section<T> => ({ status: 'loading' });
@@ -70,22 +70,22 @@ export const useHolders = (id: string) => useSection<HolderList>((signal) => fet
 export const useEpochTrades = (id: string) => useSection<TradeList>((signal) => fetchTrades(id, 200, fetch, signal), [id]);
 export const useDepth = (id: string) => useSection<PoolDepth>((signal) => fetchDepth(id, fetch, signal), [id]);
 
-export interface CreatorBundle { status: CreatorStatus | null; earnings: CreatorEarnings | null; stream: StreamMeter | null; basis: 'chain' | 'indexer' | 'none' }
+export interface CreatorBundle { status: CreatorStatus | null; earnings: CreatorEarnings | null; stream: StreamMeter | null; claims: CreatorClaim[]; basis: 'chain' | 'indexer' | 'none' }
 
 /** Creator earnings: the market's own `creator_status` view when reachable, else the indexer's estimate, else none. */
 export function useCreatorEarnings(id: string, recipient: string | undefined) {
   return useSection<CreatorBundle>(async (signal) => {
     const status = await getCreatorStatus(id);
-    let row: { earnings: CreatorEarnings; stream: StreamMeter | null } | null = null;
+    let row: { earnings: CreatorEarnings; stream: StreamMeter | null; claims: CreatorClaim[] } | null = null;
     if (recipient) {
       try {
         const desk = await fetchCreatorDesk(recipient, fetch, signal);
         const hit = desk.launches.find((l) => l.launch.launch_id === id);
-        if (hit) row = { earnings: hit.earnings, stream: hit.stream ?? null };
+        if (hit) row = { earnings: hit.earnings, stream: hit.stream ?? null, claims: (desk.claims ?? []).filter((c) => c.launch_id === id) };
       } catch (e) { if ((e as Error)?.name === 'AbortError') throw e; }
     }
-    if (status) return { status, earnings: row?.earnings ?? null, stream: row?.stream ?? null, basis: 'chain' };
-    return row ? { status: null, earnings: row.earnings, stream: row.stream, basis: 'indexer' } : { status: null, earnings: null, stream: null, basis: 'none' };
+    if (status) return { status, earnings: row?.earnings ?? null, stream: row?.stream ?? null, claims: row?.claims ?? [], basis: 'chain' };
+    return row ? { status: null, earnings: row.earnings, stream: row.stream, claims: row.claims, basis: 'indexer' } : { status: null, earnings: null, stream: null, claims: [], basis: 'none' };
   }, [id, recipient]);
 }
 
