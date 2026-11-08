@@ -129,7 +129,7 @@ def compile_genesis(s: GenesisSpec, blockhash: str, price: int):
                  + struct.pack("<H", 0) + b"\x00\x00\x00" + b"\x00" + b"\x00")
     tx1 = _cb(CU_LIMIT_TX1, price) + [
         sol.ix(sol.SYSTEM, [(g, True, True), (mint, False, True)],
-               struct.pack("<I", 3) + g + _string(seed) + struct.pack("<QQ", s.mint_lamports, 82) + tok),
+               struct.pack("<I", 3) + g + struct.pack("<Q", len(seed.encode())) + seed.encode() + struct.pack("<QQ", s.mint_lamports, 82) + tok),
         sol.ix(sol.TOKENKEG, [(mint, False, True)], b"\x14" + bytes([s.decimals]) + g + b"\x00"),
         sol.ix(sol.METAPLEX, [(metadata, False, True), (mint, False, False), (g, True, False), (g, True, True),
                               (g, True, False), (sysp, False, False)], meta_data),
