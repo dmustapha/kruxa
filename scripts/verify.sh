@@ -2,7 +2,11 @@
 # Judge entry point. No keys, no funds.
 #   ./scripts/verify.sh golden                         offline: recompute the documented vectors
 #   ./scripts/verify.sh chain <rpc> <contract> <id>    recompute a live launch's verdict from its public views
-#   ./scripts/verify.sh chain <rpc> <contract> <id> --tamper   flips one unit of the recorded inputs; MUST print MISMATCH
+#   ./scripts/verify.sh chain <rpc> <contract> <id> --tamper [field]   flips one unit of a recorded input; MUST print MISMATCH <field>
+#   ./scripts/verify.sh chain <rpc> <contract> <id> --tamper-all       every recorded input, one run each; MISMATCH line per field
+#   optional on chain: --rpc2 <url> reads every view from a second RPC too; disagreement is an infrastructure error
+# Exit codes (CO-6 E-4): 0 MATCH, 2 ONLY a MISMATCH, 3 pending (not settled), 4 RPC or view failure, 64 usage,
+#   1 a tamper run was NOT detected. A dead RPC can never print MISMATCH or exit 2.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 SIM="cargo run -q -p kruxa-sim --"
@@ -17,7 +21,10 @@ case "${1:-}" in
     ;;
   chain)
     shift
-    $SIM verify --rpc "$1" --contract "$2" --launch "$3" ${4:+"$4"}
+    [ "$#" -ge 3 ] || { echo "usage: $0 chain <rpc> <contract> <launch_id> [--tamper [field] | --tamper-all] [--rpc2 <url>]" >&2; exit 64; }
+    rpc="$1" contract="$2" launch="$3"
+    shift 3
+    exec $SIM verify --rpc "$rpc" --contract "$contract" --launch "$launch" "$@"
     ;;
-  *) echo "usage: $0 golden | chain <rpc> <contract> <launch_id> [--tamper]"; exit 2 ;;
+  *) echo "usage: $0 golden | chain <rpc> <contract> <launch_id> [--tamper [field] | --tamper-all] [--rpc2 <url>]" >&2; exit 64 ;;
 esac
