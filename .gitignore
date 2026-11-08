@@ -11,3 +11,6 @@ keys/
 evidence/*.tmp
 *.tsbuildinfo
 next-env.d.ts
+
+__pycache__/
+*.pyc
