@@ -33,7 +33,8 @@ export function useFeed(tab: Tab, q: string, sort: string, hasMarket: boolean) {
   const seq = useRef(0);
 
   const publish = useCallback(() => {
-    const merged = streams.current.flatMap((s) => s.items).filter(keepForTab(tab)).sort(compare(sort));
+    const seen = new Set<string>();
+    const merged = streams.current.flatMap((s) => s.items).filter((l) => !seen.has(l.launch_id) && !!seen.add(l.launch_id)).filter(keepForTab(tab)).sort(compare(sort));
     setState({ status: 'ok', items: merged, more: streams.current.some((s) => s.cursor !== null), ...meta.current });
   }, [tab, sort]);
 
