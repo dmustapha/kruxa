@@ -1,0 +1,123 @@
+{
+  "attempt": "The relayer confirms with an incomplete root, confirms a mint that is not the committed address, and after a legitimate confirm tries to confirm again, abort, add a page and swap the root.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "status Confirmed, root and slot unchanged"
+    }
+  ],
+  "co4": "",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_GENESIS_STATE",
+  "id": "G05",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true
+      },
+      "launch_id": 1
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "core",
+  "title": "Confirm before the root is complete, wrong mint, abort or re-confirm after confirm",
+  "transactions": [
+    {
+      "expected_rule_code": null,
+      "label": "commit_genesis",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "4BYGiduvEm5tckTBkk8nFtsXgpz5G87JfZpmcQTUdoHr"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_STATE",
+      "label": "confirm with an incomplete root",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_STATE",
+      "status": "failed",
+      "tx": "A4eUfMdJ8GdAPVTa9UsP19ZyiNb9zPfMmGorTWkm1X99"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "all leaves",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "BzK65F72Fb2AwHUcEZqPqpBNKja3tUKMvCRNMYLSND2R"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_ARG",
+      "label": "confirm naming a different mint",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_ARG",
+      "status": "failed",
+      "tx": "2yrmpgxhToRA9a6YL9992F5qFVZyRnuRt3wS1oazkuuq"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "confirm_genesis (legitimate)",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "HExZNmCbx4BChqWmEraTLPmtUAsW7YgJ4WSCN2GQkpTH"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_STATE",
+      "label": "second confirm_genesis",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_STATE",
+      "status": "failed",
+      "tx": "ES1RRrQMwMGpQh97cyo6g8xCnRs5hqZmbyV2yhqymer6"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_STATE",
+      "label": "abort_genesis by the relayer after confirm",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_STATE",
+      "status": "failed",
+      "tx": "HU3eJjgPon3UJTtwSKSS2eqLTNBp1UQLRKr4B6diph4K"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_STATE",
+      "label": "abort_genesis by the guardian after confirm",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_STATE",
+      "status": "failed",
+      "tx": "4W2iyEYfezUrjfV5BVxd3PKTo81pRrxKKrqehMJitNmL"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_STATE",
+      "label": "build_root_page after confirm",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_STATE",
+      "status": "failed",
+      "tx": "7TXWXuh8qenjdc6ge4Nw74ZzC9CTdoxM6d9VFHEAJfWF"
+    }
+  ]
+}

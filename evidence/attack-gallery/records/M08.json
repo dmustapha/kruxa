@@ -16,11 +16,11 @@
   "id": "M08",
   "invariants_after": {
     "market": {
-      "global_q": "1008116310",
+      "global_q": "1008116406",
       "parked_count": 0,
-      "usdc_custody": "1009386273",
+      "usdc_custody": "1009386369",
       "usdc_custody_identity": true,
-      "usdc_expected": "1009386273"
+      "usdc_expected": "1009386369"
     },
     "pools": [
       {
@@ -45,7 +45,7 @@
       "role": "support",
       "rule_code": null,
       "status": "succeeded",
-      "tx": "4CWyXyMyvxiDhLDAE1nn5oTCmNAkCtUWUH3du4BBUMDi"
+      "tx": "GY2fQMmQUmyiUydgjxkPeZfdzGY85B27HAQqf5Y4QUT6"
     },
     {
       "expected_rule_code": null,
@@ -54,7 +54,7 @@
       "role": "attack",
       "rule_code": null,
       "status": "succeeded",
-      "tx": "4xd3uVcYdzBu2wkaNGxFXUW9TDkGQ17PxJgarstjnYoa"
+      "tx": "C8YpktrZNeA25RAAjtpsP79mkoNjsWi7oaUjMFjkdeBS"
     }
   ]
 }

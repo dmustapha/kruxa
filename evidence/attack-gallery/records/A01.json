@@ -53,7 +53,7 @@
       "role": "attack",
       "rule_code": "R_NOT_CLEAR",
       "status": "failed",
-      "tx": "5CwtuLh1kdYyQM8thDNn75BRtx6fiPSmE2dUbK7rTUU7"
+      "tx": "3zKwkcVmAH2qL52YSiuraw59skf6cxm2WqoyoPtB56Z3"
     },
     {
       "expected_rule_code": "R_NOT_CLEAR",
@@ -62,7 +62,7 @@
       "role": "attack",
       "rule_code": "R_NOT_CLEAR",
       "status": "failed",
-      "tx": "97A5Qs7uPUK34XQnHospt42yJxw6xwk9GZEQjfrScjmX"
+      "tx": "JJhWc6HCJydagMeUhf3uC4A2Qy7AEBS1L8LiKMJj65f"
     }
   ]
 }

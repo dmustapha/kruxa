@@ -1,0 +1,96 @@
+{
+  "attempt": "The relayer confirms and aborts before any commit, sends root pages before commit, then commits twice.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "committed key and mint unchanged"
+    }
+  ],
+  "co4": "A2",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_GENESIS_STATE",
+  "id": "G03",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true
+      },
+      "launch_id": 1
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "core",
+  "title": "Genesis steps out of order, commit twice, abort or confirm with no commit",
+  "transactions": [
+    {
+      "expected_rule_code": "R_GENESIS_STATE",
+      "label": "confirm_genesis without a commit",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_STATE",
+      "status": "failed",
+      "tx": "7yj8WmxyumTYU9sYd6Ysd7vtUfp2faTdxPqrh8KKeHR1"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_STATE",
+      "label": "abort_genesis without a commit",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_STATE",
+      "status": "failed",
+      "tx": "BkizKbVFs6EDKuKVBv1aWKDDE881fgom87NyQY5Qqmr5"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_STATE",
+      "label": "build_root_page before commit",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_STATE",
+      "status": "failed",
+      "tx": "AHd2k1xfcuTHHLSu55gQsYWUxbcetDauTwKVfWSQj1CR"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "commit_genesis (legitimate)",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "HxavLRbSqYwSMmA318fd5vTRJTBkePqJRDD5yNh5ZQpz"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_ALREADY",
+      "label": "second commit_genesis",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_ALREADY",
+      "status": "failed",
+      "tx": "BUAuccN4HASMNmA79YWN4pXZtDGbsSzNdSiPNdUka9KG"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_ALREADY",
+      "label": "commit_genesis again with a different key (swap the mint)",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_ALREADY",
+      "status": "failed",
+      "tx": "EzQYX3tGowishxcWtq4eJkTLDzi8CZSxgejK2ADasqxS"
+    }
+  ]
+}

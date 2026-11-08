@@ -1,0 +1,114 @@
+{
+  "attempt": "After the relayer aborts, someone tries to commit again with a fresh key and to confirm; while genesis is paused the relayer tries to commit.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "status stays Aborted"
+    }
+  ],
+  "co4": "",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_GENESIS_ALREADY",
+  "id": "G08",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true
+      },
+      "launch_id": 1
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "core",
+  "title": "Re-commit after abort, confirm after abort, ceremony while paused",
+  "transactions": [
+    {
+      "expected_rule_code": null,
+      "label": "guardian pause_genesis",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "4ZnhH7CzDqnAWT9qeNX1h7tokvqwChZEVCaeeA9beaAj"
+    },
+    {
+      "expected_rule_code": "R_PAUSED",
+      "label": "commit_genesis while genesis is paused",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_PAUSED",
+      "status": "failed",
+      "tx": "A2phmEfrALVfLFQiNKsgWdzjtFKBGriHRLrReD28f6SV"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "owner resume_genesis",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "DhfH7T9bQpUuuh9eQtf8WSuxMYFU2AtAKqXWsY3qD2NX"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "commit_genesis (legitimate)",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "GX8cbGHxkKLX8pdzDuYgRGAuwdT3CVeh17a43aHkdR1t"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "guardian abort_genesis",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "BL449UN1ShgH8cg5i1wxFgJfxRTihtVcX3VPwxCdTJPk"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_ALREADY",
+      "label": "commit_genesis with a fresh key after abort",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_ALREADY",
+      "status": "failed",
+      "tx": "9YDiytN1vahy3aG64esiz5fNGLF5VVDfB4EnSeSXzdYb"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_STATE",
+      "label": "confirm_genesis after abort",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_STATE",
+      "status": "failed",
+      "tx": "ACzrZDAnUcXnkQ4zCLGebDrDZM3TnL1A9sSrwseZRVN7"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_STATE",
+      "label": "build_root_page after abort",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_STATE",
+      "status": "failed",
+      "tx": "Aiy92pWLBCpeANT2gYPumT5n7sBEUHut97LxRM4h1c2r"
+    }
+  ]
+}

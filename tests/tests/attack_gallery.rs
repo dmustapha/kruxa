@@ -951,3 +951,295 @@ async fn m09_global_reserve_cap_across_pools() -> anyhow::Result<()> {
     a.finish(inv, ok);
     Ok(())
 }
+
+// ---------------------------------------------------------------- creator gate (D-1), payout recipient (D-2), genesis (4.4)
+
+fn unhex(s: &str) -> Vec<u8> {
+    (0..s.len()).step_by(2).map(|i| u8::from_str_radix(&s[i..i + 2], 16).unwrap()).collect()
+}
+
+async fn create_as(env: &Env, who: &Account, p: TrialParams, extra: Value) -> ExecutionFinalResult {
+    let required: String = env.core.view("required_deposit").args_json(json!({ "params": p })).await.unwrap().json().unwrap();
+    let mut args = json!({ "params": p, "stream_recipient": null });
+    args.as_object_mut().unwrap().extend(extra.as_object().cloned().unwrap_or_default());
+    who.call(env.core.id(), "create_trial")
+        .args_json(args)
+        .deposit(NearToken::from_yoctonear(required.parse().unwrap()))
+        .gas(GAS)
+        .transact()
+        .await
+        .unwrap()
+}
+
+#[tokio::test]
+async fn g01_creator_gate_bypass() -> anyhow::Result<()> {
+    let env = Env::new_with_profile("mainnet").await?;
+    let mut a = Attack::new("G01", "", "Creator-gate bypass: non-owner create_trial, open_beta by the wrong caller", "core", Expect::Refused, "R_CREATOR_GATE")
+        .attempt("On the mainnet profile a non-owner calls create_trial (plainly, naming the owner as recipient, and with a genesis plan); the guardian and the creator call open_beta; the guardian pauses and the owner unpauses hoping that reopens creation. Then the owner opens the beta and the same creator succeeds.");
+    async fn cfg(env: &Env) -> Value {
+        env.view("get_config", json!({})).await["creator_gate"].clone()
+    }
+    a.check("precondition: creator_gate is true on the mainnet profile", cfg(&env).await == true);
+    a.attack("create_trial by a non-owner", &create_as(&env, &env.creator, TrialParams::example("G01A"), json!({})).await, "R_CREATOR_GATE");
+    let to_owner = json!({ "stream_recipient": env.owner.id() });
+    a.attack("create_trial by a non-owner naming the owner as recipient", &create_as(&env, &env.creator, TrialParams::example("G01B"), to_owner).await, "R_CREATOR_GATE");
+    a.attack("create_trial by a non-owner with a genesis plan", &create_as(&env, &env.creator, TrialParams::example("G01C"), json!({ "genesis": {} })).await, "R_CREATOR_GATE");
+    a.attack("open_beta by the guardian", &env.call(&env.guardian, "open_beta", json!({}), ZERO).await, "R_NOT_AUTHORIZED");
+    a.attack("open_beta by the creator", &env.call(&env.creator, "open_beta", json!({}), ZERO).await, "R_NOT_AUTHORIZED");
+    a.step("guardian pause", &env.call(&env.guardian, "pause", json!({}), ZERO).await);
+    a.step("owner unpause", &env.call(&env.owner, "unpause", json!({}), ZERO).await);
+    a.attack("create_trial after pause and unpause", &create_as(&env, &env.creator, TrialParams::example("G01D"), json!({})).await, "R_CREATOR_GATE");
+    a.check("gate still closed and no launch exists", cfg(&env).await == true && env.view("get_state", lid(1)).await.is_null());
+    a.step("owner open_beta (legitimate)", &env.call(&env.owner, "open_beta", json!({}), ZERO).await);
+    a.attack("second open_beta has nothing to do", &env.call(&env.owner, "open_beta", json!({}), ZERO).await, "R_NOTHING");
+    let after = create_as(&env, &env.creator, TrialParams::example("G01E"), json!({})).await;
+    a.step("non-owner create_trial after open_beta", &after);
+    a.check("after open_beta the same non-owner creation passes", after.is_success() && cfg(&env).await == false);
+    let (inv, ok) = core_inv(&env).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+struct GRound {
+    env: Env,
+    id: u64,
+    relayer: Account,
+    leaves: Vec<([u8; 32], u64)>,
+}
+
+impl GRound {
+    async fn call(&self, who: &Account, method: &str, args: Value) -> ExecutionFinalResult {
+        self.env.call(who, method, args, ZERO).await
+    }
+    fn page(&self, leaves: &[([u8; 32], u64)]) -> Value {
+        json!({ "launch_id": self.id.to_string(), "leaves": leaves.iter().map(|(k, a)| json!([kruxa_logic::hex(k), a.to_string()])).collect::<Vec<_>>() })
+    }
+    fn commit(&self) -> Value {
+        json!({ "launch_id": self.id.to_string(), "g_pub": kruxa_logic::hex(&[5u8; 32]) })
+    }
+    fn confirm(&self, mint: &str) -> Value {
+        json!({ "launch_id": self.id.to_string(), "mint": mint, "sigs": ["sig1"], "slot": "777", "ceremony_hash": kruxa_logic::hex(&[4u8; 32]) })
+    }
+    async fn genesis(&self) -> Value {
+        self.env.view("get_genesis", lid(self.id)).await
+    }
+}
+
+/// PASSED launch with 9 NEAR buyers and 3 Solana buyers (30 USDC each), settled and swept; the owner named `relayer`.
+async fn genesis_round(sym: &str) -> anyhow::Result<GRound> {
+    let env = Env::new().await?;
+    let relayer = env.user("relayer", 0).await?;
+    env.owner.call(env.core.id(), "set_genesis_relayer").args_json(json!({ "account": relayer.id() })).transact().await?.into_result()?;
+    let id = env.create_launch(&params(sym)).await?;
+    for i in 0..9 {
+        let u = env.user(&format!("n{i}"), 1_000 * USDC).await?;
+        env.commit_native(&u, id, 30 * USDC, None).await.into_result()?;
+    }
+    let keys: Vec<_> = (0..3).map(|i| sol_holder(40 + i)).collect();
+    for h in &keys {
+        env.fund_intents(&h.hex, 40 * USDC).await?;
+        env.commit_s3(h, id, 30 * USDC, 0).await.into_result()?;
+    }
+    env.advance_to(id, "Ready").await;
+    assert!(env.call(&env.creator, "settle", lid(id), ZERO).await.json::<bool>()?);
+    let page = json!({ "launch_id": id.to_string(), "from_seq": 0, "limit": 25 });
+    env.call(&env.creator, "settle_positions_page", page, ZERO).await.into_result()?;
+    env.call(&env.creator, "sweep_residue", lid(id), ZERO).await.into_result()?;
+    let mut leaves = Vec::new();
+    for h in &keys {
+        let pos = env.view("get_position", json!({ "launch_id": id.to_string(), "holder": h.key() })).await;
+        let amt = |k: &str| pos[k].as_str().unwrap().parse::<u64>().unwrap();
+        leaves.push((unhex(&h.hex).try_into().unwrap(), amt("tokens_entitled") + amt("bonus_entitled")));
+    }
+    leaves.sort();
+    Ok(GRound { env, id, relayer, leaves })
+}
+
+#[tokio::test]
+async fn g02_genesis_calls_by_the_wrong_relayer() -> anyhow::Result<()> {
+    let r = genesis_round("G02").await?;
+    let eve = stranger(&r.env, "eve").await?;
+    let mut a = Attack::new("G02", "", "Genesis ceremony driven by the wrong account", "core", Expect::Refused, "R_NOT_AUTHORIZED")
+        .attempt("A stranger, the owner and the guardian call the relayer-only ceremony methods; a stranger also tries to name a new relayer, abort, and pause or resume the ceremony.");
+    let abort = json!({ "launch_id": r.id.to_string(), "reason": "x" });
+    let calls: Vec<(&Account, &str, Value)> = vec![
+        (&eve, "commit_genesis", r.commit()),
+        (&r.env.owner, "commit_genesis", r.commit()),
+        (&r.env.guardian, "commit_genesis", r.commit()),
+        (&eve, "build_root_page", r.page(&[])),
+        (&eve, "confirm_genesis", r.confirm(&kruxa_logic::hex(&[0u8; 32]))),
+        (&eve, "attest_log_append", json!({ "launch_id": r.id.to_string(), "attestation_hash": kruxa_logic::hex(&[1u8; 32]) })),
+        (&eve, "abort_genesis", abort),
+        (&eve, "set_genesis_relayer", json!({ "account": eve.id() })),
+        (&eve, "pause_genesis", json!({})),
+        (&r.env.guardian, "resume_genesis", json!({})),
+    ];
+    for (who, method, args) in calls {
+        a.attack(&format!("{method} by {}", who.id()), &r.call(who, method, args).await, "R_NOT_AUTHORIZED");
+    }
+    a.check("genesis still not started", r.genesis().await["status"] == "None");
+    let (inv, ok) = core_inv(&r.env).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn g03_genesis_out_of_order_and_twice() -> anyhow::Result<()> {
+    let r = genesis_round("G03").await?;
+    let mut a = Attack::new("G03", "A2", "Genesis steps out of order, commit twice, abort or confirm with no commit", "core", Expect::Refused, "R_GENESIS_STATE")
+        .attempt("The relayer confirms and aborts before any commit, sends root pages before commit, then commits twice.");
+    let abort = json!({ "launch_id": r.id.to_string(), "reason": "early" });
+    a.attack("confirm_genesis without a commit", &r.call(&r.relayer, "confirm_genesis", r.confirm(&kruxa_logic::hex(&[0u8; 32]))).await, "R_GENESIS_STATE");
+    a.attack("abort_genesis without a commit", &r.call(&r.relayer, "abort_genesis", abort).await, "R_GENESIS_STATE");
+    a.attack("build_root_page before commit", &r.call(&r.relayer, "build_root_page", r.page(&r.leaves[..1])).await, "R_GENESIS_STATE");
+    a.step("commit_genesis (legitimate)", &r.call(&r.relayer, "commit_genesis", r.commit()).await);
+    a.attack("second commit_genesis", &r.call(&r.relayer, "commit_genesis", r.commit()).await, "R_GENESIS_ALREADY");
+    let other = json!({ "launch_id": r.id.to_string(), "g_pub": kruxa_logic::hex(&[6u8; 32]) });
+    a.attack("commit_genesis again with a different key (swap the mint)", &r.call(&r.relayer, "commit_genesis", other).await, "R_GENESIS_ALREADY");
+    let g = r.genesis().await;
+    a.check("committed key and mint unchanged", g["g_pub"] == kruxa_logic::hex(&[5u8; 32]) && g["status"] == "Committed");
+    let (inv, ok) = core_inv(&r.env).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn g04_forged_root_page_or_leaf() -> anyhow::Result<()> {
+    let r = genesis_round("G04").await?;
+    let mut a = Attack::new("G04", "", "Forged Merkle root page or leaf", "core", Expect::Refused, "R_GENESIS_LEAF")
+        .attempt("After a valid commit the relayer submits pages with an inflated amount, an invented claimant, out-of-order leaves, an overlapping replay and an oversize page, to get a different Merkle root.");
+    a.step("commit_genesis (legitimate)", &r.call(&r.relayer, "commit_genesis", r.commit()).await);
+    let mut inflated = r.leaves.clone();
+    inflated[0].1 += 1;
+    a.attack("leaf amount inflated by 1", &r.call(&r.relayer, "build_root_page", r.page(&inflated[..1])).await, "R_GENESIS_LEAF");
+    a.attack("invented claimant", &r.call(&r.relayer, "build_root_page", r.page(&[([7u8; 32], 1_000_000)])).await, "R_GENESIS_LEAF");
+    let swapped = vec![r.leaves[1], r.leaves[0]];
+    a.attack("leaves not ascending", &r.call(&r.relayer, "build_root_page", r.page(&swapped)).await, "R_GENESIS_ORDER");
+    a.step("first valid leaf", &r.call(&r.relayer, "build_root_page", r.page(&r.leaves[..1])).await);
+    a.attack("replay of the first leaf (overlap)", &r.call(&r.relayer, "build_root_page", r.page(&r.leaves[..2])).await, "R_GENESIS_ORDER");
+    let oversize: Vec<_> = (0..26u8).map(|i| ([i; 32], 1u64)).collect();
+    a.attack("26 leaves in one page", &r.call(&r.relayer, "build_root_page", r.page(&oversize)).await, "R_GENESIS_ARG");
+    a.check("only the one valid leaf was accepted, root not ready", r.genesis().await["leaf_count"] == 1 && r.genesis().await["root_ready"] == false);
+    let (inv, ok) = core_inv(&r.env).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn g05_confirm_misuse_and_abort_after_confirm() -> anyhow::Result<()> {
+    let r = genesis_round("G05").await?;
+    let mint = kruxa_logic::hex(&kruxa_logic::genesis::mint_address(&[5u8; 32], &r.id.to_string(), &kruxa_logic::genesis::TOKEN_PROGRAM));
+    let mut a = Attack::new("G05", "", "Confirm before the root is complete, wrong mint, abort or re-confirm after confirm", "core", Expect::Refused, "R_GENESIS_STATE")
+        .attempt("The relayer confirms with an incomplete root, confirms a mint that is not the committed address, and after a legitimate confirm tries to confirm again, abort, add a page and swap the root.");
+    a.step("commit_genesis", &r.call(&r.relayer, "commit_genesis", r.commit()).await);
+    a.attack("confirm with an incomplete root", &r.call(&r.relayer, "confirm_genesis", r.confirm(&mint)).await, "R_GENESIS_STATE");
+    a.step("all leaves", &r.call(&r.relayer, "build_root_page", r.page(&r.leaves)).await);
+    a.attack("confirm naming a different mint", &r.call(&r.relayer, "confirm_genesis", r.confirm(&kruxa_logic::hex(&[9u8; 32]))).await, "R_GENESIS_ARG");
+    a.step("confirm_genesis (legitimate)", &r.call(&r.relayer, "confirm_genesis", r.confirm(&mint)).await);
+    let root = r.genesis().await["merkle_root"].clone();
+    a.attack("second confirm_genesis", &r.call(&r.relayer, "confirm_genesis", r.confirm(&mint)).await, "R_GENESIS_STATE");
+    let abort = json!({ "launch_id": r.id.to_string(), "reason": "late" });
+    a.attack("abort_genesis by the relayer after confirm", &r.call(&r.relayer, "abort_genesis", abort.clone()).await, "R_GENESIS_STATE");
+    a.attack("abort_genesis by the guardian after confirm", &r.call(&r.env.guardian, "abort_genesis", abort).await, "R_GENESIS_STATE");
+    a.attack("build_root_page after confirm", &r.call(&r.relayer, "build_root_page", r.page(&r.leaves[..1])).await, "R_GENESIS_STATE");
+    let g = r.genesis().await;
+    a.check("status Confirmed, root and slot unchanged", g["status"] == "Confirmed" && g["merkle_root"] == root && g["slot"] == "777");
+    let (inv, ok) = core_inv(&r.env).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn g06_genesis_on_an_open_or_failed_launch() -> anyhow::Result<()> {
+    let env = Env::new().await?;
+    let relayer = env.user("relayer", 0).await?;
+    env.owner.call(env.core.id(), "set_genesis_relayer").args_json(json!({ "account": relayer.id() })).transact().await?.into_result()?;
+    let (open_id, _) = {
+        let id = env.create_launch(&params("G06A")).await?;
+        (id, buyers(&env, id, 3, 40 * USDC).await?)
+    };
+    let mut a = Attack::new("G06", "A1", "Genesis on an Open launch and on a FAILED launch", "core", Expect::Refused, "R_GENESIS_STATE")
+        .attempt("The relayer calls commit_genesis for a launch that is still Open, then for a launch that FAILED, to mint a Solana token for a trial that never passed.");
+    let args = |id: u64| json!({ "launch_id": id.to_string(), "g_pub": kruxa_logic::hex(&[5u8; 32]) });
+    a.attack("commit_genesis on an Open launch", &env.call(&relayer, "commit_genesis", args(open_id), ZERO).await, "R_GENESIS_STATE");
+    env.advance_to(open_id, "Ready").await;
+    a.step("settle (FAIL: 3 funders)", &env.call(&env.creator, "settle", lid(open_id), ZERO).await);
+    a.attack("commit_genesis on a FAILED launch", &env.call(&relayer, "commit_genesis", args(open_id), ZERO).await, "R_GENESIS_STATE");
+    a.check("genesis status None", env.view("get_genesis", lid(open_id)).await["status"] == "None");
+    let (inv, ok) = core_inv(&env).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn g07_genesis_mint_state_errors_at_create_trial() -> anyhow::Result<()> {
+    let env = Env::new().await?;
+    let mut a = Attack::new("G07", "", "Genesis plan that keeps a mint or freeze authority, allows extensions, or breaks the plan rules", "core", Expect::Refused, "R_GENESIS_AUTH")
+        .attempt("A creator asks for a plan that leaves the mint authority, the freeze authority or token extensions in place (so the Solana supply could be inflated or frozen), or a reserve, a zero clawback, or an F0 plan with no MPC key.");
+    let cases: Vec<(&str, Value, &str)> = vec![
+        ("mint authority kept", json!({ "mint_authority_none": false }), "R_GENESIS_AUTH"),
+        ("freeze authority kept", json!({ "freeze_authority_none": false }), "R_GENESIS_AUTH"),
+        ("extensions allowed", json!({ "extensions_allowed": true }), "R_GENESIS_AUTH"),
+        ("reserve_bps above zero", json!({ "reserve_bps": 100 }), "R_GENESIS_ARG"),
+        ("clawback_days zero", json!({ "clawback_days": 0 }), "R_GENESIS_ARG"),
+        ("F0 mode without an MPC key", json!({ "mode": "F0" }), "R_GENESIS_ARG"),
+    ];
+    for (label, plan, code) in cases {
+        let sym = format!("G07{}", label.len());
+        a.attack(label, &create_as(&env, &env.creator, params(&sym), json!({ "genesis": plan })).await, code);
+    }
+    a.check("no launch was created", env.view("get_state", lid(1)).await.is_null());
+    let (inv, ok) = core_inv(&env).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn g08_abort_is_final_and_pause_stops_the_ceremony() -> anyhow::Result<()> {
+    let r = genesis_round("G08").await?;
+    let mut a = Attack::new("G08", "", "Re-commit after abort, confirm after abort, ceremony while paused", "core", Expect::Refused, "R_GENESIS_ALREADY")
+        .attempt("After the relayer aborts, someone tries to commit again with a fresh key and to confirm; while genesis is paused the relayer tries to commit.");
+    a.step("guardian pause_genesis", &r.call(&r.env.guardian, "pause_genesis", json!({})).await);
+    a.attack("commit_genesis while genesis is paused", &r.call(&r.relayer, "commit_genesis", r.commit()).await, "R_PAUSED");
+    a.step("owner resume_genesis", &r.call(&r.env.owner, "resume_genesis", json!({})).await);
+    a.step("commit_genesis (legitimate)", &r.call(&r.relayer, "commit_genesis", r.commit()).await);
+    a.step("guardian abort_genesis", &r.call(&r.env.guardian, "abort_genesis", json!({ "launch_id": r.id.to_string(), "reason": "test" })).await);
+    let fresh = json!({ "launch_id": r.id.to_string(), "g_pub": kruxa_logic::hex(&[8u8; 32]) });
+    a.attack("commit_genesis with a fresh key after abort", &r.call(&r.relayer, "commit_genesis", fresh).await, "R_GENESIS_ALREADY");
+    a.attack("confirm_genesis after abort", &r.call(&r.relayer, "confirm_genesis", r.confirm(&kruxa_logic::hex(&[0u8; 32]))).await, "R_GENESIS_STATE");
+    a.attack("build_root_page after abort", &r.call(&r.relayer, "build_root_page", r.page(&r.leaves[..1])).await, "R_GENESIS_STATE");
+    a.check("status stays Aborted", r.genesis().await["status"] == "Aborted");
+    let (inv, ok) = core_inv(&r.env).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn g09_payout_recipient_views_cannot_be_redirected() -> anyhow::Result<()> {
+    let env = Env::new().await?;
+    let payee = env.user("payee", 0).await?;
+    let id = env.create_launch_to(&env.creator, &params("G09"), Some(payee.id())).await?;
+    buyers(&env, id, 12, 40 * USDC).await?;
+    env.advance_to(id, "Ready").await;
+    env.call(&env.creator, "settle", lid(id), ZERO).await.into_result()?;
+    let page = json!({ "launch_id": id.to_string(), "from_seq": 0, "limit": 25 });
+    env.call(&env.creator, "settle_positions_page", page, ZERO).await.into_result()?;
+    env.call(&env.creator, "sweep_residue", lid(id), ZERO).await.into_result()?;
+    let mut a = Attack::new("G09", "A6", "Redirect the payout recipient (creator and stranger draw; views stay fixed)", "core", Expect::Refused, "R_NOT_AUTHORIZED")
+        .attempt("The creator (who named someone else as payout recipient) and a stranger both call draw on a PASSed launch; afterwards get_charter, get_state and stream_status must still name the payee.");
+    let eve = stranger(&env, "eve").await?;
+    async fn views(env: &Env, id: u64) -> (Value, Value, Value) {
+        (env.view("get_charter", lid(id)).await["payout_recipient"].clone(), env.state(id).await["payout_recipient"].clone(), env.view("stream_status", lid(id)).await["recipient"].clone())
+    }
+    let before = views(&env, id).await;
+    let call = json!({ "launch_id": id.to_string(), "amount": "1000000" });
+    a.attack("draw by the creator who is not the recipient", &env.call(&env.creator, "draw", call.clone(), ZERO).await, "R_NOT_AUTHORIZED");
+    a.attack("draw by a stranger", &env.call(&eve, "draw", call, ZERO).await, "R_NOT_AUTHORIZED");
+    let want = json!(payee.id());
+    a.check("get_charter, get_state and stream_status all name the payee before", before.0 == want && before.1 == want && before.2 == want);
+    a.check("and are identical after the attacks", views(&env, id).await == before);
+    a.check("neither attacker received USDC", env.usdc_balance(eve.id()).await == 0);
+    let (inv, ok) = core_inv(&env).await;
+    a.finish(inv, ok);
+    Ok(())
+}

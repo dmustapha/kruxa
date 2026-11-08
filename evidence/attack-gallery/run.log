@@ -1,41 +1,52 @@
-    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.11s
-     Running tests/attack_gallery.rs (target/debug/deps/attack_gallery-5836e44976898c78)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.14s
+     Running tests/attack_gallery.rs (target/debug/deps/attack_gallery-2dac76c21ff7755e)
 
-running 34 tests
+running 43 tests
 test a01_draw_before_pass ... ok
 test a03_draw_half_after_pass ... ok
 test a02_draw_all_after_pass ... ok
 test a04_draw_by_non_recipient_and_recipient_stays_fixed ... ok
-test a05_settle_before_the_deadline ... ok
-test a09_fake_token_calls_the_core_intake ... ok
+test a05_settle_before_the_deadline has been running for over 60 seconds
 test a08_donation_cannot_flip_the_verdict ... ok
-test a10_direct_callbacks_on_core ... ok
 test a06_settle_twice_replays_the_same_verdict ... ok
 test a07_replayed_settlement_steps ... ok
+test a09_fake_token_calls_the_core_intake ... ok
+test a10_direct_callbacks_on_core ... ok
 test a11_non_owner_calls_owner_only_methods ... ok
+test a05_settle_before_the_deadline ... ok
 test a15_pause_cannot_trap_exits ... ok
 test a16_freeze_blocks_exits_but_only_for_seven_days ... ok
 test a12_double_refund_claim ... ok
 test a13_reentrant_refund_claim ... ok
 test a14_claim_another_holders_refund ... ok
-test a17_oversubscription_beyond_the_ceiling ... ok
 test a18_one_wallet_over_the_per_wallet_cap ... ok
+test a17_oversubscription_beyond_the_ceiling ... ok
 test a22_token_claim_before_pass ... ok
 test a19_sybil_split_across_wallets_is_bounded_not_blocked ... ok
 test a20_late_walk_after_the_deadline ... ok
 test a23_creator_buys_their_own_launch ... ok
-test a21_commit_after_the_window ... ok
-test a25_second_trial_and_symbol_squat ... ok
+test a21_commit_after_the_window has been running for over 60 seconds
 test a24_forged_and_replayed_signed_walk ... ok
-test m02_redirect_the_market_payout_recipient ... ok
+test a25_second_trial_and_symbol_squat ... ok
+test g01_creator_gate_bypass ... ok
+test a21_commit_after_the_window ... ok
+test g03_genesis_out_of_order_and_twice ... ok
+test g02_genesis_calls_by_the_wrong_relayer ... ok
+test g04_forged_root_page_or_leaf ... ok
+test g07_genesis_mint_state_errors_at_create_trial ... ok
+test g05_confirm_misuse_and_abort_after_confirm ... ok
+test g06_genesis_on_an_open_or_failed_launch ... ok
 test m01_fake_token_calls_the_market ... ok
+test m02_redirect_the_market_payout_recipient ... ok
 test m03_direct_callbacks_on_the_market ... ok
 test m04_non_owner_calls_market_admin_and_claims ... ok
+test g08_abort_is_final_and_pause_stops_the_ceremony ... ok
+test g09_payout_recipient_views_cannot_be_redirected ... ok
 test m05_reentrant_and_double_creator_claim ... ok
-test m06_sandwich_without_min_out ... ok
 test m07_donation_to_the_pool_reserves ... ok
+test m06_sandwich_without_min_out ... ok
 test m08_pause_cannot_trap_market_sells ... ok
 test m09_global_reserve_cap_across_pools ... ok
 
-test result: ok. 34 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 256.42s
+test result: ok. 43 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 371.75s
 

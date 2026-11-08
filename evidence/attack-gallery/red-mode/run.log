@@ -1,39 +1,53 @@
-    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.11s
-     Running tests/attack_gallery.rs (target/debug/deps/attack_gallery-5836e44976898c78)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.15s
+     Running tests/attack_gallery.rs (target/debug/deps/attack_gallery-2dac76c21ff7755e)
 
-running 34 tests
+running 43 tests
 test a01_draw_before_pass ... ok
-test a03_draw_half_after_pass ... ok
 test a02_draw_all_after_pass ... ok
+test a03_draw_half_after_pass ... ok
 test a04_draw_by_non_recipient_and_recipient_stays_fixed ... ok
-test a05_settle_before_the_deadline ... ok
-test a09_fake_token_calls_the_core_intake ... ok
+test a05_settle_before_the_deadline has been running for over 60 seconds
 test a08_donation_cannot_flip_the_verdict ... ok
-test a10_direct_callbacks_on_core ... ok
 test a06_settle_twice_replays_the_same_verdict ... ok
-test a11_non_owner_calls_owner_only_methods ... FAILED
 test a07_replayed_settlement_steps ... ok
+test a09_fake_token_calls_the_core_intake ... ok
+test a10_direct_callbacks_on_core ... ok
+test a11_non_owner_calls_owner_only_methods ... FAILED
+test a05_settle_before_the_deadline ... ok
 test a15_pause_cannot_trap_exits ... ok
 test a16_freeze_blocks_exits_but_only_for_seven_days ... ok
 test a12_double_refund_claim ... ok
 test a13_reentrant_refund_claim ... ok
 test a14_claim_another_holders_refund ... ok
-test a17_oversubscription_beyond_the_ceiling ... ok
 test a18_one_wallet_over_the_per_wallet_cap ... ok
+test a17_oversubscription_beyond_the_ceiling ... ok
 test a22_token_claim_before_pass ... ok
-test a19_sybil_split_across_wallets_is_bounded_not_blocked ... ok
 test a20_late_walk_after_the_deadline ... ok
+test a19_sybil_split_across_wallets_is_bounded_not_blocked has been running for over 60 seconds
+test a21_commit_after_the_window has been running for over 60 seconds
 test a23_creator_buys_their_own_launch ... ok
-test a21_commit_after_the_window ... ok
-test a25_second_trial_and_symbol_squat ... ok
 test a24_forged_and_replayed_signed_walk ... ok
-test m02_redirect_the_market_payout_recipient ... ok
+test a25_second_trial_and_symbol_squat ... ok
+test g01_creator_gate_bypass ... ok
+test a21_commit_after_the_window ... ok
+test g02_genesis_calls_by_the_wrong_relayer has been running for over 60 seconds
+test g02_genesis_calls_by_the_wrong_relayer ... ok
+test g03_genesis_out_of_order_and_twice ... ok
+test a19_sybil_split_across_wallets_is_bounded_not_blocked ... ok
+test g04_forged_root_page_or_leaf ... ok
+test g07_genesis_mint_state_errors_at_create_trial ... ok
+test g06_genesis_on_an_open_or_failed_launch ... ok
+test g05_confirm_misuse_and_abort_after_confirm has been running for over 60 seconds
+test g05_confirm_misuse_and_abort_after_confirm ... ok
 test m01_fake_token_calls_the_market ... ok
+test m02_redirect_the_market_payout_recipient ... ok
 test m03_direct_callbacks_on_the_market ... ok
-test m05_reentrant_and_double_creator_claim ... ok
 test m04_non_owner_calls_market_admin_and_claims ... ok
-test m06_sandwich_without_min_out ... ok
+test m05_reentrant_and_double_creator_claim ... ok
+test g08_abort_is_final_and_pause_stops_the_ceremony ... ok
+test g09_payout_recipient_views_cannot_be_redirected ... ok
 test m07_donation_to_the_pool_reserves ... ok
+test m06_sandwich_without_min_out ... ok
 test m08_pause_cannot_trap_market_sells ... ok
 test m09_global_reserve_cap_across_pools ... ok
 
@@ -41,7 +55,7 @@ failures:
 
 ---- a11_non_owner_calls_owner_only_methods stdout ----
 
-thread 'a11_non_owner_calls_owner_only_methods' (91781582) panicked at tests/tests/attack_gallery.rs:139:9:
+thread 'a11_non_owner_calls_owner_only_methods' (104447116) panicked at tests/tests/attack_gallery.rs:139:9:
 assertion `left == right` failed: A11 Non-owner calls the owner-only admin methods (pause, caps, unpause): {
   "attempt": "The creator and the guardian call methods that need the owner (or owner or guardian): pause, freeze, unpause, queue_global_cap, queue_launch_cap, lower_global_cap.",
   "checks": [
@@ -89,7 +103,7 @@ assertion `left == right` failed: A11 Non-owner calls the owner-only admin metho
       "role": "attack",
       "rule_code": null,
       "status": "succeeded",
-      "tx": "GPv7H7USjuYgzw8s5HQc19mhgbkBqRszEAckFZxaJjq4"
+      "tx": "2JKDdfXRn2vJCArainj6h4q9RRcXCD18LeC2GaX57jJq"
     },
     {
       "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -98,7 +112,7 @@ assertion `left == right` failed: A11 Non-owner calls the owner-only admin metho
       "role": "attack",
       "rule_code": "R_NOT_AUTHORIZED",
       "status": "failed",
-      "tx": "EqaGbTQ1M255JHmCYwFDbSi58US6dkSC3Z8UsWkJ5tMV"
+      "tx": "GV8vdWqLm57KH5raVFKjWVsEW7Uem92QDkbnBiUZJZSn"
     },
     {
       "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -107,7 +121,7 @@ assertion `left == right` failed: A11 Non-owner calls the owner-only admin metho
       "role": "attack",
       "rule_code": "R_NOT_AUTHORIZED",
       "status": "failed",
-      "tx": "D3KLBwnWBBi9GSRR2rLTP91XvL8jqzeKDvWfhGQPP99n"
+      "tx": "DKnFk1CZmEAM1g73CHaZPgUiy4JD5oVRPGiUtKuPWUH8"
     },
     {
       "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -116,7 +130,7 @@ assertion `left == right` failed: A11 Non-owner calls the owner-only admin metho
       "role": "attack",
       "rule_code": "R_NOT_AUTHORIZED",
       "status": "failed",
-      "tx": "3mP6iXEFri1fJeC6kuhEiBbxczWutoi1Yq1SnApndZmr"
+      "tx": "FDCndhmmQFPABX4ebFUipyCmUJgyF8aGXuovMygLjeew"
     },
     {
       "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -125,7 +139,7 @@ assertion `left == right` failed: A11 Non-owner calls the owner-only admin metho
       "role": "attack",
       "rule_code": "R_NOT_AUTHORIZED",
       "status": "failed",
-      "tx": "3RQN3e2xTaEPA3cVMnVDaZwQrF9DBQ9NGSQBvYVSMH2n"
+      "tx": "B8x4yNCh9eBRASMuiZShjKjQ54hCxKb67Zn9TaZsnM2i"
     },
     {
       "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -134,7 +148,7 @@ assertion `left == right` failed: A11 Non-owner calls the owner-only admin metho
       "role": "attack",
       "rule_code": "R_NOT_AUTHORIZED",
       "status": "failed",
-      "tx": "2jezowgqeqLiBYy9A87KgC27MUVjxSbzWhHY2MLvQc6E"
+      "tx": "6CtQ5zNDUGdCF8vaE3b3UABiepM2FMmLKYTTiMmzeTKW"
     }
   ]
 }
@@ -146,6 +160,6 @@ note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 failures:
     a11_non_owner_calls_owner_only_methods
 
-test result: FAILED. 33 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 255.84s
+test result: FAILED. 42 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 404.35s
 
 error: test failed, to rerun pass `-p kruxa-tests --test attack_gallery`

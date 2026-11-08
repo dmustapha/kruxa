@@ -1,0 +1,68 @@
+{
+  "attempt": "The creator (who named someone else as payout recipient) and a stranger both call draw on a PASSed launch; afterwards get_charter, get_state and stream_status must still name the payee.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "get_charter, get_state and stream_status all name the payee before"
+    },
+    {
+      "ok": true,
+      "what": "and are identical after the attacks"
+    },
+    {
+      "ok": true,
+      "what": "neither attacker received USDC"
+    }
+  ],
+  "co4": "A6",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_NOT_AUTHORIZED",
+  "id": "G09",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true
+      },
+      "launch_id": 1
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "core",
+  "title": "Redirect the payout recipient (creator and stranger draw; views stay fixed)",
+  "transactions": [
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "draw by the creator who is not the recipient",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "Cams78xCRwZfc1Y5BnVkTshdUbLQtT7hdbN5k1JC4PGd"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "draw by a stranger",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "3zjhsDsntQXvhNQDyD68LD9S2jeFtrmvFaMG3wae5K7U"
+    }
+  ]
+}

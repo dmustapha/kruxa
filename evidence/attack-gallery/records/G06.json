@@ -1,0 +1,69 @@
+{
+  "attempt": "The relayer calls commit_genesis for a launch that is still Open, then for a launch that FAILED, to mint a Solana token for a trial that never passed.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "genesis status None"
+    }
+  ],
+  "co4": "A1",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_GENESIS_STATE",
+  "id": "G06",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true
+      },
+      "launch_id": 1
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "core",
+  "title": "Genesis on an Open launch and on a FAILED launch",
+  "transactions": [
+    {
+      "expected_rule_code": "R_GENESIS_STATE",
+      "label": "commit_genesis on an Open launch",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_STATE",
+      "status": "failed",
+      "tx": "GrRFjhZe3ZUdeX4sQ7bYvGHuRDrZKNMH7agj76TSA6YY"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "settle (FAIL: 3 funders)",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "69SSuBJ8fxNK2ndtAFRHKWkRa64PnGNPTCYYtteppugB"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_STATE",
+      "label": "commit_genesis on a FAILED launch",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_STATE",
+      "status": "failed",
+      "tx": "33zuStVEdUyZQvRcwg5MocWamuqqTb1tnayRwoXe594R"
+    }
+  ]
+}

@@ -45,7 +45,7 @@
       "role": "support",
       "rule_code": null,
       "status": "succeeded",
-      "tx": "9bmhf2tV4GDQYrPdxhYmRRnQws52oCjF1rU2iPz73guF"
+      "tx": "6iYopdLFwcdd4esAyheHcDsZeco7dVXHVG95ETYwyja8"
     },
     {
       "expected_rule_code": null,
@@ -54,7 +54,7 @@
       "role": "support",
       "rule_code": "R_PAUSED",
       "status": "succeeded",
-      "tx": "GW97z2WvgAasSKBZncLTZjtVa27g9kTV6LVrxCwZceQX"
+      "tx": "55eYNy54xbVBmZqNtMrRa56ZMmjUvMwWw2TdWVXg7Hjr"
     },
     {
       "expected_rule_code": null,
@@ -63,7 +63,7 @@
       "role": "attack",
       "rule_code": null,
       "status": "succeeded",
-      "tx": "XXBBK5PNe82bD1j372BdEUpbMbJ1DDLHC4JyEkSdRY2"
+      "tx": "4rm3KiqTUBTXUDkMN2BKTTGnXh9M49HixrRKYwpYycWe"
     }
   ]
 }

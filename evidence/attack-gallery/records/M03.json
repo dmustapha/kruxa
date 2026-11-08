@@ -41,7 +41,7 @@
       "role": "attack",
       "rule_code": "PRIVATE_METHOD",
       "status": "failed",
-      "tx": "HmvSV2jwDq7UBMLzCsWSVkPrg6U9A4NZQRUwWGaii1U5"
+      "tx": "C7e3Vs3wWPSdcGDfZowZ4jBKMbuPsw6w1Esp51ZLR25D"
     },
     {
       "expected_rule_code": "R_UNEXPECTED_TOKEN",
@@ -50,7 +50,7 @@
       "role": "attack",
       "rule_code": "R_UNEXPECTED_TOKEN",
       "status": "succeeded",
-      "tx": "ChQGxz5z38ahPpzsYi8emnXFDLczp9jTijf1FVnMBLq1"
+      "tx": "ENtCGJCcoRTaDPX2bav6bX45ktwqRJVueAK4252KMhYL"
     },
     {
       "expected_rule_code": "R_BAD_MSG",
@@ -59,7 +59,7 @@
       "role": "attack",
       "rule_code": "R_BAD_MSG",
       "status": "succeeded",
-      "tx": "FcBCpSmeAowj3Rkx1yHmhf2ZBYmMxStowgSmuDuigNrS"
+      "tx": "CrKxhLo3WryPDYRo9vLhagmGkg89wXkVuh3zY34mpo6v"
     }
   ]
 }
