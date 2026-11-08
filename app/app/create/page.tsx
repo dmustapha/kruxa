@@ -9,7 +9,7 @@ export default function CreatePage() {
     <>
       <header className="page-head">
         <p className="eyebrow">Studio</p>
-        <h1>Open a trial, or watch a hostile one get refused.</h1>
+        <h1>Launch a token as a trial, or instantly.</h1>
         <p className="lede">Choose how to launch. Every rule code appears before any signature. This page works with no wallet; you connect only when you press a step.</p>
       </header>
       <Suspense fallback={null}><CreateRoot /></Suspense>
