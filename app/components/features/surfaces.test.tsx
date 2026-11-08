@@ -37,7 +37,7 @@ describe('LaunchCard v2', () => {
     expect(screen.getByText('Open')).toBeTruthy();
     expect(screen.getByText('Passing by $87 and 1 backer.')).toBeTruthy();
     expect(screen.getByText('Fixture data')).toBeTruthy();
-    const link = screen.getByRole('link', { name: /CHARLIE, launch 3, Open, Passing by \$87 and 1 backer\./ });
+    const link = screen.getByRole('link', { name: /CHARLIE, trial-verified, launch 3, Open, Passing by \$87 and 1 backer\./ });
     expect(link.getAttribute('href')).toBe('/launch/3');
     expect(screen.getByRole('link', { name: 'Verify' }).getAttribute('href')).toBe('/launch/3/verify');
   });
@@ -109,8 +109,8 @@ describe('Discover', () => {
     const passed = (id: string, m: boolean) => launch({ launch_id: id, symbol: `S${id}`, status: 'passed', stage: 'passed', verdict: 'PASS', has_market: m });
     vi.spyOn(globalThis, 'fetch').mockImplementation(async () => page([passed('1', true), passed('2', false)], 2));
     render(<Wallets><Discover /></Wallets>);
-    expect(await screen.findByRole('link', { name: /S2, launch 2/ })).toBeTruthy();
-    expect(screen.queryByRole('link', { name: /S1, launch 1/ })).toBeNull();
+    expect(await screen.findByRole('link', { name: /S2, trial-verified, launch 2/ })).toBeTruthy();
+    expect(screen.queryByRole('link', { name: /S1, trial-verified, launch 1/ })).toBeNull();
   });
 });
 

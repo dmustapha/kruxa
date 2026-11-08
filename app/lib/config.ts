@@ -21,6 +21,10 @@ export const CONFIG = {
   usdcTokenId: pick(process.env.NEXT_PUBLIC_USDC_TOKEN_ID, 'nep141:usdc.kruxa.testnet'),
   /** Indexer read API base (docs/interfaces/api.openapi.yaml). */
   api: pick(process.env.NEXT_PUBLIC_KRUXA_API, 'http://localhost:8787').replace(/\/$/, ''),
+  /** Instant launcher contract (docs/interfaces/INSTANT-ABI.md). Placeholder account until it is deployed. */
+  instant: pick(process.env.NEXT_PUBLIC_INSTANT_ACCOUNT, 'instant.kruxa.testnet'),
+  /** Kill switch: NEXT_PUBLIC_INSTANT_MODE=0 shows the disabled Instant card in Create. */
+  instantEnabled: process.env.NEXT_PUBLIC_INSTANT_MODE !== '0',
   /** Optional relayer that submits buyer-signed Intents messages. Empty means the app shows the signed bundle for self-submission. */
   relayer: pick(process.env.NEXT_PUBLIC_RELAYER_URL, '').replace(/\/$/, ''),
   /** The labelled demo core account (same wasm, relaxed bounds). Empty means the demo profile is not configured in this build. */

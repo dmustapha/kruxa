@@ -10,6 +10,8 @@ import { Freshness } from '@/components/ui/Freshness';
 import { EmptyState, ErrorState, LoadingBlock } from '@/components/ui/States';
 import { TxStatus } from '@/components/ui/TxStatus';
 import { FundsStrip } from '../FundsStrip';
+import { VestPanel } from '../instant/VestPanel';
+import { ModeBadge } from '@/components/ui/PhaseBadge';
 import { walkNear } from '@/lib/actions';
 import { fmtUsdc } from '@/lib/config';
 import { titleCase } from '@/lib/format';
@@ -52,12 +54,13 @@ function WalkButton({ p }: { p: PortfolioPosition }) {
 }
 
 function PositionCard({ p }: { p: PortfolioPosition }) {
-  const open = p.launch.stage === 'new' || p.launch.stage === 'open' || p.launch.stage === 'closing';
+  const instant = p.launch.mode === 'instant';
+  const open = !instant && (p.launch.stage === 'new' || p.launch.stage === 'open' || p.launch.stage === 'closing');
   return (
     <article className="card" aria-label={`Position in ${p.launch.symbol}`}>
       <div className="row between">
         <h3 style={{ margin: 0 }}><Link href={`/launch/${p.launch.launch_id}`}>{p.launch.symbol} #{p.launch.launch_id}</Link></h3>
-        <span className="row"><StageBadge stage={p.launch.stage} /><Badge tone={TONE[p.status]}>{titleCase(p.status)}</Badge><SourceBadge source={p.launch.source} /></span>
+        <span className="row"><ModeBadge mode={p.launch.mode} />{!instant && <StageBadge stage={p.launch.stage} />}<Badge tone={TONE[p.status]}>{titleCase(p.status)}</Badge><SourceBadge source={p.launch.source} /></span>
       </div>
       <dl className="kv">
         <div><dt>Contributed</dt><dd>{fmtUsdc(p.contributed)}</dd></div>
@@ -65,10 +68,25 @@ function PositionCard({ p }: { p: PortfolioPosition }) {
         <div><dt>Still active</dt><dd>{fmtUsdc(p.active ?? '0')}</dd></div>
         <div><dt>Tokens claimed</dt><dd>{p.tokens_claimed ?? '0'}</dd></div>
         {p.market_balance && <div><dt>Market balance</dt><dd>{p.market_balance}{p.market_value_quote != null ? ` (about ${p.market_value_quote.toFixed(4)} USDC at the last pool price)` : ''}</dd></div>}
+        {instant && <div><dt>Launch type</dt><dd style={{ fontFamily: 'var(--sans)' }}>no trial, so no Walk and no refund</dd></div>}
         {open && <div><dt>Tokens if closed now and PASS</dt><dd><TokensIfClosedNow p={p} /></dd></div>}
       </dl>
       {open && <WalkButton p={p} />}
     </article>
+  );
+}
+
+/** Instant launches whose payout recipient is this account: their allocation vests and can be claimed. Read from the creator desk. */
+function Allocations({ account }: { account: string }) {
+  const s = useApi(() => api.creator(account), `alloc-${account}`);
+  if (s.status !== 'ok') return null;
+  const mine = s.data.launches.filter((c) => c.launch.mode === 'instant' && c.launch.payout_recipient === account);
+  if (!mine.length) return null;
+  return (
+    <section aria-labelledby="alloc-h">
+      <h2 id="alloc-h">Allocations vesting</h2>
+      {mine.map((c) => <article key={c.launch.launch_id} className="card" aria-label={`Vesting for ${c.launch.symbol}`}><div className="row between"><h3 style={{ margin: 0 }}><Link href={`/launch/${c.launch.launch_id}`}>{c.launch.symbol} #{c.launch.launch_id}</Link></h3><ModeBadge mode="instant" /></div><VestPanel launchId={c.launch.launch_id} symbol={c.launch.symbol} /></article>)}
+    </section>
   );
 }
 
@@ -107,6 +125,7 @@ export function PortfolioView() {
             : <div className="grid grid-2">{positions.map((p) => <PositionCard key={p.launch.launch_id} p={p} />)}</div>}
         </>
       )}
+      {keys.filter((k) => !k.startsWith('sol:')).slice(0, 1).map((k) => <Allocations key={k} account={k.replace(/^near:/, '')} />)}
       <FundsStrip items={funds} keys={keys} loading={s.status === 'loading'} error={s.status === 'error' ? s.error.message : null} />
     </>
   );

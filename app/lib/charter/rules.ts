@@ -19,7 +19,8 @@ export interface TrialParams {
 export type RuleCode =
   | 'R_SYMBOL' | 'R_SUPPLY' | 'R_BUCKETS' | 'R_ALLOC' | 'R_HARD_CAP' | 'R_SOFT_CAP' | 'R_MIN_BUY' | 'R_WALLET_CAP' | 'R_FUNDERS' | 'R_PASSABLE'
   | 'R_WINDOW' | 'R_STREAM' | 'R_CAP_GLOBAL' | 'R_FEE_TOTAL' | 'R_CREATOR_SHARE' | 'R_CREATOR_TAKE' | 'R_PLATFORM_FLOOR' | 'R_PLATFORM_FIXED'
-  | 'R_HOLDER_RANGE' | 'R_LP_RANGE' | 'R_HOLDER_LP_FLOOR' | 'R_REFERRAL' | 'R_SPLIT_SUM' | 'R_FEE_VEST' | 'R_OPENING';
+  | 'R_HOLDER_RANGE' | 'R_LP_RANGE' | 'R_HOLDER_LP_FLOOR' | 'R_REFERRAL' | 'R_SPLIT_SUM' | 'R_FEE_VEST' | 'R_OPENING'
+  | 'R_VEST' | 'R_SEED_RANGE' | 'R_SYMBOL_RESERVED' | 'R_RATE_LIMIT' | 'R_CREATOR_GATE' | 'R_ACTIVE_TRIAL';
 
 export interface Violation { code: RuleCode; field: string; got: string; limit: string }
 
@@ -57,7 +58,7 @@ export const STANDARD_FEES: FeeTerms = {
   opening_fee_start_bps: 0, opening_decay_minutes: 0, fee_vest_bps: 5000, fee_vest_days: 90,
 };
 
-const RESERVED = ['KRUXA', 'USDC', 'USDT', 'NEAR', 'WNEAR', 'SOL', 'ETH', 'BTC', 'DAI'];
+export const RESERVED_SYMBOLS = ['KRUXA', 'USDC', 'USDT', 'NEAR', 'WNEAR', 'SOL', 'ETH', 'BTC', 'DAI'];
 const ceilDiv = (a: bigint, b: bigint): bigint => (a + b - 1n) / b;
 
 type Check = Violation | null;
@@ -68,7 +69,7 @@ const first = (...checks: Check[]): Check => checks.find((c) => c !== null) ?? n
 
 function checkText(p: TrialParams): Check {
   const symOk = /^[A-Z0-9]{2,12}$/.test(p.symbol);
-  if (!symOk || RESERVED.includes(p.symbol)) return v('R_SYMBOL', 'symbol', p.symbol, '2..=12 of [A-Z0-9], not reserved');
+  if (!symOk || RESERVED_SYMBOLS.includes(p.symbol)) return v('R_SYMBOL', 'symbol', p.symbol, '2..=12 of [A-Z0-9], not reserved');
   if (p.name.length === 0 || p.name.length > 32 || !/^[\x20-\x7e]+$/.test(p.name)) return v('R_SYMBOL', 'name', p.name, '1..=32 printable ASCII');
   return null;
 }
@@ -166,3 +167,6 @@ export function toContractJson(p: TrialParams): Record<string, unknown> {
     ...p, hard_cap: p.hard_cap.toString(), soft_cap: p.soft_cap.toString(), min_buy: p.min_buy.toString(),
   };
 }
+
+/** The fee-term checks alone, for launch modes that share them (instant launch). */
+export const validateFeeTerms = (fees: FeeTerms, r: Rules = LADDER_RULES): Violation | null => checkFees({ fees } as TrialParams, r);

@@ -15,7 +15,7 @@ describe('raise scenarios', () => {
     const r = rows[2]!;
     expect(r.launchFee).toBe(15n * USDC);
     expect(r.launchFee + r.lpSeed + r.stream).toBe(r.accepted);
-    expect(r.streamPerDay).toBe(r.stream / 90n);
+    expect(r.streamPerDay).toBe(r.stream / 30n);
   });
   it('oversubscription refunds the excess pro rata', () => {
     const r = rows[3]!;
@@ -30,7 +30,7 @@ describe('raise scenarios', () => {
 describe('summaries', () => {
   it('raise sentence', () => expect(summarizeRaise(p)).toBe('If $350 or more is committed by at least 10 backers when the Walk window ends, the trial passes. Otherwise every backer gets a refund.'));
   it('time sentence', () => expect(summarizeTime(p)).toContain('Commits close 3 days later. Backers can still Walk for 6 h'));
-  it('stream sentence names STREAM_CAP', () => expect(summarizeStream(p)).toContain('1/90'));
+  it('stream sentence names STREAM_CAP', () => expect(summarizeStream(p)).toContain('1/30'));
   it('fee sentence carries the creator-maximum qualifier', () => { const s = summarizeFees(p); expect(s).toContain('1.00% of volume'); expect(s).toContain('80%'); });
   it('opening sentence', () => { expect(summarizeOpening(p)).toMatch(/No opening surcharge/); expect(summarizeOpening({ ...p, fees: { ...p.fees, opening_fee_start_bps: 500, opening_decay_minutes: 60 } })).toBe('Trading opens at 5% and falls to 1% over 60 minutes; the extra goes to liquidity.'); });
   it('fee preview at the standard split is 0.50% creator', () => expect(feePreview(p).find((r) => r.label.startsWith('Creator'))?.pct).toBe('0.50%'));

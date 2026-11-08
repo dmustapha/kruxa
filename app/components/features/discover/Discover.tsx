@@ -7,7 +7,7 @@ import { LaunchCard } from '../LaunchCard';
 import { Freshness } from '@/components/ui/Freshness';
 import { EmptyState, ErrorState, SkeletonCards } from '@/components/ui/States';
 import { LaunchSigil } from '@/components/ui/LaunchSigil';
-import { PhaseBadge } from '@/components/ui/PhaseBadge';
+import { ModeBadge, PhaseBadge } from '@/components/ui/PhaseBadge';
 import { SourceBadge } from '@/components/ui/Badges';
 import { VerdictMeters } from '@/components/ui/VerdictMeters';
 import { useNow } from '@/lib/clock';
@@ -34,7 +34,7 @@ function Hero() {
       <div className="grow">
         <p className="eyebrow">Refundable-trial launches for NEAR and Solana</p>
         <HeadlinePlaceholder id="hero-h" />
-        {!collapsed && <p className="lede">Every launch is a refundable trial: walk before the verdict, the token reaches Solana only on a pass, and the creator&apos;s draw is capped.</p>}
+        {!collapsed && <p className="lede">Trial launches are refundable: walk before the verdict. Instant launches trade at once, with no trial.</p>}
       </div>
       <div className="row">
         <Link className="btn btn-primary" href="/create">Create a trial</Link>
@@ -44,9 +44,9 @@ function Hero() {
       {!collapsed && rules && (
         <div style={{ flexBasis: '100%' }}>
           <ol className="rules3" aria-label="Three rules">
-            <li>You can Walk until the deadline and get your principal back.</li>
-            <li>The verdict is three public numbers anyone can recompute.</li>
-            <li>After a pass, the creator draws at a capped rate.</li>
+            <li>In a trial launch you can Walk until the deadline and get your principal back.</li>
+            <li>A trial verdict is three public numbers anyone can recompute.</li>
+            <li>An instant launch has no trial, no verdict and no refund.</li>
           </ol>
           <button type="button" className="btn-quiet" onClick={() => { setRules(false); write(LS.rules, '1'); }}>Got it</button>
         </div>
@@ -63,6 +63,8 @@ export function Discover() {
   const sort = params.get('sort') ?? 'newest';
   const q = params.get('q') ?? '';
   const hasMarket = params.get('has_market') === 'true';
+  const modeParam = params.get('mode');
+  const mode = modeParam === 'trial' || modeParam === 'instant' ? modeParam : null;
   const [view, setView] = useState<'grid' | 'list'>('grid');
   useEffect(() => { if (read(LS.view) === 'list' || params.get('view') === 'list') setView('list'); }, [params]);
 
@@ -72,8 +74,8 @@ export function Discover() {
     router.replace(`${path}${next.size ? `?${next}` : ''}`, { scroll: false });
   }, [params, path, router]);
 
-  const counts = useTabCounts(q);
-  const feed = useFeed(tab, q, sort, hasMarket);
+  const counts = useTabCounts(q, mode);
+  const feed = useFeed(tab, q, sort, hasMarket, mode);
   const ok = feed.state.status === 'ok' ? feed.state : null;
   const now = useNow(ok?.source, ok?.asOf);
 
@@ -98,6 +100,11 @@ export function Discover() {
       <div className="filters">
         <label className="sr-only" htmlFor="sort">Sort by</label>
         <select id="sort" value={sort} onChange={(e) => setParam('sort', e.target.value === 'newest' ? null : e.target.value)}>{SORTS.map((s) => <option key={s.v} value={s.v}>Sort: {s.l}</option>)}</select>
+        <div className="seg" role="group" aria-label="Launch type">
+          {([[null, 'All'], ['trial', 'Trial-verified'], ['instant', 'Instant']] as const).map(([m, label]) => (
+            <button key={label} type="button" aria-pressed={mode === m} onClick={() => setParam('mode', m)}>{label}</button>
+          ))}
+        </div>
         {(tab === 'all' || tab === 'pending') && <label className="inline"><input type="checkbox" checked={hasMarket} onChange={(e) => setParam('has_market', e.target.checked ? 'true' : null)} /> Pool open</label>}
         <div className="toggle-view" role="group" aria-label="Layout">
           <button type="button" aria-pressed={view === 'grid'} onClick={() => { setView('grid'); write(LS.view, null); }}>Grid</button>
@@ -119,13 +126,13 @@ export function Discover() {
         {ok && ok.items.length > 0 && view === 'grid' && <div className="grid grid-cards">{ok.items.map((l) => <LaunchCard key={l.launch_id} launch={l} now={now} frozenClock={l.source === 'fixture'} />)}</div>}
         {ok && ok.items.length > 0 && view === 'list' && (
           <div className="tbl-wrap"><table>
-            <thead><tr><th>Launch</th><th>Phase</th><th>Margin</th><th className="n">Committed</th><th className="n">Backers</th><th>Source</th></tr></thead>
+            <thead><tr><th>Launch</th><th>Phase</th><th>Type</th><th>Margin</th><th className="n">Committed</th><th className="n">Backers</th><th>Source</th></tr></thead>
             <tbody>{ok.items.map((l) => {
               const phase = phaseOf(l, now);
               return (
                 <tr key={l.launch_id}>
                   <td><span className="row" style={{ flexWrap: 'nowrap' }}><LaunchSigil id={l.launch_id} symbol={l.symbol} size={28} /><span><Link href={hrefFor(l, phase)}><b>${l.symbol}</b></Link><div className="hint">#{l.launch_id} {shortAccount(l.creator)}</div></span></span></td>
-                  <td><PhaseBadge phase={phase} /></td><td style={{ minWidth: 200 }}><VerdictMeters l={l} /></td>
+                  <td><PhaseBadge phase={phase} /></td><td><ModeBadge mode={l.mode} /></td><td style={{ minWidth: 200 }}>{l.mode === 'instant' ? <span className="hint">No verdict: instant launch</span> : <VerdictMeters l={l} />}</td>
                   <td className="n">{fmtUsdc(l.total_active)}</td><td className="n">{l.funders}</td><td><SourceBadge source={l.source} /></td>
                 </tr>
               );

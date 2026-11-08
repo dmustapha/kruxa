@@ -1,7 +1,9 @@
 // Hand-written mirror of docs/interfaces/api.openapi.yaml (indexer read API 1.0.0). Amounts are base-unit decimal strings.
 export type Source = 'chain' | 'fixture';
 export type Stage = 'new' | 'open' | 'closing' | 'passed' | 'failed';
-export type LaunchStatus = 'creating' | 'open' | 'passed' | 'failed' | 'creation_failed' | 'dissolved';
+export type LaunchStatus = 'creating' | 'open' | 'passed' | 'failed' | 'creation_failed' | 'dissolved' | 'launching' | 'trading';
+/** OpenAPI 1.2.0 (pending): how a launch started. Missing means trial. */
+export type LaunchMode = 'trial' | 'instant';
 
 export interface AsOf { block_height: number | null; block_time: number | null }
 
@@ -29,6 +31,8 @@ export interface LaunchSummary {
   name?: string | null;
   /** IR-A10: a computed phase string, when the indexer provides one. */
   phase?: string | null;
+  /** OpenAPI 1.2.0 (pending). A missing value is read as `trial`. */
+  mode?: LaunchMode | null;
   creator: string;
   payout_recipient: string;
   status: LaunchStatus;
@@ -73,7 +77,11 @@ export interface GenesisView {
   tx_create?: string | null; tx_authority?: string | null; distributor?: string | null; root?: string | null; verified_checks?: string[]; updated_at?: number | null;
 }
 
+/** Allocation vesting of an instant launch (CHANGE-ORDER-7 2.12). Optional: the launcher's `get_vesting` view is the authority. */
+export interface AllocView { total?: string; unlocked?: string; claimed?: string; claimable?: string; cliff_end?: number | null; vest_end?: number | null; alloc_bps?: number; cliff_days?: number; vest_days?: number; seed_q?: string }
+
 export interface LaunchDetail extends LaunchSummary {
+  alloc?: AllocView | null;
   genesis?: GenesisView | null;
   charter_hash: string;
   verdict_inputs: VerdictInputsView;
