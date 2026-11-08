@@ -11,16 +11,20 @@
 #   N2  compiling the test binaries; the near-sandbox build script downloads the NEAR sandbox binary on a cold machine.
 #   Everything after N2 runs with CARGO_NET_OFFLINE=true. The dead-RPC check talks to 127.0.0.1:1 only.
 #
-# Usage: scripts/judge-run.sh [--record]     --record also copies the summary to evidence/judge-run.txt
+# --fast: one smoke test file per sandbox suite and a check of the committed attack-gallery record instead of a re-run (about 10 minutes
+#         on a cold machine). It never claims tracks: only the full run does. Exit 0 means the fast subset is green.
+# Usage: scripts/judge-run.sh [--fast] [--record]     --record also copies the summary to evidence/judge-run.txt
 # Exit: 0 every step GREEN, 1 any step RED, 64 usage.
 set -uo pipefail
 cd "$(dirname "$0")/.."
 ROOT=$PWD
 OUT=$ROOT/target/judge
 RECORD=0
+FAST=0
 for a in "$@"; do case "$a" in
   --record) RECORD=1 ;;
-  -h|--help) sed -n '2,17p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+  --fast) FAST=1 ;;
+  -h|--help) sed -n '2,19p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
   *) echo "usage: $0 [--record]" >&2; exit 64 ;;
 esac; done
 
@@ -123,6 +127,14 @@ else skip U1 "pure tests" "N2 red"; skip V1 "golden vectors" "N2 red"; fi
 
 # core, market, launcher in the sandbox -----------------------------------------------------------------------------------
 if is_green B1; then
+  if [ "$FAST" = 1 ]; then
+  EXPECT=("test result: ok"); FORBID=("FAILED")
+  step C1 0 "FAST core smoke in the sandbox: full lifecycle" cargo test --locked --offline -q -p kruxa-tests --test lifecycle -- --test-threads=3
+  EXPECT=("test result: ok"); FORBID=("FAILED")
+  step M1 0 "FAST market smoke in the sandbox: AMM and fee split" cargo test --locked --offline -q -p kruxa-tests --test market_sandbox -- --test-threads=3
+  EXPECT=("test result: ok"); FORBID=("FAILED")
+  step I1 0 "FAST launcher smoke in the sandbox: instant flow" cargo test --locked --offline -q -p kruxa-tests --test instant -- --test-threads=3
+  else
   EXPECT=("test result: ok"); FORBID=("FAILED")
   step C1 0 "core in the sandbox: lifecycle, adversarial, creator gate, payout, hand-off, real intents.near wasm, genesis" \
     cargo test --locked --offline -q -p kruxa-tests --test lifecycle --test adversarial --test creator_gate --test payout_recipient \
@@ -134,6 +146,7 @@ if is_green B1; then
   step I1 0 "launcher (Instant mode) in the sandbox: flow, adversarial, review regressions, real market" \
     cargo test --locked --offline -q -p kruxa-tests --test instant --test instant_adversarial --test instant_review \
       --test instant_market --test market_instant -- --test-threads=3
+  fi
 else skip C1 "core sandbox" "B1 red"; skip M1 "market sandbox" "B1 red"; skip I1 "launcher sandbox" "B1 red"; fi
 if is_green N2; then
   EXPECT=("SLICES OK"); step M2 0 "market demo: buy and sell, five fee slices add up, custody unchanged" ./scripts/market-demo.sh
@@ -142,8 +155,13 @@ else skip M2 "market demo" "N2 red"; skip M3 "market simulation" "N2 red"; fi
 
 # attack gallery ----------------------------------------------------------------------------------------------------------
 if is_green B1; then
+  if [ "$FAST" = 1 ]; then
+  EXPECT=("committed record: 0 failed"); step A1 0 "FAST attack gallery: committed record shows no failed attack (the full run re-executes all)" \
+    bash -c 'f=evidence/attack-gallery/attack-gallery.json; jq -e ".ok == true and .counts.failed == 0 and .counts.succeeded_unexpectedly == 0 and .counts.invariants_held == .counts.total" "$f" >/dev/null && echo "committed record: 0 failed, $(jq -r .counts.total "$f") attacks"'
+  else
   EXPECT=("ATTACK GALLERY (sandbox):" " 0 failed, 0 succeeded unexpectedly")
   step A1 0 "attack gallery: every attack refused, harmless, or a disclosed bound; invariants held" run_gallery
+  fi
 else skip A1 "attack gallery" "B1 red"; fi
 
 # verify.sh tamper checks, offline: replayed records and a closed local port -----------------------------------------------
@@ -171,6 +189,13 @@ if is_green N2; then
 else skip W1 "swarm" "N2 red"; skip O1 "tour" "N2 red"; fi
 
 # ---- tracks ------------------------------------------------------------------------------------------------------------
+echo
+if [ "$FAST" = 1 ]; then
+  total=$(wc -l <"$OUT/steps.tsv" | tr -d ' '); red=$(awk -F'\t' '$2!="GREEN"' "$OUT/steps.tsv" | wc -l | tr -d ' ')
+  echo; echo "FAST subset: $((total - red)) of $total steps green, wall $(( $(date +%s) - T_START ))s. No tracks claimed; run without --fast for the table."
+  [ "$red" = 0 ] || awk -F'\t' '$2!="GREEN" {printf "  RED %s: %s %s\n", $1, $4, $5}' "$OUT/steps.tsv"
+  [ "$red" = 0 ]; exit $?
+fi
 echo
 echo "== TRACKS (GREEN only if every step it rests on is GREEN in this run)"
 TT=$OUT/track-table.tsv

@@ -1,4 +1,4 @@
-.PHONY: test-unit sim build lint test verify-claims judge tour claimed-tracks lint-readme
+.PHONY: judge-fast test-unit sim build lint test verify-claims judge tour claimed-tracks lint-readme
 
 test-unit:
 	cargo test -p kruxa-math -p kruxa-logic
@@ -23,6 +23,10 @@ verify-claims:
 # `make judge JUDGE_ARGS=--record` also writes evidence/judge-run.txt.
 judge:
 	./scripts/judge-run.sh $(JUDGE_ARGS)
+
+# Fast subset (about 10 minutes cold, no track claims). `make judge` is the full run.
+judge-fast:
+	./scripts/judge-run.sh --fast
 
 # Seven offline scenes on their own (also step O1 of `make judge`).
 tour:
