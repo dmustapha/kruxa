@@ -8,3 +8,4 @@
 | 2026-11-08 | baseline | `/usr/bin/time -p ./scripts/test.sh --include-ignored` | 19 sandbox passed | 9 + 4 + 6 = 19 passed, 0 failed; wall 444.31 s (slowest test: holder cap, 168.40 s); no near-sandbox process left | SANDBOX | pass |
 | 2026-11-08 | baseline | `cd app && npm test && npm run typecheck && npx next build` | 3 vitest passed, tsc clean, build ok | 3 passed; tsc clean; next build ok (routes /, /create, /demo, /launch/[id]) | RECORDED | pass |
 | 2026-11-08 | toolchain | `rustc --version` in repo; `cargo +1.95.0 near --version` | rustc 1.95.0 (59807616e 2026-04-14); cargo-near-near 0.23.0 | same; node v24.10.0, npm 11.6.2 | RECORDED | pass |
+| 2026-11-08 | R2 | `./scripts/rehearse.sh R2` | S1-B example 1: launch_fee=75000000, spend=40000000 refund=60000000 | launch_fee=75000000, spend=40000000 refund=60000000 | DRY-RUN | pass |
