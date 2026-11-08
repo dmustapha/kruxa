@@ -13,7 +13,9 @@ import { phaseOf } from '@/lib/phase';
 import { InstantNotice, RiskPanel } from './InstantParts';
 import { InstantProgress } from './InstantProgress';
 import { VestPanel } from './VestPanel';
-import { useInstantLaunch } from './useInstant';
+import { useInstantLaunch, useLauncherUnit } from './useInstant';
+import { termWord } from '@/lib/instant/rules';
+import { cliffSharePct } from '@/lib/instant/summary';
 
 const STEP_LABEL = { created: 'Create the token', seeded: 'Seed the pool with your USDC', trading: 'Open the pool' } as const;
 
@@ -34,6 +36,7 @@ export function InstantLaunchView() {
   const { id } = useParams<{ id: string }>();
   const idx = useApi(() => api.launch(id), `instant-idx-${id}`, 15000);
   const chain = useInstantLaunch(id);
+  const { unit } = useLauncherUnit();
   const l = idx.status === 'ok' ? idx.data : null;
   const rec = chain.status === 'ok' ? chain.data.record : null;
   const symbol = rec?.symbol ?? l?.symbol ?? '';
@@ -65,7 +68,8 @@ export function InstantLaunchView() {
                 <div><dt>Launch fee</dt><dd>{fmtUsdc(rec.launch_fee)}</dd></div>
                 <div><dt>Pool opens with</dt><dd>{fmtUsdc(rec.pool_seed_q)}</dd></div>
                 <div><dt>Creator allocation</dt><dd>{rec.creator_alloc_bps / 100}%</dd></div>
-                <div><dt>Cliff / unlock ends</dt><dd>day {rec.cliff_days} / day {rec.vest_days}</dd></div>
+                <div><dt>Cliff</dt><dd>{termWord(rec.cliff_days, unit)}; {cliffSharePct(rec)} unlocks at once at the cliff</dd></div>
+                <div><dt>Fully unlocked</dt><dd>{termWord(rec.vest_days, unit)} after the pool opens</dd></div>
                 <div><dt>Supply</dt><dd>fixed at creation</dd></div>
                 <div><dt>Solana mint</dt><dd>none (NEAR-only launch)</dd></div>
               </dl>

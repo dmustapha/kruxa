@@ -5,6 +5,7 @@
 // The page state (trial, failed, genesis, trading, halted) decides what renders; unknown facts are shown as unknown.
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { instantSteps, instantTiles, vestSchedule } from '@/lib/market/instant';
+import { useLauncherUnit } from '@/components/features/instant/useInstant';
 import { launchMode } from '@/lib/market/mode';
 import { openingWindow } from '@/lib/market/math';
 import { fmtBps } from '@/lib/market/format';
@@ -55,6 +56,7 @@ function initialTab(): string {
 }
 
 function TokenBody({ id }: { id: string }) {
+  const launcherUnit = useLauncherUnit();
   const [interval, setInterval_] = useState<Interval>('1h');
   const [mode, setMode] = useState<'price' | 'mc'>('price');
   const [tab, setTab] = useState('trades');
@@ -131,7 +133,7 @@ function TokenBody({ id }: { id: string }) {
   const win = facts.terms && facts.openedAtSec ? openingWindow(facts.terms, facts.openedAtSec, nowSec) : null;
   const openingNow = facts.terms ? (win ? `${fmtBps(Math.round(win.appliedBps))} now, base ${fmtBps(win.baseBps)}` : `${fmtBps(facts.terms.total_fee_bps)} base (opening fee over)`) : null;
   const tiles = isInstant
-    ? instantTiles({ totalSupply: facts.totalSupply ?? instantBundle?.info?.total_supply ?? null, info: instantBundle?.info, sched: vestSchedule(instantBundle?.info, instantBundle?.vesting, nowSec), safety: page.safety, payout: page.creator?.payout_recipient ?? page.launch.payout_recipient, openingNow, top10Bps: top10ShareBps(holderItems) })
+    ? instantTiles({ totalSupply: facts.totalSupply ?? instantBundle?.info?.total_supply ?? null, info: instantBundle?.info, sched: vestSchedule(instantBundle?.info, instantBundle?.vesting, nowSec, launcherUnit.unit.secs), safety: page.safety, payout: page.creator?.payout_recipient ?? page.launch.payout_recipient, openingNow, top10Bps: top10ShareBps(holderItems) })
     : safetyTiles(page, holderItems, creatorBundle?.stream, detailData);
   const declared: Record<string, string> = { [page.launch.payout_recipient]: 'payout recipient', [page.launch.creator]: 'creator' };
   const instantOrder = isInstant ? { declared: [page.launch.creator, page.launch.payout_recipient], config: marketCfg.status === 'ready' ? marketCfg.data : null } : undefined;

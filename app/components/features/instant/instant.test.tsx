@@ -8,12 +8,12 @@ const nav = vi.hoisted(() => ({ params: new URLSearchParams(), replace: vi.fn() 
 vi.mock('next/navigation', () => ({ useSearchParams: () => nav.params, useRouter: () => ({ replace: nav.replace, push: vi.fn() }), usePathname: () => '/create', useParams: () => ({ id: '1000000007' }) }));
 vi.mock('next/link', () => ({ default: ({ href, children, ...r }: { href: string; children: ReactNode }) => <a href={href} {...r}>{children}</a> }));
 const L = vi.hoisted(() => ({
-  askLauncher: vi.fn(), launcherConfig: vi.fn(), getInstantPhase: vi.fn(), getInstant: vi.fn(), getVesting: vi.fn(), instantsByCreator: vi.fn(),
+  askLauncher: vi.fn(), launcherConfig: vi.fn(), getInstantPhase: vi.fn(), getInstant: vi.fn(), getVesting: vi.fn(),
 }));
 vi.mock('@/lib/instant/preview', async (orig) => ({ ...(await orig<typeof import('@/lib/instant/preview')>()), ...L }));
 vi.mock('@/lib/near', async (orig) => ({ ...(await orig<typeof import('@/lib/near')>()), view: vi.fn(async () => { throw new Error('rpc down'); }), getCharter: vi.fn(async () => null), getState: vi.fn(async () => null), getPosition: vi.fn(async () => null) }));
 
-import { Wallets, NEAR_SESSION } from '@/components/testing/mockWallet';
+import { Wallets, NEAR_SESSION, lastAdapters } from '@/components/testing/mockWallet';
 import { ModeSelector } from './ModeSelector';
 import { InstantStudio } from './InstantStudio';
 import { InstantProgress, stepsFor } from './InstantProgress';
@@ -29,7 +29,7 @@ const NOT_DEPLOYED = { kind: 'not_deployed' as const, message: 'Account instant.
 function setup(over: Partial<Record<keyof typeof L, unknown>> = {}) {
   L.launcherConfig.mockResolvedValue(over.launcherConfig ?? NOT_DEPLOYED);
   L.askLauncher.mockResolvedValue(over.askLauncher ?? { kind: 'not_deployed', message: 'x' });
-  L.instantsByCreator.mockResolvedValue([]); L.getInstantPhase.mockResolvedValue(null); L.getInstant.mockResolvedValue(null); L.getVesting.mockResolvedValue(null);
+  L.getInstantPhase.mockResolvedValue(null); L.getInstant.mockResolvedValue(null); L.getVesting.mockResolvedValue(null);
   vi.spyOn(globalThis, 'fetch').mockImplementation(async () => new Response(JSON.stringify({ items: [], next_cursor: null, total: 0, as_of: {}, source: 'chain' }), { status: 200 }));
 }
 const type = (label: RegExp | string, value: string) => fireEvent.change(screen.getByLabelText(label), { target: { value } });
@@ -85,8 +85,8 @@ describe('Instant studio', () => {
     expect(await screen.findByText(/The instant launcher is not deployed on this network yet\./)).toBeTruthy();
     expect((screen.getByRole('button', { name: /Step 1 of 3/ }) as HTMLButtonElement).disabled).toBe(true);
   });
-  it('one instant launch per account per 24 hours (R_RATE_LIMIT)', async () => {
-    setup();
+  it('one instant launch per account per unit (R_RATE_LIMIT), checked locally only when the launcher states its unit', async () => {
+    setup({ launcherConfig: { kind: 'ok', config: { creator_gate: false, paused: 'None', unit_ns: '86400000000000' } } });
     const now = Math.floor(Date.now() / 1000);
     vi.spyOn(globalThis, 'fetch').mockImplementation(async () => new Response(JSON.stringify({ items: [{ launch_id: '1000000001', symbol: 'OLD', creator: 'maya.testnet', payout_recipient: 'maya.testnet', status: 'trading', stage: 'passed', mode: 'instant', created_at: now - 3600, total_active: '0', funders: 0, source: 'chain' }], next_cursor: null, total: 1, as_of: {}, source: 'chain' }), { status: 200 }));
     render(<Wallets near={NEAR_SESSION}><InstantStudio /></Wallets>);
@@ -181,5 +181,100 @@ describe('feed Launch type filter', () => {
     expect(screen.queryByRole('link', { name: /TRL/ })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'All' }));
     expect(nav.replace).toHaveBeenCalledWith('/create?tab=all', { scroll: false });
+  });
+});
+
+
+const REC = { launch_id: '1000000007', status: 'Handoff', creator: 'maya.testnet', payout_recipient: 'maya.testnet', name: 'Zed', symbol: 'ZED', token: 'zed.factory', n_alloc: '0', n_pool: '0', creator_alloc_bps: 500, cliff_days: 7, vest_days: 90, seed_q: '250000000', launch_fee: '0', pool_seed_q: '250000000', seed_sent: '0', seed_inflight: '0' };
+const signed = () => (lastAdapters.current!.near.signAndSendTransaction as unknown as { mock: { calls: [{ receiverId: string; actions: { params: { methodName: string } }[] }][] } }).mock.calls.map((c) => `${c[0].receiverId}:${c[0].actions[0]!.params.methodName}`);
+
+describe('review fixes (REVIEW-INSTANT-LAUNCH L-09, M-02)', () => {
+  it('the creator can abort in Handoff (the only status where a refused seed leg strands them), enabled once the abort time has passed', async () => {
+    L.getInstantPhase.mockResolvedValue({ status: 'Handoff', step: 'open', next_action: 'retry_open_instant', can_abort_at_ns: '1' });
+    L.getInstant.mockResolvedValue({ ...REC, status: 'Handoff' });
+    render(<Wallets near={NEAR_SESSION}><InstantProgress launchId="1000000007" /></Wallets>);
+    const btn = await screen.findByRole('button', { name: 'Abort and take the seed back' }) as HTMLButtonElement;
+    expect(btn.disabled).toBe(false);
+    fireEvent.click(btn);
+    await waitFor(() => expect(signed()).toContain('instant.kruxa.testnet:abort_instant'));
+  });
+  it('abort is shown but disabled, with the reason, before the abort time and after the market took the seed', async () => {
+    L.getInstantPhase.mockResolvedValue({ status: 'Seeded', step: 'open', next_action: 'open_instant', can_abort_at_ns: String(BigInt(Date.now() + 86_400_000) * 1_000_000n) });
+    L.getInstant.mockResolvedValue({ ...REC, status: 'Seeded' });
+    render(<Wallets near={NEAR_SESSION}><InstantProgress launchId="1000000007" /></Wallets>);
+    expect(((await screen.findByRole('button', { name: 'Abort and take the seed back' })) as HTMLButtonElement).disabled).toBe(true);
+    expect(screen.getByText(/Abort opens at/)).toBeTruthy();
+    cleanup();
+    L.getInstantPhase.mockResolvedValue({ status: 'Handoff', step: 'open', next_action: 'retry_open_instant', can_abort_at_ns: '1' });
+    L.getInstant.mockResolvedValue({ ...REC, status: 'Handoff', seed_sent: '250000000' });
+    render(<Wallets near={NEAR_SESSION}><InstantProgress launchId="1000000007" /></Wallets>);
+    expect(await screen.findByText(/no longer refundable/)).toBeTruthy();
+    expect(((screen.getByRole('button', { name: 'Abort and take the seed back' })) as HTMLButtonElement).disabled).toBe(true);
+  });
+  it('a non-creator never sees abort', async () => {
+    L.getInstantPhase.mockResolvedValue({ status: 'Handoff', step: 'open', next_action: 'retry_open_instant', can_abort_at_ns: '1' });
+    L.getInstant.mockResolvedValue({ ...REC });
+    render(<Wallets near={{ ...NEAR_SESSION, address: 'someone.testnet' }}><InstantProgress launchId="1000000007" /></Wallets>);
+    await screen.findAllByText(/Step 3 of 3/);
+    expect(screen.queryByRole('button', { name: 'Abort and take the seed back' })).toBeNull();
+  });
+  it('ending an unseeded launch signs abandon_instant (there is no cancel_instant), and open_instant states its gas', async () => {
+    L.getInstantPhase.mockResolvedValue({ status: 'TokenReady', step: 'seed', next_action: 'seed', can_cancel: true });
+    L.getInstant.mockResolvedValue({ ...REC, status: 'TokenReady' });
+    render(<Wallets near={NEAR_SESSION}><InstantProgress launchId="1000000007" /></Wallets>);
+    fireEvent.click(await screen.findByRole('button', { name: 'End this launch before seeding' }));
+    await waitFor(() => expect(signed()).toEqual(['instant.kruxa.testnet:abandon_instant']));
+    cleanup();
+    L.getInstantPhase.mockResolvedValue({ status: 'Seeded', step: 'open', next_action: 'open_instant', can_abort_at_ns: String(BigInt(Date.now() + 1e9) * 1_000_000n) });
+    L.getInstant.mockResolvedValue({ ...REC, status: 'Seeded' });
+    render(<Wallets near={NEAR_SESSION}><InstantProgress launchId="1000000007" /></Wallets>);
+    expect(await screen.findByText(/This call attaches 300 Tgas/)).toBeTruthy();
+  });
+  it('Resume comes from the indexer, not from a launcher view that does not exist', async () => {
+    setup({ launcherConfig: { kind: 'ok', config: { creator_gate: false, paused: 'None', unit_ns: '86400000000000' } } });
+    const items = [{ launch_id: '1000000007', symbol: 'ZED', creator: 'maya.testnet', payout_recipient: 'maya.testnet', status: 'token_ready', stage: 'launching', mode: 'instant', phase: 'instant_pending_seed', created_at: 5, total_active: '0', funders: 0, source: 'chain' }];
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async () => new Response(JSON.stringify({ items, next_cursor: null, total: 1, as_of: {}, source: 'chain' }), { status: 200 }));
+    L.getInstantPhase.mockResolvedValue({ status: 'TokenReady', step: 'seed', next_action: 'seed' });
+    L.getInstant.mockResolvedValue({ ...REC, status: 'TokenReady' });
+    render(<Wallets near={NEAR_SESSION}><InstantStudio /></Wallets>);
+    expect(await screen.findByText(/You have an instant launch in progress/)).toBeTruthy();
+    expect(await screen.findByRole('button', { name: /Step 2 of 3: Seed pool/ })).toBeTruthy();
+  });
+  it('after step 1 the new launch is found through next_launch_id and checked against the launcher record', async () => {
+    setup({ launcherConfig: { kind: 'ok', config: { creator_gate: false, paused: 'None', unit_ns: '86400000000000', next_launch_id: '1000000009' } }, askLauncher: { kind: 'ok', deposit: '5', poolSeed: null, launchFee: '0', openPrice: null } });
+    L.getInstant.mockImplementation(async (id: string) => (id === '1000000009' ? { ...REC, launch_id: id, status: 'TokenReady' } : null));
+    L.getInstantPhase.mockResolvedValue({ status: 'TokenReady', step: 'seed', next_action: 'seed' });
+    render(<Wallets near={NEAR_SESSION}><InstantStudio /></Wallets>);
+    type(/Ticker/, 'ZED'); type('Name', 'Zed');
+    await waitFor(() => expect(screen.getByText(/The launcher accepts these parameters/)).toBeTruthy());
+    fireEvent.click(screen.getByRole('checkbox', { name: /no trial and no refund/ }));
+    const step1 = await screen.findByRole('button', { name: /Step 1 of 3: Create token/ });
+    await waitFor(() => expect((step1 as HTMLButtonElement).disabled).toBe(false));
+    fireEvent.click(step1);
+    await waitFor(() => expect(signed()).toEqual(['instant.kruxa.testnet:create_instant']));
+    await waitFor(() => expect(L.getInstant).toHaveBeenCalledWith('1000000009'));
+    expect(await screen.findByText('$ZED launch steps')).toBeTruthy();
+  });
+  it('cliff and unlock are in units, not days, when the launcher sends no unit_ns or a demo unit', async () => {
+    setup({ launcherConfig: { kind: 'ok', config: { creator_gate: false, paused: 'None' } } });
+    const a = render(<Wallets><InstantStudio /></Wallets>);
+    expect(await screen.findByLabelText('Cliff (units)')).toBeTruthy();
+    expect(screen.getByText(/has not said how long a unit is/)).toBeTruthy();
+    a.unmount();
+    setup({ launcherConfig: { kind: 'ok', config: { creator_gate: false, paused: 'None', unit_ns: '10000000000' } } });
+    render(<Wallets><InstantStudio /></Wallets>);
+    expect(await screen.findByText(/runs on a unit of 10 s \(not a day: a demo clock\)/)).toBeTruthy();
+    cleanup();
+    setup({ launcherConfig: { kind: 'ok', config: { creator_gate: false, paused: 'None', unit_ns: '86400000000000' } } });
+    render(<Wallets><InstantStudio /></Wallets>);
+    expect(await screen.findByLabelText('Cliff (days)')).toBeTruthy();
+  });
+  it('the launch fee and pool seed come from the launcher, not from the app network; no deposit is invented', async () => {
+    setup({ launcherConfig: { kind: 'ok', config: { creator_gate: false, paused: 'None', unit_ns: '86400000000000', launch_fee: '10000000' } }, askLauncher: { kind: 'not_deployed', message: 'x' } });
+    render(<Wallets><InstantStudio /></Wallets>);
+    expect(await screen.findByText(/a flat \$10 taken from the seed \(the launcher's figure\)/)).toBeTruthy();
+    expect(screen.getAllByText(/pool opens with \$240/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Nothing is estimated here/)).toBeTruthy();
+    expect(document.body.textContent).not.toMatch(/0\.131 NEAR/);
   });
 });

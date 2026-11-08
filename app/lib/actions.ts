@@ -44,8 +44,11 @@ export const createInstantNear = (params: Record<string, unknown>, payoutRecipie
 export const seedInstantNear = (launchId: string, seedMicro: bigint): SignAndSendInput =>
   fc(CONFIG.usdc, 'ft_transfer_call', { receiver_id: CONFIG.instant, amount: seedMicro.toString(), msg: JSON.stringify({ v: 1, op: 'seed_instant', launch_id: launchId }) }, 100, '1');
 /** Step 3 (any caller): hands the seed, then the pool bucket, to the market. A retry sends only what is missing. */
-export const openInstantNear = (launchId: string): SignAndSendInput => fc(CONFIG.instant, 'open_instant', { launch_id: launchId }, 300, '0');
-export const cancelInstantNear = (launchId: string): SignAndSendInput => fc(CONFIG.instant, 'cancel_instant', { launch_id: launchId }, 100, '0');
+/** Gas attached to open_instant, in Tgas. The launcher's measured minimum is being set; the app attaches this and shows it. */
+export const OPEN_INSTANT_GAS_TGAS = 300;
+export const openInstantNear = (launchId: string): SignAndSendInput => fc(CONFIG.instant, 'open_instant', { launch_id: launchId }, OPEN_INSTANT_GAS_TGAS, '0');
+/** Ends an unseeded launch: the creator at any time, anyone else after one unit. (The contract has no `cancel_instant`.) */
+export const abandonInstantNear = (launchId: string): SignAndSendInput => fc(CONFIG.instant, 'abandon_instant', { launch_id: launchId }, 100, '0');
 export const abortInstantNear = (launchId: string): SignAndSendInput => fc(CONFIG.instant, 'abort_instant', { launch_id: launchId }, 100, '0');
 export const reclaimDepositNear = (launchId: string): SignAndSendInput => fc(CONFIG.instant, 'reclaim_deposit', { launch_id: launchId }, 100, '0');
 /** Allocation claim. `amount` null asks for everything claimable; above the cap the launcher panics with STREAM_CAP. */
