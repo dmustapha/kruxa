@@ -1680,6 +1680,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "kruxa-instant"
+version = "0.1.0"
+dependencies = [
+ "borsh",
+ "kruxa-logic",
+ "kruxa-market",
+ "kruxa-math",
+ "proptest",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "kruxa-instant-contract"
+version = "0.1.0"
+dependencies = [
+ "kruxa-instant",
+ "kruxa-logic",
+ "kruxa-math",
+ "near-sdk",
+ "serde_json",
+]
+
+[[package]]
 name = "kruxa-logic"
 version = "0.1.0"
 dependencies = [
