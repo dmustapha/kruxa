@@ -53,6 +53,8 @@ pure=$(cargo test -p kruxa-math -p kruxa-logic 2>&1 | grep -E '^test result: ok\
 row G1-03 "pure tests ($pure in kruxa-math + kruxa-logic, $passed with kruxa-sim)" "$([ $rc -eq 0 ] && [ "$pure" -ge 33 ] && ! grep -q near-sdk crates/kruxa-math/Cargo.toml && echo 0 || echo 1)" "rc=$rc pure=$pure (need >= 33, no near-sdk in kruxa-math)"
 
 # Sandbox suite once; G1-05 to G1-09 read it.
+# the real_verifier_* tests need the real intents.near wasm (gitignored): fetch it read-only from a mainnet RPC and check the pinned code hash
+[ -f fixtures/intents_near.wasm ] || ./scripts/fetch-intents-wasm.sh > "$LOG/fetch-intents.log" 2>&1 || echo "     WARNING: fetch-intents-wasm.sh failed (see $LOG/fetch-intents.log); real_verifier_* tests will fail"
 cargo test -p kruxa-tests -- --test-threads=3 --include-ignored --nocapture > "$LOG/sandbox.log" 2>&1; sb=$?
 sbpassed=$(grep -E '^test result: ok\.' "$LOG/sandbox.log" | sed -E 's/.* ([0-9]+) passed.*/\1/' | awk '{s+=$1} END {print s+0}')
 echo "     sandbox suite: exit $sb, $sbpassed passed"
