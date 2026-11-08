@@ -60,7 +60,7 @@
       "role": "attack",
       "rule_code": "R_SEED_AMOUNT",
       "status": "succeeded",
-      "tx": "FdWqRBAZQekreDNZyvEaiVjJscp7evw86p5m7HVkPahL"
+      "tx": "BoUuQcCLVYKFSKURoemD46rjbwsRJxSH8fQBm3nx2tdP"
     },
     {
       "expected_rule_code": "R_SEED_AMOUNT",
@@ -69,7 +69,7 @@
       "role": "attack",
       "rule_code": "R_SEED_AMOUNT",
       "status": "succeeded",
-      "tx": "HvGLU28ZUGtyn7KF4UXRRBbNM2us3Dnn68fyC7pgR1R4"
+      "tx": "Ge9UgWE8xGzRuDdPGo5hgz8zinnCduTivBKDt4o2iSLC"
     },
     {
       "expected_rule_code": "R_SEED_AMOUNT",
@@ -78,7 +78,7 @@
       "role": "attack",
       "rule_code": "R_SEED_AMOUNT",
       "status": "succeeded",
-      "tx": "CHtkzPtVmDqPwLDiNvPNEbWycj1VxfG4arELPvh8ngVC"
+      "tx": "3ASDuJBVTXghH3W1XRxukHCJdDFtBNdStMLL14CUBaCm"
     },
     {
       "expected_rule_code": "R_SEED_AMOUNT",
@@ -87,7 +87,7 @@
       "role": "attack",
       "rule_code": "R_SEED_AMOUNT",
       "status": "succeeded",
-      "tx": "BW9ifKt9cfumfqx4FnCNaQQJFVqCyFXUDeW6epyxM8Rk"
+      "tx": "CNLTuBH4iQDEcCR7ToyqC4trtepHArzujxxiYFUUkVKw"
     }
   ]
 }

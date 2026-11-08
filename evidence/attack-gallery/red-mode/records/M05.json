@@ -50,7 +50,7 @@
       "role": "attack",
       "rule_code": "R_NOT_AUTHORIZED",
       "status": "succeeded",
-      "tx": "2GfHp6wg9xiVPq8fHtA3jetThxf5TXkipc9dCUHci1n6"
+      "tx": "CwfqVSePR1oATheDwh4yKPLeXtYDmy1gWQtgVukqX4Wb"
     },
     {
       "expected_rule_code": null,
@@ -59,7 +59,7 @@
       "role": "support",
       "rule_code": null,
       "status": "succeeded",
-      "tx": "AmjUjJEMiYfEef2n4MBTUzczndKubv5Va6XKbKf3KJ7R"
+      "tx": "2z7g7389CpqnfgqvSTcYTRa8Fa8SRxvKHcdZTGfgCD6W"
     },
     {
       "expected_rule_code": "R_NOTHING_TO_CLAIM",
@@ -68,7 +68,7 @@
       "role": "attack",
       "rule_code": "R_NOTHING_TO_CLAIM",
       "status": "failed",
-      "tx": "92JTzvabn9LR9mDkrtsHr14SXEhp4kA6St7NQxfh1yCb"
+      "tx": "HKsGvRWEKti5GbEg2Q2UWXpN9B4wr5Hm3a3hPDwVDyRX"
     }
   ]
 }

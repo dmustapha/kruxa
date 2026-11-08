@@ -40,7 +40,7 @@
           "seeds_held_le_cap": true,
           "supply_conservation": true,
           "token": "clf3.factory.test.near",
-          "token_custody": "24185844666667",
+          "token_custody": "24212208333334",
           "token_custody_identity": true,
           "usdc_custody": "0",
           "usdc_custody_identity": true,
@@ -64,7 +64,7 @@
       "role": "attack",
       "rule_code": "R_NOT_AUTHORIZED",
       "status": "failed",
-      "tx": "Bb72mTtCa5FEzA8gprkG6YiDsTWFGD8J5oNqqHcJJxCQ"
+      "tx": "2YHp5iBp6y8bo43NU9z3GPKzX88hFxjTH86QYswzNACV"
     },
     {
       "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -73,7 +73,7 @@
       "role": "attack",
       "rule_code": "R_NOT_AUTHORIZED",
       "status": "failed",
-      "tx": "CJ2o77vaXGC4Ro8uadNgKGskLB5ur67i6bKTMPApwmQ1"
+      "tx": "H1eVXps9JY993QHNjuCgsePm516XRkEjqpHbPzQy9WbB"
     },
     {
       "expected_rule_code": null,
@@ -82,7 +82,7 @@
       "role": "support",
       "rule_code": null,
       "status": "succeeded",
-      "tx": "FB6ck3k1nS8pHzzceF25u6xLXLte43hna3YwSh27mTme"
+      "tx": "FEyaUw3XL1Xd1BFBDeQQzoHSADvKJ9S3YShRFVzHfW6W"
     }
   ]
 }

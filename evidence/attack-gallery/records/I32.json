@@ -1,9 +1,9 @@
 {
-  "attempt": "With a 300 USDC instant sub-cap and one 250 USDC pool open, a second 250 USDC seed is sent, and a buyer tries to push the first pool 100 USDC higher.",
+  "attempt": "With a 300 USDC instant sub-cap (a cap on the SUM OF SEEDS since market 1.1.1) and one 250 USDC pool open, a second 250 USDC seed is sent. A buyer then pushes the first pool well past the sub-cap with a buy, which must no longer be blocked (trading cannot block seeding).",
   "checks": [
     {
       "ok": true,
-      "what": "buyer refunded in full"
+      "what": "the buy was not blocked by the sub-cap"
     },
     {
       "ok": true,
@@ -61,12 +61,12 @@
     ],
     "market": {
       "get_invariants": {
-        "global_q": "289740000",
+        "global_q": "349350000",
         "instant_q_matches": true,
         "parked_count": 0,
-        "usdc_custody": "290000000",
+        "usdc_custody": "350000000",
         "usdc_custody_identity": true,
-        "usdc_expected": "290000000"
+        "usdc_expected": "350000000"
       },
       "pools": [
         {
@@ -83,7 +83,7 @@
   "network": "SANDBOX",
   "result": "REFUSED",
   "target": "instant+market",
-  "title": "Instant launches crowd out the market: seed and buy above the instant sub-cap",
+  "title": "Instant seeds crowd out the market: a seed above the instant sub-cap",
   "transactions": [
     {
       "expected_rule_code": "R_MARKET_CAP",
@@ -92,25 +92,16 @@
       "role": "attack",
       "rule_code": "R_MARKET_CAP",
       "status": "succeeded",
-      "tx": "82dMWJmCjV9Qau3oJRRvFie8NdD4GCPMJe7Z4TuLjfCb"
-    },
-    {
-      "expected_rule_code": "R_MARKET_CAP",
-      "label": "buy of 100 USDC past the sub-cap",
-      "network": "SANDBOX",
-      "role": "attack",
-      "rule_code": "R_MARKET_CAP",
-      "status": "succeeded",
-      "tx": "D6C6x8cYCmBQkBzC7wcmtyJqhEJ4ySJSSQe6fBWPhKmT"
+      "tx": "74R3TssGKCsWCQBFvMqqZ4d1ipACt5NtYEH7b36ngB6n"
     },
     {
       "expected_rule_code": null,
-      "label": "a 40 USDC buy inside the sub-cap still works",
+      "label": "a 100 USDC buy that takes the reserve past the sub-cap (allowed since 1.1.1)",
       "network": "SANDBOX",
       "role": "support",
       "rule_code": null,
       "status": "succeeded",
-      "tx": "F6Zk499pYBp4wLzdes5UGptppCi5NtQenMYrFTZoLEmk"
+      "tx": "98uMHH6mvsUyTcephLP3YFLX9a1LXjRari8XKsgPWX4C"
     }
   ]
 }

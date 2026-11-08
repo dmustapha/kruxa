@@ -56,7 +56,7 @@
       "role": "attack",
       "rule_code": "R_NOTHING_TO_CLAIM",
       "status": "failed",
-      "tx": "533QNjMRuGWWVRNGjs73M7vi83yvotbgyBv4PUe57m8F"
+      "tx": "69HpumuyN2kZ8Pm9tVZD13qSP5XShL7uh7LvbhcYUkoA"
     },
     {
       "expected_rule_code": "STREAM_CAP",
@@ -65,7 +65,7 @@
       "role": "attack",
       "rule_code": "STREAM_CAP",
       "status": "failed",
-      "tx": "D5RVuJHFDprHN7spaZX6Q3iLefZ9cLvB6Y5fDsNRLs2T"
+      "tx": "9sjMKSnNLurMTGR9AFs6i9NJR47jfEqJD4kpKJMhCc5y"
     },
     {
       "expected_rule_code": "STREAM_CAP",
@@ -74,7 +74,7 @@
       "role": "attack",
       "rule_code": "STREAM_CAP",
       "status": "failed",
-      "tx": "Bs84AMPDsSzQXfAg4Ayw7GLoQRkmXkdsYhx5Ms6EA7KB"
+      "tx": "BZfrXkmYtaDAzYkmHM921H6GDFR2WxMu3ieXodrnGRjy"
     }
   ]
 }

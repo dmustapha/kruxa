@@ -48,7 +48,7 @@
           "seeds_held_le_cap": true,
           "supply_conservation": true,
           "token": "frzn.factory.test.near",
-          "token_custody": "31458175500000",
+          "token_custody": "31442702833334",
           "token_custody_identity": true,
           "usdc_custody": "0",
           "usdc_custody_identity": true,
@@ -72,7 +72,7 @@
       "role": "support",
       "rule_code": null,
       "status": "succeeded",
-      "tx": "5fT4ZnftRmRDGa6kjFyX7oCtjswHcAydSw3U1Yj2MU6L"
+      "tx": "8XJ5hTBkxma7JJgYkvDRRnerGihm5pWHTPoHJHanm47F"
     },
     {
       "expected_rule_code": "R_FROZEN",
@@ -81,7 +81,7 @@
       "role": "attack",
       "rule_code": "R_FROZEN",
       "status": "failed",
-      "tx": "HNcBEDmqvXK1wsaB9ss2QKDzK4JMPyvjMPnuENMXT844"
+      "tx": "DzdczDcHjhwqvyfqvo5jogskiwwej4NskanLJKbJFfv1"
     },
     {
       "expected_rule_code": "R_FROZEN",
@@ -90,7 +90,7 @@
       "role": "attack",
       "rule_code": "R_FROZEN",
       "status": "failed",
-      "tx": "GdUpMBjVQUdVCPJDAnDMad5rFJbFyaNRQi1huCGxnv7k"
+      "tx": "8bmQbnBTzCvjByvTmPTYXFwDn7smjTjk4gjj1SFwU7VK"
     },
     {
       "expected_rule_code": "R_FROZEN",
@@ -99,7 +99,7 @@
       "role": "attack",
       "rule_code": "R_FROZEN",
       "status": "failed",
-      "tx": "94cQvkuCa6hR3FjrDKxVfENSLPcZ4YW1U4xJ89FoTy6W"
+      "tx": "45Mm1mx2MyQPYTtFDTDKRWDgyRMsKmfxyyAMPVE3aZ7t"
     },
     {
       "expected_rule_code": null,
@@ -108,7 +108,7 @@
       "role": "support",
       "rule_code": null,
       "status": "succeeded",
-      "tx": "8mD96nimCtM19ZBxhERyvBkHYVkqzVy8JYiqXUR5yrje"
+      "tx": "Aiw5eLSSSQnwaKCK1vKw7oCzLYsTQoR2LiEw3XGfzCfq"
     },
     {
       "expected_rule_code": null,
@@ -117,7 +117,7 @@
       "role": "support",
       "rule_code": null,
       "status": "succeeded",
-      "tx": "HxZue3dQ8NQS92qA3cV7KLcfh7j5WYFSR4jyCQdsB9r8"
+      "tx": "DiSKEGoGq8L9gpJGfT5NrveKJox1XXsenFWTyTYGntxK"
     },
     {
       "expected_rule_code": null,
@@ -126,7 +126,7 @@
       "role": "support",
       "rule_code": null,
       "status": "succeeded",
-      "tx": "HcVrB21TAv2DiaK7bbGKvLtjuAHnpuN3FhGrKRhDHKEh"
+      "tx": "96SL77W9iqof67TAigM8rEdadzaYUusTonBctEPf2zgm"
     }
   ]
 }

@@ -36,7 +36,7 @@
           "seeds_held_le_cap": true,
           "supply_conservation": true,
           "token": "paus.factory.test.near",
-          "token_custody": "33164965500000",
+          "token_custody": "33096988833334",
           "token_custody_identity": true,
           "usdc_custody": "250000000",
           "usdc_custody_identity": true,
@@ -77,7 +77,7 @@
       "role": "support",
       "rule_code": null,
       "status": "succeeded",
-      "tx": "3rLZFybmuBdYkQakqemnjTFLPeiYvqH5qWXPrhzhoCFG"
+      "tx": "4dZ76D5SrYbLLLt8nRosk3WjohKqHNDLpxE6FxDgUQwR"
     },
     {
       "expected_rule_code": "R_PAUSED",
@@ -86,7 +86,7 @@
       "role": "attack",
       "rule_code": "R_PAUSED",
       "status": "failed",
-      "tx": "GVH8VHhfSz9keek7UTCS1FGJfr29SuT9eDBqVUeJVrhU"
+      "tx": "9VNRKNDP3FFKYD4Q8Dx4tjVBgPwQYB1aa7cWWfdyywx"
     },
     {
       "expected_rule_code": "R_PAUSED",
@@ -95,7 +95,7 @@
       "role": "attack",
       "rule_code": "R_PAUSED",
       "status": "succeeded",
-      "tx": "2bhivvc3D6UQADYrg8nU364zvZS54cZ6rgRsfSVQGhWF"
+      "tx": "DJ8tTAAT1AUZ9W99D591wZCkcgHErqVofAcmoexvbjLY"
     },
     {
       "expected_rule_code": "R_PAUSED",
@@ -104,7 +104,7 @@
       "role": "attack",
       "rule_code": "R_PAUSED",
       "status": "failed",
-      "tx": "8ziEhLqgAsmBeZ3TDUzq1cs9PN5C89f3Y1jCp8dvabWt"
+      "tx": "ChxTh33zhgrH6mRjbM5FK96hggkP37Shf3aMY3v1Sd8v"
     },
     {
       "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -113,7 +113,7 @@
       "role": "attack",
       "rule_code": "R_NOT_AUTHORIZED",
       "status": "failed",
-      "tx": "9rNFiAFtBxDNDVw8mH1zqKqSfTXhx1Hg5W1bwpLqxpBX"
+      "tx": "6ANPoHuufkfNGP2bbZmxCAz8wPt6FPriA7oWXVradBiV"
     },
     {
       "expected_rule_code": null,
@@ -122,7 +122,7 @@
       "role": "support",
       "rule_code": null,
       "status": "succeeded",
-      "tx": "DuuVsgTGsNgoapCohsrJGfr3A3EUXfxXR5pfsJVweTRL"
+      "tx": "7htE5MSi9PmLRsfNVGBgndNPVM9mYvUP1bxYmN3W7sPn"
     },
     {
       "expected_rule_code": null,
@@ -131,7 +131,7 @@
       "role": "support",
       "rule_code": null,
       "status": "succeeded",
-      "tx": "F9ya1akzETbxUWci1GjdcaHptXErG7DKf7gTAMyHetyh"
+      "tx": "6yM9qTx2irvAMfHjrbEar3eQDWkKuoz1qnBX79UtrJBa"
     },
     {
       "expected_rule_code": null,
@@ -140,7 +140,7 @@
       "role": "support",
       "rule_code": null,
       "status": "succeeded",
-      "tx": "GnxLMegK7HCfUygeJxta5ig8wmboSsT7b1QXZSnuYN6K"
+      "tx": "6XP865bvEazSw9xLPWMTWcow8pR2yp25WPyuDxLPKkVD"
     }
   ]
 }

@@ -62,18 +62,18 @@
       "label": "concurrent open_instant by x",
       "network": "SANDBOX",
       "role": "attack",
-      "rule_code": null,
-      "status": "succeeded",
-      "tx": "CwC8dobtL7Y4s6MbA5qnUxdzyu7E737dsyWK3yXEeX4F"
+      "rule_code": "R_INSTANT_STATE",
+      "status": "failed",
+      "tx": "H9TsA6KHHSWJ5K5DTfpmTTyhxGQ48dJ9YMwcCkTj562u"
     },
     {
       "expected_rule_code": null,
       "label": "concurrent open_instant by y",
       "network": "SANDBOX",
       "role": "attack",
-      "rule_code": "R_INSTANT_STATE",
-      "status": "failed",
-      "tx": "FzTyEi3ab6ppjYT8oouY6Sthd6SwTxyuavtySXMG7YhX"
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "BHvcuJcodPbSnbAk9DVYR56sjRbhLZqHhBE7iASqUsBQ"
     },
     {
       "expected_rule_code": null,
@@ -82,7 +82,7 @@
       "role": "attack",
       "rule_code": "R_INSTANT_STATE",
       "status": "failed",
-      "tx": "EVFwtTAPAwXMoogcVHpA49KTLsgfCDfiyf3NonNpSfGJ"
+      "tx": "AwjSThq9g6cGtB1HdEY4E2cAJd6H4ZWR74cMzQxC4Qyq"
     }
   ]
 }

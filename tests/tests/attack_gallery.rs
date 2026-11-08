@@ -2131,36 +2131,37 @@ async fn i30_seed_above_the_market_per_pool_cap() -> anyhow::Result<()> {
 }
 
 #[tokio::test]
-async fn i31_seed_above_the_market_global_cap() -> anyhow::Result<()> {
-    let ix = ic::Ix::real("demo", Some((5_000 * IUSDC, 400 * IUSDC, 5_000 * IUSDC)), true).await?;
-    let first = ix.launch_to_open(&ix.creator, ic::params("GLB1")).await?;
-    let second_creator = ix.user("creator2", 250 * IUSDC).await?;
-    let second = ix.create_ready(&second_creator, ic::params("GLB2"), None).await?;
-    ix.seed(&second_creator, &second, 250 * IUSDC).await?.into_result()?;
-    let mut a = Attack::new("I31", "CO7", "Seed that would push the market past the global reserve cap", "instant+market", Expect::Refused, "R_MARKET_CAP")
-        .attempt("With 250 USDC already in one pool and a 400 USDC global cap, a second launch's 250 USDC seed is handed to the market.");
-    a.attack("open_instant of the second launch", &ix.open(&second_creator, &second).await?, "R_MARKET_CAP");
-    a.check("the second pool does not exist and its seed is still at the launcher", mk_get_pool(&ix, &second).await.is_null() && ix.usdc_bal(ix.launcher.id()).await == 250 * IUSDC);
-    a.check("the first pool is untouched", ic::n(&mk_get_pool(&ix, &first).await["q"]) == 250 * IUSDC);
-    let (inv, ok) = inst_inv(&ix, &[&first, &second], true).await;
+async fn i31_buy_above_the_market_global_cap_on_an_instant_pool() -> anyhow::Result<()> {
+    let ix = ic::Ix::real("demo", Some((5_000 * IUSDC, 1_200 * IUSDC, 5_000 * IUSDC)), true).await?;
+    let mut p = ic::params("GLB1");
+    p["seed_q"] = json!((1_000 * IUSDC).to_string());
+    let first = ix.launch_to_open(&ix.creator, p).await?;
+    let bob = itrader(&ix, "bob", "GLB1", 1_000 * IUSDC).await?;
+    let q0 = ic::n(&mk_get_pool(&ix, &first).await["q"]);
+    let mut a = Attack::new("I31", "CO7", "Buy that would push the market past the global reserve cap (instant pool)", "market", Expect::Refused, "R_MARKET_CAP")
+        .attempt("With 1,000 USDC in an instant pool and a 1,200 USDC global cap, a buyer sends 300 USDC. (Market 1.1.1: instant seeds are no longer checked against the global cap, only buys are.)");
+    a.attack("buy of 300 USDC past the global cap", &ibuy(&ix, &bob, &first, 300 * IUSDC, None).await, "R_MARKET_CAP");
+    a.check("buyer refunded in full", ix.usdc_bal(bob.id()).await == 1_000 * IUSDC);
+    a.check("the pool reserve is unchanged", ic::n(&mk_get_pool(&ix, &first).await["q"]) == q0);
+    a.step("a 100 USDC buy inside the cap still works", &ibuy(&ix, &bob, &first, 100 * IUSDC, None).await);
+    let (inv, ok) = inst_inv(&ix, &[&first], true).await;
     a.finish(inv, ok);
     Ok(())
 }
 
 #[tokio::test]
-async fn i32_seed_and_buys_above_the_instant_sub_cap() -> anyhow::Result<()> {
+async fn i32_seeds_above_the_instant_sub_cap() -> anyhow::Result<()> {
     let ix = ic::Ix::real("demo", Some((5_000 * IUSDC, 15_000 * IUSDC, 300 * IUSDC)), true).await?;
     let first = ix.launch_to_open(&ix.creator, ic::params("SUB1")).await?;
     let b_creator = ix.user("creatorb", 250 * IUSDC).await?;
     let second = ix.create_ready(&b_creator, ic::params("SUB2"), None).await?;
     ix.seed(&b_creator, &second, 250 * IUSDC).await?.into_result()?;
     let bob = itrader(&ix, "bob", "SUB1", 1_000 * IUSDC).await?;
-    let mut a = Attack::new("I32", "CO7", "Instant launches crowd out the market: seed and buy above the instant sub-cap", "instant+market", Expect::Refused, "R_MARKET_CAP")
-        .attempt("With a 300 USDC instant sub-cap and one 250 USDC pool open, a second 250 USDC seed is sent, and a buyer tries to push the first pool 100 USDC higher.");
+    let mut a = Attack::new("I32", "CO7", "Instant seeds crowd out the market: a seed above the instant sub-cap", "instant+market", Expect::Refused, "R_MARKET_CAP")
+        .attempt("With a 300 USDC instant sub-cap (a cap on the SUM OF SEEDS since market 1.1.1) and one 250 USDC pool open, a second 250 USDC seed is sent. A buyer then pushes the first pool well past the sub-cap with a buy, which must no longer be blocked (trading cannot block seeding).");
     a.attack("second launch's seed past the sub-cap", &ix.open(&b_creator, &second).await?, "R_MARKET_CAP");
-    a.attack("buy of 100 USDC past the sub-cap", &ibuy(&ix, &bob, &first, 100 * IUSDC, None).await, "R_MARKET_CAP");
-    a.check("buyer refunded in full", ix.usdc_bal(bob.id()).await == 1_000 * IUSDC);
-    a.step("a 40 USDC buy inside the sub-cap still works", &ibuy(&ix, &bob, &first, 40 * IUSDC, None).await);
+    a.step("a 100 USDC buy that takes the reserve past the sub-cap (allowed since 1.1.1)", &ibuy(&ix, &bob, &first, 100 * IUSDC, None).await);
+    a.check("the buy was not blocked by the sub-cap", ix.bal(&ix.token_id("SUB1"), bob.id()).await > 0);
     a.check("the second launch is still in Handoff, seed intact", ix.status(&second).await == "Handoff" && ix.usdc_bal(ix.launcher.id()).await == 250 * IUSDC);
     let (inv, ok) = inst_inv(&ix, &[&first, &second], true).await;
     a.finish(inv, ok);

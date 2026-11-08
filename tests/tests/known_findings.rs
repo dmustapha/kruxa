@@ -204,14 +204,15 @@ async fn k_m02_profile_typo_and_demo_on_a_mainnet_suffix() -> anyhow::Result<()>
         }
     }
     let typo_open = findings.iter().any(|f| (f["profile"] == "Mainnet" || f["profile"] == "prod") && f["accepted"] == true && f["creator_gate"] == false);
-    let demo_on_near = findings.iter().any(|f| f["profile"] == "demo" && f["accepted"] == true && f["account_suffix_near"] == true);
-    let testnet_on_near = findings.iter().any(|f| f["profile"] == "testnet" && f["accepted"] == true && f["account_suffix_near"] == true);
+    let sandbox_acct = |f: &Value| f["launcher_account"].as_str().map(|a| a.ends_with(".test.near")).unwrap_or(false);
+    let demo_on_near = findings.iter().any(|f| f["profile"] == "demo" && f["accepted"] == true && f["account_suffix_near"] == true && !sandbox_acct(f));
+    let testnet_on_near = findings.iter().any(|f| f["profile"] == "testnet" && f["accepted"] == true && f["account_suffix_near"] == true && !sandbox_acct(f));
     record(
         "K-M02",
         "M-02",
         "Unvalidated profile string: a typo disables the mainnet gate and fee; demo and testnet profiles deploy on a .near account",
         if typo_open || demo_on_near || testnet_on_near { "EXPLOITABLE" } else { "NOT_EXPLOITABLE" },
-        &format!("typo profile ('Mainnet' or 'prod') accepted with the gate open: {typo_open}; demo accepted on a .near account: {demo_on_near}; testnet accepted on a .near account: {testnet_on_near}"),
+        &format!("typo profile ('Mainnet' or 'prod') accepted with the gate open: {typo_open}; demo accepted on a real .near account: {demo_on_near}; testnet accepted on a real .near account: {testnet_on_near}. The sandbox cannot host a real .near account (every sandbox account ends .test.near, which the launcher allows for demo and testnet), so the account binding is checked on testnet instead (see evidence/instant-testnet)"),
         json!({ "profiles": findings }),
     );
     Ok(())
@@ -247,15 +248,18 @@ async fn k_h01_failed_creation_clears_the_rate_limit() -> anyhow::Result<()> {
     let ix = ic::Ix::new("demo", true).await?;
     ix.factory.call("set_fail").args_json(json!({ "fail": true })).transact().await?.into_result()?;
     let mut rounds = vec![];
-    for i in 0..4 {
-        let r = ix.create_raw(&ix.creator, ic::params("HFAI"), None).await?;
-        let st = ix.status(&(ic::ID0 + i).to_string()).await;
-        let rl = ic::has_code(&r, "R_RATE_LIMIT");
-        let refundable = ic::n(&ix.inst(&(ic::ID0 + i).to_string()).await["deposit_refundable"]);
-        let paid = ic::n(&ix.inst(&(ic::ID0 + i).to_string()).await["deposit_paid"]);
-        rounds.push(json!({ "round": i, "status": st, "rate_limited": rl, "deposit_paid": paid.to_string(), "deposit_refundable": refundable.to_string(), "refund_includes_factory_deposit": refundable == paid - 20_000_000_000_000_000_000_000 }));
+    for i in 0..4u64 {
+        let r = ic::has_code(&ix.create_raw(&ix.creator, ic::params("HFAI"), None).await?, "R_RATE_LIMIT");
+        let rec = ix.view("get_instant", ic::lid(&(ic::ID0 + i).to_string())).await;
+        if rec.is_null() {
+            rounds.push(json!({ "round": i, "created": false, "rate_limited": r }));
+            continue;
+        }
+        let (paid, refundable) = (ic::n(&rec["deposit_paid"]), ic::n(&rec["deposit_refundable"]));
+        rounds.push(json!({ "round": i, "created": true, "status": rec["status"], "rate_limited": r, "deposit_paid": paid.to_string(),
+                            "deposit_refundable": refundable.to_string(), "refund_includes_factory_deposit": refundable == paid - 20_000_000_000_000_000_000_000 }));
     }
-    let cleared = rounds.iter().all(|r| r["status"] == "CreationFailed" && r["rate_limited"] == false);
+    let cleared = rounds.iter().all(|r| r["created"] == true && r["status"] == "CreationFailed" && r["rate_limited"] == false);
     record(
         "K-H01",
         "H-01",

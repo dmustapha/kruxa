@@ -45,7 +45,7 @@
       "role": "attack",
       "rule_code": "R_WRONG_PHASE",
       "status": "failed",
-      "tx": "Guta9hrDXeU38DY1AXUWJNSMVuMjWiPNy961RxUf59hC"
+      "tx": "C89BaiFkD4dxKSAyaqKefXjG3sNGRixxHomqLpJH8XnV"
     },
     {
       "expected_rule_code": null,
@@ -54,7 +54,7 @@
       "role": "support",
       "rule_code": null,
       "status": "succeeded",
-      "tx": "AtCLca9xn9TLaWub1YuqS95pyEmTWh6Pp7KFzDAtsgi9"
+      "tx": "2FbYu9yjBKMTPmwbXfgyE8ZkeyQiNDkxV7ARYSGcxKaV"
     },
     {
       "expected_rule_code": "R_WRONG_PHASE",
@@ -63,7 +63,7 @@
       "role": "attack",
       "rule_code": "R_WRONG_PHASE",
       "status": "failed",
-      "tx": "FiJaFkndxVHCpgnnHtUvdNUfPrsTHAeRcqQv3aYq2yvL"
+      "tx": "HDgCX72mQVPUfbX1FXS2TZ9dHDrWEZ6qUWqnzwtV31wM"
     }
   ]
 }

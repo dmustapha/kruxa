@@ -1,13 +1,8 @@
 {
   "data": {
     "follow_up": {},
-    "min_safe_tgas": 244,
+    "min_safe_tgas": 255,
     "open_tgas": [
-      244,
-      245,
-      246,
-      248,
-      250,
       255,
       260,
       270,
@@ -29,14 +24,14 @@
           },
           {
             "executor": "instant.test.near",
-            "tgas": 2.527324128808
+            "tgas": 1.316000817931
           }
         ],
         "seed_due": "100000000",
         "seed_inflight": "0",
         "status": "Seeded",
-        "total_gas_burnt_tgas": 2.837195609978,
-        "tx": "D7J5n2m1WN1wizSw7ND1EZwuwPwDTWQwGvLk5rETGK3v"
+        "total_gas_burnt_tgas": 1.625872299101,
+        "tx": "57zyxje28BSTbyK65ikjwdJM2TY1njXF9ej3Syq5onys"
       },
       {
         "outcome": "NOTHING_HAPPENED",
@@ -50,19 +45,19 @@
           },
           {
             "executor": "instant.test.near",
-            "tgas": 2.527139008708
+            "tgas": 1.316000817931
           }
         ],
         "seed_due": "100000000",
         "seed_inflight": "0",
         "status": "Seeded",
-        "total_gas_burnt_tgas": 2.837010489878,
-        "tx": "416c7H4HyuzU87vHWLHJS9jZvuwboEgqNzaBwLYbgdxX"
+        "total_gas_burnt_tgas": 1.625872299101,
+        "tx": "5hvPWQ4C9x9YeyASB6cUzwe5Ph7JPAqYgx2hRPiRQB7g"
       },
       {
-        "outcome": "OPEN",
-        "outer_call_success": true,
-        "pool_state": "Open",
+        "outcome": "NOTHING_HAPPENED",
+        "outer_call_success": false,
+        "pool_state": null,
         "prepaid_tgas": 244,
         "receipts_gas_burnt_tgas": [
           {
@@ -71,99 +66,19 @@
           },
           {
             "executor": "instant.test.near",
-            "tgas": 2.791247600659
-          },
-          {
-            "executor": "usdc.test.near",
-            "tgas": 2.522923618805
-          },
-          {
-            "executor": "market.test.near",
-            "tgas": 1.857935442256
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "usdc.test.near",
-            "tgas": 1.35620256433
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "instant.test.near",
-            "tgas": 3.525176660527
-          },
-          {
-            "executor": "market.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "gs2.factory.test.near",
-            "tgas": 1.412961947851
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "gs2.factory.test.near",
-            "tgas": 2.429883613553
-          },
-          {
-            "executor": "market.test.near",
-            "tgas": 2.185838431165
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "gs2.factory.test.near",
-            "tgas": 1.365364856896
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "instant.test.near",
-            "tgas": 2.034839480907
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
+            "tgas": 1.316000817931
           }
         ],
-        "seed_due": "0",
+        "seed_due": "100000000",
         "seed_inflight": "0",
-        "status": "Open",
-        "total_gas_burnt_tgas": 24.247253885619,
-        "tx": "FMCM6Qy1ThmBhjE8LAdDVftGhf79D6AeYnHpi9xFP1ji"
+        "status": "Seeded",
+        "total_gas_burnt_tgas": 1.625872299101,
+        "tx": "NZURQqepaBQk77Lzx9tEHuLKD4yhwDiFLj3i2ivXHMG"
       },
       {
-        "outcome": "OPEN",
-        "outer_call_success": true,
-        "pool_state": "Open",
+        "outcome": "NOTHING_HAPPENED",
+        "outer_call_success": false,
+        "pool_state": null,
         "prepaid_tgas": 245,
         "receipts_gas_burnt_tgas": [
           {
@@ -172,99 +87,19 @@
           },
           {
             "executor": "instant.test.near",
-            "tgas": 2.791309307359
-          },
-          {
-            "executor": "usdc.test.near",
-            "tgas": 2.54065097161
-          },
-          {
-            "executor": "market.test.near",
-            "tgas": 1.893920895693
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "usdc.test.near",
-            "tgas": 1.35620256433
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "instant.test.near",
-            "tgas": 3.525176660527
-          },
-          {
-            "executor": "market.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "gs3.factory.test.near",
-            "tgas": 1.412961947851
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "gs3.factory.test.near",
-            "tgas": 2.429883613553
-          },
-          {
-            "executor": "market.test.near",
-            "tgas": 2.192678431165
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "gs3.factory.test.near",
-            "tgas": 1.365364856896
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "instant.test.near",
-            "tgas": 2.034839480907
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
+            "tgas": 1.316000817931
           }
         ],
-        "seed_due": "0",
+        "seed_due": "100000000",
         "seed_inflight": "0",
-        "status": "Open",
-        "total_gas_burnt_tgas": 24.307868398561,
-        "tx": "2aL3eBRpEHRJ5etZXgfXHXjjpdrV1wEwa59AnQTwQ5hT"
+        "status": "Seeded",
+        "total_gas_burnt_tgas": 1.625872299101,
+        "tx": "5ngwtAPWK6W4iPAKQSdXYSEzAHmPNTPr4zRNx3gVU2JS"
       },
       {
-        "outcome": "OPEN",
-        "outer_call_success": true,
-        "pool_state": "Open",
+        "outcome": "NOTHING_HAPPENED",
+        "outer_call_success": false,
+        "pool_state": null,
         "prepaid_tgas": 246,
         "receipts_gas_burnt_tgas": [
           {
@@ -273,99 +108,19 @@
           },
           {
             "executor": "instant.test.near",
-            "tgas": 2.791432720759
-          },
-          {
-            "executor": "usdc.test.near",
-            "tgas": 2.54065097161
-          },
-          {
-            "executor": "market.test.near",
-            "tgas": 1.896200895693
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "usdc.test.near",
-            "tgas": 1.35620256433
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "instant.test.near",
-            "tgas": 3.525176660527
-          },
-          {
-            "executor": "market.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "gs4.factory.test.near",
-            "tgas": 1.412961947851
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "gs4.factory.test.near",
-            "tgas": 2.429883613553
-          },
-          {
-            "executor": "market.test.near",
-            "tgas": 2.194958431165
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "gs4.factory.test.near",
-            "tgas": 1.365364856896
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "instant.test.near",
-            "tgas": 2.034839480907
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
+            "tgas": 1.316000817931
           }
         ],
-        "seed_due": "0",
+        "seed_due": "100000000",
         "seed_inflight": "0",
-        "status": "Open",
-        "total_gas_burnt_tgas": 24.312551811961,
-        "tx": "45T6PMiuFPY5Uh942jjuNSJ6hCJmPymX3ZY76obDvdVh"
+        "status": "Seeded",
+        "total_gas_burnt_tgas": 1.625872299101,
+        "tx": "6ECMFkMSYpN1HKAE4etNNy6og4Gd9wNKgvMDKca3Ez5K"
       },
       {
-        "outcome": "OPEN",
-        "outer_call_success": true,
-        "pool_state": "Open",
+        "outcome": "NOTHING_HAPPENED",
+        "outer_call_success": false,
+        "pool_state": null,
         "prepaid_tgas": 248,
         "receipts_gas_burnt_tgas": [
           {
@@ -374,99 +129,19 @@
           },
           {
             "executor": "instant.test.near",
-            "tgas": 2.791185893959
-          },
-          {
-            "executor": "usdc.test.near",
-            "tgas": 2.54065097161
-          },
-          {
-            "executor": "market.test.near",
-            "tgas": 1.896200895693
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "usdc.test.near",
-            "tgas": 1.35620256433
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "instant.test.near",
-            "tgas": 3.525176660527
-          },
-          {
-            "executor": "market.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "gs5.factory.test.near",
-            "tgas": 1.412961947851
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "gs5.factory.test.near",
-            "tgas": 2.429883613553
-          },
-          {
-            "executor": "market.test.near",
-            "tgas": 2.194958431165
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "gs5.factory.test.near",
-            "tgas": 1.365364856896
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "instant.test.near",
-            "tgas": 2.034839480907
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
+            "tgas": 1.316000817931
           }
         ],
-        "seed_due": "0",
+        "seed_due": "100000000",
         "seed_inflight": "0",
-        "status": "Open",
-        "total_gas_burnt_tgas": 24.312304985161,
-        "tx": "4SakT1TmkSXogEkSnVvUNJH8bKx458payqj9fK8a8AVR"
+        "status": "Seeded",
+        "total_gas_burnt_tgas": 1.625872299101,
+        "tx": "F2cHFzZGUcLA6PZQwuUwtXfw2pZfzeNdGnq3V7SC7zAB"
       },
       {
-        "outcome": "OPEN",
-        "outer_call_success": true,
-        "pool_state": "Open",
+        "outcome": "NOTHING_HAPPENED",
+        "outer_call_success": false,
+        "pool_state": null,
         "prepaid_tgas": 250,
         "receipts_gas_burnt_tgas": [
           {
@@ -475,94 +150,14 @@
           },
           {
             "executor": "instant.test.near",
-            "tgas": 2.791371014059
-          },
-          {
-            "executor": "usdc.test.near",
-            "tgas": 2.54065097161
-          },
-          {
-            "executor": "market.test.near",
-            "tgas": 1.896200895693
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "usdc.test.near",
-            "tgas": 1.35620256433
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "instant.test.near",
-            "tgas": 3.525176660527
-          },
-          {
-            "executor": "market.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "gs6.factory.test.near",
-            "tgas": 1.412961947851
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "gs6.factory.test.near",
-            "tgas": 2.429883613553
-          },
-          {
-            "executor": "market.test.near",
-            "tgas": 2.194958431165
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "gs6.factory.test.near",
-            "tgas": 1.365364856896
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "instant.test.near",
-            "tgas": 2.034839480907
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
-          },
-          {
-            "executor": "stranger.test.near",
-            "tgas": 0.2231825625
+            "tgas": 1.316000817931
           }
         ],
-        "seed_due": "0",
+        "seed_due": "100000000",
         "seed_inflight": "0",
-        "status": "Open",
-        "total_gas_burnt_tgas": 24.312490105261,
-        "tx": "8uf4TrfihggEY66rrfgfEC31ndrDgg8di9BfM7XXH9ph"
+        "status": "Seeded",
+        "total_gas_burnt_tgas": 1.625872299101,
+        "tx": "WYUfxoNRGPL78wDG7CEk7U9vXfeBJ9Jn3QfbjatMi9W"
       },
       {
         "outcome": "OPEN",
@@ -576,15 +171,15 @@
           },
           {
             "executor": "instant.test.near",
-            "tgas": 2.791309307359
+            "tgas": 2.802181648316
           },
           {
             "executor": "usdc.test.near",
-            "tgas": 2.54065097161
+            "tgas": 2.522923618805
           },
           {
             "executor": "market.test.near",
-            "tgas": 1.896200895693
+            "tgas": 1.860309953728
           },
           {
             "executor": "stranger.test.near",
@@ -604,7 +199,7 @@
           },
           {
             "executor": "instant.test.near",
-            "tgas": 3.525176660527
+            "tgas": 3.610947555827
           },
           {
             "executor": "market.test.near",
@@ -616,7 +211,7 @@
           },
           {
             "executor": "gs7.factory.test.near",
-            "tgas": 1.412961947851
+            "tgas": 1.414683148951
           },
           {
             "executor": "stranger.test.near",
@@ -624,11 +219,11 @@
           },
           {
             "executor": "gs7.factory.test.near",
-            "tgas": 2.429883613553
+            "tgas": 2.452683613553
           },
           {
             "executor": "market.test.near",
-            "tgas": 2.194958431165
+            "tgas": 2.188450719121
           },
           {
             "executor": "stranger.test.near",
@@ -648,7 +243,7 @@
           },
           {
             "executor": "instant.test.near",
-            "tgas": 2.034839480907
+            "tgas": 2.046247276699
           },
           {
             "executor": "stranger.test.near",
@@ -662,8 +257,8 @@
         "seed_due": "0",
         "seed_inflight": "0",
         "status": "Open",
-        "total_gas_burnt_tgas": 24.312428398561,
-        "tx": "GXiUyXgLASWacg2quwkTCfeLSHi6fncyCjMe8nABiKrJ"
+        "total_gas_burnt_tgas": 24.384874624896,
+        "tx": "FQw62sJw6YdMWDsj9HpNAtAFtWBUR96CY1qBewHDpJvZ"
       },
       {
         "outcome": "OPEN",
@@ -677,7 +272,7 @@
           },
           {
             "executor": "instant.test.near",
-            "tgas": 2.791247600659
+            "tgas": 2.802366768416
           },
           {
             "executor": "usdc.test.near",
@@ -685,7 +280,7 @@
           },
           {
             "executor": "market.test.near",
-            "tgas": 1.896200895693
+            "tgas": 1.896287179605
           },
           {
             "executor": "stranger.test.near",
@@ -705,7 +300,7 @@
           },
           {
             "executor": "instant.test.near",
-            "tgas": 3.525176660527
+            "tgas": 3.610947555827
           },
           {
             "executor": "market.test.near",
@@ -717,7 +312,7 @@
           },
           {
             "executor": "gs8.factory.test.near",
-            "tgas": 1.412961947851
+            "tgas": 1.414683148951
           },
           {
             "executor": "stranger.test.near",
@@ -725,11 +320,11 @@
           },
           {
             "executor": "gs8.factory.test.near",
-            "tgas": 2.429883613553
+            "tgas": 2.452683613553
           },
           {
             "executor": "market.test.near",
-            "tgas": 2.194958431165
+            "tgas": 2.195290719121
           },
           {
             "executor": "stranger.test.near",
@@ -749,7 +344,7 @@
           },
           {
             "executor": "instant.test.near",
-            "tgas": 2.034839480907
+            "tgas": 2.046247276699
           },
           {
             "executor": "stranger.test.near",
@@ -763,8 +358,8 @@
         "seed_due": "0",
         "seed_inflight": "0",
         "status": "Open",
-        "total_gas_burnt_tgas": 24.312366691861,
-        "tx": "diRw8yWd2Qp9G1zBzXDiphK9Djtde1DxMRuRpDWsyPc"
+        "total_gas_burnt_tgas": 24.445604323678,
+        "tx": "FDDXXjyecvEHhLgSYgUerQpsr4xn2Q6TPWVMLwQdu4zH"
       },
       {
         "outcome": "OPEN",
@@ -778,7 +373,7 @@
           },
           {
             "executor": "instant.test.near",
-            "tgas": 2.791371014059
+            "tgas": 2.802243355016
           },
           {
             "executor": "usdc.test.near",
@@ -786,7 +381,7 @@
           },
           {
             "executor": "market.test.near",
-            "tgas": 1.896200895693
+            "tgas": 1.898567179605
           },
           {
             "executor": "stranger.test.near",
@@ -806,7 +401,7 @@
           },
           {
             "executor": "instant.test.near",
-            "tgas": 3.525176660527
+            "tgas": 3.610947555827
           },
           {
             "executor": "market.test.near",
@@ -818,7 +413,7 @@
           },
           {
             "executor": "gs9.factory.test.near",
-            "tgas": 1.412961947851
+            "tgas": 1.414683148951
           },
           {
             "executor": "stranger.test.near",
@@ -826,11 +421,11 @@
           },
           {
             "executor": "gs9.factory.test.near",
-            "tgas": 2.429883613553
+            "tgas": 2.452683613553
           },
           {
             "executor": "market.test.near",
-            "tgas": 2.194958431165
+            "tgas": 2.197570719121
           },
           {
             "executor": "stranger.test.near",
@@ -850,7 +445,7 @@
           },
           {
             "executor": "instant.test.near",
-            "tgas": 2.034839480907
+            "tgas": 2.046247276699
           },
           {
             "executor": "stranger.test.near",
@@ -864,8 +459,8 @@
         "seed_due": "0",
         "seed_inflight": "0",
         "status": "Open",
-        "total_gas_burnt_tgas": 24.312490105261,
-        "tx": "2Fj1W6qbkNbQQGubxkhvhLNPxXKG7htFXLt6oMEstXV9"
+        "total_gas_burnt_tgas": 24.450040910278,
+        "tx": "3G1qyxQCwQkhzxbPBfxas4brJgJ9PKVts6sifqqgDqhe"
       },
       {
         "outcome": "OPEN",
@@ -879,7 +474,7 @@
           },
           {
             "executor": "instant.test.near",
-            "tgas": 2.792573036792
+            "tgas": 2.803766252589
           },
           {
             "executor": "usdc.test.near",
@@ -887,7 +482,7 @@
           },
           {
             "executor": "market.test.near",
-            "tgas": 1.895248677159
+            "tgas": 1.897810776999
           },
           {
             "executor": "stranger.test.near",
@@ -907,7 +502,7 @@
           },
           {
             "executor": "instant.test.near",
-            "tgas": 3.524299295042
+            "tgas": 3.611110153926
           },
           {
             "executor": "market.test.near",
@@ -919,7 +514,7 @@
           },
           {
             "executor": "gs10.factory.test.near",
-            "tgas": 1.417521947851
+            "tgas": 1.419243148951
           },
           {
             "executor": "stranger.test.near",
@@ -927,11 +522,11 @@
           },
           {
             "executor": "gs10.factory.test.near",
-            "tgas": 2.434801566671
+            "tgas": 2.459881566671
           },
           {
             "executor": "market.test.near",
-            "tgas": 2.194571013265
+            "tgas": 2.196364659001
           },
           {
             "executor": "stranger.test.near",
@@ -951,7 +546,7 @@
           },
           {
             "executor": "instant.test.near",
-            "tgas": 2.033679109645
+            "tgas": 2.045086905437
           },
           {
             "executor": "stranger.test.near",
@@ -965,8 +560,8 @@
         "seed_due": "0",
         "seed_inflight": "0",
         "status": "Open",
-        "total_gas_burnt_tgas": 24.322361721199,
-        "tx": "FP71JV8mbQGNQwokB4q1J46bSWtuA5s1UFLn7brM9dSP"
+        "total_gas_burnt_tgas": 24.462930538348,
+        "tx": "892Wn9ewhqFtxqTQ8ao5vuZYFgdSWHf8e5eGQyk4V9DD"
       },
       {
         "outcome": "OPEN",
@@ -980,7 +575,7 @@
           },
           {
             "executor": "instant.test.near",
-            "tgas": 2.792819863592
+            "tgas": 2.803766252589
           },
           {
             "executor": "usdc.test.near",
@@ -988,7 +583,7 @@
           },
           {
             "executor": "market.test.near",
-            "tgas": 1.895248677159
+            "tgas": 1.897810776999
           },
           {
             "executor": "stranger.test.near",
@@ -1008,7 +603,7 @@
           },
           {
             "executor": "instant.test.near",
-            "tgas": 3.528859295042
+            "tgas": 3.615670153926
           },
           {
             "executor": "market.test.near",
@@ -1020,7 +615,7 @@
           },
           {
             "executor": "gs11.factory.test.near",
-            "tgas": 1.422081947851
+            "tgas": 1.423803148951
           },
           {
             "executor": "stranger.test.near",
@@ -1028,11 +623,11 @@
           },
           {
             "executor": "gs11.factory.test.near",
-            "tgas": 2.439361566671
+            "tgas": 2.466721566671
           },
           {
             "executor": "market.test.near",
-            "tgas": 2.196851013265
+            "tgas": 2.198644659001
           },
           {
             "executor": "stranger.test.near",
@@ -1052,7 +647,7 @@
           },
           {
             "executor": "instant.test.near",
-            "tgas": 2.038239109645
+            "tgas": 2.049646905437
           },
           {
             "executor": "stranger.test.near",
@@ -1066,8 +661,8 @@
         "seed_due": "0",
         "seed_inflight": "0",
         "status": "Open",
-        "total_gas_burnt_tgas": 24.345408547999,
-        "tx": "5r1QEb9oE3Awkv1DxzwWawFL1CP1uRBTxbbTabxTYNNo"
+        "total_gas_burnt_tgas": 24.488010538348,
+        "tx": "3TFZ27xPUf8rcJUXPy5NWfM7x2JwD5Lb8Fdzh3QcYzch"
       },
       {
         "outcome": "OPEN",
@@ -1081,7 +676,7 @@
           },
           {
             "executor": "instant.test.near",
-            "tgas": 2.792573036792
+            "tgas": 2.803581132489
           },
           {
             "executor": "usdc.test.near",
@@ -1089,7 +684,7 @@
           },
           {
             "executor": "market.test.near",
-            "tgas": 1.895248677159
+            "tgas": 1.897810776999
           },
           {
             "executor": "stranger.test.near",
@@ -1109,7 +704,7 @@
           },
           {
             "executor": "instant.test.near",
-            "tgas": 3.528859295042
+            "tgas": 3.615670153926
           },
           {
             "executor": "market.test.near",
@@ -1121,7 +716,7 @@
           },
           {
             "executor": "gs12.factory.test.near",
-            "tgas": 1.422081947851
+            "tgas": 1.423803148951
           },
           {
             "executor": "stranger.test.near",
@@ -1129,11 +724,11 @@
           },
           {
             "executor": "gs12.factory.test.near",
-            "tgas": 2.439361566671
+            "tgas": 2.466721566671
           },
           {
             "executor": "market.test.near",
-            "tgas": 2.199131013265
+            "tgas": 2.200924659001
           },
           {
             "executor": "stranger.test.near",
@@ -1153,7 +748,7 @@
           },
           {
             "executor": "instant.test.near",
-            "tgas": 2.038239109645
+            "tgas": 2.049646905437
           },
           {
             "executor": "stranger.test.near",
@@ -1167,8 +762,8 @@
         "seed_due": "0",
         "seed_inflight": "0",
         "status": "Open",
-        "total_gas_burnt_tgas": 24.347441721199,
-        "tx": "3LrQHqkoCFMkkskxK7S78XdDPDUtdNNUKv3iTJqNphQM"
+        "total_gas_burnt_tgas": 24.490105418248,
+        "tx": "9byHw7NfHYFuP1688xM5PSKsnS5cM5XVi9Fxp4yTwX2N"
       }
     ]
   },
@@ -1176,6 +771,6 @@
   "network": "SANDBOX",
   "result": "NOT_EXPLOITABLE",
   "review_id": "C-01",
-  "summary": "prepaid gas that stranded the seed: [] Tgas; that opened cleanly: [244, 245, 246, 248, 250, 255, 260, 270, 280, 290, 300] Tgas; lowest gas above every stranded value that opened: Some(244)",
+  "summary": "prepaid gas that stranded the seed: [] Tgas; that opened cleanly: [255, 260, 270, 280, 290, 300] Tgas; lowest gas above every stranded value that opened: Some(255)",
   "title": "open_instant with too little prepaid gas strands the consumed seed"
 }

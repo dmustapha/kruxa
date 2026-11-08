@@ -87,7 +87,7 @@ line = (f"ATTACK GALLERY ({'RED MODE ' + sab if sab else 'sandbox'}): {c['total'
         f"{c['succeeded_unexpectedly']} succeeded unexpectedly; invariants held in {c['invariants_held']}/{c['total']}; "
         f"{len(not_done)} not done (see not_done)")
 if kf:
-    line += f"; KNOWN FINDINGS (separate, pre-fix): {kf['counts']['exploitable']} exploitable, {kf['counts']['not_exploitable']} not exploitable, {kf['counts']['not_reproduced']} not reproduced (see docs/KNOWN-FINDINGS.md)"
+    line += f"; KNOWN FINDINGS (separate, see docs/KNOWN-FINDINGS.md for pre-fix and current): {kf['counts']['exploitable']} exploitable, {kf['counts']['not_exploitable']} not exploitable, {kf['counts']['not_reproduced']} not reproduced (see docs/KNOWN-FINDINGS.md)"
 print(line)
 for x in bad:
     print(f"  NOT OK: {x['id']} {x['title']} -> {x['result']}")

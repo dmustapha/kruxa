@@ -2,13 +2,13 @@
   "schema": "kruxa.attack-gallery/1",
   "network": "SANDBOX",
   "network_note": "Hashes are near-workspaces sandbox hashes. They cannot be looked up on a public explorer. A testnet re-run is planned (scripts/attack-gallery.sh --network testnet, not implemented).",
-  "generated_at": "2026-11-08T15:46:31Z",
-  "git_head": "cb3db4972e03ae719573186292ebdfe95c3148a4",
+  "generated_at": "2026-11-08T16:28:44Z",
+  "git_head": "29a629cef1306d2ebb1546f39a7a8442c01ed864",
   "red_mode_sabotage": null,
   "wasm_sha256": {
     "kruxa_core": "34d7f6b42654bd550fb13b558a9b7bb42d00958e75e60362b72a327d120483f7",
-    "kruxa_market_contract": "2817cb45f52a5dbc22ace7d1d1e6a7041edd5d3cbb95ce5daa79225358b0bdcb",
-    "kruxa_instant_contract": "1ce3157607db3c0b5f8743b5378d7d0e2daa2b154910361c0a959440b134b15d"
+    "kruxa_market_contract": "abf3d7aeadb1212361d6cfcdf14f2468fdfb231ce6e24b73ed52b60da7a54cda",
+    "kruxa_instant_contract": "7a76fa88f446d4c92490105c2d478c9d8f3497e28781c3aa5d2546cf0b0863f0"
   },
   "counts": {
     "total": 81,
@@ -25,7 +25,7 @@
     },
     "invariants_held": 81,
     "with_rule_code": 69,
-    "attack_transactions": 234
+    "attack_transactions": 233
   },
   "ok": true,
   "not_done": [
@@ -136,7 +136,7 @@
           "role": "attack",
           "rule_code": "R_NOT_CLEAR",
           "status": "failed",
-          "tx": "EQ87iubZZLpgxuby59cRmjHstLXanX1RwfyMbeQCSfjA"
+          "tx": "6qk4t1jqTA7A1qjfT2EpsW95QeYJumQbadppnFtHrnyJ"
         },
         {
           "expected_rule_code": "R_NOT_CLEAR",
@@ -145,7 +145,7 @@
           "role": "attack",
           "rule_code": "R_NOT_CLEAR",
           "status": "failed",
-          "tx": "BjwMBVezrtDPpDmn9T8vVkNK87MSfbctuUeNCNGRLyQY"
+          "tx": "7G2VcTgAshmYYXFxBYS3UeEyMAgpzPfmzBARLqkKwPxz"
         }
       ]
     },
@@ -208,7 +208,7 @@
           "role": "attack",
           "rule_code": "STREAM_CAP",
           "status": "failed",
-          "tx": "2UP1QDXE17Yj7YSH4EWX4mvARGStkxNERB48QwE6pMVF"
+          "tx": "9UEhdAVRNpev76to7CACRDfZnz83JCgmTV1N7TZcBa7b"
         }
       ]
     },
@@ -271,7 +271,7 @@
           "role": "attack",
           "rule_code": "STREAM_CAP",
           "status": "failed",
-          "tx": "C3CjmsZZWdggS6XTxLiYazwD1mRYwYhCcz5EYiR3xSnx"
+          "tx": "45XFYSCCetodz2CtLNqvpcmmfTRh38S5zkpdvEEMhy4F"
         }
       ]
     },
@@ -326,7 +326,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "6THVvUDZyHxX7SAvSkNLp1C8ZoABRCCG2ExLjgHpwJh5"
+          "tx": "Dn5Lhf7MtoTWxqGmYLUrpCf4Ycz1JLPpazt5UELW62xU"
         }
       ]
     },
@@ -377,7 +377,7 @@
           "role": "attack",
           "rule_code": "R_TOO_EARLY",
           "status": "failed",
-          "tx": "9WB1djSjAj6kgeqceis4ZtBnn3N5vKSxbr69sbCyB7GD"
+          "tx": "6hpfLAm6hpVP8QaPGmNGw3n9AeunYoSurCft95mKVRg8"
         },
         {
           "expected_rule_code": "R_TOO_EARLY",
@@ -386,7 +386,7 @@
           "role": "attack",
           "rule_code": "R_TOO_EARLY",
           "status": "failed",
-          "tx": "88UQKNmt9GtHsihaiQwTD2HXD8qn1eEsnYvXX8oFXAvv"
+          "tx": "DogcEJuiNgr4kNSmGJecAUN3rBed9xnpVv9H2W12TACw"
         }
       ]
     },
@@ -445,7 +445,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "5avyzYyCP4JUZnNKqJABR7KXFbesFqCe7hX1WArdA2q8"
+          "tx": "GKZZPM9v8N1umwMRWbmYp6hj2TUhnPXqU7rhMjafU5Kd"
         },
         {
           "expected_rule_code": null,
@@ -454,7 +454,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "EoAysQaUjqtiK5mMybaH7uen7XZvKYjreBdLPM2Veo3B"
+          "tx": "5CaWvKz9SacTtMhyccR16a48y5yQ3EiC1A6rpgTLSH2n"
         }
       ]
     },
@@ -505,7 +505,7 @@
           "role": "attack",
           "rule_code": "R_NOT_CLEAR",
           "status": "failed",
-          "tx": "5ZqY73pk1JxQr47PqqCLSS4CpbHEAS1QfDPpsRfof2px"
+          "tx": "8k8iP7dCRpgyhnjXpEKmHE6s1NXyDJt3xxRHGn55XAN2"
         },
         {
           "expected_rule_code": null,
@@ -514,7 +514,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "5MMZEa2BuY9EV4MYomjvdPA7S8aB9TRjntDFCM9G3E6k"
+          "tx": "5UZe4hVj7asBYZvnwgKR4nMtP1EzCJPQ59aZn5hc4eFM"
         }
       ]
     },
@@ -581,7 +581,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "78FeQLeQ5czxDenkEadPypVE4nMRC8zCrrHWn7k3EaNQ"
+          "tx": "GMJs28FBkN9zbFhSBtEMztBjj877gExSFUmr3XQH2TUV"
         },
         {
           "expected_rule_code": null,
@@ -590,7 +590,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "G4123ghPUKvmf9dWfNze1bRrqXQh3LjYCNt4N1yFeZW9"
+          "tx": "34GHJMnWkUzyn1LHKzXt4TCVrECCQxYs8UidUPQmkZKr"
         },
         {
           "expected_rule_code": null,
@@ -599,7 +599,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "CEZ3S3vFWM8FrRctSoyR8UkRFrC1RJedJ6AdpJNThEPM"
+          "tx": "GG7PQffUQJhyZz75jKRQ4Tz2bDugssCoHsAy8Ex7vTJC"
         }
       ]
     },
@@ -654,7 +654,7 @@
           "role": "attack",
           "rule_code": "R_UNEXPECTED_TOKEN",
           "status": "succeeded",
-          "tx": "EpHGXHop6edQm1zF4Jr1TEmB7JAFmR3p3xWctfh9L7L3"
+          "tx": "AdpigeSwpDJT9Ue8tm74hSnAUtcS4kr7hvvmDsMhLM1Y"
         }
       ]
     },
@@ -705,7 +705,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "7GrKLE6rTUKcjDJtq5Hz9CcCc4pJhBReT5JzTcbpkLsx"
+          "tx": "FwTqHMCStVsqe5npnVAtnbJAgrHntCZvy2LDWmPMA6pQ"
         },
         {
           "expected_rule_code": "PRIVATE_METHOD",
@@ -714,7 +714,7 @@
           "role": "attack",
           "rule_code": "PRIVATE_METHOD",
           "status": "failed",
-          "tx": "BZqzNpyoWbogXY4BrphXvPviK3RRiyJuRQxoerw5d5ar"
+          "tx": "BvACsthAfuKvDmZPnVAxNN5JPiCQLie2rt52PmEfX8T9"
         },
         {
           "expected_rule_code": "R_UNEXPECTED_TOKEN",
@@ -723,7 +723,7 @@
           "role": "attack",
           "rule_code": "R_UNEXPECTED_TOKEN",
           "status": "succeeded",
-          "tx": "QVuf7Kj7NZmf4HF2gqeUQz8Np38D3gJwMWR9AJwC15y"
+          "tx": "243qUazfgRoe3tAdKFESPPhsPhhGPwjirWrSLQbuBUW1"
         }
       ]
     },
@@ -774,7 +774,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "5UmMjKsE8MKmntAnrh9A97EQ6BJbBEPgoG7dU1zBdT5S"
+          "tx": "4Rd7tZRfJ5iGQDgqsDjCHHFEopxhiFfEUhUBvYKd5ZEw"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -783,7 +783,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "wbNzyXeQNTt3t74hxL7izpm8ND6kz9AHmRaJqJBtmXN"
+          "tx": "HiN3fJckvo4LK1ayANjypjDdFLpVJoQ7WPhfTKzmsntm"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -792,7 +792,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "9aYGxY9cpKCn9moJkd3JUG8fMRtsh5b4YSn2JLoDPHoz"
+          "tx": "HCLRkMwjYcwNuxzW24ac1U2tVk4bE2D5UpfWhyqc5gaN"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -801,7 +801,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "B5dLM8ymYL5JTEz2bFE3jaXfr4ADCRNSnZZapNmzH3xM"
+          "tx": "9Y5Uw33CjByxFQbAGPd4fjhvyd1xdEc71VK5xtUE1pvy"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -810,7 +810,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "BCoTBpTFSeNAPd7d2oWDQqUaGcJfLbJNQPw73JLx24E5"
+          "tx": "BRGFd3TNEUjtgzbDYw3TMMWTiLa43frvaFkpVtxuston"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -819,7 +819,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "6Xmxq1q6t6sPtjhZhJw7tY2E2Q7MAvUmhqrpUKTz8DFX"
+          "tx": "FqtZ9L3JeJoMPc2iGveWdkqHsvfH7ktyt9V8MP75EmRq"
         }
       ]
     },
@@ -878,7 +878,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "BNmiqUTBptfC4UWeNZykFEe1e7WBGCYiVkkd4cLRMigq"
+          "tx": "zAvnAhmyFPKCxgLjQZ8DRG1yU31EmC34d47uhj8U86M"
         },
         {
           "expected_rule_code": null,
@@ -887,7 +887,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "6aQhNyLKBrhPjVLqJaSBEdj4QrrRGqRckZn1yjGg4PXq"
+          "tx": "8j6wPuLACqD7vsE9CdXgCFaNSMTmAxTesQRnY1DjLmvt"
         },
         {
           "expected_rule_code": null,
@@ -896,7 +896,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "28UgAEjM5nuStVdB4tfKKg2XqrkqCpiaB7aSyDiR5iMm"
+          "tx": "FR4TYDUWKk8WtHfa5u5kpqj3u9wfXzZCxWokZUF16Bi9"
         }
       ]
     },
@@ -955,7 +955,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "4CTsAqRnGUhFqt6saqGdjWJFeQECWZxvJJzFLhz1eVd7"
+          "tx": "53ab515CxirpifEHcrum2uvw5JsYJxV6wAyzL7Aj1yMj"
         }
       ]
     },
@@ -1010,7 +1010,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "5F4z96ZToter6omKGsvcRgoeWwWzCzEU3wCz5HnbWTxR"
+          "tx": "3qNkvLaSsJPxaEFpAHQuuWv7ieFEnSHNyoXoESDyqn86"
         }
       ]
     },
@@ -1061,7 +1061,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "68eKk9BuCtVK5a5fpgzwsHoB6WkfJSZ5YovqVG3zdprJ"
+          "tx": "FBdQwHdrQh7yTJLoxcd8XaE3p9KdSwej8gprLT57iXLy"
         },
         {
           "expected_rule_code": null,
@@ -1070,7 +1070,7 @@
           "role": "support",
           "rule_code": "R_PAUSED",
           "status": "succeeded",
-          "tx": "88jEca5iVHmEejHo8Se1J75nwhNjZdsJa9eucFDqfz5J"
+          "tx": "HWwpEJdsEZQtjEh9LEXrLNYMMZnua9rkmT8AWVEKZ2nS"
         },
         {
           "expected_rule_code": null,
@@ -1079,7 +1079,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "9RxhcNE7tbic6C7vLue5UCdQD8Q1sCHA5cfNEqnXdFUZ"
+          "tx": "FQ4MgoNY4iFdpCzHspgNnb6zYFyQ6zPzCRki81mqctXB"
         }
       ]
     },
@@ -1142,7 +1142,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "9iAtzGXbpAVDGRhKRhue19NumBvz8nFi9JePhZyeYN3L"
+          "tx": "4YZy6JFKUjspx8NoGVAXV1zn8D8ZVq7vcEH4yBKg8sXh"
         },
         {
           "expected_rule_code": "R_FROZEN",
@@ -1151,7 +1151,7 @@
           "role": "attack",
           "rule_code": "R_FROZEN",
           "status": "failed",
-          "tx": "AaRQGjkabW9DCcE322kTjd9kSrXMiwoHFFZ7kb5qVtU4"
+          "tx": "GL3qDQfSeXri9wE3bscmRbiGmcdwa371LKVhT3sDse1e"
         },
         {
           "expected_rule_code": null,
@@ -1160,7 +1160,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "Bg9ZeZU5QVd4W11mzY1WhNNLAyhdck5pyp16DHVyFEGZ"
+          "tx": "4u4HoJ3cWV9vyMuBt9FhnkU7jvLXxTgs97VKAx8MmRrE"
         },
         {
           "expected_rule_code": null,
@@ -1169,7 +1169,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "88efhLZEK3See3kJmFu7Yq57DWs781fcf3g2sTwmWmMH"
+          "tx": "CarfDN9LoNcdaugTC5x9BVU3y4gZtLiuh12ZypkBgg9Z"
         }
       ]
     },
@@ -1224,7 +1224,7 @@
           "role": "attack",
           "rule_code": "R_CAP_LAUNCH",
           "status": "succeeded",
-          "tx": "BCbYg1Cv4ebGU12VuEuh3B1XG3nrd5oQ7Cv5LYyYWZ7z"
+          "tx": "29gYXnmevudoZLNVPBnvu3DZ4jABUYLy7NskWGmZ2k2H"
         }
       ]
     },
@@ -1279,7 +1279,7 @@
           "role": "attack",
           "rule_code": "R_CAP_ACCOUNT",
           "status": "succeeded",
-          "tx": "F1LPiSo2eyAzS9zC3Q6WjrnvHCS1kbNRFyN1mTDmdMvf"
+          "tx": "4HV9Sjnk2GxpQFz3fiQ7GbeX74WYgp3PNNDha9EgHuvb"
         },
         {
           "expected_rule_code": null,
@@ -1288,7 +1288,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "67MEd8gaGC3nv53kstEkVpwdun6ap1NW7GkpY3F92vkW"
+          "tx": "2dKK5BuAUPUQyf5jKY1jFJDkWkjJRHCv4vYuCs9VFZEo"
         },
         {
           "expected_rule_code": "R_CAP_ACCOUNT",
@@ -1297,7 +1297,7 @@
           "role": "attack",
           "rule_code": "R_CAP_ACCOUNT",
           "status": "succeeded",
-          "tx": "B2sNBBvgva8Zb8TFbGiY3nYx7iXVL8GDHvUbRzv1eiyS"
+          "tx": "9WYmiJauEsmPRy9P64KkifKCPhJY48LVwnamkggtz4MT"
         }
       ]
     },
@@ -1352,7 +1352,7 @@
           "role": "attack",
           "rule_code": "R_CAP_ACCOUNT",
           "status": "succeeded",
-          "tx": "DWrYp4QgxJEKcCGvtr7NihN1ujk8u7vwSeCYKmAiXusp"
+          "tx": "B64EDVMuWYwvrK15z4nFc8yK2rPcviRSMs7mACcBvM3z"
         },
         {
           "expected_rule_code": null,
@@ -1361,7 +1361,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "CaG7kMkjPUpr3FcejzEWnuXRjaaEFHczjHjMwak18n4N"
+          "tx": "7TGRkM19Fein9SHw5ZJgzRSGuc78qqxSXsfQAD9CJtAV"
         },
         {
           "expected_rule_code": null,
@@ -1370,7 +1370,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "2KTMzV9TsXGkeg9h2jCQDSS6kDJY284cD9mdQEPpfcFB"
+          "tx": "4oWrNZFXrKuJksE9R5b5NtsD2uzu28j4i97Jxwz5g523"
         },
         {
           "expected_rule_code": null,
@@ -1379,7 +1379,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "La33gtcMHbycPbx1Rg9oVnMb1JaNPym9trQr8eiZXFe"
+          "tx": "75e3wgbkLh6FkGUEBW9FNdvLB1ieq1yLuh6LnBk38pDk"
         },
         {
           "expected_rule_code": null,
@@ -1388,7 +1388,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "6PYT1Z2xHjHvx8Dr1M1JQjqDF2fUmgEsArTiPkH2CtCc"
+          "tx": "Bopz4zEAWWbWq6gXGTJZDcuwkpukm9oKCYgcb5VmWPkC"
         },
         {
           "expected_rule_code": null,
@@ -1397,7 +1397,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "BVeigf8qwpQSKogCCT2En7UyWw3EgBMTDnkwCJNZZygA"
+          "tx": "65EM8JMAVedbwFg6zxotXnNdqnxHXLwpbSAd4yT1aEsP"
         },
         {
           "expected_rule_code": null,
@@ -1406,7 +1406,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "gBSaQAjEZD8aavgSoYjdbR2SJ2LoJGyR8XQZnwT5sam"
+          "tx": "4So3SbyVSPAegwRxZLYigru1ci1VcWWfKFaqY4fs15Hm"
         },
         {
           "expected_rule_code": null,
@@ -1415,7 +1415,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "HZsX4iGKCicWA2nhgTZJMTmPsd8HfE7DsdyBqVHhiCT7"
+          "tx": "7yb7FbmnBiRrR21Bf5o1WNu2LbtA2e1DPRAeNsPu5U1G"
         },
         {
           "expected_rule_code": null,
@@ -1424,7 +1424,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "AosERamLbUKdHutqtCsV43WePkJRov8jhqqa5BcFPopA"
+          "tx": "8GGA7ent8SVuz48g933DfAVUHiDmEvo8X8sABkFeHoag"
         },
         {
           "expected_rule_code": null,
@@ -1433,7 +1433,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "8dd9fiAcNtBv7ZV2B8yi9UDBKbCkUB9wit3HG2ixRKeK"
+          "tx": "FNaPos1ep29QdPzX5qLVR8eje7zFUE25UZjeChUsJjnj"
         },
         {
           "expected_rule_code": null,
@@ -1442,7 +1442,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "EN8bQcEzsxiHFsrFsbb5Jv1fLRT4GtWTBGfp8kmpqqyq"
+          "tx": "C3FZ9JXCz6b3u2pG3LL6bEhWK7VhmEFK2N4URCBKJBKE"
         },
         {
           "expected_rule_code": null,
@@ -1451,7 +1451,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "vLZqzqPWTBeZnShAB7MddmXKt5PErvmso7yu83JSPBG"
+          "tx": "8arFVkc7ySXfptQUanwgYyUDjxzENaeqLSGCUnmgHQZw"
         },
         {
           "expected_rule_code": null,
@@ -1460,7 +1460,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "5osHAJ9mUXDmrV1J9JLqdgcMYHRbytFeQG7uBgyt3EsL"
+          "tx": "Gmtxa7iJRyWFXrBYwJtwPJYpYcys96oQTVSAJ5JJr1ZG"
         },
         {
           "expected_rule_code": null,
@@ -1469,7 +1469,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "EssuqZyH3dcmom52ZqY6Xiw7kCARo8WUY3UY5sMhVoGP"
+          "tx": "AZCCBPRdouRnNHQULNt8iCw3EnQdtzW5eVrGvZu66PX9"
         }
       ]
     },
@@ -1524,7 +1524,7 @@
           "role": "attack",
           "rule_code": "R_WALK_CLOSED",
           "status": "failed",
-          "tx": "AqAZpDk1XZ7WEGtgzi3MhuBHwMUgR8fLLHYLaNo6pbHg"
+          "tx": "HtTWa8fePxxkrvMJXDkqawBAP9j5QdY51Sz2irWttcBh"
         }
       ]
     },
@@ -1579,7 +1579,7 @@
           "role": "attack",
           "rule_code": "R_WRONG_PHASE",
           "status": "succeeded",
-          "tx": "HPWnHrgfjR3gn1aSAwQDcddjqWzg42dKn8Bvn6wRihNx"
+          "tx": "Edhstt7Nqoz9eKPbfXnDrp7SWbBwra7JyeYaLNmpBRNw"
         }
       ]
     },
@@ -1630,7 +1630,7 @@
           "role": "attack",
           "rule_code": "R_WRONG_PHASE",
           "status": "failed",
-          "tx": "GCVf4FrakPdM6DSTigwPCPQzkPf3Wu1MmMC6KggtMyGe"
+          "tx": "6axkc8vdft96fFbuSd7a2TosG7gaPL22J6W1AbffEjxr"
         },
         {
           "expected_rule_code": null,
@@ -1639,7 +1639,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "2UDJZPiqHW8bhMtN5cYW4Q5CKAGJ9NB3SqA2P56h9nww"
+          "tx": "AU4VXHkSeZxhQam81EZRu7Jzy21PAHtNvD1BjB8MNjNM"
         },
         {
           "expected_rule_code": "R_WRONG_PHASE",
@@ -1648,7 +1648,7 @@
           "role": "attack",
           "rule_code": "R_WRONG_PHASE",
           "status": "failed",
-          "tx": "36mLi2hS1L4n9GnSWu2VUtwv42HVdfgWTx1fKZM4WmCD"
+          "tx": "FNdXesXRZ76LUvjpthEgHfKVwUj1sz2hBcSY8tozRMcn"
         }
       ]
     },
@@ -1699,7 +1699,7 @@
           "role": "attack",
           "rule_code": "R_SELF_BUY",
           "status": "succeeded",
-          "tx": "6cABj1oBn7KLPGerDCMGYHnorVbFE1jV4pCrW5TR1fqk"
+          "tx": "4GKL3UbsrByU4b17zxE3cspue8wXgxuhxN39F5v7seWN"
         }
       ]
     },
@@ -1754,7 +1754,7 @@
           "role": "attack",
           "rule_code": "R_SIG",
           "status": "failed",
-          "tx": "7JwQFiFK1PGbWw6G7ojLLam1aHLpm277hWJW3uLVpZGw"
+          "tx": "4i8MAovd4aYqeZv6G86Tq9Y7hsnSmnXwm5fx8KFmRrbU"
         },
         {
           "expected_rule_code": "R_DEADLINE",
@@ -1763,7 +1763,7 @@
           "role": "attack",
           "rule_code": "R_DEADLINE",
           "status": "failed",
-          "tx": "4aRfWQcwhRGPy5YPwLKqwgnnfyYrZfEYsXkAaDQ1LumV"
+          "tx": "5iQqFKueeweYGiJXnYFnYecRKW6LS7WffknP6f4HsePq"
         },
         {
           "expected_rule_code": null,
@@ -1772,7 +1772,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "8pz5D1K3tykCpyDVjndexQVNy7AG5PgjUzt56HM98m12"
+          "tx": "BB3TfdXxZB6HCbJLjAUh3GZXHfbsxcsWVU8Mx3GFRz4X"
         },
         {
           "expected_rule_code": "R_NONCE",
@@ -1781,7 +1781,7 @@
           "role": "attack",
           "rule_code": "R_NONCE",
           "status": "failed",
-          "tx": "8CvFAUPB4uQ9EjoRLvbGaJGjQ3e2bmhNFRw4TXszuh5o"
+          "tx": "4RvW6bvPWo5jzKM2zch9mav2J85NNuHQtRDDwsE5S9NW"
         }
       ]
     },
@@ -1832,7 +1832,7 @@
           "role": "attack",
           "rule_code": "R_ACTIVE_TRIAL",
           "status": "failed",
-          "tx": "HNZqutkAfbwJ2d9HkgADGkmDPFuw1hyE85AqxuDMc7iB"
+          "tx": "AidMv3277gHFXPRccpVkF9XarBJB2LqeLfkGtLZesZtY"
         }
       ]
     },
@@ -1870,7 +1870,7 @@
           "role": "attack",
           "rule_code": "R_CREATOR_GATE",
           "status": "failed",
-          "tx": "9VqnUqwuBzYQjcV7QEo5VhYssvCAfZxPw8NpvJWjHRco"
+          "tx": "6B3jCqFXyY24ddYD3C2UC2XxYYBJQJDoe14smZbYpaC8"
         },
         {
           "expected_rule_code": "R_CREATOR_GATE",
@@ -1879,7 +1879,7 @@
           "role": "attack",
           "rule_code": "R_CREATOR_GATE",
           "status": "failed",
-          "tx": "22K53g41xYdpk6QCQwJva6B2tHrUR1vnSVsT1eC8KyXp"
+          "tx": "8FXXeer9BNkaCXT4yBcbTXVTvS9Wj4ZmYLqmFyRFBAeG"
         },
         {
           "expected_rule_code": "R_CREATOR_GATE",
@@ -1888,7 +1888,7 @@
           "role": "attack",
           "rule_code": "R_CREATOR_GATE",
           "status": "failed",
-          "tx": "CcGWvLGSzfKaxs6BMHrdPqkyy765QXsKYUEmiDiCsoN2"
+          "tx": "22bQbKs1JHokmHFtkya1JkEvhypeAAPJbHz4qc75bP7N"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -1897,7 +1897,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "HpXf5i9SyTRxrAK2M99JNnFo2XRuF2ZkBTKkaJAhJi6Q"
+          "tx": "ABxc57pgQS6GDrB645ByBqNeM29Nzi7kWjg6cDp15Ao6"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -1906,7 +1906,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "GHYhMJHNVo9x6Sn1ugR3VYRTwifiUVwb1vMZw5wmR1vP"
+          "tx": "8fLeD6TRoKw7Q7eZB9dPuXQXZWfYedfRPEyHBC3NFXmv"
         },
         {
           "expected_rule_code": null,
@@ -1915,7 +1915,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "J3mkFarpvF8xgi8KcyzbhxZC7HxmkFFZd9mNbeAkM2GV"
+          "tx": "CwZGwb6NCwDYxMmFW96RJACjbhPTm8FpGnEFCePnf56F"
         },
         {
           "expected_rule_code": null,
@@ -1924,7 +1924,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "85TX2W8Hv4ML4b6NYEcJ5H7HTnhD1Ti7aFE9WKAg9UsA"
+          "tx": "3weFL1MEDwouGd3KZNM5ZfSbUvtDT1F6tXfrZLLLGk9w"
         },
         {
           "expected_rule_code": "R_CREATOR_GATE",
@@ -1933,7 +1933,7 @@
           "role": "attack",
           "rule_code": "R_CREATOR_GATE",
           "status": "failed",
-          "tx": "DYyA9AAZdzfpKRiCNdK8LtFmw9AmoGawPKmV7aYQJ1dW"
+          "tx": "7jv3QUuWuwS3mLktphcatfeGNetmXAQPx8VzSfPCEYci"
         },
         {
           "expected_rule_code": null,
@@ -1942,7 +1942,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "FssEhTKWQmnKXFJzE6r9dHvvvHHmXxo8Wd6B7zoJxPS6"
+          "tx": "9vsPKbFhKxyuEW4FhL2rJeJWkx48mCHjPn9yEfUNTr3A"
         },
         {
           "expected_rule_code": "R_NOTHING",
@@ -1951,7 +1951,7 @@
           "role": "attack",
           "rule_code": "R_NOTHING",
           "status": "failed",
-          "tx": "4mPiEQVDH5B9633DnMriNLYssUvsSRxq5ZJnK9SJ4tX8"
+          "tx": "7VtjKC4RfqekX9HiF6B7Gu1qRLJgFVH8MpnRjPVq8hNo"
         },
         {
           "expected_rule_code": null,
@@ -1960,7 +1960,7 @@
           "role": "support",
           "rule_code": "R_TOKEN_CREATE",
           "status": "succeeded",
-          "tx": "5WsMNUtGZogqZcuwzYXDsGtE8GcYi63i1N6r8qX18Jnb"
+          "tx": "8gnXWctMMj4ZEimrMpu4B7u3P5gBs3Fr785kiqnwTSTF"
         }
       ]
     },
@@ -2011,7 +2011,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "2jY11rAg8A27xRwKYk8F4P6JqRv8fYqvNdx51mbKskwY"
+          "tx": "Bb3o3UhzE4C5XvuXtCngq3oCZmZPKknWxjqTHqZ3EQR7"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -2020,7 +2020,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "aMVX7hYhCLVDXR1c1Te4j4hmVpZ6avALkcdX53mM7nV"
+          "tx": "EMyqCFnCbL6MuYGW26NznY1wFsZ9dxzNpMqwkWueS65Y"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -2029,7 +2029,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "24Pd8Gat2hpPXaZnqznv5CuCURZqRJzg5AC6H1ub2AuR"
+          "tx": "G5hbXkJRCCigjcw62kmD9RVLt6TJHRQgNM3Xt5Fj71Sm"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -2038,7 +2038,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "GbHNYRC6GMkhrz71ysmj7xjUpF5xQ9P96U4BpEzmGniU"
+          "tx": "Bork8PR8smFSJ4eghfFHZcaGDrnx8SzdmJumJLfp9gpr"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -2047,7 +2047,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "JB317dy7rR6jbv1puzJDugV6cd57xHK4gqhcjLmaQQ4t"
+          "tx": "518VEJiEnRoNpF8zL9zf5bD4B56gEpw7Da99FiiUpsLv"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -2056,7 +2056,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "yaxTSyfwb8xT5e3mRrcEWKe9eNwjxzCoCLEiFN4UCQ4"
+          "tx": "AgPDpBSWrK8EVrZ63yaRMA7aTRHE1DYiyohC9vQLS6rn"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -2065,7 +2065,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "4NsnQoQQUVTFKf2SKCFkvEyqzjEpk5mTyQdL5E2hby9G"
+          "tx": "4QtGcmeLmYThAHrQQUBwAAFAtAhge3ZvdLEtnqJXLzZr"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -2074,7 +2074,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "BGKtZTwGhCqJbdd4kF2sNmwZf1JznkjCBtoHz4XKwj8Q"
+          "tx": "7tcZFNQDwcASbmvngqrfQJ1v1bGD17sqdKt9CfsrJ6TM"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -2083,7 +2083,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "CUQnugFZCavxpUugHuE9aQ3DNo8FFFny9hDTPqk7pxJ7"
+          "tx": "7JJtR82yjJxjcRtxYWaG3oVdpsotXB2edqFKqHQ2Hzei"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -2092,7 +2092,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "J1EZHCReP2yVWxz86fxwWbj4q9FMvKoGVhswGystHCj7"
+          "tx": "GhbKFirGJawNXCCSXxQfKrzLYCA4aj6Xkko9zU7YfAiy"
         }
       ]
     },
@@ -2143,7 +2143,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_STATE",
           "status": "failed",
-          "tx": "DMdBspEjqRJ5EimUoVdmZ8buYXgMtsHzVYZP6QHYVjuo"
+          "tx": "DXKG5xnqoNuBZYpkJ8zp4HaVFzubzvX8hsSP4dsncnoK"
         },
         {
           "expected_rule_code": "R_GENESIS_STATE",
@@ -2152,7 +2152,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_STATE",
           "status": "failed",
-          "tx": "294gQjsmVUqwt5wAZ981q45tuAwADnvTAZszvwab3nmm"
+          "tx": "EHdkmjxVxh8Kr8GwMXvkzC5X96d24qkqa1iXtEpvevM4"
         },
         {
           "expected_rule_code": "R_GENESIS_STATE",
@@ -2161,7 +2161,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_STATE",
           "status": "failed",
-          "tx": "4fVB6pbRtRHj729v9fykGTUp32KGPMeN6kN87RQpQ3Up"
+          "tx": "HziDq47PJDXaA6BrpP8sJNLamnGTHMJtiCiNyfKeh3qK"
         },
         {
           "expected_rule_code": null,
@@ -2170,7 +2170,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "6DvucwtT8o1pri1TQCK7hpZScgc7jpSwCG9UdCJrP5kk"
+          "tx": "BTUdJEUWdk7W6rsUniFvQKSSaitKQPs64XKQeCk9u2Vr"
         },
         {
           "expected_rule_code": "R_GENESIS_ALREADY",
@@ -2179,7 +2179,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_ALREADY",
           "status": "failed",
-          "tx": "DaMNKHdaWJq5QMntpmER7Nc3hjtZEdVS3Szqt8HVRpL4"
+          "tx": "456PmnX4qfU7HfbfcR2azktGKubjkeNaGBqgHVRq25Af"
         },
         {
           "expected_rule_code": "R_GENESIS_ALREADY",
@@ -2188,7 +2188,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_ALREADY",
           "status": "failed",
-          "tx": "9tD33tVuGGLFneF21Q5jFiXHkRbg17u1CgxbEo2STK34"
+          "tx": "59fmAVicaJNsENdcyChG4udCsy4m8kBkfLbWUPQ5Q1er"
         }
       ]
     },
@@ -2239,7 +2239,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "EEbD1iwHkeReKjd4bZQzBdGR4Scu9EE9R3JQGSNjikwH"
+          "tx": "HLGB6xdUJvhRAaXvRK56YEpgA7YDGgoo1LMgLmXJBuQY"
         },
         {
           "expected_rule_code": "R_GENESIS_LEAF",
@@ -2248,7 +2248,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_LEAF",
           "status": "failed",
-          "tx": "2hcLpMSnpa2komETzMjmiRNjU8s1i7pdMcWJBtakWqKV"
+          "tx": "SUWJQhP8KNubjm1yQGqiaYKARLyU3Bh7ssFUhnjuFE5"
         },
         {
           "expected_rule_code": "R_GENESIS_LEAF",
@@ -2257,7 +2257,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_LEAF",
           "status": "failed",
-          "tx": "C11r3TDJHJxGQ3JHSmyZEr6LaM1z51iMDhN6sEXTaVHs"
+          "tx": "6Y1ySyr8cx9xw6a6j1EKts5VV5xT7d6RaYZ88UbVtzZ"
         },
         {
           "expected_rule_code": "R_GENESIS_ORDER",
@@ -2266,7 +2266,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_ORDER",
           "status": "failed",
-          "tx": "G7aZNiypDyi1ieC9b8nfAPPrwu63SCHhUSny2FQhrEXu"
+          "tx": "H3MZFGYEf4RMEWkGJFZ2ZJxfgqguchrPm1RetqLKBAXk"
         },
         {
           "expected_rule_code": null,
@@ -2275,7 +2275,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "3QrnuFm3c8tfVKP9SUMasXnAN8jpBupcVHRn4vkYwK5S"
+          "tx": "EVM8Ay3jTRRVvVtnJjxFmGpoeHeTzf2Y4KxnvXLFPNrs"
         },
         {
           "expected_rule_code": "R_GENESIS_ORDER",
@@ -2284,7 +2284,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_ORDER",
           "status": "failed",
-          "tx": "7oKowSwYW5p3K6cbNeRRgMFvD2AEivRwy3cfoJLiD9cw"
+          "tx": "4Rd64cYuAU2CYS1Jec6WJL1FmFrVVwreVNwdPe3W5xTF"
         },
         {
           "expected_rule_code": "R_GENESIS_ARG",
@@ -2293,7 +2293,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_ARG",
           "status": "failed",
-          "tx": "DLoCVWwxkdAGGfmhZLQKZEnH9LEAdFRDBggewuYY75DA"
+          "tx": "BjWxsQ6QWTVbDhp5azi3TyMSRY9XjKXaEBQXMPNzAyH4"
         }
       ]
     },
@@ -2344,7 +2344,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "CCQpGfpfhyCNVpyjwpc4VfgGYckxZ8Ffxb9g34SM15F"
+          "tx": "7gvZWW56KgUtSW5WYyv4wDonzdejAix4AWW3dR3pA1wo"
         },
         {
           "expected_rule_code": "R_GENESIS_STATE",
@@ -2353,7 +2353,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_STATE",
           "status": "failed",
-          "tx": "9UVeYbCk48uGqrwX9pasNXUXwzN3kgtubYuyi6yQ1bHE"
+          "tx": "4iMXYfjmJvXipyVWFasACtkiKrNuTJw4i27bvB4rHHhK"
         },
         {
           "expected_rule_code": null,
@@ -2362,7 +2362,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "7bdxSygM9UEvZqJGWUSpuoHUcMHa334Vkaw6ygPy4AP"
+          "tx": "JC3n6vLJHbKxVh2xL82ukXhSG6UAPsz9MdvEeWq9FSeq"
         },
         {
           "expected_rule_code": "R_GENESIS_ARG",
@@ -2371,7 +2371,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_ARG",
           "status": "failed",
-          "tx": "3kvcex8foHGCNsHDsJEaiJEGbjwKSb8U3tQnHnGeVnnt"
+          "tx": "5oRiiUnuXbSKNPehS1ctTvAFpMeHFW57i89qFk5V9EQP"
         },
         {
           "expected_rule_code": null,
@@ -2380,7 +2380,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "FdeEjGhPNXpmNwMujmKKsogAge5vYEqbpBWneJJzw65e"
+          "tx": "C5EfBUWeGysGCSdXzFYtv8wy7QyRM2NEcFM7BXmjGpa"
         },
         {
           "expected_rule_code": "R_GENESIS_STATE",
@@ -2389,7 +2389,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_STATE",
           "status": "failed",
-          "tx": "GFCPCEWwh6p92s6ZehujswJNEgS1H84LaiqueJjxV8tJ"
+          "tx": "GNfi45AqoWcQAftiqDJZ5WbCY6pjtEixufqkHoYSAvQe"
         },
         {
           "expected_rule_code": "R_GENESIS_STATE",
@@ -2398,7 +2398,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_STATE",
           "status": "failed",
-          "tx": "JD3eGwvppLpTqAeiL16UQKTVWeveLzfVduXGmP9HMcWg"
+          "tx": "D57ULU52UqVfRwCUbVMBKFEqXdkA82vqUv5WfuoW64XZ"
         },
         {
           "expected_rule_code": "R_GENESIS_STATE",
@@ -2407,7 +2407,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_STATE",
           "status": "failed",
-          "tx": "GshYw6TtJ7Yz97mZqjvEENigQAEmWzTSK7cX2Wbgh985"
+          "tx": "2BzzTGXJVfJfbDcrDTRPZFYa6mJ5zXWxcPQuzD6dg1nd"
         },
         {
           "expected_rule_code": "R_GENESIS_STATE",
@@ -2416,7 +2416,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_STATE",
           "status": "failed",
-          "tx": "GCyTk9mRUME9CkkVeGeUHjnbNYi4aXxzaWLt44ekN2ft"
+          "tx": "273JZUdpbgNx5dRTsNcHa8Jt3R1QkPUowmQoAc5FGD3s"
         }
       ]
     },
@@ -2467,7 +2467,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_STATE",
           "status": "failed",
-          "tx": "79YBSbtVGudjqup6YQN2ohVqqSzn7Uzqi33LZuuqKDXX"
+          "tx": "DimX3q6KbR85ohdF1TTvX7kMRriRf8txwwApEgVcDu3F"
         },
         {
           "expected_rule_code": null,
@@ -2476,7 +2476,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "8KX3r1Rorj3oD3vb9L23PenrRKq8LdJ2CX86qPRPjXyv"
+          "tx": "CPEohKt7pKYGTH7qp4oVnVfETwUWe7wAgSutW5V8nPF1"
         },
         {
           "expected_rule_code": "R_GENESIS_STATE",
@@ -2485,7 +2485,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_STATE",
           "status": "failed",
-          "tx": "5PPxTz6qTSpkeEDhWD8ddNUFctq2UdF5YtKuKPowDebB"
+          "tx": "4sb6Qii5prfbH9qgEVWUDmFyPQG5xDTcwjdbpaqjTm8G"
         }
       ]
     },
@@ -2515,7 +2515,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_AUTH",
           "status": "failed",
-          "tx": "FT5gxpdDCwxKiqa5u2jvaFcGgDE5K6HKicoJarDugYhX"
+          "tx": "D1mbqna5txUSLzQFp9tfK1HeL8MFPM9jbatuYzZU3cHC"
         },
         {
           "expected_rule_code": "R_GENESIS_AUTH",
@@ -2524,7 +2524,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_AUTH",
           "status": "failed",
-          "tx": "5EGNCtBKVi2gE98UYcQECFmA3U7DRvtPbGWFMPtLHqTS"
+          "tx": "BvctkjBkH63kt9dioApCN9kw1F7QmrVG4UFrKVnZwrxg"
         },
         {
           "expected_rule_code": "R_GENESIS_AUTH",
@@ -2533,7 +2533,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_AUTH",
           "status": "failed",
-          "tx": "E9JPa9w5V4ox7nXWe9CAhpiVDUpXF7jfzc9nAjXZ9B1E"
+          "tx": "Q5Ko2z9QH8eAGq9ZREkre9D3rMQRZhpaEpo8igrgshM"
         },
         {
           "expected_rule_code": "R_GENESIS_ARG",
@@ -2542,7 +2542,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_ARG",
           "status": "failed",
-          "tx": "756PmjqwSJ4RHEn6hfrPtfB5r7HEXt5UnBbx7b1cuTK4"
+          "tx": "93CSSCHxgVKSUQ931F7bi2TqQWoWP27tvvZypVy7ocQs"
         },
         {
           "expected_rule_code": "R_GENESIS_ARG",
@@ -2551,7 +2551,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_ARG",
           "status": "failed",
-          "tx": "9zTna6M8oQfWiUCMtKmyQZeMorDp7hWrEWemb7h9BY1k"
+          "tx": "14nrZduEcoS8g9kYq748jW38qwcGULDoJKbrVr1s82t3"
         },
         {
           "expected_rule_code": "R_GENESIS_ARG",
@@ -2560,7 +2560,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_ARG",
           "status": "failed",
-          "tx": "BEPVohkKvtK6cZJ61HQ8nBmDbtaQSwbPVS1MA1ibtYrC"
+          "tx": "Abe1k4TbFRrMTMqsX1rjJQ9rFPW98nHxWXT3ABpNm9d4"
         }
       ]
     },
@@ -2611,7 +2611,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "FFewKc5FaVQcDJo9pq7hMMw7sUAEfTwK6yGHmJjiLzm8"
+          "tx": "DWTj6rmur7hS2hHRWNGzz8xmoSzvwHtprUoQo5v6wMeF"
         },
         {
           "expected_rule_code": "R_PAUSED",
@@ -2620,7 +2620,7 @@
           "role": "attack",
           "rule_code": "R_PAUSED",
           "status": "failed",
-          "tx": "7xoTsLDRPcguvaMVC6wYvaoDckEw9nxJV6EgstTy2Ktr"
+          "tx": "CWYAF3uQRAvJ6bgndQPikSAX4ooVeRAFdwpD1yFdMm1y"
         },
         {
           "expected_rule_code": null,
@@ -2629,7 +2629,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "A3nJiYsehWndaCRjPedgHh7SprbAjYAkt4BYUW7ikLUx"
+          "tx": "EYXq8GHHjTjckSprh9my6JDASFY55GA2jkH8jTL3gTdV"
         },
         {
           "expected_rule_code": null,
@@ -2638,7 +2638,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "8hBUAT4jVN7MwtFugc9PNSjiRWG4S8iMuH7FL3bMoxZL"
+          "tx": "6PV5xCf47GpYTecDhVcxr9da6zjYC25mQfL4SUM552NE"
         },
         {
           "expected_rule_code": null,
@@ -2647,7 +2647,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "5DchBzbvM2tppKZB7sEqyNVNe8UmiTXp5XpEtSYakWud"
+          "tx": "CDnSZWKEj3hJKk1biGgHz4roDJ2CqabsrF2RFk194aRg"
         },
         {
           "expected_rule_code": "R_GENESIS_ALREADY",
@@ -2656,7 +2656,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_ALREADY",
           "status": "failed",
-          "tx": "GH4Dt1syvhvsUZiYDNnsYFuVWF8z28WZ26yibZKo35mu"
+          "tx": "C5SeAqGEJB2JwJNCUbk2s35s9qQ1ZacnvyxgmjDL43Up"
         },
         {
           "expected_rule_code": "R_GENESIS_STATE",
@@ -2665,7 +2665,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_STATE",
           "status": "failed",
-          "tx": "BgWxkMvx3barJB9eQkEujSaNcG1gwAo1yfUCAiteYikc"
+          "tx": "6frBZfrV1NC5D6WvGzwBh2JPQNCM6NQMHv2VPnwm9DzS"
         },
         {
           "expected_rule_code": "R_GENESIS_STATE",
@@ -2674,7 +2674,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_STATE",
           "status": "failed",
-          "tx": "6RkEXRtELqCpaSPs9x3FaCJFJYSPNvhUGP7pH7nsPKkL"
+          "tx": "6PvCAqdAd1e1oamZfgE45xmCYSvZkXd8pkewoqDxTBzQ"
         }
       ]
     },
@@ -2733,7 +2733,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "Fdf7HXiLsRxB2DJxzfQBp8v5w1XKFsp2BKrwFRtUVypG"
+          "tx": "9D6vEPmS7YXvHYbyWyP3HqZcPjpLBXsoYxDiFG77JhDA"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -2742,7 +2742,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "GbAAhK3yy4b9CiEBbLD8MAeZxKE2HFwQ4qGrNgUDUD8S"
+          "tx": "nBonJzTqs37EAE4xeTrsWR3jjzb9jW9bWeib5YjFywS"
         }
       ]
     },
@@ -2786,7 +2786,7 @@
           "role": "attack",
           "rule_code": "R_CREATOR_GATE",
           "status": "failed",
-          "tx": "7ipXUgFrRG9RNydCxgx13facm9uY97cmFcpr6ckkyYdx"
+          "tx": "Ft9cCDrEhVzxrG3ger3kVQRoinoeYMgLLUD63nm246s3"
         },
         {
           "expected_rule_code": "R_CREATOR_GATE",
@@ -2795,7 +2795,7 @@
           "role": "attack",
           "rule_code": "R_CREATOR_GATE",
           "status": "failed",
-          "tx": "LtM7iPCkExGDGurNHNmSaQreV9MwcUR8X3m5mzQCBni"
+          "tx": "7Z9v6vKQvoaCTQ6yNWw9ZksDXdLwaD9JDtg4y9Dwj6DB"
         }
       ]
     },
@@ -2839,7 +2839,7 @@
           "role": "attack",
           "rule_code": "R_CREATOR_GATE",
           "status": "failed",
-          "tx": "4myhaSa5XVEtfSew8AjPH3xKTfNrSmLkfrbi96ddTr5W"
+          "tx": "AA2nMByFnQHYY4CXF3EtaMR8pi4iJpRyMLWXaz4aB9Rp"
         },
         {
           "expected_rule_code": "R_CREATOR_GATE",
@@ -2848,7 +2848,7 @@
           "role": "attack",
           "rule_code": "R_CREATOR_GATE",
           "status": "failed",
-          "tx": "HSwf9Cj1tYP2dAnV6NEJwPc19tc4GZe9D9TZKNKmYrFb"
+          "tx": "F4c3ng2rphbFDXqt2SqxuQAnNcmLMmo4JagZTnNq3Fnb"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -2857,7 +2857,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "FyozuWTs2nWe4tisMV3cj4T4Z8Jw1gx2wvvQTvmogvCQ"
+          "tx": "2GTmcGegniHftKxXV4g4r2FjBu5Qc6KAsAQ6XGQcubgc"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -2866,7 +2866,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "3ncZgQug1PK9gvZMvzj91ZfxErQc5LrRe5JDePZk1zVk"
+          "tx": "2NfjLaJ2Yu83meqVKoP7kLQEZM91xPviqPhejtyK2j7M"
         }
       ]
     },
@@ -2928,7 +2928,7 @@
           "role": "attack",
           "rule_code": "R_SYMBOL",
           "status": "failed",
-          "tx": "HYbJ7DP2oxhBqeChh5nhtkiibYgaZcoGN43dEcQWGTuq"
+          "tx": "BJQybw3sbhvEcjzvAXT95CeRRgVDnnjH9kyXHexPp8eB"
         },
         {
           "expected_rule_code": "R_SYMBOL",
@@ -2937,7 +2937,7 @@
           "role": "attack",
           "rule_code": "R_SYMBOL",
           "status": "failed",
-          "tx": "CCy1Th3QGjzaw221EFdo1HpJpyPpuPNb18V2nDY4F3rL"
+          "tx": "Dy8xsJdpz5BuWvcHvrWXuzLCKEjZzebJ9YsYknUpi6Rz"
         }
       ]
     },
@@ -2977,7 +2977,7 @@
           "role": "attack",
           "rule_code": "R_SYMBOL_RESERVED",
           "status": "failed",
-          "tx": "6Nmn6swqHbQyKX1Q4yMpRWaKzMQjs3D6XyosYoYJCkUY"
+          "tx": "GZs3PnfTjnuAV25wsibT5Uu3Y9uo4VuQRF5Xdb7wZ4xo"
         },
         {
           "expected_rule_code": "R_SYMBOL_RESERVED",
@@ -2986,7 +2986,7 @@
           "role": "attack",
           "rule_code": "R_SYMBOL_RESERVED",
           "status": "failed",
-          "tx": "GiLxpcFCxMursBH6616Fu8Y2rxZpC1kZBaVduwfjR44"
+          "tx": "EyCpZAU9V5q5z1pqTFVxojVpL2RdRGqYmBpuS5Rkhv26"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -2995,7 +2995,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "GRbEmGSi2odwKuWHVjLfKLf8zacsYLWV9nNro1VHBmSh"
+          "tx": "EL9hm7JFQ8xQnNBmPyjM9QotMxHNvk98RLkA6PZr7Cwu"
         }
       ]
     },
@@ -3053,7 +3053,7 @@
           "role": "attack",
           "rule_code": "R_RATE_LIMIT",
           "status": "failed",
-          "tx": "ARTmRSZb4AWmWJGjiFijnrLjQUu6vHHdzy8sRnri6Rbj"
+          "tx": "B2XtLHpEcvSTvdDzkv89bwLP4SLu4bBfoPvNFq9vKC1g"
         }
       ]
     },
@@ -3132,7 +3132,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "8L6KVHutRDuEeNC1b3Pf8J82iBrn3wYoVc1mN7MDr5XK"
+          "tx": "BxB3AmfoEZjoMojgJPUuY5kpqmNM2a7NRDo1t5sjrvFx"
         }
       ]
     },
@@ -3172,7 +3172,7 @@
           "role": "attack",
           "rule_code": "R_FEE_TOTAL",
           "status": "failed",
-          "tx": "8EBwXa7ZCdWgopZnsghNJKTr2W947bwJGsmxu2TW4VRX"
+          "tx": "J7gdknmXvG2617NRcP7FW2FtSnM4Ek6EWg8E2VTdW1md"
         },
         {
           "expected_rule_code": "R_FEE_TOTAL",
@@ -3181,7 +3181,7 @@
           "role": "attack",
           "rule_code": "R_FEE_TOTAL",
           "status": "failed",
-          "tx": "CiSaGuxR7N6bPwkpsB4tn8V5VzaymCqYGnrBqu4uAmv8"
+          "tx": "4Srd2cCX1YvVJAiUc3wzSJtgiMKisj7Q3hdWSk22towH"
         },
         {
           "expected_rule_code": "R_CREATOR_SHARE",
@@ -3190,7 +3190,7 @@
           "role": "attack",
           "rule_code": "R_CREATOR_SHARE",
           "status": "failed",
-          "tx": "GSDCfmwzKDU5CSXGe5rJvbrCKMbUyYZuenFjhFRx2akV"
+          "tx": "4Ci4dDQDWfioJjxFuS15SFa3JZhdScwrPHXc8WApXXMz"
         },
         {
           "expected_rule_code": "R_CREATOR_TAKE",
@@ -3199,7 +3199,7 @@
           "role": "attack",
           "rule_code": "R_CREATOR_TAKE",
           "status": "failed",
-          "tx": "2743yAuQUaoPppaQgZEeXGcMVBSF662UUnDBF8X925hR"
+          "tx": "NS4D2Dgqb4WcZas4KWT9BHedNq5CVqRQCkyHYN9SRqo"
         },
         {
           "expected_rule_code": "R_PLATFORM_FLOOR",
@@ -3208,7 +3208,7 @@
           "role": "attack",
           "rule_code": "R_PLATFORM_FLOOR",
           "status": "failed",
-          "tx": "5wP8G7RpjGm6uK3FNWGHmNudE4fzVmqkSRNfEaAQMcpQ"
+          "tx": "AfKTCtw6YKRkrwvfsxQ8hrUkh7YekaPz9Ax28hL2NEtc"
         },
         {
           "expected_rule_code": "R_PLATFORM_FIXED",
@@ -3217,7 +3217,7 @@
           "role": "attack",
           "rule_code": "R_PLATFORM_FIXED",
           "status": "failed",
-          "tx": "2Cf2EofUusR3YLHKp2Rw5x9GpEAD5eg6aDpXY4RYbrpU"
+          "tx": "DRFh8ac6QEV8JHrE9dF8Zen6KatuXe9QfURbCgcF7FrX"
         },
         {
           "expected_rule_code": "R_HOLDER_RANGE",
@@ -3226,7 +3226,7 @@
           "role": "attack",
           "rule_code": "R_HOLDER_RANGE",
           "status": "failed",
-          "tx": "CqWDBFbNZFSYSDVmwr58cMv9QxNij6KZU2BkWTKQ2u9U"
+          "tx": "2xxVpAtmtb1M4cMYJshwWvF7Vtd3FJHZjKdHQd2FWqGh"
         },
         {
           "expected_rule_code": "R_LP_RANGE",
@@ -3235,7 +3235,7 @@
           "role": "attack",
           "rule_code": "R_LP_RANGE",
           "status": "failed",
-          "tx": "4AiJ4D29kPZaL5wpMzoX9makAWDW9RorLTuqDbkaHh2z"
+          "tx": "6KSXkmNNaq5p2Uqyr6895a1jV4rnNLMr6ioBEzEGcBtg"
         },
         {
           "expected_rule_code": "R_REFERRAL",
@@ -3244,7 +3244,7 @@
           "role": "attack",
           "rule_code": "R_REFERRAL",
           "status": "failed",
-          "tx": "Cu5KtuoHH8pn9Mv7BAY6ZoqrdHmNroXL24W1rhJN7LMp"
+          "tx": "CYkbUNcoSK2kewDZNV75uzi5qhMGV9M7fm7sLPkw9gax"
         },
         {
           "expected_rule_code": "R_SPLIT_SUM",
@@ -3253,7 +3253,7 @@
           "role": "attack",
           "rule_code": "R_SPLIT_SUM",
           "status": "failed",
-          "tx": "4y6JDZ1uiCsKdpdUM6bakddY4ACbfoAuheK82MjtDpHo"
+          "tx": "AuUTfwTkmB8LkPBvjwu9dKMoiUa1CxKFJhike9GrpBi1"
         },
         {
           "expected_rule_code": "R_FEE_VEST",
@@ -3262,7 +3262,7 @@
           "role": "attack",
           "rule_code": "R_FEE_VEST",
           "status": "failed",
-          "tx": "5d8dY3z7XtJGUeeprb1Bi235QcGNPtBDHfnBJ9yG1M9a"
+          "tx": "85Eg4jQMmBwzTf4bdWnvN8peyTMeWTyQFbA96mi4tdmn"
         },
         {
           "expected_rule_code": "R_OPENING",
@@ -3271,7 +3271,7 @@
           "role": "attack",
           "rule_code": "R_OPENING",
           "status": "failed",
-          "tx": "8A69YjD6e5gnKPia8M6bP828L2q8iDTt7MtSfNyH56LL"
+          "tx": "AC3q1gpFEd9P9yzgE5U3vJWdpfVsAnCL1nxz6PLSEyGJ"
         }
       ]
     },
@@ -3337,7 +3337,7 @@
           "role": "attack",
           "rule_code": "R_SEED_AMOUNT",
           "status": "succeeded",
-          "tx": "Cqht328WK8YrvgRDtouzfqsmT6uuaYBkEBQmk54C6Ngb"
+          "tx": "6FaEuz7aTXH9MQf2EPqq5HCbZBQSYxALy7bKhUSb2y3j"
         },
         {
           "expected_rule_code": "R_SEED_AMOUNT",
@@ -3346,7 +3346,7 @@
           "role": "attack",
           "rule_code": "R_SEED_AMOUNT",
           "status": "succeeded",
-          "tx": "G8uWjU6pj9Vj4nysgH294kjBpeR4QHxcKcRc5qyWcSBE"
+          "tx": "3jnM1XdMxmLmeou53FrXaL5XZyVNhbmwFEebnco47QLf"
         },
         {
           "expected_rule_code": "R_SEED_AMOUNT",
@@ -3355,7 +3355,7 @@
           "role": "attack",
           "rule_code": "R_SEED_AMOUNT",
           "status": "succeeded",
-          "tx": "Hv45YZWtdtHDuJbFakTRcnSFvtWxUzSygTDBb37qwWEW"
+          "tx": "AWsHrmQCT2Rffp6H2cV3ao3uwXzVdW8nurPuG9uXnizQ"
         },
         {
           "expected_rule_code": "R_SEED_AMOUNT",
@@ -3364,7 +3364,7 @@
           "role": "attack",
           "rule_code": "R_SEED_AMOUNT",
           "status": "succeeded",
-          "tx": "FdYLiRxbXy6vQ3MGvVTVVesStetX6VivHk5hbohAfAwy"
+          "tx": "5eyvMY7vnhoaNL63PTSsEKnnikdHTLehxD1ATBis57fk"
         }
       ]
     },
@@ -3430,7 +3430,7 @@
           "role": "attack",
           "rule_code": "R_UNEXPECTED_TOKEN",
           "status": "succeeded",
-          "tx": "G627tr9czq3a4nK3EHWZKaYfp1UXJeuwp2KfjfzSYvR6"
+          "tx": "BocAAmZuPSqDvm11p4hvyf5nXxRg1rCzVP7BZybz3k8f"
         },
         {
           "expected_rule_code": "R_UNEXPECTED_TOKEN",
@@ -3439,7 +3439,7 @@
           "role": "attack",
           "rule_code": "R_UNEXPECTED_TOKEN",
           "status": "succeeded",
-          "tx": "Duw7ZyBR2hSMHj1CFyK5U7Bbf3wHLKhaJALNBkVP1zCy"
+          "tx": "pdEMuQRLNxVNUfa4JYqpfyNAtNYHhPHqkGtXdMaMSKZ"
         }
       ]
     },
@@ -3505,7 +3505,7 @@
           "role": "attack",
           "rule_code": "R_INSTANT_STATE",
           "status": "succeeded",
-          "tx": "3hb8Zn1WZpSqR4sNLHkAXgX3uNT2aAfAQ2cA25gEXgWv"
+          "tx": "F2ALKFLAwtZ8qtyBZGyHkonb2ZFd8ZospbBocerCj77R"
         },
         {
           "expected_rule_code": "R_INSTANT_STATE",
@@ -3514,7 +3514,7 @@
           "role": "attack",
           "rule_code": "R_INSTANT_STATE",
           "status": "succeeded",
-          "tx": "GWoeS1AMo5qppNaUmdioyPtCe7e4sv1EY2VWQLDfPxSP"
+          "tx": "6TbZ2rfsTiZzWTVbNXQjt1sFk3ZQLHzwnAvW11it1do5"
         },
         {
           "expected_rule_code": "R_INSTANT_STATE",
@@ -3523,7 +3523,7 @@
           "role": "attack",
           "rule_code": "R_INSTANT_STATE",
           "status": "succeeded",
-          "tx": "12AwrQVi36Kdxo3JsxwVg9to6vyrK2dTvfLssN8mH9DY"
+          "tx": "7EQjeU6oQv1JY2k4Zr8uhNckhyr1LaD26MVEi3JDww3S"
         },
         {
           "expected_rule_code": "R_BAD_MSG",
@@ -3532,7 +3532,7 @@
           "role": "attack",
           "rule_code": "R_BAD_MSG",
           "status": "succeeded",
-          "tx": "FnHWj4zJEpzSsKBKUGkgcXxAZztfSTLunUUHvVtd5BA4"
+          "tx": "HcMTj9DL5zmGJkN477H4yaFURkdbWPQhtgW6hebogXNn"
         }
       ]
     },
@@ -3598,7 +3598,7 @@
           "role": "attack",
           "rule_code": "R_NOT_CREATOR",
           "status": "succeeded",
-          "tx": "ENERhqWzU54JoKS2vmrtHUjzEkJTDsyiEUpfC5Qs3umC"
+          "tx": "GwY7Wm5qTP3EMs2kHGrnycca4PyBUbE8QicWQ5ktH8XZ"
         },
         {
           "expected_rule_code": null,
@@ -3607,7 +3607,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "AvhPQ4ces584pNZXxtxL1ffrGRki4rvYujEKoZh6wDY4"
+          "tx": "HHBHppVShJ98gwYR7TqVKVhcDxr4iu6ENSqABf9ohEGf"
         }
       ]
     },
@@ -3692,7 +3692,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "3jDCW21vi5qcqRwuAW1i879iWni64z1k215pwnaT1azf"
+          "tx": "unjqWS3CVxTXQe721oRNnrLB4fWMUHNbqhw3AeL9iNB"
         },
         {
           "expected_rule_code": "R_INSTANT_STATE",
@@ -3701,7 +3701,7 @@
           "role": "attack",
           "rule_code": "R_INSTANT_STATE",
           "status": "failed",
-          "tx": "FRPCJoVaAV8A8khmJwemt8RQLiqJ2unBzobwSTeYLVZJ"
+          "tx": "6cc6Aqe8XJJN5HqbpZSpDT2coxGFSTgQZL15KnCtgMDc"
         },
         {
           "expected_rule_code": "R_INSTANT_STATE",
@@ -3710,7 +3710,7 @@
           "role": "attack",
           "rule_code": "R_INSTANT_STATE",
           "status": "failed",
-          "tx": "34WLndvUGDvst2W3FUzRFfVYbdr1UyUvxo7U1Z3R9Whz"
+          "tx": "GgnV6sFNSothox6DYrTHxyz2fbPKGKFsRbfJaxrfVUVB"
         }
       ]
     },
@@ -3778,18 +3778,18 @@
           "label": "concurrent open_instant by x",
           "network": "SANDBOX",
           "role": "attack",
-          "rule_code": null,
-          "status": "succeeded",
-          "tx": "CwC8dobtL7Y4s6MbA5qnUxdzyu7E737dsyWK3yXEeX4F"
+          "rule_code": "R_INSTANT_STATE",
+          "status": "failed",
+          "tx": "H9TsA6KHHSWJ5K5DTfpmTTyhxGQ48dJ9YMwcCkTj562u"
         },
         {
           "expected_rule_code": null,
           "label": "concurrent open_instant by y",
           "network": "SANDBOX",
           "role": "attack",
-          "rule_code": "R_INSTANT_STATE",
-          "status": "failed",
-          "tx": "FzTyEi3ab6ppjYT8oouY6Sthd6SwTxyuavtySXMG7YhX"
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "BHvcuJcodPbSnbAk9DVYR56sjRbhLZqHhBE7iASqUsBQ"
         },
         {
           "expected_rule_code": null,
@@ -3798,7 +3798,7 @@
           "role": "attack",
           "rule_code": "R_INSTANT_STATE",
           "status": "failed",
-          "tx": "EVFwtTAPAwXMoogcVHpA49KTLsgfCDfiyf3NonNpSfGJ"
+          "tx": "AwjSThq9g6cGtB1HdEY4E2cAJd6H4ZWR74cMzQxC4Qyq"
         }
       ]
     },
@@ -3860,7 +3860,7 @@
           "role": "attack",
           "rule_code": "R_NOTHING_TO_CLAIM",
           "status": "failed",
-          "tx": "6ksfsCYh9TrLYusZ5vk6GmcY4K3g56T7pL5S27VWDMaL"
+          "tx": "CmYVA45V3Zp8Cz8dusFCuvj5wafE6croP7e1b15TZF4H"
         },
         {
           "expected_rule_code": "STREAM_CAP",
@@ -3869,7 +3869,7 @@
           "role": "attack",
           "rule_code": "STREAM_CAP",
           "status": "failed",
-          "tx": "92CEedf2yRVTaRNpWt8rsTWTvd9WFxYK5PQ12UCVP5Ur"
+          "tx": "FxgjxvrN9UKYNj8FFqFhM6Wso2aFgaKz5bYQaQYcsqM3"
         },
         {
           "expected_rule_code": "STREAM_CAP",
@@ -3878,7 +3878,7 @@
           "role": "attack",
           "rule_code": "STREAM_CAP",
           "status": "failed",
-          "tx": "HGYWRHhSeAVQJpeCJwXEUEXpLZxqMAeGFkMi9x5xUkXM"
+          "tx": "Dju5QFUZA879v7c1BmhRLSZ7QQXeaDsV4psjgYAzGZpu"
         }
       ]
     },
@@ -3944,7 +3944,7 @@
           "role": "attack",
           "rule_code": "STREAM_CAP",
           "status": "failed",
-          "tx": "EnhnxYH6sjvQquGE4mzcP2MorRo4JQssEUBpUtRPtjFF"
+          "tx": "AuocPKeavgcZNVYmmVNiL3tCCP9D5u9y6Sw2W8GQWA6G"
         },
         {
           "expected_rule_code": "STREAM_CAP",
@@ -3953,7 +3953,7 @@
           "role": "attack",
           "rule_code": "STREAM_CAP",
           "status": "failed",
-          "tx": "9tgVfo3g3Ur23ExEWy3yJUzKtA8zjGvK4Q6UcMniAECd"
+          "tx": "8ug9hSsqsu2d7USjgYALkvjkU7YY9DFs5YotML2ryMJm"
         },
         {
           "expected_rule_code": "STREAM_CAP",
@@ -3962,7 +3962,7 @@
           "role": "attack",
           "rule_code": "STREAM_CAP",
           "status": "failed",
-          "tx": "CJATgZMCPptvfTaQF8kg6rJYEcnpf714a3u5TtNpS35S"
+          "tx": "AxdTCyYS7wPhsDdCrAyCMh8dVT7MToPBxYgGmi7MQSGh"
         }
       ]
     },
@@ -4008,7 +4008,7 @@
               "seeds_held_le_cap": true,
               "supply_conservation": true,
               "token": "clf3.factory.test.near",
-              "token_custody": "24139076666667",
+              "token_custody": "24241175333334",
               "token_custody_identity": true,
               "usdc_custody": "0",
               "usdc_custody_identity": true,
@@ -4032,7 +4032,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "GriMCpQbfKgBgCE5TXkydZdPxjKYFodDo59HVsdWDuMd"
+          "tx": "2fmV9fcXz8T62td6m7iRuvP78rjg1MWznhTn3hCKU9yc"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -4041,7 +4041,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "76pJ1aiWf699BcQ2B7sgxdd3jo4GnUu5S1QQyMjJDKdS"
+          "tx": "FWXj1GjXk3tigW44GFTcpJWNEGFGQRrDDMy1jaJrJgWM"
         },
         {
           "expected_rule_code": null,
@@ -4050,7 +4050,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "Fa9JjxGuBKmhv1txt9gXUAQxxmyShN13hECQ9kTfBBR6"
+          "tx": "A9LsYoBCVcDb9An4Pw4tz4F6DEf2djuVEzeXcDCNej5R"
         }
       ]
     },
@@ -4112,7 +4112,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "J3fFyS1SPgmPmPCQsdcRtJFCf58EsanDqPLhNu8uWi2Z"
+          "tx": "Awje7Q3HzvYp7SZaUANhMe9r9KQRMHGUexuL3zMWCv95"
         },
         {
           "expected_rule_code": "R_NOTHING_TO_CLAIM",
@@ -4121,7 +4121,7 @@
           "role": "attack",
           "rule_code": "R_NOTHING_TO_CLAIM",
           "status": "failed",
-          "tx": "27AMrwVLyBMxy7uuwWXLceysnX8YiLN6RWEegcQ3GWLG"
+          "tx": "DAham9HoeqUT2hQeTerdQDaHCJkWYhnXqTVLSErL5P4x"
         },
         {
           "expected_rule_code": "STREAM_CAP",
@@ -4130,7 +4130,7 @@
           "role": "attack",
           "rule_code": "STREAM_CAP",
           "status": "failed",
-          "tx": "9CVoedJw5MwC6622b7YqY3MxNDHFQZbyfT1QzHgXGfTg"
+          "tx": "A7b9xBc4tHFb1srw8oSkETp1hK1FhTNrcEGuLGkyKy4j"
         }
       ]
     },
@@ -4188,7 +4188,7 @@
           "role": "attack",
           "rule_code": "R_INSTANT_STATE",
           "status": "failed",
-          "tx": "99r946B81Y6Zm8cM4EQTDLHbB1LEhQnB83yLim8mXFop"
+          "tx": "J8AvVST2hVTqcVxcsEoYVsSJe6xPmDzkf1NHd5mLHqoW"
         },
         {
           "expected_rule_code": "R_INSTANT_STATE",
@@ -4197,7 +4197,7 @@
           "role": "attack",
           "rule_code": "R_INSTANT_STATE",
           "status": "failed",
-          "tx": "7rvBV43Bq1sYcBMnvTUpTqMaJa8ukBoUXn11Fhu7nVh2"
+          "tx": "JDcULALjBbM8kjjaL8D8b8EHYLob6fs6QVLj68p3jBB7"
         }
       ]
     },
@@ -4259,7 +4259,7 @@
           "role": "attack",
           "rule_code": "R_TOO_EARLY",
           "status": "failed",
-          "tx": "GM3dRWksEFzhvm4pyNMXrdseLT1M1mz2vc17k5JRPm5m"
+          "tx": "3nAVEZAJ577kdyyDLiCpRzpuAMUTrk8XP773JwQNqhwo"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -4268,7 +4268,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "4CYMmNtGVmmhzJtmuewfxqEjcPLPs61yyXT6Z5mJM4po"
+          "tx": "6PQH3xkMKxwZQGpwBFMnB4PVst2sYKGuDmGG55R1fLRr"
         },
         {
           "expected_rule_code": null,
@@ -4277,7 +4277,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "81dFmbC3L2oB5AfmKxsXUGHnt5Sod2tXJcwbTGHEaCdm"
+          "tx": "8nw5EMtuoQoaD389st4bQ33xk1isPbpPARD53wbaNYsB"
         },
         {
           "expected_rule_code": "R_INSTANT_STATE",
@@ -4286,7 +4286,7 @@
           "role": "attack",
           "rule_code": "R_INSTANT_STATE",
           "status": "failed",
-          "tx": "DrTV1xGMa7aTS6am4mp9U6QDa5mSB9GSGdLd2sAGr3LE"
+          "tx": "DZqqp8kGeJbRhks4GSAVuCe1TGXjXeSA6rswyvBYA2AT"
         },
         {
           "expected_rule_code": "R_INSTANT_STATE",
@@ -4295,7 +4295,7 @@
           "role": "attack",
           "rule_code": "R_INSTANT_STATE",
           "status": "failed",
-          "tx": "AaTMmMYUkJd9fmXqZmcckFQSsdzsmHKX1TR3HwAcc8Mj"
+          "tx": "8geQPPKXvJ4UQ9ecH2xxxXtmBoQKCL8YBaf2sXZ7Zvnq"
         },
         {
           "expected_rule_code": "R_INSTANT_STATE",
@@ -4304,7 +4304,7 @@
           "role": "attack",
           "rule_code": "R_INSTANT_STATE",
           "status": "failed",
-          "tx": "4gBUw7WhXjTeiqZ1VnbDjwdizXTZHhvgd44rvwVFgZUR"
+          "tx": "2eZ61cF4ePUYDKhWQ7Csx8Ns3AQnrpuTkqpCFjeKsBFb"
         },
         {
           "expected_rule_code": "R_INSTANT_STATE",
@@ -4313,7 +4313,7 @@
           "role": "attack",
           "rule_code": "R_INSTANT_STATE",
           "status": "succeeded",
-          "tx": "8r99iYy2MsUQ15SGREngk6baumTBpWYYYBPe4fyaD3K"
+          "tx": "5jMG6qrKhVN5gKs5HaaTaQUxUwCqq8GJKd71xSv4C8MZ"
         }
       ]
     },
@@ -4379,7 +4379,7 @@
           "role": "attack",
           "rule_code": "R_INSTANT_STATE",
           "status": "failed",
-          "tx": "6rgELbbXkmbfJnaVtPMRb21totHa9NwMMJjSLFutYaWt"
+          "tx": "Dk2LGojLEHf3yZT31CxJw8kyx1p4K3PBTBoS9Roq6qrv"
         }
       ]
     },
@@ -4445,7 +4445,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "9rP1j36KLFDNxNqxmnsRX7uakPfUgtHFaBQE93EY7zqm"
+          "tx": "xoyxBqS3phNULKaj6qwRdCUZiv9gW22nyd8D3psHjo4"
         },
         {
           "expected_rule_code": "R_INSTANT_STATE",
@@ -4454,7 +4454,7 @@
           "role": "attack",
           "rule_code": "R_INSTANT_STATE",
           "status": "failed",
-          "tx": "7QQnkLm1mGzpEkHK2JZYsQmgHPC8S6MXnhSaRVMqjnH8"
+          "tx": "7mJ74UpKpPTF5FBmsVsZ1WyskXxh3RAYkFCBP22dR6E9"
         },
         {
           "expected_rule_code": null,
@@ -4463,7 +4463,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "5cxJ9C8XvdKBY7b5w7tpfpym8zFE7xkkL2P4pfZgddkf"
+          "tx": "72DSr2cajA8gbAQNM7XWat7f4D84oAJt6fSVhFCFCMzq"
         },
         {
           "expected_rule_code": "R_NOTHING_TO_CLAIM",
@@ -4472,7 +4472,7 @@
           "role": "attack",
           "rule_code": "R_NOTHING_TO_CLAIM",
           "status": "failed",
-          "tx": "4oYngZ26qtshGbwzV52zH1ewcexayvv14pE7rPVYwQTs"
+          "tx": "46WuEGjysVr4bSYWVBgZZoSQZAMNgxTC8BzwtNAnw6Vp"
         }
       ]
     },
@@ -4551,7 +4551,7 @@
           "role": "attack",
           "rule_code": "R_TOO_EARLY",
           "status": "failed",
-          "tx": "DLP8cV1nxUe1aQ4FHuXuaerYiE8uhzaFrS8CH6meuABA"
+          "tx": "HaoDJHJkp987Se2vJbmxXXCtt6Ckk9CGVMFcbMP9fvjW"
         },
         {
           "expected_rule_code": "R_INSTANT_STATE",
@@ -4560,7 +4560,7 @@
           "role": "attack",
           "rule_code": "R_INSTANT_STATE",
           "status": "failed",
-          "tx": "6NGYLP3pgRtRALVxUTbf58EBTJ1hhPioyabQQ2Yuc8SE"
+          "tx": "8NaXSjsvo85pqX49Yu9hurEujtDKZxVzX5yNqJ9cwCa7"
         },
         {
           "expected_rule_code": null,
@@ -4569,7 +4569,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "2o38roNodZtsCqa4cFbyj2LD4itegRX3yyfqJwqyZav5"
+          "tx": "GZX9rPouovgY96GnEtvA7FSKZDGqU2PVgX3v6mE5iTc8"
         },
         {
           "expected_rule_code": "R_INSTANT_STATE",
@@ -4578,7 +4578,7 @@
           "role": "attack",
           "rule_code": "R_INSTANT_STATE",
           "status": "failed",
-          "tx": "hhaY1uQATZBHwgqjTB9J3fZFm9R8UK8gsNDrpeHxXCT"
+          "tx": "DqCAXwPxxRQ6XTzMqAcMPoVJyt9dzw5ozQaqHJ6PoJKL"
         },
         {
           "expected_rule_code": "R_INSTANT_STATE",
@@ -4587,7 +4587,7 @@
           "role": "attack",
           "rule_code": "R_INSTANT_STATE",
           "status": "succeeded",
-          "tx": "2Hsw4QURbjDWSrwM6YFnXSVzXJNm3mCS3bYV458SknVh"
+          "tx": "Gc9QXwAw2LnPromhKejZaGCs31yiv9SpMbh67ukKNsKi"
         }
       ]
     },
@@ -4627,7 +4627,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "A4zD5u1CwAUo3DDgZvJRZFeSvRjGAs7kFou2cwo4YDEU"
+          "tx": "7M447DJaKgxyWQzWZmJz7c8GzxWDgZsNu26reGUumQQV"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -4636,7 +4636,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "HBPSEXd1cP23eAKAxHzPpNgLCZCjDpxxMR3QMxAoe3qU"
+          "tx": "FJ8XkPVGUaFyt2NNVQr7rBPwr3tMTMmtHxcXjG12ZDzN"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -4645,7 +4645,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "3HmAf7ZMxyffMY8MGjG3hNc3mtsWM23hZwJMiv5r8a4R"
+          "tx": "9Kur6ez9RmbuvgdnXCfGijF6mcRKP87ch2dXbMzuyYQu"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -4654,7 +4654,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "D4LooJzy82CsmAPaaMTT1YNaCS2dxZ4Ns5EuMHmDVZ3u"
+          "tx": "8qz461hqgDcikEypBPwEFreMAZFgS8vGgwREeGk1b8mY"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -4663,7 +4663,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "8namZuAasDZcZg1akaPPmffZiG9A3h5WzCNjWdEhdSBm"
+          "tx": "9e3NSjXBZbX9P1k69LEwSfDwKN6UUvyfBBeCQa6tEkKM"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -4672,7 +4672,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "DHSSUeLtxM2QcvrSVemJWkSdPpZ3ccwS49QWpFe7k6Ea"
+          "tx": "6JN8goKdxtWZZhZ4H2iW95s9YWbA7FWi8XMZrKHYazLb"
         }
       ]
     },
@@ -4720,7 +4720,7 @@
           "role": "attack",
           "rule_code": "R_LAUNCHER_LOCKED",
           "status": "failed",
-          "tx": "6919YnR76mNa4Xj1UVgq9Bf1R8Wtvp9vmaJ171JXXAJq"
+          "tx": "4RK3ja1zUVbej2iVmSWfsjXzivurfDSHzsnM5bmrRrPj"
         },
         {
           "expected_rule_code": "R_LAUNCHER_LOCKED",
@@ -4729,7 +4729,7 @@
           "role": "attack",
           "rule_code": "R_LAUNCHER_LOCKED",
           "status": "failed",
-          "tx": "8EiAQ9MpsSgavLRbCxYVeyyfQoF8ZdRurG7Vyicpc8B5"
+          "tx": "Ct677BvASj1JmAUctzuU2BTLpG6c1MECL5VAqituJWML"
         }
       ]
     },
@@ -4806,7 +4806,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "aXRYK4SFBNTWXBSkXRoXLPd8qdxzZyFa2HbVHf6GJA1"
+          "tx": "Erihgsb4eF6LnRzVR1S2Ub5YfbwUQQ1mQLisz6GEaHmo"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -4815,7 +4815,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "Du4W1egSFbennYQy46wVHWzBWQGJsGPFjN1ckWTtGYS"
+          "tx": "5UcFx5JaWEnDBgLCaBoEwjuFN6fapziaS6iDdY8nmQkr"
         },
         {
           "expected_rule_code": null,
@@ -4824,7 +4824,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "FeEtLyFw5HBwyDfaVfB7YtXzm17Ma7xzA5nyYMJskdtu"
+          "tx": "ETGz97NkakJjjaa8oaD6CZ1mzLCk5ALnKD4obeuDtpRQ"
         },
         {
           "expected_rule_code": "R_NOTHING",
@@ -4833,7 +4833,7 @@
           "role": "attack",
           "rule_code": "R_NOTHING",
           "status": "failed",
-          "tx": "CDAqxM6JDdnQSv2MPPpXmQm166H8CX7XyvgSx5KGXS8s"
+          "tx": "AkdzxTFcUW4Qdekmrs1L5QQbLGeaxzXDsQ4hdvP7NDN9"
         }
       ]
     },
@@ -4896,7 +4896,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "39V1XoTAhBm9JiPyRUZ7qrcTu8Kmw5AqRBwf1fre8qFn"
+          "tx": "HUGp2N2qeRNAU6DL92sJviHR4rAhX8mg8WZqMzVvzkWc"
         },
         {
           "expected_rule_code": null,
@@ -4905,7 +4905,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "HCe5qSsurCqyMxRLHWY3WTwjCgc1NRhF5NhzAr8AEV6Z"
+          "tx": "2XprT4rUKWYimcx7BL7Gc3VG4W8xEP3PYJXVnG67GhsX"
         },
         {
           "expected_rule_code": null,
@@ -4914,7 +4914,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "Hrh6njieeZ48osEyhZpKxefptcd1qr9J7pqazKdokjV1"
+          "tx": "8c8eozJLtjfwX7HK1pyd5oLatfGAYPmf894zWAaX6sqU"
         },
         {
           "expected_rule_code": null,
@@ -4923,7 +4923,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "G6aNhJZK34T77zaFZoQV4JaAQy9mSGr8yBKPm8cwST5E"
+          "tx": "BADJZYtHsiNLP2qYFMbky5iwEGfWxHTpZtw9JA9KJHtP"
         }
       ]
     },
@@ -4967,7 +4967,7 @@
           "role": "attack",
           "rule_code": "R_ID_NAMESPACE",
           "status": "succeeded",
-          "tx": "6c7qAZLBbooTRiP7H2yGbKpeQMsEzQRtR6yp8XeRnzWG"
+          "tx": "2yZK7Jwa113kmSqX2kdLR1pu41Cv55fXctqLr79TU62V"
         },
         {
           "expected_rule_code": "R_ID_NAMESPACE",
@@ -4976,7 +4976,7 @@
           "role": "attack",
           "rule_code": "R_ID_NAMESPACE",
           "status": "succeeded",
-          "tx": "GPAAFHLCc1hvQGYz39efJoxswC29T5TP3hiPL9dpdhsq"
+          "tx": "2Tejsz9Pe7aMX6hX4pTNBeqMTKNqrojpTiHzephxcUbU"
         },
         {
           "expected_rule_code": "R_ID_NAMESPACE",
@@ -4985,7 +4985,7 @@
           "role": "attack",
           "rule_code": "R_ID_NAMESPACE",
           "status": "succeeded",
-          "tx": "2M55kRX9Joyrht7bK1Y4MZP2fPP8sMT3roaktgJrUGcy"
+          "tx": "HdYVGSMDkzCi5vAG1cTTHRnn2PHRMxc3TykxBwhcFNxj"
         },
         {
           "expected_rule_code": "R_ID_NAMESPACE",
@@ -4994,7 +4994,7 @@
           "role": "attack",
           "rule_code": "R_ID_NAMESPACE",
           "status": "succeeded",
-          "tx": "3TiGKi91zEDHLwKtJg4P6nUPdottNib5bmomCUwfqKYk"
+          "tx": "FvMUUhg4vGTmJswEvaxazLTjby6ypeF3GzyGSxRfdzRC"
         }
       ]
     },
@@ -5079,7 +5079,7 @@
           "role": "attack",
           "rule_code": "R_SELF_BUY",
           "status": "succeeded",
-          "tx": "FhBbFeW2jrsnvUUS2gNCUivxyZQw6zcuGZL3nbBMLtiJ"
+          "tx": "3i9yZQNbuXMGSHncVfxx9HLxPAEk7p7NcLsYxpc1HMa9"
         },
         {
           "expected_rule_code": "R_SELF_BUY",
@@ -5088,7 +5088,7 @@
           "role": "attack",
           "rule_code": "R_SELF_BUY",
           "status": "succeeded",
-          "tx": "3d1B7AM3QPSqEGaMA7dUQjqLYH7yEq1EoUBsaLbAUSCC"
+          "tx": "CtT6d5T54dkpJhVDNx7VZorpmhnwZSZpzRLhZCdYzbME"
         },
         {
           "expected_rule_code": "R_SELF_BUY",
@@ -5097,7 +5097,7 @@
           "role": "attack",
           "rule_code": "R_SELF_BUY",
           "status": "succeeded",
-          "tx": "ApY9oqPZGbrDjCPukm3TXAhwUKi7eCcUjWBQVa1RGfqZ"
+          "tx": "DTD5CatRrjhMfjKmJKziNFdtrncACdWA5D9d7VrXj3Hq"
         },
         {
           "expected_rule_code": "R_SELF_BUY",
@@ -5106,7 +5106,7 @@
           "role": "attack",
           "rule_code": "R_SELF_BUY",
           "status": "succeeded",
-          "tx": "DMsT7bYMvVMTYYRPhto34XRdZioFRfvvQ5sGENojap9t"
+          "tx": "EcGDufKixiM4WW55M72AtPX4THiUwa3qiNPHQxufr7g7"
         }
       ]
     },
@@ -5187,7 +5187,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "7yvLiCYxVVseXZEzyWmrke8LowWpBzPXMAJabVdDoMSe"
+          "tx": "GAMB7zwbNDY8WGpKDMpvnr2SJ6dPsja9xuDMoRQ92ES1"
         }
       ]
     },
@@ -5264,7 +5264,7 @@
           "role": "attack",
           "rule_code": "R_MARKET_CAP",
           "status": "succeeded",
-          "tx": "7NkUbqYgzhmBUnCHLQSiCavDuPHHabPe8SLzJES6mDAM"
+          "tx": "4NJ67QX7hNXPYoLhV43ZjJHjboTmGdb5wrDtgRpBU5Bk"
         },
         {
           "expected_rule_code": null,
@@ -5273,20 +5273,20 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "8Y2dUshaP99frqKpPUbxZbPb5krGrFVGK8oaqEwF8Ugg"
+          "tx": "4DQnZ21xCr6eDN81EDtsy5FLag6vyHTj5cRrpJrNFzqo"
         }
       ]
     },
     {
-      "attempt": "With 250 USDC already in one pool and a 400 USDC global cap, a second launch's 250 USDC seed is handed to the market.",
+      "attempt": "With 1,000 USDC in an instant pool and a 1,200 USDC global cap, a buyer sends 300 USDC. (Market 1.1.1: instant seeds are no longer checked against the global cap, only buys are.)",
       "checks": [
         {
           "ok": true,
-          "what": "the second pool does not exist and its seed is still at the launcher"
+          "what": "buyer refunded in full"
         },
         {
           "ok": true,
-          "what": "the first pool is untouched"
+          "what": "the pool reserve is unchanged"
         }
       ],
       "co4": "CO7",
@@ -5298,9 +5298,9 @@
           "market_locked_consistent": true,
           "owed_usdc": "0",
           "seeds_held_le_cap": true,
-          "usdc_custody": "250000000",
+          "usdc_custody": "0",
           "usdc_custody_identity": true,
-          "usdc_expected": "250000000"
+          "usdc_expected": "0"
         },
         "launches": [
           {
@@ -5313,39 +5313,22 @@
               "token": "glb1.factory.test.near",
               "token_custody": "50000000000000",
               "token_custody_identity": true,
-              "usdc_custody": "250000000",
+              "usdc_custody": "0",
               "usdc_custody_identity": true,
-              "usdc_expected": "250000000",
+              "usdc_expected": "0",
               "vest_bounds": true
             },
             "launch_id": "1000000000"
-          },
-          {
-            "get_invariants": {
-              "claimed_le_unlocked": true,
-              "market_locked_consistent": true,
-              "owed_usdc": "0",
-              "seeds_held_le_cap": true,
-              "supply_conservation": true,
-              "token": "glb2.factory.test.near",
-              "token_custody": "1000000000000000",
-              "token_custody_identity": true,
-              "usdc_custody": "250000000",
-              "usdc_custody_identity": true,
-              "usdc_expected": "250000000",
-              "vest_bounds": true
-            },
-            "launch_id": "1000000001"
           }
         ],
         "market": {
           "get_invariants": {
-            "global_q": "250000000",
+            "global_q": "1099350000",
             "instant_q_matches": true,
             "parked_count": 0,
-            "usdc_custody": "250000000",
+            "usdc_custody": "1100000000",
             "usdc_custody_identity": true,
-            "usdc_expected": "250000000"
+            "usdc_expected": "1100000000"
           },
           "pools": [
             {
@@ -5361,26 +5344,35 @@
       "invariants_ok": true,
       "network": "SANDBOX",
       "result": "REFUSED",
-      "target": "instant+market",
-      "title": "Seed that would push the market past the global reserve cap",
+      "target": "market",
+      "title": "Buy that would push the market past the global reserve cap (instant pool)",
       "transactions": [
         {
           "expected_rule_code": "R_MARKET_CAP",
-          "label": "open_instant of the second launch",
+          "label": "buy of 300 USDC past the global cap",
           "network": "SANDBOX",
           "role": "attack",
           "rule_code": "R_MARKET_CAP",
           "status": "succeeded",
-          "tx": "7qU4VWtPCNNgUgMhhnChpnoVcB1ReFHXAWG5Pe5wsXpG"
+          "tx": "F5zW4nwJvzsKS3cuUEQawGgiZ66ahhMLwqbt91uFKjuJ"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "a 100 USDC buy inside the cap still works",
+          "network": "SANDBOX",
+          "role": "support",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "4S6J4PdSQ9zWmaiSP7rxSu7kELt2vqZT4NrEcCykRJBz"
         }
       ]
     },
     {
-      "attempt": "With a 300 USDC instant sub-cap and one 250 USDC pool open, a second 250 USDC seed is sent, and a buyer tries to push the first pool 100 USDC higher.",
+      "attempt": "With a 300 USDC instant sub-cap (a cap on the SUM OF SEEDS since market 1.1.1) and one 250 USDC pool open, a second 250 USDC seed is sent. A buyer then pushes the first pool well past the sub-cap with a buy, which must no longer be blocked (trading cannot block seeding).",
       "checks": [
         {
           "ok": true,
-          "what": "buyer refunded in full"
+          "what": "the buy was not blocked by the sub-cap"
         },
         {
           "ok": true,
@@ -5438,12 +5430,12 @@
         ],
         "market": {
           "get_invariants": {
-            "global_q": "289740000",
+            "global_q": "349350000",
             "instant_q_matches": true,
             "parked_count": 0,
-            "usdc_custody": "290000000",
+            "usdc_custody": "350000000",
             "usdc_custody_identity": true,
-            "usdc_expected": "290000000"
+            "usdc_expected": "350000000"
           },
           "pools": [
             {
@@ -5460,7 +5452,7 @@
       "network": "SANDBOX",
       "result": "REFUSED",
       "target": "instant+market",
-      "title": "Instant launches crowd out the market: seed and buy above the instant sub-cap",
+      "title": "Instant seeds crowd out the market: a seed above the instant sub-cap",
       "transactions": [
         {
           "expected_rule_code": "R_MARKET_CAP",
@@ -5469,25 +5461,16 @@
           "role": "attack",
           "rule_code": "R_MARKET_CAP",
           "status": "succeeded",
-          "tx": "82dMWJmCjV9Qau3oJRRvFie8NdD4GCPMJe7Z4TuLjfCb"
-        },
-        {
-          "expected_rule_code": "R_MARKET_CAP",
-          "label": "buy of 100 USDC past the sub-cap",
-          "network": "SANDBOX",
-          "role": "attack",
-          "rule_code": "R_MARKET_CAP",
-          "status": "succeeded",
-          "tx": "D6C6x8cYCmBQkBzC7wcmtyJqhEJ4ySJSSQe6fBWPhKmT"
+          "tx": "74R3TssGKCsWCQBFvMqqZ4d1ipACt5NtYEH7b36ngB6n"
         },
         {
           "expected_rule_code": null,
-          "label": "a 40 USDC buy inside the sub-cap still works",
+          "label": "a 100 USDC buy that takes the reserve past the sub-cap (allowed since 1.1.1)",
           "network": "SANDBOX",
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "F6Zk499pYBp4wLzdes5UGptppCi5NtQenMYrFTZoLEmk"
+          "tx": "98uMHH6mvsUyTcephLP3YFLX9a1LXjRari8XKsgPWX4C"
         }
       ]
     },
@@ -5566,7 +5549,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "EerTyBG13yrckHjEDXAcci3gh3douyigMNfitbf5a28E"
+          "tx": "Ghm7jwxJoxGsxhMr3TFo4oK4pWPH5wUZhUjH4Qnibgi9"
         },
         {
           "expected_rule_code": "R_CAP_GLOBAL",
@@ -5575,7 +5558,7 @@
           "role": "attack",
           "rule_code": "R_CAP_GLOBAL",
           "status": "succeeded",
-          "tx": "gE3C6FJAwaUxTpkT3qRtKPEGqNYvpYvDUsi2cTdzFEt"
+          "tx": "B427pLGSteVq7dQc8aMai9SrQyb1JuQN8RRheyfvt6Ld"
         },
         {
           "expected_rule_code": "R_SEED_RANGE",
@@ -5584,7 +5567,7 @@
           "role": "attack",
           "rule_code": "R_SEED_RANGE",
           "status": "failed",
-          "tx": "BqiiKkyCNEc5Afi5RVacEJGn1knHvS2JNW5ouK8tBmt"
+          "tx": "7rfzQADoPykvEXqK7F5eCswVjUDX2STNaUToMM4JbcnS"
         }
       ]
     },
@@ -5647,7 +5630,7 @@
           "role": "attack",
           "rule_code": "R_UNEXPECTED_TOKEN",
           "status": "succeeded",
-          "tx": "FfxFS24qADe2ju7bEPdYgE9ZM7SSHYxhDF9q2V9kaPmk"
+          "tx": "HALpz9XviTSvcYQ6s1BrTpwTVkqWFNVxCLTSECpo1Znc"
         },
         {
           "expected_rule_code": "R_UNEXPECTED_TOKEN",
@@ -5656,7 +5639,7 @@
           "role": "attack",
           "rule_code": "R_UNEXPECTED_TOKEN",
           "status": "succeeded",
-          "tx": "AcEqr1r3tKUUkamNQ6nxMcSdEjPRXTmUzWiHYxXCMYU4"
+          "tx": "3yZJphfq8wFMg2umD2ftcfPd6qXFSfbkdv9mZYQUt79H"
         },
         {
           "expected_rule_code": "R_UNEXPECTED_TOKEN",
@@ -5665,7 +5648,7 @@
           "role": "attack",
           "rule_code": "R_UNEXPECTED_TOKEN",
           "status": "succeeded",
-          "tx": "FB8VmbEV6poLtx6FjMA3EFFMr9d4CRR8dkPUnLotsX9X"
+          "tx": "2yjAkgA8rG1A9GSGGiFR6eDJnwLyx6FrbfNuTrEv7L33"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -5674,7 +5657,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "succeeded",
-          "tx": "CFF5fq7cmA51u8GEbBo2RRrZyjRiyLmARGt191aXNzAx"
+          "tx": "5FD3CahnBGrMQr82fP8fj55ghfWPchKmLMXqrNP4Fq4W"
         },
         {
           "expected_rule_code": "R_UNEXPECTED_TOKEN",
@@ -5683,7 +5666,7 @@
           "role": "attack",
           "rule_code": "R_UNEXPECTED_TOKEN",
           "status": "succeeded",
-          "tx": "FqUsN2gpJ3o1PFa42zFFsASJa4vEB55QQ4dgtkbyC7Ui"
+          "tx": "CV5EEaC8mPZxhGrTRekMekW33oVKAm9xr7oZGkAirD8Z"
         },
         {
           "expected_rule_code": null,
@@ -5692,7 +5675,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "Gatu9y5e1EHq3hjgXW4AXpQpKxYBB5mB7VU4RGN5oyRd"
+          "tx": "DXbktd1aaboCAqj6XdekivJdRYfpkHs7aaSZqEurrNCZ"
         }
       ]
     },
@@ -5734,7 +5717,7 @@
               "seeds_held_le_cap": true,
               "supply_conservation": true,
               "token": "paus.factory.test.near",
-              "token_custody": "33062966666667",
+              "token_custody": "33096756000000",
               "token_custody_identity": true,
               "usdc_custody": "250000000",
               "usdc_custody_identity": true,
@@ -5775,7 +5758,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "GpQNcJRNerZqp2CrejkuKx5e6qKKhG1XhVeGABSo4QfA"
+          "tx": "CJ1B44gnJPJm57cxMWjpsmbNEuZYBmtQ4sZL442ZnSea"
         },
         {
           "expected_rule_code": "R_PAUSED",
@@ -5784,7 +5767,7 @@
           "role": "attack",
           "rule_code": "R_PAUSED",
           "status": "failed",
-          "tx": "4emVjVUemLiSGH1mu8VgjiwLJCx44jPyi4owWbmrBF2r"
+          "tx": "8rsNshv6f9rdffd73t9k7W58Qxhqi4wyFyFhaRUu9HpE"
         },
         {
           "expected_rule_code": "R_PAUSED",
@@ -5793,7 +5776,7 @@
           "role": "attack",
           "rule_code": "R_PAUSED",
           "status": "succeeded",
-          "tx": "5Yrq1wWK79Wgey56C5os2nHJbyZ1WWp7CGujUMwFKcWo"
+          "tx": "AaD3kzoEtXGTzkjyACKw6DwMXBwDXHQjNfAxSg2uPGq4"
         },
         {
           "expected_rule_code": "R_PAUSED",
@@ -5802,7 +5785,7 @@
           "role": "attack",
           "rule_code": "R_PAUSED",
           "status": "failed",
-          "tx": "85FTkE2BPhjir8ZenfYQMBd7y9saL4m2YzDFcRjMZnFa"
+          "tx": "BTtZiQrPuJmTfSK3ZAnpSPaQi3zLqhBpt9c89bNTQzZ3"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -5811,7 +5794,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "5UhreBKBbFgEsNPTyDErfpLbV1E7No322Y1WzZHiYiA7"
+          "tx": "HaJE7ju5QqSFUw79pcF4jNveYujN2KzzW1ba3j67GsLG"
         },
         {
           "expected_rule_code": null,
@@ -5820,7 +5803,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "Ce9MziDSvg7P4EQhr4akaDCNBiQbQL8duFbf9LLqmw3n"
+          "tx": "7jCY5RBD7xn6U7AvCssiXkZLNjraBsuHdYuNRyEpyLxe"
         },
         {
           "expected_rule_code": null,
@@ -5829,7 +5812,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "5zMqSJ8X38afc43LW2zsZ1RtWcakWkdFRymYMfHg6HGq"
+          "tx": "dBvR4AoRHqBaVT3U2y4HjxLSEEsvxZezxfpeEKyU857"
         },
         {
           "expected_rule_code": null,
@@ -5838,7 +5821,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "BF31AVeJJPC9nCkZBf8vdLjEpMiDrWirfhehJVfeqUPg"
+          "tx": "DQV6C5YEzkQ6Cp9qCXNThrZSBFCzHVrRQa4N9gijvaDQ"
         }
       ]
     },
@@ -5892,7 +5875,7 @@
               "seeds_held_le_cap": true,
               "supply_conservation": true,
               "token": "frzn.factory.test.near",
-              "token_custody": "31331709500000",
+              "token_custody": "31364004666667",
               "token_custody_identity": true,
               "usdc_custody": "0",
               "usdc_custody_identity": true,
@@ -5916,7 +5899,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "EbwNpWR6HkJD2ukv7vMNbxzGWANoBbTBtp6dUNrvNVMb"
+          "tx": "GA6JiJ9AXkPVjt2hdqnP8DUccw7BoMZwTesQUHk52oFP"
         },
         {
           "expected_rule_code": "R_FROZEN",
@@ -5925,7 +5908,7 @@
           "role": "attack",
           "rule_code": "R_FROZEN",
           "status": "failed",
-          "tx": "DmKPkiG8VhQug6oGCc5iBcM3h8Cw7gvoJJ5AVRhgTikc"
+          "tx": "3LtdfikVNw59q56z1eKzE6WH2xdAJN8hsas6knANvs12"
         },
         {
           "expected_rule_code": "R_FROZEN",
@@ -5934,7 +5917,7 @@
           "role": "attack",
           "rule_code": "R_FROZEN",
           "status": "failed",
-          "tx": "9mqb8aM979axukgJHcfKFh8JM27VPBCn45jTt3vdqZrF"
+          "tx": "4GfvD8PVjZ5noxCAgineQEgAVXa96Xe3Y4qmKv8KDmLQ"
         },
         {
           "expected_rule_code": "R_FROZEN",
@@ -5943,7 +5926,7 @@
           "role": "attack",
           "rule_code": "R_FROZEN",
           "status": "failed",
-          "tx": "CLhit3GjvcdG3bqbNPeXZtfpF9JfwCZyEcA5oxcmZknw"
+          "tx": "BXmCzC2zmFsbsacpQ99FDxL4ZsaZ9srnJgx3EdVPVnfz"
         },
         {
           "expected_rule_code": null,
@@ -5952,7 +5935,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "ANyKdw2UUqDVPnJVhkp9YEfYXkuEDC4b8b3qrW2FDf6p"
+          "tx": "8RYZCnaifbPQgcg5hM8eBqyFQmKqH8u1g1G2HFchQAzj"
         },
         {
           "expected_rule_code": null,
@@ -5961,7 +5944,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "BQa6Xn119VjyRa8crafq3jJnoWRxcqZ885xEVyB3ZAb6"
+          "tx": "5LPZ8yVUJMuEq8UWrVoFKfyCx92As3jVgFGVQpQdY6L2"
         },
         {
           "expected_rule_code": null,
@@ -5970,7 +5953,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "GbUCxZCoDdayzPGqGDbtwpcBGcFyfnH8UVn8HKyJgR4D"
+          "tx": "6P34vJ98K1kiM4mWj7oVTPwei8RpZZUYdYhMxAWPjz2b"
         }
       ]
     },
@@ -6020,12 +6003,12 @@
         ],
         "market": {
           "get_invariants": {
-            "global_q": "257330601",
+            "global_q": "257330767",
             "instant_q_matches": true,
             "parked_count": 0,
-            "usdc_custody": "258605898",
+            "usdc_custody": "258606064",
             "usdc_custody_identity": true,
-            "usdc_expected": "258605898"
+            "usdc_expected": "258606064"
           },
           "pools": [
             {
@@ -6051,7 +6034,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "JAwTEPHWPQCH3MjELWQCYwJjCoh3o41hfyVh199ZKWnb"
+          "tx": "6dGJq688TwR8pPEMmMLeKvd2PC5vjb2K5k3yPoQUWNpE"
         },
         {
           "expected_rule_code": null,
@@ -6060,7 +6043,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "9ze393doxTPtLCQQRFUdD7pNNQFVzU6GTCw8f5syV7Ez"
+          "tx": "B4eCiv1BvRxmYAFyc6CeF1Dx5bxUXkpPr27Y3AwwuU7H"
         }
       ]
     },
@@ -6108,7 +6091,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "GXTzf6QH5MWy4V722BwXuF63EB8PvUPnYcpSxAzSHW74"
+          "tx": "CRdqWXGoThwJKJrWBtQ14aZmUXt6VctDq7QEqMZ9uwba"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -6117,7 +6100,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "F99SN9882nnmpBjyojBjFYFAyfG33Bo1QYVWmdGmLfUe"
+          "tx": "2M6iCtbAmKfYwW5SjCrqR1NhQtoR9j6W6143xpvF1NtT"
         },
         {
           "expected_rule_code": null,
@@ -6126,7 +6109,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "C78D8AUFrrMs6qtMrYB24RagVUa36svfDoLYJsedaxaL"
+          "tx": "H6B3oXoNVaGpoXxVXwm1uJPBkkj1mVfoRzx9Y2U6ncdY"
         },
         {
           "expected_rule_code": "R_NOT_YET",
@@ -6135,7 +6118,7 @@
           "role": "attack",
           "rule_code": "R_NOT_YET",
           "status": "failed",
-          "tx": "8gaSbxBnDYL5e5yuPwgdz5554Hu7dxLKYbcwvZpo2nc3"
+          "tx": "3geENhh27gjYzBRXvVFuAwSuP4DUoFfwH2xgDbxsDk2z"
         },
         {
           "expected_rule_code": "R_NOTHING",
@@ -6144,7 +6127,7 @@
           "role": "attack",
           "rule_code": "R_NOTHING",
           "status": "failed",
-          "tx": "9YNTYzgkMmLYBnLbZGs9RgMfeTPoRTtAkBYgr5HoEugp"
+          "tx": "DffRBnybhg5pKHMcY8B1Gk1C1fPaMzyadGdYJ8skbCL6"
         },
         {
           "expected_rule_code": "R_CAP_GLOBAL",
@@ -6153,7 +6136,7 @@
           "role": "attack",
           "rule_code": "R_CAP_GLOBAL",
           "status": "failed",
-          "tx": "2xpmj43e8aixrGDhFKXjUfiTxh7MLMmXkpk2voiRhR1K"
+          "tx": "6YtgHyyKp7ZumRFEZqXtWRQ6TZ1Cq4CbLmV4JjVgzKBN"
         }
       ]
     },
@@ -6205,7 +6188,7 @@
           "role": "attack",
           "rule_code": "R_UNEXPECTED_TOKEN",
           "status": "succeeded",
-          "tx": "Fr9BFGiXjdBB5H45Q4QxoUH4u1xL3a1c3kDTQv477j6H"
+          "tx": "EDpUmwPqE7ikw6jjtUZKno8wFGpeqgUC4C13RbwQgsJ7"
         },
         {
           "expected_rule_code": "R_UNEXPECTED_TOKEN",
@@ -6214,7 +6197,7 @@
           "role": "attack",
           "rule_code": "R_UNEXPECTED_TOKEN",
           "status": "succeeded",
-          "tx": "2jc3zVaMPQZvtbWpCQpriTZPmp5v8texLtAgSNjmF5UF"
+          "tx": "DRYzJ89YaHGhKvwbHfFBVQ7DkUS1XxxzFRQ7zW7qom6t"
         },
         {
           "expected_rule_code": "R_UNEXPECTED_TOKEN",
@@ -6223,7 +6206,7 @@
           "role": "attack",
           "rule_code": "R_UNEXPECTED_TOKEN",
           "status": "succeeded",
-          "tx": "8KZUtrvb9ZLCuRS1w1BtAfC4GK4dY6HZuQ4oyjrX2ZKa"
+          "tx": "HSL2FT9MtEEJraGRdzBmUrdRKjPHfcNFp52jTN1L56Cf"
         }
       ]
     },
@@ -6275,7 +6258,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "succeeded",
-          "tx": "D8M9hyj85neHh92DX67FUkPEq6JhavLPbXxHTdBgdAe2"
+          "tx": "8ezTWUsfVFjBTD5AeCnjZrX8ibxp5zyQNfDGsLTaoi9r"
         },
         {
           "expected_rule_code": "R_DUP_LAUNCH",
@@ -6284,7 +6267,7 @@
           "role": "attack",
           "rule_code": "R_DUP_LAUNCH",
           "status": "succeeded",
-          "tx": "6CkEAK4ERth8X1WkJxE5DTGUTAKEYcjaTGiH2M3MSJUv"
+          "tx": "65Dq3V9h3hhkChg5gBtbgSTPXsdFfrzMCDWzMny1tKfB"
         }
       ]
     },
@@ -6332,7 +6315,7 @@
           "role": "attack",
           "rule_code": "PRIVATE_METHOD",
           "status": "failed",
-          "tx": "hB9QneXG96mqTesVRVjpbZ5YkNGN3qY6THgmyhuP72E"
+          "tx": "6vf3pTKJ9F9y7kwUzo6FAxvP4cQJhQT321k8xnQgZCBk"
         },
         {
           "expected_rule_code": "R_UNEXPECTED_TOKEN",
@@ -6341,7 +6324,7 @@
           "role": "attack",
           "rule_code": "R_UNEXPECTED_TOKEN",
           "status": "succeeded",
-          "tx": "CoM9LfhcrqFc9GpMTWfQWGUkVQnD6baZWuuWuCuM5a85"
+          "tx": "9u1REYfPgwq1qDdf1EztFFwNmcxUK77RpoL4kEybWop7"
         },
         {
           "expected_rule_code": "R_BAD_MSG",
@@ -6350,7 +6333,7 @@
           "role": "attack",
           "rule_code": "R_BAD_MSG",
           "status": "succeeded",
-          "tx": "6y857xwwMLvucc9sA42dFpHG8rP8gLGjGe4yiZAUafbD"
+          "tx": "E6q2C2ny1Q3hEzugFUBMZJu43auEBTPPWbCeRupf1Msi"
         }
       ]
     },
@@ -6402,7 +6385,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "BNNpXN8tdqtstsKdQrwop8AxExM2PP7QanD4d7hNsBRK"
+          "tx": "3HvAH15QbXbfvbtLvu92o1Uc8PLLq66U5bVHE7hXW38c"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -6411,7 +6394,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "yeQnAKVRPZnYgV344269dhohM3SovkBCdw1rokBcQVu"
+          "tx": "GoXNo2NyvXDuvdCs1gKpNEtTYhqSWshNhX8XcRxJDgEc"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -6420,7 +6403,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "FA6cYr2UzDDBSA4nketBkm2CMXHK1S5BJqAUEqXkwYjJ"
+          "tx": "CDNToiAwMJcJKAUqnqYxVeDWGkVyaDwb55LopmAhEJHG"
         },
         {
           "expected_rule_code": null,
@@ -6429,7 +6412,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "busdNKg1K5rzdaQHAgcqJXxEuNtm3ZKSq5Fm88Vbsaj"
+          "tx": "AHZiauEScjQvBavywNnL2M3JXbwjJsGj226eaus19iiv"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -6438,7 +6421,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "DaQwze7qW6F6ssBxZHqDr8s5B3q8u6JTkw92cqd9L8kt"
+          "tx": "G2PiCyM2uXFfkpnG8orVTDTUc7rbRr56Z2MRu856rxGX"
         }
       ]
     },
@@ -6494,7 +6477,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "succeeded",
-          "tx": "6wvbpspRXVvZ9YN5irMA5fPsLjcDN68VkQJPnwBzYoJE"
+          "tx": "8UfUcuC4Nxmy833ncRVZQ31UpZqq8HvXZJV1JPBpF95r"
         },
         {
           "expected_rule_code": null,
@@ -6503,7 +6486,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "9aHAZNBT737GE2s3gQnYm9Gv3zbGHZ3PcjBAmhH1hsQM"
+          "tx": "8gmUnFBu2coDS1bhkpb4AxM82NBwMNReQT22XP1cnjLv"
         },
         {
           "expected_rule_code": "R_NOTHING_TO_CLAIM",
@@ -6512,7 +6495,7 @@
           "role": "attack",
           "rule_code": "R_NOTHING_TO_CLAIM",
           "status": "failed",
-          "tx": "FZuVhTHe4hhdLQkCyZid8BXVYawgdmiyYE4NjQS8yLNm"
+          "tx": "7u9uikxJ4RkcPwg5S7KHf9m44BfZCiJn1jQJyDcdGxMU"
         }
       ]
     },
@@ -6564,7 +6547,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "ETXfkF78kezoJ9NE7Nc3H4Fz4nRJM1U49XRZzNHuKkti"
+          "tx": "DX5DnKJinBTK854uHxKHxADQ3xykBQ61KVn2gwhCA9uB"
         },
         {
           "expected_rule_code": "R_MIN_OUT",
@@ -6573,7 +6556,7 @@
           "role": "attack",
           "rule_code": "R_MIN_OUT",
           "status": "succeeded",
-          "tx": "M4CF2fR6mf9j8CKs4EW6nPibAr9AoDviYRkgLDLe5CJ"
+          "tx": "9N7tzms2nk3cBWbKWzWKxzsYSXMBqzLG3W7JzoQBxHjz"
         },
         {
           "expected_rule_code": "R_MIN_OUT",
@@ -6582,7 +6565,7 @@
           "role": "attack",
           "rule_code": "R_MIN_OUT",
           "status": "succeeded",
-          "tx": "BZ4CoUuJ2EZo8aUbdtgnL13RrH5yqYtq7T37jHfCtg2m"
+          "tx": "375tVPdGT7TaVomNWHwhYKYkWzbsZU8RqUKP2LefuTLb"
         },
         {
           "expected_rule_code": "R_MIN_OUT",
@@ -6591,7 +6574,7 @@
           "role": "attack",
           "rule_code": "R_MIN_OUT",
           "status": "succeeded",
-          "tx": "yV5mYc7sEZR5r8bMFj1keC3tGeMZnViHvBGEhQyXvEE"
+          "tx": "8dvJfsg8W9G4FV7D5cVP78qozk5PdVhKXZTR6aSmP7PE"
         }
       ]
     },
@@ -6643,7 +6626,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "9wPHKpg4Rw2besxJxLhQSv6jPdi9DoGDze697UoAJx5c"
+          "tx": "7Hopqj7oBTyjARWQqTTP5adqhDXScwFkQgipGfD3saJa"
         }
       ]
     },
@@ -6665,12 +6648,12 @@
       "id": "M08",
       "invariants_after": {
         "market": {
-          "global_q": "1008116223",
+          "global_q": "1008116406",
           "instant_q_matches": true,
           "parked_count": 0,
-          "usdc_custody": "1009386186",
+          "usdc_custody": "1009386369",
           "usdc_custody_identity": true,
-          "usdc_expected": "1009386186"
+          "usdc_expected": "1009386369"
         },
         "pools": [
           {
@@ -6695,7 +6678,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "E1Hv4z2D1oftC1EPo4y2xwnWPq4u7gk4vYgajnDEAgdu"
+          "tx": "4JbDZUmsrggeg8L36KrqJ4n7zZQ6V3cFtFhaLR4X3MFo"
         },
         {
           "expected_rule_code": null,
@@ -6704,7 +6687,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "7qmLXPfuBZoE5wX1oEYu4GXs8hFW9x3dkxHbeeKhre9M"
+          "tx": "CyoWjWxXSD2z1RwuuKggo5pkVeTA9pfDvryR97G81igT"
         }
       ]
     },
@@ -6759,7 +6742,7 @@
           "role": "attack",
           "rule_code": "R_MARKET_CAP",
           "status": "succeeded",
-          "tx": "HTpDYDeNrHASNC1V7CXW74CW6kDLmVAqEJX3iBwPfqY9"
+          "tx": "AyvurUfjTQXWgNGPFtXDkrtv8Cp31vKUrrg6HddrjZ3x"
         },
         {
           "expected_rule_code": null,
@@ -6768,7 +6751,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "59avHwYaUsGoh8n4Tfzs1S4KmQxZ281FKY2fygX5Pc5e"
+          "tx": "3BbYEhVN3mvNt84Tmqmgk5YNbjs9EBrob2czqXf1QoMp"
         }
       ]
     }

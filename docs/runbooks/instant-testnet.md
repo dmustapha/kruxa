@@ -60,6 +60,11 @@ Findings (details in `findings.jsonl`):
 3. **M-04 against the real token: not triggered.** `ft_transfer` on the real factory token returns nothing (tx `7Rz7jQKKj5vMZbPju2qNY6ceWj2iMXuankXQnnEn9U9A`), so the market's `max_len 0` read does not misfire with this token.
 4. **H-01 against the real factory: the deposit does come back.** `create_token` for an existing token account fails inside the factory batch and the 0.06 NEAR returns to the caller (isolated run tx `5tHGhN13CSfdm4h4H1aSq5UMyJ1dtZM6eoXpBa2aLCAt`: balance change -0.0012 NEAR, gas only). So the drain described in H-01 does not occur with this factory. The rate-limit clearing half of H-01 is real and is in the known findings (K-H01).
 
+## 4. The fixed launcher (main after the ws/instant2 merge) on testnet
+Account `demo-instant-v2.kxi-root-0811.testnet`, wasm built from merged main (270,698 B). Review M-02 on a real `.testnet` account:
+`new` with profile `Mainnet` is refused `R_PROFILE` (tx `6298ezeyU19k8jeRPjELDJyux79F3n89jVTXMSPJvEH1`), `prod` is refused (tx `92A3b1rSvVmL6d9hMmSpJbKoPsjL8CkQBwhHPaYxWdb1`), and `mainnet` on a `.testnet` account is refused `R_PROFILE` (tx `6LNgCs3zkAZf6BHZNM7Zs5yWgiMP5oTnhhSoifkhNME1`); `demo` is accepted (tx `7zxtzXDwCsinyi92Mz3ffVCf2eLPaZJR1dJpMqCu8bSo`).
+The sections 1 to 3 ran on the PRE-fix wasm (sha256 in `accounts.json`). The `GAS_FACTORY` finding (section 3, item 1) is still open on merged main: the constant is still 80 Tgas.
+
 ## Not done here
 - No sandbox-style wait for the freeze expiry or the 7-day cap timelock: both are 7 real days even on the demo profile.
 - The launcher flow against the real factory stopped at creation (finding 1), so seed, open and trading on a real factory token were not run through the launcher.
