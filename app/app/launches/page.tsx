@@ -1,18 +1,15 @@
-import { Suspense } from 'react';
-import type { Metadata } from 'next';
-import { LaunchesFeed } from '@/components/features/LaunchesFeed';
+import { redirect } from 'next/navigation';
 
-export const metadata: Metadata = { title: 'Launches' };
+// The feed moved to `/`. Old query parameters carry over; the old `stage` filter maps to the nearest lifecycle tab.
+const TAB: Record<string, string> = { new: 'live', open: 'live', closing: 'walk', passed: 'trading', failed: 'failed' };
 
-export default function LaunchesPage() {
-  return (
-    <>
-      <header className="page-head">
-        <p className="eyebrow">Verdict board</p>
-        <h1>Every launch, including the ones that failed.</h1>
-        <p className="lede">Failed and refunded launches stay visible. Each card shows how far the live inputs are from the PASS line, and whether the numbers came from a NEAR block or from the offline fixture.</p>
-      </header>
-      <Suspense fallback={null}><LaunchesFeed /></Suspense>
-    </>
-  );
+export default async function Launches({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const sp = await searchParams;
+  const out = new URLSearchParams();
+  for (const [k, v] of Object.entries(sp)) {
+    const val = Array.isArray(v) ? v[0] : v;
+    if (!val) continue;
+    if (k === 'stage') { const t = TAB[val]; if (t && t !== 'live') out.set('tab', t); else if (val === 'all') out.set('tab', 'all'); } else out.set(k, val);
+  }
+  redirect(`/${out.size ? `?${out}` : ''}`);
 }

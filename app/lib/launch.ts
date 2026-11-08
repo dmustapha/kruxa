@@ -37,3 +37,32 @@ export function phaseText(stage: string, verdict?: string | null): string {
   if (stage === 'new') return 'Just opened. Commit and Walk are open.';
   return 'Open. Commit and Walk are open.';
 }
+
+const dollars = (micro: bigint): string => {
+  const abs = micro < 0n ? -micro : micro;
+  const whole = abs / 1_000_000n;
+  const frac = (abs % 1_000_000n).toString().padStart(6, '0').replace(/0+$/, '');
+  return `$${whole.toLocaleString('en-US')}${frac ? '.' + frac : ''}`;
+};
+const backers = (n: number): string => `${n} ${n === 1 ? 'backer' : 'backers'}`;
+
+/** The margin to the PASS line as one plain sentence. Equality passes (the verdict uses >=), so zero margin clears. */
+export function marginSentence(l: Pick<LaunchSummary, 'total_active' | 'soft_cap' | 'funders' | 'min_funders' | 'verdict'>): string {
+  const m = marginOf(l);
+  if (m.clears === null) return 'Terms not indexed, so no margin is shown.';
+  const settled = l.verdict === 'PASS' ? 'Passed by' : 'Passing by';
+  if (l.verdict === 'FAIL') {
+    const parts = [m.usdc !== null && m.usdc < 0n ? dollars(-m.usdc) : null, m.funders !== null && m.funders < 0 ? backers(-m.funders) : null].filter(Boolean);
+    return parts.length ? `Failed: short by ${parts.join(' and ')}.` : 'Failed.';
+  }
+  if (m.clears) {
+    if ((m.usdc ?? 0n) === 0n && (m.funders ?? 0) === 0) return 'Right at the line (equality passes).';
+    const parts = [m.usdc !== null ? dollars(m.usdc) : null, m.funders !== null ? backers(m.funders) : null].filter(Boolean);
+    return `${settled} ${parts.join(' and ')}.`;
+  }
+  const need = [
+    m.usdc !== null && m.usdc < 0n ? dollars(-m.usdc) : null,
+    m.funders !== null && m.funders < 0 ? `${-m.funders} more ${-m.funders === 1 ? 'backer' : 'backers'}` : null,
+  ].filter(Boolean);
+  return `Needs ${need.join(' and ')}.`;
+}

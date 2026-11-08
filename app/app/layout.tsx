@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { WalletProvider } from '@/components/wallet';
 import { SiteFooter, SiteHeader, StatusStrip } from '@/components/layouts/SiteChrome';
+import { BottomTabs } from '@/components/layouts/BottomTabs';
 
 export const metadata: Metadata = {
   title: { default: 'Kruxa', template: '%s | Kruxa' },
@@ -20,6 +21,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <SiteHeader />
           <main id="main">{children}</main>
           <SiteFooter />
+          <BottomTabs />
         </WalletProvider>
       </body>
     </html>

@@ -25,6 +25,10 @@ export interface Health {
 export interface LaunchSummary {
   launch_id: string;
   symbol: string;
+  /** IR-A1: not in the OpenAPI 1.0.0 yet. Shown when present, otherwise the symbol stands alone. */
+  name?: string | null;
+  /** IR-A10: a computed phase string, when the indexer provides one. */
+  phase?: string | null;
   creator: string;
   payout_recipient: string;
   status: LaunchStatus;
@@ -63,7 +67,14 @@ export interface Allocation { accepted?: string; launch_fee?: string; lp_quote?:
 
 export interface EventRef { event: string; block_height: number; receipt_id: string; log_index?: number; time?: number; source: Source }
 
+/** IR-A4: genesis progress. Every field is optional; a missing field renders as unknown. */
+export interface GenesisView {
+  network?: string; path?: 'F0' | 'F1'; stage?: string; spec_hash?: string | null; mint?: string | null;
+  tx_create?: string | null; tx_authority?: string | null; distributor?: string | null; root?: string | null; verified_checks?: string[]; updated_at?: number | null;
+}
+
 export interface LaunchDetail extends LaunchSummary {
+  genesis?: GenesisView | null;
   charter_hash: string;
   verdict_inputs: VerdictInputsView;
   verdict_reasons?: string[];

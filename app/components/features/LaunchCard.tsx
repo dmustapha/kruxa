@@ -1,29 +1,46 @@
 import Link from 'next/link';
 import { Countdown } from '@/components/ui/Countdown';
-import { SourceBadge, StageBadge, VerdictBadge } from '@/components/ui/Badges';
-import { MarginMeter } from '@/components/ui/Meter';
-import { MarginBadge } from './MarginBadge';
+import { SourceBadge } from '@/components/ui/Badges';
+import { LaunchSigil } from '@/components/ui/LaunchSigil';
+import { PhaseBadge } from '@/components/ui/PhaseBadge';
+import { VerdictMeters } from '@/components/ui/VerdictMeters';
 import { fmtUsdc } from '@/lib/config';
-import { shortAccount } from '@/lib/format';
-import { nextDeadline } from '@/lib/launch';
+import { fmtDuration, shortAccount } from '@/lib/format';
+import { marginSentence, nextDeadline } from '@/lib/launch';
+import { PHASE_LABEL, hrefFor, phaseOf } from '@/lib/phase';
 import type { LaunchSummary } from '@/lib/api/types';
 
-export function LaunchCard({ launch, now, frozenClock }: { launch: LaunchSummary; now: number; frozenClock?: boolean }) {
-  const next = nextDeadline(launch, now);
+export const launchLabel = (l: Pick<LaunchSummary, 'name' | 'symbol'>): string => (l.name && l.name !== l.symbol ? `${l.name} ${l.symbol}` : l.symbol);
+
+/** One launch as a card. The whole card is one link (stretched title); Verify is a second, raised link. */
+export function LaunchCard({ launch: l, now, frozenClock }: { launch: LaunchSummary; now: number; frozenClock?: boolean }) {
+  const phase = phaseOf(l, now);
+  const next = nextDeadline(l, now);
+  const trial = phase !== 'TRADING';
+  const name = `${l.symbol}, launch ${l.launch_id}, ${PHASE_LABEL[phase]}, ${marginSentence(l)}${next ? ` ${next.label} ${fmtDuration(next.at - now)}` : ''}`;
   return (
-    <Link href={`/launch/${launch.launch_id}`} className="lcard" aria-label={`Launch ${launch.launch_id}, ${launch.symbol}`}>
-      <div className="row between">
-        <span className="sym">{launch.symbol}</span>
-        <span className="row"><StageBadge stage={launch.stage} /><VerdictBadge verdict={launch.verdict} status={launch.status} /></span>
+    <article className="lc">
+      <div className="lc-top">
+        <LaunchSigil id={l.launch_id} symbol={l.symbol} />
+        <div className="lc-id">
+          <h3 className="lc-title"><Link href={hrefFor(l, phase)} aria-label={name} className="lc-link">{l.name && l.name !== l.symbol ? <>{l.name} <span className="lc-sym">${l.symbol}</span></> : <span className="lc-sym">${l.symbol}</span>}</Link></h3>
+          <div className="sub">#{l.launch_id} by {shortAccount(l.creator)}</div>
+        </div>
+        <PhaseBadge phase={phase} />
       </div>
-      <div className="sub">#{launch.launch_id} by {shortAccount(launch.creator)}</div>
-      <MarginMeter totalActive={launch.total_active} softCap={launch.soft_cap} progressBps={launch.progress_bps} />
-      <div className="row"><MarginBadge launch={launch} /></div>
-      <div className="row between sub">
-        <span className="num">{launch.funders} backers · {fmtUsdc(launch.total_active)}</span>
-        <SourceBadge source={launch.source} />
+      {trial
+        ? <VerdictMeters l={l} />
+        : (
+          <dl className="kv lc-kv">
+            <div><dt>Last price</dt><dd>{l.last_price != null ? `${l.last_price.toPrecision(4)} USDC` : 'no trade yet'}</dd></div>
+            <div><dt>Volume 24 h</dt><dd>{l.volume_24h != null ? `${l.volume_24h.toFixed(2)} USDC` : 'unknown'}</dd></div>
+            <div><dt>Committed at PASS</dt><dd>{fmtUsdc(l.total_active)}</dd></div>
+          </dl>
+        )}
+      <div className="lc-foot">
+        {next ? <span className="sub"><Countdown label={next.label} at={next.at} now={now} frozen={frozenClock} /></span> : <span className="sub">{l.funders} backers</span>}
+        <span className="row"><SourceBadge source={l.source} /><Link href={`/launch/${l.launch_id}/verify`} className="lc-verify">Verify</Link></span>
       </div>
-      {next && <div className="sub"><Countdown label={next.label} at={next.at} now={now} frozen={frozenClock} /></div>}
-    </Link>
+    </article>
   );
 }

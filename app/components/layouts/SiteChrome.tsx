@@ -2,21 +2,23 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { NetworkBadge, WalletStatus } from '@/components/wallet';
+import { SearchBox } from './SearchBox';
 
 const NAV = [
-  { href: '/launches', label: 'Launches' },
-  { href: '/create', label: 'Create' },
-  { href: '/portfolio', label: 'Portfolio' },
-  { href: '/creator', label: 'Creator' },
+  { href: '/', label: 'Discover' }, { href: '/create', label: 'Create' }, { href: '/portfolio', label: 'Portfolio' },
+  { href: '/creator', label: 'Creator' }, { href: '/docs', label: 'Docs' },
 ];
 
-/** The honesty strip sits on every page and links to /charter. The limits are above the fold, not in a footer. */
+const MAINTENANCE = process.env.NEXT_PUBLIC_MAINTENANCE ?? '';
+
+/** One line on every page: the network and the limits. A maintenance message turns it amber and says the contracts still decide. */
 export function StatusStrip() {
   return (
     <div className="strip" role="region" aria-label="Status and limits">
       <div className="strip-in">
-        <b>Testnet and devnet rehearsal</b>
-        <span>No independent audit. One-person reserve in the demo. Unproven Intents legs are labelled.</span>
+        {MAINTENANCE
+          ? <><b>Maintenance</b><span>{MAINTENANCE} Contracts, not this site, decide every action.</span></>
+          : <><b>Testnet and devnet rehearsal</b><span>No independent audit. Unproven paths are labelled.</span></>}
         <Link href="/charter">Read the limits</Link>
       </div>
     </div>
@@ -25,7 +27,7 @@ export function StatusStrip() {
 
 export function SiteHeader() {
   const path = usePathname() ?? '/';
-  const current = (href: string): boolean => path === href || path.startsWith(href + '/');
+  const current = (href: string): boolean => (href === '/' ? path === '/' : path === href || path.startsWith(href + '/'));
   return (
     <header className="site-header">
       <div className="hdr-in">
@@ -37,17 +39,23 @@ export function SiteHeader() {
           {NAV.map((n) => <Link key={n.href} href={n.href} aria-current={current(n.href) ? 'page' : undefined}>{n.label}</Link>)}
         </nav>
         <div className="hdr-wallet"><WalletStatus /></div>
+        <SearchBox />
       </div>
     </header>
   );
 }
 
+const FOOT = [
+  { href: '/docs', label: 'Docs' }, { href: '/docs/faq', label: 'FAQ' }, { href: '/docs/security', label: 'Security' }, { href: '/charter', label: 'Disclosures' },
+  { href: '/legal/terms', label: 'Terms' }, { href: '/legal/privacy', label: 'Privacy' }, { href: '/legal/risk', label: 'Risk' }, { href: '/docs/api', label: 'API' },
+];
+
 export function SiteFooter() {
   return (
     <footer className="site-footer">
       <div className="in">
-        <Link href="/charter">Charter and disclosures</Link>
-        <span>Read-only until you press an action. Browsing and verifying never ask for a wallet.</span>
+        <nav aria-label="Footer" className="row" style={{ gap: '0 16px' }}>{FOOT.map((f) => <Link key={f.href} href={f.href} style={{ minHeight: 44, display: 'inline-flex', alignItems: 'center' }}>{f.label}</Link>)}</nav>
+        <span>Charts by TradingView Lightweight Charts. Browsing and verifying never ask for a wallet.</span>
         <NetworkBadge />
       </div>
     </footer>
