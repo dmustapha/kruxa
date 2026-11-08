@@ -15,6 +15,8 @@ near-sdk = { workspace = true }
 kruxa-math = { path = "../../crates/kruxa-math" }
 kruxa-logic = { path = "../../crates/kruxa-logic" }
 kruxa-instant = { path = "../../crates/kruxa-instant" }
+# raw_value lets a view return a hand-built JSON document (no serde_json::Value tree); features are additive with near-sdk's.
+serde_json = { version = "1", features = ["raw_value"] }
 
 [dev-dependencies]
 near-sdk = { workspace = true, features = ["unit-testing"] }

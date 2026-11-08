@@ -2,12 +2,12 @@
 use crate::ext::ext_ft;
 use crate::model::*;
 use crate::LauncherExt;
-use crate::{events::emit, fail, Launcher};
+use crate::events::{emit, Obj};
+use crate::{fail, Launcher};
 use crate::{ABANDON_UNITS, GAS_CB, GAS_FACTORY, GAS_VIEW, INSTANT_ID_BASE, RATE_LIMIT_UNITS, RECORD_STORAGE_YOCTO};
 use kruxa_instant::{derive, InstantParams, Limits, TOKEN_DECIMALS};
 use kruxa_logic::hex;
 use near_sdk::json_types::{U128, U64};
-use near_sdk::serde_json::json;
 use near_sdk::{env, near, AccountId, NearToken, Promise, PromiseOrValue};
 
 impl Launcher {
@@ -26,15 +26,15 @@ impl Launcher {
     }
 
     pub(crate) fn symbol_taken(&self, symbol: &str) -> bool {
-        self.symbols.contains(symbol)
+        self.symbols.contains(&symbol.to_string())
     }
 
     pub(crate) fn symbol_reserved(&self, symbol: &str) -> bool {
-        self.reserved.contains(symbol)
+        self.reserved.contains(&symbol.to_string())
     }
 
     fn token_account(&self, symbol: &str) -> AccountId {
-        format!("{}.{}", symbol.to_lowercase(), self.cfg.factory)
+        format!("{}.{}", symbol.to_ascii_lowercase(), self.cfg.factory)
             .parse()
             .unwrap_or_else(|_| fail("R_SYMBOL", "symbol does not fit an account under the factory"))
     }
@@ -54,14 +54,12 @@ impl Launcher {
     }
 
     fn factory_call(&self, p: &InstantParams, supply: u128) -> Promise {
-        let args = json!({ "args": {
-            "owner_id": env::current_account_id(),
-            "total_supply": supply.to_string(),
-            "metadata": { "spec": "ft-1.0.0", "name": p.name, "symbol": p.symbol, "decimals": TOKEN_DECIMALS }
-        }});
+        let meta = Obj::new().s("spec", "ft-1.0.0").s("name", &p.name).s("symbol", &p.symbol).n("decimals", TOKEN_DECIMALS);
+        let inner = Obj::new().s("owner_id", env::current_account_id()).s("total_supply", supply).o("metadata", meta);
+        let args = Obj::new().o("args", inner).finish();
         Promise::new(self.cfg.factory.clone()).function_call(
             "create_token".to_string(),
-            args.to_string().into_bytes(),
+            args.into_bytes(),
             NearToken::from_yoctonear(self.cfg.factory_deposit),
             GAS_FACTORY,
         )
@@ -82,7 +80,7 @@ impl Launcher {
         r.deposit_refundable = r.deposit_paid.saturating_sub(kept);
         self.symbols.remove(&r.params.symbol);
         self.last_launch.remove(&r.creator);
-        emit("instant_creation_failed", json!({ "launch_id": id.to_string(), "code": "R_TOKEN_CREATE", "reason": reason }));
+        emit("instant_creation_failed", Obj::new().s("launch_id", id).s("code", "R_TOKEN_CREATE").s("reason", reason));
         self.save(r);
     }
 
@@ -93,7 +91,7 @@ impl Launcher {
         }
         r.status = Status::Abandoned;
         r.deposit_refundable = r.deposit_paid.saturating_sub(RECORD_STORAGE_YOCTO + self.cfg.factory_deposit);
-        emit("instant_abandoned", json!({ "launch_id": id.to_string(), "by": by, "refundable_deposit": r.deposit_refundable.to_string() }));
+        emit("instant_abandoned", Obj::new().s("launch_id", id).s("by", by).s("refundable_deposit", r.deposit_refundable));
         self.save(r);
     }
 }
@@ -152,18 +150,27 @@ impl Launcher {
             market_prepared: false,
         };
         r.charter_hash = self.charter_hash(&r);
-        self.symbols.insert(params.symbol.clone());
+        self.symbols.insert(params.symbol.clone(), 1);
         self.last_launch.insert(creator.clone(), now);
-        let mut ids = self.by_creator.get(&creator).cloned().unwrap_or_default();
-        ids.push(id);
-        self.by_creator.insert(creator.clone(), ids);
         emit(
             "instant_created",
-            json!({ "launch_id": id.to_string(), "mode": "instant", "creator": creator, "payout_recipient": payout, "symbol": params.symbol, "name": params.name,
-                    "total_supply": derived.n_total.to_string(), "token_decimals": TOKEN_DECIMALS, "creator_alloc": derived.n_alloc.to_string(),
-                    "pool_tokens": derived.n_pool.to_string(), "cliff_days": params.cliff_days, "vest_days": params.vest_days,
-                    "seed_q": params.seed_q.to_string(), "launch_fee": derived.launch_fee.to_string(),
-                    "terms": params.fees, "charter_hash": hex(&r.charter_hash) }),
+            Obj::new()
+                .s("launch_id", id)
+                .s("mode", "instant")
+                .s("creator", &creator)
+                .s("payout_recipient", &payout)
+                .s("symbol", &params.symbol)
+                .s("name", &params.name)
+                .s("total_supply", derived.n_total)
+                .n("token_decimals", TOKEN_DECIMALS)
+                .s("creator_alloc", derived.n_alloc)
+                .s("pool_tokens", derived.n_pool)
+                .n("cliff_days", params.cliff_days)
+                .n("vest_days", params.vest_days)
+                .s("seed_q", params.seed_q)
+                .s("launch_fee", derived.launch_fee)
+                .j("terms", &params.fees)
+                .s("charter_hash", hex(&r.charter_hash)),
         );
         self.save(r);
         if attached > need {
@@ -189,7 +196,7 @@ impl Launcher {
     #[private]
     pub fn on_instant_token_verified(&mut self, launch_id: U64) -> bool {
         let id = launch_id.0;
-        let Some(mut r) = self.instants.get(&id).cloned() else { return false };
+        let Some(mut r) = self.instants.get(&id) else { return false };
         if r.status != Status::Creating {
             return false;
         }
@@ -204,7 +211,7 @@ impl Launcher {
         }
         r.status = Status::TokenReady;
         self.custody_add(&r.token, n);
-        emit("instant_token_ready", json!({ "launch_id": id.to_string(), "token": r.token }));
+        emit("instant_token_ready", Obj::new().s("launch_id", id).s("token", &r.token));
         self.save(r);
         true
     }
@@ -221,21 +228,14 @@ impl Launcher {
         self.verify_token(launch_id.0)
     }
 
-    /// Creator, any time before the seed. The token stays in the launcher forever and is never listed.
-    pub fn cancel_instant(&mut self, launch_id: U64) {
-        let r = self.instant(launch_id.0);
-        if env::predecessor_account_id() != r.creator {
-            fail("R_NOT_AUTHORIZED", "creator only");
-        }
-        self.end_unseeded(launch_id.0, r.creator);
-    }
-
-    /// Anyone, 24 h (one unit) after creation when the creator never seeded.
+    /// Ends a launch that was never seeded. The creator any time; anyone else 24 h (one unit) after creation. The token stays
+    /// in the launcher forever and is never listed.
     pub fn abandon_instant(&mut self, launch_id: U64) {
         let r = self.instant(launch_id.0);
-        if env::block_timestamp() < r.created_at + ABANDON_UNITS * self.cfg.unit_ns {
-            fail("R_TOO_EARLY", "the creator has 24 hours to seed");
+        let by = env::predecessor_account_id();
+        if by != r.creator && env::block_timestamp() < r.created_at + ABANDON_UNITS * self.cfg.unit_ns {
+            fail("R_TOO_EARLY", "only the creator can end a launch in its first 24 hours");
         }
-        self.end_unseeded(launch_id.0, env::predecessor_account_id());
+        self.end_unseeded(launch_id.0, by);
     }
 }

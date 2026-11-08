@@ -1,55 +1,81 @@
 //! Read-only views (docs/interfaces/INSTANT-ABI.md section 7). u128 and u64 are decimal strings.
+use crate::events::{array, Obj};
 use crate::model::*;
 use crate::{Launcher, LauncherExt};
-use kruxa_instant::{derive, InstantParams};
+use kruxa_instant::{derive, InstantParams, Violation};
 use near_sdk::json_types::U64;
-use near_sdk::serde_json::{json, to_value, Value};
+use near_sdk::serde_json::value::RawValue;
 use near_sdk::{env, near, AccountId};
 
-fn s(v: u128) -> String {
-    v.to_string()
+fn pending(p: Option<(u128, u64)>) -> String {
+    p.map_or_else(|| "null".to_string(), |(v, t)| Obj::new().s("value", v).s("effective_at", t).finish())
 }
 
-fn pending(p: Option<(u128, u64)>) -> Value {
-    p.map_or(Value::Null, |(v, t)| json!({ "value": s(v), "effective_at": t.to_string() }))
+fn violation(code: &str, field: &str, got: String, limit: &str) -> String {
+    Obj::new().s("code", code).s("field", field).s("got", got).s("limit", limit).finish()
 }
 
 impl Launcher {
-    fn instant_json(&self, r: &Instant) -> Value {
-        json!({ "launch_id": r.launch_id.to_string(), "mode": "instant", "status": r.status, "creator": r.creator, "payout_recipient": r.payout_recipient,
-                "name": r.params.name, "symbol": r.params.symbol, "token": r.token, "total_supply": s(r.derived.n_total), "n_alloc": s(r.derived.n_alloc),
-                "n_pool": s(r.derived.n_pool), "creator_alloc_bps": r.params.creator_alloc_bps, "cliff_days": r.params.cliff_days,
-                "vest_days": r.params.vest_days, "seed_q": s(r.params.seed_q), "launch_fee": s(r.derived.launch_fee), "pool_seed_q": s(r.derived.pool_seed_q),
-                "open_price_micro_per_token": s(r.derived.open_price), "terms": r.params.fees,
-                "charter_hash": kruxa_logic::hex(&r.charter_hash), "created_at_ns": r.created_at.to_string(), "seeded_at_ns": r.seeded_at.to_string(),
-                "opened_at_ns": r.opened_at.to_string(), "seed_due": s(r.seed_due),
-                "seed_inflight": s(r.seed_inflight), "seed_sent": s(r.seed_sent), "fee_held": s(r.fee_held), "tokens_unsent": s(r.tokens_unsent()),
-                "tokens_inflight": s(r.tokens_inflight), "tokens_sent": s(r.tokens_sent), "alloc_claimed": s(r.claimed), "deposit_paid": s(r.deposit_paid),
-                "deposit_refundable": s(r.deposit_refundable) })
+    fn instant_json(&self, r: &Instant) -> Box<RawValue> {
+        let d = &r.derived;
+        Obj::new()
+            .s("launch_id", r.launch_id)
+            .s("mode", "instant")
+            .s("status", r.status.name())
+            .s("creator", &r.creator)
+            .s("payout_recipient", &r.payout_recipient)
+            .s("name", &r.params.name)
+            .s("symbol", &r.params.symbol)
+            .s("token", &r.token)
+            .s("total_supply", d.n_total)
+            .s("n_alloc", d.n_alloc)
+            .s("n_pool", d.n_pool)
+            .n("creator_alloc_bps", r.params.creator_alloc_bps)
+            .n("cliff_days", r.params.cliff_days)
+            .n("vest_days", r.params.vest_days)
+            .s("seed_q", r.params.seed_q)
+            .s("launch_fee", d.launch_fee)
+            .s("pool_seed_q", d.pool_seed_q)
+            .s("open_price_micro_per_token", d.open_price)
+            .j("terms", &r.params.fees)
+            .s("charter_hash", kruxa_logic::hex(&r.charter_hash))
+            .s("created_at_ns", r.created_at)
+            .s("seeded_at_ns", r.seeded_at)
+            .s("opened_at_ns", r.opened_at)
+            .s("seed_due", r.seed_due)
+            .s("seed_inflight", r.seed_inflight)
+            .s("seed_sent", r.seed_sent)
+            .s("fee_held", r.fee_held)
+            .s("tokens_unsent", r.tokens_unsent())
+            .s("tokens_inflight", r.tokens_inflight)
+            .s("tokens_sent", r.tokens_sent)
+            .s("alloc_claimed", r.claimed)
+            .s("deposit_paid", r.deposit_paid)
+            .s("deposit_refundable", r.deposit_refundable)
+            .raw()
     }
 
-    fn preview_violations(&self, p: &InstantParams, creator: Option<&AccountId>) -> Vec<Value> {
-        let mut out: Vec<Value> = Vec::new();
-        let mut add = |code: &str, field: &str, got: String, limit: &str| out.push(json!({ "code": code, "field": field, "got": got, "limit": limit }));
+    fn preview_violations(&self, p: &InstantParams, creator: Option<&AccountId>) -> Vec<String> {
+        let mut out: Vec<String> = Vec::new();
         if let Some(c) = creator {
             if self.cfg.creator_gate {
-                add("R_CREATOR_GATE", "creator", c.to_string(), "open_beta must be called first");
+                out.push(violation("R_CREATOR_GATE", "creator", c.to_string(), "open_beta must be called first"));
             }
             if self.pause_level() != PauseLevel::None {
-                add("R_PAUSED", "paused", format!("{:?}", self.pause_level()), "None");
+                out.push(violation("R_PAUSED", "paused", self.pause_level().name().to_string(), "None"));
             }
             if let Some(until) = self.rate_limited_until(c, env::block_timestamp()) {
-                add("R_RATE_LIMIT", "creator", c.to_string(), &format!("next launch at {until}"));
+                out.push(violation("R_RATE_LIMIT", "creator", c.to_string(), &format!("next launch at {until}")));
             }
         }
         if self.symbol_taken(&p.symbol) {
-            add("R_SYMBOL", "symbol", p.symbol.clone(), "unused");
+            out.push(violation("R_SYMBOL", "symbol", p.symbol.clone(), "unused"));
         }
         if self.symbol_reserved(&p.symbol) {
-            add("R_SYMBOL_RESERVED", "symbol", p.symbol.clone(), "not reserved");
+            out.push(violation("R_SYMBOL_RESERVED", "symbol", p.symbol.clone(), "not reserved"));
         }
-        for v in kruxa_instant::validate_instant(p, &self.limits()) {
-            out.push(to_value(&v).expect("violation serializes"));
+        for Violation { code, field, got, limit } in kruxa_instant::validate_instant(p, &self.limits()) {
+            out.push(violation(&code, &field, got, &limit));
         }
         out
     }
@@ -57,34 +83,52 @@ impl Launcher {
 
 #[near]
 impl Launcher {
-    pub fn get_config(&self) -> Value {
+    pub fn get_config(&self) -> Box<RawValue> {
         let c = &self.cfg;
-        json!({ "owner": c.owner, "guardian": c.guardian, "treasury": c.treasury, "usdc": c.usdc, "factory": c.factory, "market": c.market,
-                "market_locked": c.market_locked, "profile": c.profile, "creator_gate": c.creator_gate, "paused": format!("{:?}", self.pause_level()),
-                "launch_fee": s(c.launch_fee), "factory_deposit": s(c.factory_deposit), "seed_min": s(c.seed_min), "seed_max": s(c.seed_max),
-                "seed_cap_aggregate": s(c.agg_cap), "pending_caps": json!({ "aggregate": pending(c.pending_agg_cap), "per_launch": pending(c.pending_seed_max) }),
-                "unit_ns": c.unit_ns.to_string(), "next_launch_id": (crate::INSTANT_ID_BASE + self.next_id).to_string(), "platform_unpaid": s(self.platform_unpaid) })
+        Obj::new()
+            .s("owner", &c.owner)
+            .s("guardian", &c.guardian)
+            .s("treasury", &c.treasury)
+            .s("usdc", &c.usdc)
+            .s("factory", &c.factory)
+            .opt("market", c.market.as_ref())
+            .n("market_locked", c.market_locked)
+            .s("profile", &c.profile)
+            .n("creator_gate", c.creator_gate)
+            .s("paused", self.pause_level().name())
+            .s("launch_fee", c.launch_fee)
+            .s("factory_deposit", c.factory_deposit)
+            .s("seed_min", c.seed_min)
+            .s("seed_max", c.seed_max)
+            .s("seed_cap_aggregate", c.agg_cap)
+            .o("pending_caps", Obj::new().r("aggregate", &pending(c.pending_agg_cap)).r("per_launch", &pending(c.pending_seed_max)))
+            .s("unit_ns", c.unit_ns)
+            .s("next_launch_id", crate::INSTANT_ID_BASE + self.next_id)
+            .s("platform_unpaid", self.platform_unpaid)
+            .raw()
     }
 
     pub fn required_deposit(&self) -> String {
-        s(self.required())
+        self.required().to_string()
     }
 
     /// The same checks `create_instant` runs, all violations at once. With `creator` it also reports gate, pause and rate limit.
-    pub fn preview_instant(&self, params: InstantParams, creator: Option<AccountId>) -> Value {
+    pub fn preview_instant(&self, params: InstantParams, creator: Option<AccountId>) -> Box<RawValue> {
         let violations = self.preview_violations(&params, creator.as_ref());
-        let d = derive(&params, &self.limits()).ok();
-        json!({ "ok": violations.is_empty(), "violations": violations, "required_deposit": s(self.required()),
-                "n_total": d.as_ref().map(|d| s(d.n_total)), "n_alloc": d.as_ref().map(|d| s(d.n_alloc)), "n_pool": d.as_ref().map(|d| s(d.n_pool)),
-                "pool_seed_q": d.as_ref().map(|d| s(d.pool_seed_q)), "launch_fee": s(self.cfg.launch_fee),
-                "open_price_micro_per_token": d.as_ref().map(|d| s(d.open_price)) })
+        let mut o = Obj::new().n("ok", violations.is_empty()).r("violations", &array(violations.clone()));
+        o = o.s("required_deposit", self.required()).s("launch_fee", self.cfg.launch_fee);
+        if let Ok(d) = derive(&params, &self.limits()) {
+            o = o.s("n_total", d.n_total).s("n_alloc", d.n_alloc).s("n_pool", d.n_pool).s("pool_seed_q", d.pool_seed_q);
+            o = o.s("open_price_micro_per_token", d.open_price);
+        }
+        o.raw()
     }
 
-    pub fn get_instant(&self, launch_id: U64) -> Option<Value> {
-        self.instants.get(&launch_id.0).map(|r| self.instant_json(r))
+    pub fn get_instant(&self, launch_id: U64) -> Option<Box<RawValue>> {
+        self.instants.get(&launch_id.0).map(|r| self.instant_json(&r))
     }
 
-    pub fn get_phase(&self, launch_id: U64) -> Option<Value> {
+    pub fn get_phase(&self, launch_id: U64) -> Option<Box<RawValue>> {
         let r = self.instants.get(&launch_id.0)?;
         let (step, next) = match r.status {
             Status::Creating => ("create", "none"),
@@ -96,57 +140,61 @@ impl Launcher {
             Status::CreationFailed | Status::Abandoned | Status::Aborted => ("dead", "none"),
         };
         let unit = self.cfg.unit_ns;
-        Some(json!({ "status": r.status, "step": step, "next_action": next, "can_cancel": r.status == Status::TokenReady,
-                     "can_abandon_at_ns": (r.created_at + crate::ABANDON_UNITS * unit).to_string(),
-                     "can_abort_at_ns": (r.seeded_at + crate::ABORT_UNITS * unit).to_string() }))
+        Some(
+            Obj::new()
+                .s("status", r.status.name())
+                .s("step", step)
+                .s("next_action", next)
+                .n("can_cancel", r.status == Status::TokenReady)
+                .s("can_abandon_at_ns", r.created_at + crate::ABANDON_UNITS * unit)
+                .s("can_abort_at_ns", r.seeded_at + crate::ABORT_UNITS * unit)
+                .raw(),
+        )
     }
 
-    pub fn get_vesting(&self, launch_id: U64) -> Option<Value> {
+    pub fn get_vesting(&self, launch_id: U64) -> Option<Box<RawValue>> {
         let r = self.instants.get(&launch_id.0)?;
-        let (unlocked, can) = self.vested(r, env::block_timestamp());
-        let sc = self.schedule(r);
-        Some(json!({ "recipient": r.payout_recipient, "total": s(r.derived.n_alloc), "unlocked": s(unlocked), "claimed": s(r.claimed), "claimable": s(can),
-                     "cliff_end_ns": (r.opened_at + sc.cliff_ns).to_string(), "vest_end_ns": (r.opened_at + sc.vest_ns).to_string() }))
-    }
-
-    pub fn instants_by_creator(&self, account: AccountId) -> Vec<String> {
-        self.by_creator.get(&account).map(|v| v.iter().map(|i| i.to_string()).collect()).unwrap_or_default()
-    }
-
-    pub fn declared_wallets(&self, launch_id: U64) -> Vec<AccountId> {
-        self.instants.get(&launch_id.0).map(|r| vec![r.creator.clone(), r.payout_recipient.clone()]).unwrap_or_default()
+        let (unlocked, can) = self.vested(&r, env::block_timestamp());
+        let sc = self.schedule(&r);
+        Some(
+            Obj::new()
+                .s("recipient", &r.payout_recipient)
+                .s("total", r.derived.n_alloc)
+                .s("unlocked", unlocked)
+                .s("claimed", r.claimed)
+                .s("claimable", can)
+                .s("cliff_end_ns", r.opened_at + sc.cliff_ns)
+                .s("vest_end_ns", r.opened_at + sc.vest_ns)
+                .raw(),
+        )
     }
 
     pub fn owed_of_account(&self, account: AccountId, token_id: AccountId) -> String {
-        s(self.owed_of(&account, &token_id))
+        self.owed_of(&account, &token_id).to_string()
     }
 
-    pub fn owed_near_of(&self, account: AccountId) -> String {
-        s(self.owed_near.get(&account).copied().unwrap_or(0))
-    }
-
-    /// Expected balances AT REST (nothing in flight). Custody >= expected means solvent; donations only add.
-    pub fn solvency_report(&self, tokens: Option<Vec<AccountId>>) -> Value {
-        let usdc = &self.cfg.usdc;
-        let toks: Vec<Value> = tokens.unwrap_or_default().iter().map(|t| json!({ "token": t, "amount": s(self.custody_of(t)) })).collect();
-        json!({ "expected_usdc_custody": s(self.custody_of(usdc)), "expected_token_custody": toks, "owed_near_total": s(self.owed_near_total) })
-    }
-
-    /// Global USDC identity; with `launch_id` also that launch's token identity, supply conservation (IL-1) and vest bounds (IL-5).
-    pub fn get_invariants(&self, launch_id: Option<U64>) -> Value {
+    /// Global USDC identity and expected balances AT REST (nothing in flight; custody >= expected means solvent, donations only
+    /// add). With `launch_id` also that launch's token identity, supply conservation (IL-1) and vest bounds (IL-5).
+    pub fn get_invariants(&self, launch_id: Option<U64>) -> Box<RawValue> {
         let usdc = &self.cfg.usdc;
         let rhs = self.seed_due_total + self.fee_held_total + self.platform_unpaid + self.owed_total_of(usdc);
-        let mut out = json!({ "usdc_custody_identity": self.custody_of(usdc) == rhs, "usdc_custody": s(self.custody_of(usdc)), "usdc_expected": s(rhs),
-                              "seeds_held_le_cap": self.seeds_held <= self.cfg.agg_cap, "market_locked_consistent": !self.cfg.market_locked || self.cfg.market.is_some() });
+        let mut o = Obj::new()
+            .n("usdc_custody_identity", self.custody_of(usdc) == rhs)
+            .s("usdc_custody", self.custody_of(usdc))
+            .s("usdc_expected", rhs)
+            .s("owed_usdc", self.owed_total_of(usdc))
+            .n("seeds_held_le_cap", self.seeds_held <= self.cfg.agg_cap)
+            .n("market_locked_consistent", !self.cfg.market_locked || self.cfg.market.is_some());
         if let Some(r) = launch_id.and_then(|id| self.instants.get(&id.0)) {
             let tok_rhs = (r.derived.n_alloc - r.claimed.min(r.derived.n_alloc)) + r.tokens_unsent() + self.owed_total_of(&r.token);
             let created = !matches!(r.status, Status::Creating | Status::CreationFailed);
-            let (unlocked, _) = self.vested(r, env::block_timestamp());
-            out["token_custody_identity"] = json!(!created || self.custody_of(&r.token) == tok_rhs);
-            out["supply_conservation"] = json!(r.derived.n_alloc + r.derived.n_pool == r.derived.n_total);
-            out["claimed_le_unlocked"] = json!(r.claimed <= unlocked);
-            out["vest_bounds"] = json!(unlocked <= r.derived.n_alloc && (r.status == Status::Open || unlocked == 0));
+            let (unlocked, _) = self.vested(&r, env::block_timestamp());
+            o = o.s("token", &r.token).s("token_custody", self.custody_of(&r.token));
+            o = o.n("token_custody_identity", !created || self.custody_of(&r.token) == tok_rhs);
+            o = o.n("supply_conservation", r.derived.n_alloc + r.derived.n_pool == r.derived.n_total);
+            o = o.n("claimed_le_unlocked", r.claimed <= unlocked);
+            o = o.n("vest_bounds", unlocked <= r.derived.n_alloc && (r.status == Status::Open || unlocked == 0));
         }
-        out
+        o.raw()
     }
 }

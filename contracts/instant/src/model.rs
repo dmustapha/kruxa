@@ -50,6 +50,40 @@ pub enum CapKind {
     PerLaunch,
 }
 
+impl CapKind {
+    pub fn name(&self) -> &'static str {
+        match self {
+            CapKind::Aggregate => "aggregate",
+            CapKind::PerLaunch => "per_launch",
+        }
+    }
+}
+
+impl PauseLevel {
+    pub fn name(&self) -> &'static str {
+        match self {
+            PauseLevel::None => "None",
+            PauseLevel::Paused => "Paused",
+            PauseLevel::Frozen => "Frozen",
+        }
+    }
+}
+
+impl Status {
+    pub fn name(&self) -> &'static str {
+        match self {
+            Status::Creating => "Creating",
+            Status::TokenReady => "TokenReady",
+            Status::Seeded => "Seeded",
+            Status::Handoff => "Handoff",
+            Status::Open => "Open",
+            Status::CreationFailed => "CreationFailed",
+            Status::Abandoned => "Abandoned",
+            Status::Aborted => "Aborted",
+        }
+    }
+}
+
 #[near(serializers = [json])]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Leg {

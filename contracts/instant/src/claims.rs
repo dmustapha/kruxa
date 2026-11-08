@@ -2,11 +2,11 @@
 //! Every payout debits first and pays second; a never-panicking callback turns a failed transfer into an owed balance.
 use crate::ext::ext_ft;
 use crate::model::*;
-use crate::{events::emit, fail, Launcher, LauncherExt};
+use crate::events::{emit, Obj};
+use crate::{fail, Launcher, LauncherExt};
 use crate::{ABORT_UNITS, GAS_CB, GAS_OUT, ONE_YOCTO};
 use kruxa_instant::{alloc_unlocked, claimable, Schedule};
 use near_sdk::json_types::{U128, U64};
-use near_sdk::serde_json::json;
 use near_sdk::{env, near, AccountId, NearToken, Promise};
 
 impl Launcher {
@@ -37,11 +37,6 @@ impl Launcher {
         )
     }
 
-    pub(crate) fn pay_near(&self, to: &AccountId, amount: u128, reason: &str) -> Promise {
-        Promise::new(to.clone()).transfer(NearToken::from_yoctonear(amount)).then(
-            Self::ext(env::current_account_id()).with_static_gas(GAS_CB).resolve_near(to.clone(), U128(amount), reason.to_string()),
-        )
-    }
 }
 
 #[near]
@@ -51,18 +46,7 @@ impl Launcher {
     pub fn resolve_payout(&mut self, token: AccountId, account: AccountId, amount: U128, reason: String) -> U128 {
         if env::promise_result_checked(0, 1024).is_err() {
             self.owed_credit(&account, &token, amount.0);
-            emit("owed_credited", json!({ "account": account, "token": token, "amount": amount.0.to_string(), "reason": reason }));
-        }
-        U128(0)
-    }
-
-    #[private]
-    pub fn resolve_near(&mut self, account: AccountId, amount: U128, reason: String) -> U128 {
-        if env::promise_result_checked(0, 1024).is_err() {
-            let v = self.owed_near.get(&account).copied().unwrap_or(0).saturating_add(amount.0);
-            self.owed_near.insert(account.clone(), v);
-            self.owed_near_total = self.owed_near_total.saturating_add(amount.0);
-            emit("owed_credited", json!({ "account": account, "token": "NEAR", "amount": amount.0.to_string(), "reason": reason }));
+            emit("owed_credited", Obj::new().s("account", &account).s("token", &token).s("amount", amount.0).s("reason", &reason));
         }
         U128(0)
     }
@@ -91,7 +75,7 @@ impl Launcher {
         self.custody_sub(&token, want);
         emit(
             "alloc_claimed",
-            json!({ "launch_id": r.launch_id.to_string(), "recipient": to, "amount": want.to_string(), "claimed_total": r.claimed.to_string(), "unlocked_total": unlocked.to_string() }),
+            Obj::new().s("launch_id", r.launch_id).s("recipient", &to).s("amount", want).s("claimed_total", r.claimed).s("unlocked_total", unlocked),
         );
         self.save(r);
         self.pay_out(&token, &to, want, "alloc")
@@ -122,7 +106,7 @@ impl Launcher {
         self.custody_sub(&usdc, refund);
         emit(
             "instant_aborted",
-            json!({ "launch_id": r.launch_id.to_string(), "by": to, "refunded_seed": refund.to_string(), "refundable_deposit": r.deposit_refundable.to_string() }),
+            Obj::new().s("launch_id", r.launch_id).s("by", &to).s("refunded_seed", refund).s("refundable_deposit", r.deposit_refundable),
         );
         self.save(r);
         self.pay_out(&usdc, &to, refund, "seed_refund")
@@ -142,10 +126,10 @@ impl Launcher {
         if amount == 0 {
             fail("R_NOTHING_TO_CLAIM", "no deposit to reclaim");
         }
-        emit("deposit_reclaimed", json!({ "launch_id": r.launch_id.to_string(), "to": r.creator, "amount": amount.to_string() }));
+        emit("deposit_reclaimed", Obj::new().s("launch_id", r.launch_id).s("to", &r.creator).s("amount", amount));
         let to = r.creator.clone();
         self.save(r);
-        self.pay_near(&to, amount, "deposit")
+        Promise::new(to).transfer(NearToken::from_yoctonear(amount))
     }
 
     /// Treasury or owner. Pays the launch fees whose seed the market consumed.
@@ -161,7 +145,7 @@ impl Launcher {
         }
         let (usdc, to) = (self.cfg.usdc.clone(), self.cfg.treasury.clone());
         self.custody_sub(&usdc, amount);
-        emit("platform_withdrawn", json!({ "to": to, "amount": amount.to_string() }));
+        emit("platform_withdrawn", Obj::new().s("to", &to).s("amount", amount));
         self.pay_out(&usdc, &to, amount, "platform")
     }
 
@@ -174,21 +158,7 @@ impl Launcher {
             fail("R_NOTHING_TO_CLAIM", "nothing owed");
         }
         self.owed_debit(&who, &token_id, amount);
-        emit("owed_claimed", json!({ "account": who, "token": token_id, "amount": amount.to_string() }));
+        emit("owed_claimed", Obj::new().s("account", &who).s("token", &token_id).s("amount", amount));
         self.pay_out(&token_id, &who, amount, "owed_claim")
-    }
-
-    /// Pays a NEAR refund that failed to arrive. Caller only.
-    pub fn claim_owed_near(&mut self) -> Promise {
-        self.require_exit_open();
-        let who = env::predecessor_account_id();
-        let amount = self.owed_near.get(&who).copied().unwrap_or(0);
-        if amount == 0 {
-            fail("R_NOTHING_TO_CLAIM", "nothing owed");
-        }
-        self.owed_near.insert(who.clone(), 0);
-        self.owed_near_total = self.owed_near_total.saturating_sub(amount);
-        emit("owed_claimed", json!({ "account": who, "token": "NEAR", "amount": amount.to_string() }));
-        self.pay_near(&who, amount, "owed_claim")
     }
 }

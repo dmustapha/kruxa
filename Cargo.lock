@@ -1700,6 +1700,7 @@ dependencies = [
  "kruxa-logic",
  "kruxa-math",
  "near-sdk",
+ "serde_json",
 ]
 
 [[package]]

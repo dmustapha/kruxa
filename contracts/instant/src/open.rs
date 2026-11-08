@@ -2,19 +2,27 @@
 //! that never panics and re-credits whatever the market did not consume (docs/interfaces/INSTANT-ABI.md section 4).
 use crate::ext::ext_ft;
 use crate::model::*;
-use crate::{events::emit, fail, Launcher, LauncherExt};
+use crate::events::{emit, Obj};
+use crate::{fail, Launcher, LauncherExt};
 use crate::{GAS_LEG, GAS_SEED_CB, GAS_STORAGE, GAS_TOKEN_CB, MARKET_STORAGE_YOCTO, ONE_YOCTO, TOKEN_REG_YOCTO};
 use kruxa_logic::hex;
 use near_sdk::json_types::{U128, U64};
-use near_sdk::serde_json::json;
 use near_sdk::{env, near, AccountId, NearToken, Promise};
 
 impl Launcher {
     fn seed_msg(&self, r: &Instant) -> String {
-        json!({ "v": 1, "op": "seed_quote", "launch_id": r.launch_id.to_string(), "token": r.token, "payout_recipient": r.payout_recipient,
-                "creator": r.creator, "total_supply": r.derived.n_total.to_string(), "charter_hash": hex(&r.charter_hash),
-                "supply_model": "near_factory_fixed", "terms": r.params.fees })
-        .to_string()
+        Obj::new()
+            .n("v", 1)
+            .s("op", "seed_quote")
+            .s("launch_id", r.launch_id)
+            .s("token", &r.token)
+            .s("payout_recipient", &r.payout_recipient)
+            .s("creator", &r.creator)
+            .s("total_supply", r.derived.n_total)
+            .s("charter_hash", hex(&r.charter_hash))
+            .s("supply_model", "near_factory_fixed")
+            .j("terms", &r.params.fees)
+            .finish()
     }
 
     /// Debit the seed, then send leg 1.
@@ -26,7 +34,7 @@ impl Launcher {
         let usdc = self.cfg.usdc.clone();
         self.custody_sub(&usdc, amount);
         let msg = self.seed_msg(r);
-        emit("instant_handoff", json!({ "launch_id": r.launch_id.to_string(), "leg": "Seed", "amount": amount.to_string(), "market": market }));
+        emit("instant_handoff", Obj::new().s("launch_id", r.launch_id).s("leg", "Seed").s("amount", amount).s("market", market));
         let _ = ext_ft::ext(usdc)
             .with_attached_deposit(ONE_YOCTO)
             .with_static_gas(GAS_LEG)
@@ -39,8 +47,8 @@ impl Launcher {
         let amount = r.tokens_unsent();
         r.tokens_inflight += amount;
         self.custody_sub(&r.token.clone(), amount);
-        emit("instant_handoff", json!({ "launch_id": r.launch_id.to_string(), "leg": "Token", "amount": amount.to_string(), "market": market }));
-        let msg = json!({ "v": 1, "op": "open_pool_token", "launch_id": r.launch_id.to_string() }).to_string();
+        emit("instant_handoff", Obj::new().s("launch_id", r.launch_id).s("leg", "Token").s("amount", amount).s("market", market));
+        let msg = Obj::new().n("v", 1).s("op", "open_pool_token").s("launch_id", r.launch_id).finish();
         if !r.market_prepared {
             r.market_prepared = true;
             let _ = Promise::new(market.clone()).transfer(NearToken::from_yoctonear(MARKET_STORAGE_YOCTO));
@@ -94,7 +102,7 @@ impl Launcher {
     pub fn on_instant_leg(&mut self, launch_id: U64, leg: Leg, amount: U128) {
         let a = amount.0;
         let used = Self::consumed(env::promise_result_checked(0, 64), a);
-        let Some(mut r) = self.instants.get(&launch_id.0).cloned() else { return };
+        let Some(mut r) = self.instants.get(&launch_id.0) else { return };
         match leg {
             Leg::Seed => self.seed_leg_resolved(&mut r, a, used),
             Leg::Token => {
@@ -103,9 +111,10 @@ impl Launcher {
                 self.custody_add(&r.token.clone(), a - used);
             }
         }
+        let name = if leg == Leg::Seed { "Seed" } else { "Token" };
         emit(
             "instant_leg_resolved",
-            json!({ "launch_id": r.launch_id.to_string(), "leg": format!("{:?}", leg), "amount": a.to_string(), "used": used.to_string(), "unused": (a - used).to_string() }),
+            Obj::new().s("launch_id", r.launch_id).s("leg", name).s("amount", a).s("used", used).s("unused", a - used),
         );
         self.finish_if_open(&mut r);
         if leg == Leg::Seed && r.seed_sent > 0 && r.seed_due == 0 && r.tokens_unsent() > 0 && self.pause_level() == PauseLevel::None {
@@ -127,7 +136,7 @@ impl Launcher {
             let fee = std::mem::take(&mut r.fee_held);
             self.fee_held_total -= fee;
             self.platform_unpaid += fee;
-            emit("fee_credited", json!({ "launch_id": r.launch_id.to_string(), "amount": fee.to_string() }));
+            emit("fee_credited", Obj::new().s("launch_id", r.launch_id).s("amount", fee));
         }
         if r.seed_sent > 0 && r.seed_due == 0 {
             self.seeds_held = self.seeds_held.saturating_sub(r.seed_total);
@@ -143,8 +152,7 @@ impl Launcher {
         r.opened_at = env::block_timestamp();
         emit(
             "instant_opened",
-            json!({ "launch_id": r.launch_id.to_string(), "token": r.token, "market": self.cfg.market, "q": r.seed_sent.to_string(),
-                    "t": r.tokens_sent.to_string(), "opened_at": r.opened_at.to_string() }),
+            Obj::new().s("launch_id", r.launch_id).s("token", &r.token).opt("market", self.cfg.market.as_ref()).s("q", r.seed_sent).s("t", r.tokens_sent).s("opened_at", r.opened_at),
         );
     }
 }

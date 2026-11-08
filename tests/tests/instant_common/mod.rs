@@ -265,11 +265,9 @@ impl Ix {
             for k in ["usdc_custody_identity", "token_custody_identity", "supply_conservation", "claimed_le_unlocked", "vest_bounds"] {
                 assert_eq!(inv[k], true, "{k}: {inv}");
             }
-            let tok = self.token_id(self.inst(id).await["symbol"].as_str().unwrap());
-            let rep = self.view("solvency_report", json!({ "tokens": [tok] })).await;
-            assert!(self.usdc_bal(self.launcher.id()).await >= n(&rep["expected_usdc_custody"]), "usdc custody below expected: {rep}");
-            let want = n(&rep["expected_token_custody"][0]["amount"]);
-            assert!(self.bal(&tok, self.launcher.id()).await >= want, "token custody below expected: {rep}");
+            let tok: AccountId = inv["token"].as_str().unwrap().parse().unwrap();
+            assert!(self.usdc_bal(self.launcher.id()).await >= n(&inv["usdc_custody"]), "usdc custody below expected: {inv}");
+            assert!(self.bal(&tok, self.launcher.id()).await >= n(&inv["token_custody"]), "token custody below expected: {inv}");
         }
     }
 }

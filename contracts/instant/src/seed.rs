@@ -1,10 +1,10 @@
 //! Step 2: the creator's USDC seed arrives through `ft_on_transfer`. Never panics; a refusal returns the full amount.
-use crate::events::emit;
+use crate::events::{emit, Obj};
 use crate::model::*;
 use crate::{Launcher, LauncherExt};
 use near_sdk::json_types::{U128, U64};
 use near_sdk::serde::Deserialize;
-use near_sdk::serde_json::{self, json};
+use near_sdk::serde_json;
 use near_sdk::{env, log, near, AccountId, PromiseOrValue};
 
 #[derive(Deserialize)]
@@ -29,7 +29,7 @@ impl Launcher {
         if self.pause_level() != PauseLevel::None {
             return Err("R_PAUSED");
         }
-        let mut r = self.instants.get(&m.launch_id.0).cloned().ok_or("R_INSTANT_STATE")?;
+        let mut r = self.instants.get(&m.launch_id.0).ok_or("R_INSTANT_STATE")?;
         if r.status != Status::TokenReady {
             return Err("R_INSTANT_STATE");
         }
@@ -53,7 +53,7 @@ impl Launcher {
         self.fee_held_total += fee;
         let usdc = self.cfg.usdc.clone();
         self.custody_add(&usdc, amount);
-        emit("instant_seeded", json!({ "launch_id": r.launch_id.to_string(), "seed": amount.to_string(), "launch_fee": fee.to_string() }));
+        emit("instant_seeded", Obj::new().s("launch_id", r.launch_id).s("seed", amount).s("launch_fee", fee));
         self.save(r);
         Ok(())
     }

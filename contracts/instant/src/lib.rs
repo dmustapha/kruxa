@@ -9,14 +9,15 @@ mod claims;
 mod create;
 mod events;
 mod ext;
+mod kv;
 mod model;
 mod open;
 mod seed;
 mod views;
 
 use model::*;
-use near_sdk::store::{LookupMap, LookupSet};
-use near_sdk::{env, near, AccountId, BorshStorageKey, Gas, NearToken, PanicOnDefault};
+use kv::Map;
+use near_sdk::{env, near, AccountId, Gas, NearToken, PanicOnDefault};
 
 pub const ONE_YOCTO: NearToken = NearToken::from_yoctonear(1);
 pub const GAS_OUT: Gas = Gas::from_tgas(15);
@@ -50,37 +51,29 @@ pub const RATE_LIMIT_UNITS: u64 = 1;
 pub const ABANDON_UNITS: u64 = 1;
 pub const ABORT_UNITS: u64 = 3;
 
-#[derive(BorshStorageKey)]
-#[near]
-enum Key {
-    Instants,
-    Symbols,
-    Reserved,
-    LastLaunch,
-    ByCreator,
-    Owed,
-    OwedTotal,
-    OwedNear,
-    Custody,
-}
+/// Storage prefixes of the maps.
+const P_INSTANTS: u8 = 1;
+const P_SYMBOLS: u8 = 2;
+const P_RESERVED: u8 = 3;
+const P_LAST_LAUNCH: u8 = 4;
+const P_OWED: u8 = 5;
+const P_OWED_TOTAL: u8 = 6;
+const P_CUSTODY: u8 = 7;
 
 #[near(contract_state)]
 #[derive(PanicOnDefault)]
 pub struct Launcher {
     cfg: Config,
-    instants: LookupMap<u64, Instant>,
+    instants: Map<u64, Instant>,
     next_id: u64,
-    symbols: LookupSet<String>,
-    reserved: LookupSet<String>,
-    last_launch: LookupMap<AccountId, u64>,
-    by_creator: LookupMap<AccountId, Vec<u64>>,
+    symbols: Map<String, u8>,
+    reserved: Map<String, u8>,
+    last_launch: Map<AccountId, u64>,
     /// (account, token) -> amount an outbound transfer failed to deliver.
-    owed: LookupMap<(AccountId, AccountId), u128>,
-    owed_total: LookupMap<AccountId, u128>,
-    owed_near: LookupMap<AccountId, u128>,
-    owed_near_total: u128,
+    owed: Map<(AccountId, AccountId), u128>,
+    owed_total: Map<AccountId, u128>,
     /// Expected balance held per token at rest (in-flight amounts are outside). A test compares it with `ft_balance_of`.
-    custody: LookupMap<AccountId, u128>,
+    custody: Map<AccountId, u128>,
     /// Launch fees whose seed was consumed, not yet withdrawn.
     platform_unpaid: u128,
     /// Sum of `seed_due` and of `fee_held` over all launches (the USDC custody identity).
@@ -123,17 +116,14 @@ impl Launcher {
         };
         Self {
             cfg,
-            instants: LookupMap::new(Key::Instants),
+            instants: Map::new(P_INSTANTS),
             next_id: 0,
-            symbols: LookupSet::new(Key::Symbols),
-            reserved: LookupSet::new(Key::Reserved),
-            last_launch: LookupMap::new(Key::LastLaunch),
-            by_creator: LookupMap::new(Key::ByCreator),
-            owed: LookupMap::new(Key::Owed),
-            owed_total: LookupMap::new(Key::OwedTotal),
-            owed_near: LookupMap::new(Key::OwedNear),
-            owed_near_total: 0,
-            custody: LookupMap::new(Key::Custody),
+            symbols: Map::new(P_SYMBOLS),
+            reserved: Map::new(P_RESERVED),
+            last_launch: Map::new(P_LAST_LAUNCH),
+            owed: Map::new(P_OWED),
+            owed_total: Map::new(P_OWED_TOTAL),
+            custody: Map::new(P_CUSTODY),
             platform_unpaid: 0,
             seed_due_total: 0,
             fee_held_total: 0,
@@ -144,7 +134,7 @@ impl Launcher {
 
 impl Launcher {
     pub(crate) fn instant(&self, id: u64) -> Instant {
-        self.instants.get(&id).cloned().unwrap_or_else(|| fail("R_NO_LAUNCH", &format!("launch {id} not found")))
+        self.instants.get(&id).unwrap_or_else(|| fail("R_NO_LAUNCH", &format!("launch {id} not found")))
     }
 
     pub(crate) fn save(&mut self, r: Instant) {
@@ -172,7 +162,7 @@ impl Launcher {
     }
 
     pub(crate) fn custody_of(&self, token: &AccountId) -> u128 {
-        self.custody.get(token).copied().unwrap_or(0)
+        self.custody.get(token).unwrap_or(0)
     }
 
     pub(crate) fn custody_add(&mut self, token: &AccountId, amount: u128) {
@@ -186,11 +176,11 @@ impl Launcher {
     }
 
     pub(crate) fn owed_of(&self, account: &AccountId, token: &AccountId) -> u128 {
-        self.owed.get(&(account.clone(), token.clone())).copied().unwrap_or(0)
+        self.owed.get(&(account.clone(), token.clone())).unwrap_or(0)
     }
 
     pub(crate) fn owed_total_of(&self, token: &AccountId) -> u128 {
-        self.owed_total.get(token).copied().unwrap_or(0)
+        self.owed_total.get(token).unwrap_or(0)
     }
 
     /// An outbound transfer failed: the amount is still held, so custody grows back and the account can pull it later.

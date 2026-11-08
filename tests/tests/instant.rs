@@ -56,7 +56,6 @@ async fn happy_path_create_seed_open() -> anyhow::Result<()> {
     assert_eq!((ix.bal(&tok, ix.market.id()).await, ix.bal(&tok, ix.launcher.id()).await), (N_TOTAL / 20 * 19, N_TOTAL / 20));
     assert_eq!(ix.view("get_phase", lid(&id)).await["step"], "done");
     ix.assert_solvent(&[&id]).await;
-    assert_eq!(ix.view("instants_by_creator", json!({ "account": ix.creator.id() })).await, json!([id]));
     Ok(())
 }
 
@@ -252,7 +251,6 @@ async fn one_launch_per_account_per_day_and_reserved_or_used_symbols() -> anyhow
     ix.wait_until(t + 11_000 * MS).await;
     ix.predeploy_token("RATD", N_TOTAL).await?;
     ix.create_raw(&ix.creator, params("RATD"), None).await?.into_result()?;
-    assert_eq!(ix.view("instants_by_creator", json!({ "account": ix.creator.id() })).await.as_array().unwrap().len(), 2);
     Ok(())
 }
 
@@ -443,8 +441,7 @@ async fn cancel_and_abandon_end_an_unseeded_launch() -> anyhow::Result<()> {
     let ix = Ix::new("demo", true).await?;
     let id = ix.create_ready(&ix.creator, params("CNCL"), None).await?;
     let stranger = ix.user("stranger", 250 * USDC).await?;
-    assert!(has_code(&ix.call(&stranger, "cancel_instant", lid(&id)).await?, "R_NOT_AUTHORIZED"));
-    assert!(has_code(&ix.call(&stranger, "abandon_instant", lid(&id)).await?, "R_TOO_EARLY"));
+    assert!(has_code(&ix.call(&stranger, "abandon_instant", lid(&id)).await?, "R_TOO_EARLY"), "a stranger waits 24 hours");
     let created = n(&ix.inst(&id).await["created_at_ns"]) as u64;
     ix.wait_until(created + 11_000 * MS).await;
     let ab = ix.call(&stranger, "abandon_instant", lid(&id)).await?;
@@ -458,7 +455,7 @@ async fn cancel_and_abandon_end_an_unseeded_launch() -> anyhow::Result<()> {
     ix.call(&ix.creator, "reclaim_deposit", lid(&id)).await?.into_result()?;
     let id2 = ix.user("c2", 0).await?;
     let second = ix.create_ready(&id2, params("CNC2"), None).await?;
-    ix.call(&id2, "cancel_instant", lid(&second)).await?.into_result()?;
+    ix.call(&id2, "abandon_instant", lid(&second)).await?.into_result()?;
     assert_eq!(ix.status(&second).await, "Abandoned");
     Ok(())
 }
@@ -507,9 +504,8 @@ async fn the_aggregate_seed_cap_counts_only_unconsumed_seeds_and_is_timelocked_u
     let (a, b) = (ix.user("a", 500 * USDC).await?, ix.user("b", 500 * USDC).await?);
     let (ida, idb) = (ix.create_ready(&a, params("CAPA"), None).await?, ix.create_ready(&b, params("CAPB"), None).await?);
     let stranger = ix.user("stranger", 0).await?;
-    assert!(has_code(&ix.call(&stranger, "lower_seed_cap", json!({ "kind": "aggregate", "value": "400000000" })).await?, "R_NOT_AUTHORIZED"));
-    ix.call(&ix.guardian, "lower_seed_cap", json!({ "kind": "aggregate", "value": "400000000" })).await?.into_result()?;
-    assert!(has_code(&ix.call(&ix.owner, "lower_seed_cap", json!({ "kind": "aggregate", "value": "500000000" })).await?, "R_CAP_GLOBAL"), "lower only");
+    assert!(has_code(&ix.call(&stranger, "set_seed_cap", json!({ "kind": "aggregate", "value": "400000000" })).await?, "R_NOT_AUTHORIZED"));
+    ix.call(&ix.guardian, "set_seed_cap", json!({ "kind": "aggregate", "value": "400000000" })).await?.into_result()?;
     ix.seed(&a, &ida, 250 * USDC).await?.into_result()?;
     let r = ix.seed(&b, &idb, 250 * USDC).await?;
     assert!(has_code(&r, "R_CAP_GLOBAL"), "{:?}", r.logs());
@@ -517,7 +513,9 @@ async fn the_aggregate_seed_cap_counts_only_unconsumed_seeds_and_is_timelocked_u
     ix.open(&a, &ida).await?.into_result()?;
     ix.seed(&b, &idb, 250 * USDC).await?.into_result()?;
     // raising waits seven days
-    ix.call(&ix.owner, "queue_seed_cap", json!({ "kind": "aggregate", "value": "9000000000" })).await?.into_result()?;
+    let guardian_raise = ix.call(&ix.guardian, "set_seed_cap", json!({ "kind": "aggregate", "value": "9000000000" })).await?;
+    assert!(has_code(&guardian_raise, "R_NOT_AUTHORIZED"), "the guardian can only lower");
+    ix.call(&ix.owner, "set_seed_cap", json!({ "kind": "aggregate", "value": "9000000000" })).await?.into_result()?;
     assert!(has_code(&ix.call(&stranger, "apply_seed_cap", json!({ "kind": "aggregate" })).await?, "R_NOT_YET"));
     assert!(has_code(&ix.call(&stranger, "apply_seed_cap", json!({ "kind": "per_launch" })).await?, "R_NOTHING"));
     Ok(())
@@ -535,7 +533,6 @@ async fn a_separate_payout_recipient_gets_the_allocation_not_the_creator() -> an
     ix.open(&ix.creator, &id).await?.into_result()?;
     assert_eq!(ix.inst(&id).await["payout_recipient"], json!(recipient.id()));
     assert_eq!(legs(&ix).await[0]["msg"]["payout_recipient"], json!(recipient.id()));
-    assert_eq!(ix.view("declared_wallets", lid(&id)).await, json!([ix.creator.id(), recipient.id()]));
     let opened = n(&ix.inst(&id).await["opened_at_ns"]) as u64;
     ix.wait_until(opened + 380_000 * MS).await;
     let by_creator = ix.call(&ix.creator, "claim_vested", json!({ "launch_id": id })).await?;

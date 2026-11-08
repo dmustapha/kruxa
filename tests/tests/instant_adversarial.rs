@@ -84,7 +84,6 @@ async fn every_callback_is_private() -> anyhow::Result<()> {
         ("on_instant_leg", json!({ "launch_id": id, "leg": "Seed", "amount": "1" })),
         ("on_instant_leg", json!({ "launch_id": id, "leg": "Token", "amount": "1" })),
         ("resolve_payout", json!({ "token": ix.usdc.id(), "account": ix.creator.id(), "amount": "1000000", "reason": "x" })),
-        ("resolve_near", json!({ "account": ix.creator.id(), "amount": "1000000", "reason": "x" })),
     ];
     for who in [&ix.creator, &ix.owner, &ix.guardian] {
         for (m, a) in &calls {
@@ -213,7 +212,7 @@ async fn a_symbol_cannot_be_squatted_into_a_reserved_or_foreign_name() -> anyhow
     }
     // an abandoned launch keeps its symbol: the token account exists, nobody else can take the name
     let id = ix.create_ready(&ix.creator, params("SQAT"), None).await?;
-    ix.call(&ix.creator, "cancel_instant", lid(&id)).await?.into_result()?;
+    ix.call(&ix.creator, "abandon_instant", lid(&id)).await?.into_result()?;
     let other = ix.user("other", 0).await?;
     let r = ix.create_raw(&other, params("SQAT"), None).await?;
     assert!(has_code(&r, "R_SYMBOL"), "{:?}", r.failures());
@@ -281,7 +280,7 @@ async fn the_abi_has_no_mint_no_pool_withdrawal_and_no_recipient_setter() -> any
     }
     // the only methods that move a token out: claim_vested (recipient), abort_instant (creator seed), withdraw_platform,
     // claim_owed(_near), reclaim_deposit, and the market handoff; none takes a destination argument
-    let moving = ["claim_vested", "abort_instant", "withdraw_platform", "claim_owed", "claim_owed_near", "reclaim_deposit", "open_instant"];
+    let moving = ["claim_vested", "abort_instant", "withdraw_platform", "claim_owed", "reclaim_deposit", "open_instant"];
     for m in moving {
         assert!(ex.iter().any(|e| e == m), "{m}");
     }
