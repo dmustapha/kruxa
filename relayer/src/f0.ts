@@ -86,9 +86,10 @@ export async function nearBackend(launch: bigint): Promise<SignBackend> {
       });
       const status = out.status as { SuccessValue?: string };
       if (!status.SuccessValue) throw new Error(`sign failed: ${JSON.stringify(out.status).slice(0, 200)}`);
-      const parsed = JSON.parse(Buffer.from(status.SuccessValue, "base64").toString("utf8")) as { signature?: number[] };
-      if (!parsed.signature || parsed.signature.length !== 64) throw new Error("unexpected signature shape");
-      return Uint8Array.from(parsed.signature);
+      const parsed = JSON.parse(Buffer.from(status.SuccessValue, "base64").toString("utf8")) as { signature?: number[]; Ed25519?: { signature?: number[] } };
+      const raw = parsed.signature ?? parsed.Ed25519?.signature;
+      if (!raw || raw.length !== 64) throw new Error("unexpected signature shape (UNVERIFIED response format)");
+      return Uint8Array.from(raw);
     },
   };
 }
