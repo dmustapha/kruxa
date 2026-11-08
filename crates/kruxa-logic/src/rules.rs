@@ -62,6 +62,14 @@ pub enum RuleCode {
     RSplitSum,
     RFeeVest,
     ROpening,
+    /// D-1: the mainnet creator gate is closed; only the owner can create until `open_beta`.
+    RCreatorGate,
+    RGenesisState,
+    RGenesisAlready,
+    RGenesisAuth,
+    RGenesisArg,
+    RGenesisOrder,
+    RGenesisLeaf,
 }
 
 impl RuleCode {
@@ -123,6 +131,13 @@ impl RuleCode {
             RSplitSum => "R_SPLIT_SUM",
             RFeeVest => "R_FEE_VEST",
             ROpening => "R_OPENING",
+            RCreatorGate => "R_CREATOR_GATE",
+            RGenesisState => "R_GENESIS_STATE",
+            RGenesisAlready => "R_GENESIS_ALREADY",
+            RGenesisAuth => "R_GENESIS_AUTH",
+            RGenesisArg => "R_GENESIS_ARG",
+            RGenesisOrder => "R_GENESIS_ORDER",
+            RGenesisLeaf => "R_GENESIS_LEAF",
         }
     }
 }
@@ -567,6 +582,11 @@ pub fn bond_required(max_holders: u32) -> u128 {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn creator_gate_has_its_own_rule_code() {
+        assert_eq!(RuleCode::RCreatorGate.as_str(), "R_CREATOR_GATE");
+    }
+
     use super::*;
 
     fn ok(p: &TrialParams) -> Result<Derived, RuleViolation> {
