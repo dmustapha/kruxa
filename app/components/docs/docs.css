@@ -1,5 +1,5 @@
 /* Docs and legal styling. Uses the app's CSS variables only. Prefix kx- keeps it out of other workstreams' way. */
-.kx-docs { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; width: min(1040px, calc(100vw - 32px)); margin-left: 50%; transform: translateX(-50%); }
+.kx-docs { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; --kx-w: min(1040px, calc(100vw - 32px)); width: var(--kx-w); margin-left: calc(50% - var(--kx-w) / 2); }
 .kx-docs-select { display: block; margin: 0 0 8px; }
 .kx-docs-select select { width: 100%; margin-top: 4px; background: var(--bg); }
 .kx-docs-side { display: none; }
