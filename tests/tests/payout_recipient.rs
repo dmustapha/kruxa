@@ -40,5 +40,6 @@ async fn charter_created_carries_the_fields_the_indexer_needs() -> anyhow::Resul
         (Some(p.min_funders as u64), Some(p.stream_days as u64), Some(6))
     );
     assert_eq!(d["payout_recipient"], json!(payee.id()));
+    assert_eq!((d["name"].as_str(), d["total_supply"].as_str()), (Some(p.name.as_str()), Some("1000000000000000")));
     Ok(())
 }

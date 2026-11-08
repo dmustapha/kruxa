@@ -98,7 +98,8 @@ impl Contract {
             "charter_created",
             json!({ "launch_id": id.to_string(), "creator": creator, "symbol": params.symbol, "charter_hash": kruxa_logic::hex(&charter_hash),
                     "soft_cap": params.soft_cap.to_string(), "min_funders": params.min_funders, "stream_days": params.stream_days,
-                    "payout_recipient": stream_recipient_out, "token_decimals": self.cfg.rules.decimals }),
+                    "payout_recipient": stream_recipient_out, "token_decimals": self.cfg.rules.decimals,
+                    "name": params.name, "total_supply": derived.n_total.to_string() }),
         );
         provider
             .create(&params, derived.n_total, &env::current_account_id(), self.cfg.factory_deposit)
