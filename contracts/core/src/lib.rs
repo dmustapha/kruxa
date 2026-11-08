@@ -13,6 +13,7 @@ mod lifecycle;
 mod market_link;
 mod model;
 mod payout;
+mod previews;
 #[cfg(feature = "s4-fallback")]
 mod s4;
 mod token;

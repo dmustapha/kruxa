@@ -360,6 +360,12 @@ impl Env {
         self.worker_call(&self.owner, self.intents.id(), "execute_intents", json!({ "signed": [signed] })).await
     }
 
+    /// Rule codes `preview_charter` returns for `p` as seen from `creator`.
+    pub async fn preview_codes(&self, p: &TrialParams, creator: &AccountId) -> Vec<String> {
+        let r = self.view("preview_charter", json!({ "params": p, "creator": creator })).await;
+        r["violations"].as_array().unwrap().iter().map(|x| x["code"].as_str().unwrap().to_string()).collect()
+    }
+
     pub fn token_id(&self, symbol: &str) -> AccountId {
         format!("{}.{}", symbol.to_lowercase(), self.factory.id()).parse().unwrap()
     }
