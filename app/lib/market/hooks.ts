@@ -2,11 +2,11 @@
 // Data hooks for the token page. Each section loads independently, so one failing endpoint never blanks the page.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ApiError, fetchLaunch, fetchCandles, fetchCreatorDesk, fetchDepth, fetchHolders, fetchToken, fetchTrades } from './api';
-import { getChainPool, getCreatorStatus, type ChainPool } from './chain';
+import { getChainInstant, getChainPool, getChainVesting, getCreatorStatus, getMarketConfig, type ChainPool, type MarketConfigView } from './chain';
 import { resolveFacts, type MarketFacts } from './facts';
 import { applyTradeToSeries, prependTrade, upsertCandle } from './series';
 import { openStream, type StreamState } from './stream';
-import type { Candle, CreatorEarnings, CreatorClaim, CreatorStatus, StreamMeter, HolderList, Interval, PoolDepth, LaunchDetail, TokenPageData, Trade, TradeList } from './types';
+import type { Candle, CreatorEarnings, CreatorClaim, CreatorStatus, StreamMeter, VestingView, HolderList, Interval, PoolDepth, InstantInfo, LaunchDetail, TokenPageData, Trade, TradeList } from './types';
 
 export type Section<T> = { status: 'loading' } | { status: 'ready'; data: T } | { status: 'error'; kind: ApiError['kind']; message: string };
 const loading = <T,>(): Section<T> => ({ status: 'loading' });
@@ -113,4 +113,21 @@ export function useNowSec(intervalMs = 1000): number {
   const [now, setNow] = useState(() => Math.floor(Date.now() / 1000));
   useEffect(() => { const t = setInterval(() => setNow(Math.floor(Date.now() / 1000)), intervalMs); return () => clearInterval(t); }, [intervalMs]);
   return now;
+}
+
+export interface InstantBundle { info: InstantInfo | null; vesting: VestingView | null; basis: 'api' | 'chain' | 'none' }
+
+/** Instant launch record and vesting: the API's `instant` object when present, otherwise the launcher's own views. Never guessed. */
+export function useInstantData(id: string, enabled: boolean, fromApi: InstantInfo | null | undefined) {
+  return useSection<InstantBundle>(async () => {
+    if (!enabled) return { info: null, vesting: null, basis: 'none' };
+    const [chainInfo, vesting] = await Promise.all([getChainInstant(id), getChainVesting(id)]);
+    if (chainInfo || vesting) return { info: { ...(fromApi ?? {}), ...(chainInfo ?? {}) } as InstantInfo, vesting: vesting ?? fromApi?.vesting ?? null, basis: 'chain' };
+    return fromApi ? { info: fromApi, vesting: fromApi.vesting ?? null, basis: 'api' } : { info: null, vesting: null, basis: 'none' };
+  }, [id, enabled, fromApi?.opened_at_ns, fromApi?.n_alloc]);
+}
+
+/** Market config, for the instant sub-cap. Null when the RPC cannot be read. */
+export function useMarketConfig(enabled: boolean) {
+  return useSection<MarketConfigView | null>(async () => (enabled ? getMarketConfig() : null), [enabled]);
 }

@@ -98,15 +98,19 @@ describe('genesis steps', () => {
   const d = { ...launch({ verdict: 'PASS' }), charter_hash: 'h', verdict_inputs: { total_active: '1', funders: 1, book_hash_folded: 'x' }, timeline: [{ event: 'verdict', block_height: 1, receipt_id: 'R1', source: 'chain' as const }, { event: 'settled', block_height: 2, receipt_id: 'R2', source: 'chain' as const }] } as LaunchDetail;
   it('marks Solana steps unknown when the indexer has no genesis object', () => {
     const steps = genesisSteps(page({ verdict: 'PASS' }), d, false);
-    expect(steps.find((s) => s.id === 'spec_committed')!.state).toBe('unknown');
+    expect(steps.find((s) => s.id === 'committed')!.state).toBe('unknown');
     expect(steps.find((s) => s.id === 'verdict')).toMatchObject({ state: 'done', receipt: 'R1' });
     expect(steps.filter((s) => s.state === 'current')).toHaveLength(1);
   });
+  it('does not call the mint done unless both authorities are logged null', () => {
+    const p = { ...page({ verdict: 'PASS' }), genesis: { stage: 'confirmed' as const, mint_authority: 'unknown' as const, freeze_authority: 'null' as const } };
+    expect(genesisSteps(p, d, false).find((s) => s.id === 'confirmed')!.state).not.toBe('done');
+  });
   it('reads the genesis stage and the pool state', () => {
-    const p = { ...page({ verdict: 'PASS' }), genesis: { stage: 'authorities_set', network: 'devnet', path: 'F1' } };
+    const p = { ...page({ verdict: 'PASS' }), genesis: { stage: 'confirmed' as const, network: 'devnet', path: 'F1' as const, mint_authority: 'null' as const, freeze_authority: 'null' as const } };
     const steps = genesisSteps(p, d, true);
-    expect(steps.find((s) => s.id === 'authorities_set')!.state).toBe('done');
-    expect(steps.find((s) => s.id === 'distributor_set')!.state).toBe('pending');
+    expect(steps.find((s) => s.id === 'confirmed')!.state).toBe('done');
+    expect(steps.find((s) => s.id === 'distributor')!.state).toBe('pending');
     expect(steps.find((s) => s.id === 'pool')!.state).toBe('current');
   });
 });

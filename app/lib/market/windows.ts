@@ -23,7 +23,7 @@ export function deriveWindow(trades: Trade[], nowSec: number, key: WindowKey, co
   const change = ref !== null && last !== null && ref > 0 ? ((last - ref) / ref) * 100 : null;
   const bv = buys.reduce((s, t) => s + quoteWhole(t), 0);
   const sv = sells.reduce((s, t) => s + quoteWhole(t), 0);
-  return { key, basis: 'swaps', change_pct: change, buys: buys.length, sells: sells.length, buyVolume: bv, sellVolume: sv, volume: bv + sv, traders: new Set(inside.map((t) => t.trader)).size };
+  return { key, basis: 'swaps', change_pct: change, buys: buys.length, sells: sells.length, buyVolume: bv, sellVolume: sv, volume: bv + sv, unique_traders: new Set(inside.map((t) => t.trader)).size };
 }
 
 export function windowRows(api: Partial<Record<WindowKey, WindowStats>> | undefined, trades: Trade[], nowSec: number, complete: boolean): WindowRow[] {

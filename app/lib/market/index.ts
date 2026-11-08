@@ -19,3 +19,6 @@ export * from './markers';
 export * from './tiles';
 export * from './genesis';
 export * from './verify';
+export * from './mode';
+export * from './instant';
+export * from './rules';

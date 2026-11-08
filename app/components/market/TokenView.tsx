@@ -4,13 +4,21 @@
 // right. Mobile: header, chart, activity, segmented tabs (Trades, Holders, Info, Verify) and a sticky Buy / Sell bar that opens a sheet.
 // The page state (trial, failed, genesis, trading, halted) decides what renders; unknown facts are shown as unknown.
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useCandles, useCreatorEarnings, useDepth, useEpochTrades, useHolders, useLaunchDetail, useLiveStream, useNowSec, useTokenBundle, useTrades } from '@/lib/market/hooks';
+import { instantSteps, instantTiles, vestSchedule } from '@/lib/market/instant';
+import { launchMode } from '@/lib/market/mode';
+import { openingWindow } from '@/lib/market/math';
+import { fmtBps } from '@/lib/market/format';
+import { top10ShareBps } from '@/lib/market/tiles';
+import { useCandles, useCreatorEarnings, useDepth, useEpochTrades, useHolders, useInstantData, useMarketConfig, useLaunchDetail, useLiveStream, useNowSec, useTokenBundle, useTrades } from '@/lib/market/hooks';
 import { genesisSteps } from '@/lib/market/genesis';
 import { buildMarkers } from '@/lib/market/markers';
 import { phaseOf, tokenState } from '@/lib/market/phase';
 import { safetyTiles } from '@/lib/market/tiles';
 import { windowRows } from '@/lib/market/windows';
 import type { Interval, Trade } from '@/lib/market/types';
+import { AllocationPanel } from './AllocationPanel';
+import { ContractFacts } from './ContractFacts';
+import { InstantNotice } from './InstantNotice';
 import { CreatorPanel } from './CreatorPanel';
 import { EnsureWallet } from './EnsureWallet';
 import { FeePanel } from './FeePanel';
@@ -20,7 +28,7 @@ import { PoolPanel } from './PoolPanel';
 import { PriceChart } from './PriceChart';
 import { PriceHeader } from './PriceHeader';
 import { SafetyPanel } from './SafetyPanel';
-import { FailedState, GenesisState, HaltedBanner, TrialState } from './StateCards';
+import { FailedState, GenesisState, HaltedBanner, LaunchFailedState, LaunchingState, TrialState } from './StateCards';
 import { OrderSheet, StickyTradeBar, type SheetSide } from './OrderSheet';
 import { SafetyTiles } from './SafetyTiles';
 import { StatsRail } from './StatsRail';
@@ -63,6 +71,9 @@ function TokenBody({ id }: { id: string }) {
   const [wide, reloadWide] = useEpochTrades(id);
   const recipient = bundle.status === 'ready' ? (bundle.data.page.creator?.payout_recipient ?? bundle.data.page.launch.payout_recipient) : undefined;
   const [earnings, reloadEarnings] = useCreatorEarnings(id, recipient);
+  const isInstant = bundle.status === 'ready' ? launchMode(bundle.data.page.launch, bundle.data.page.pool) === 'instant' : id.length >= 10 && BigInt(id) >= 1_000_000_000n;
+  const [instantData, reloadInstant] = useInstantData(id, isInstant, bundle.status === 'ready' ? bundle.data.page.instant : null);
+  const [marketCfg] = useMarketConfig(isInstant);
 
   useEffect(() => { setTab(initialTab()); }, []);
   const changeTab = useCallback((t: string) => {
@@ -110,41 +121,55 @@ function TokenBody({ id }: { id: string }) {
   }
 
   const state = tokenState(page, nowSec);
-  const phase = phaseOf(page.launch, nowSec);
+  const phase = phaseOf(page.launch, nowSec, page.pool.open);
+  const lmode = isInstant ? 'instant' as const : 'trial' as const;
   const detailData = detail.status === 'ready' ? detail.data : undefined;
   const reserves = live && live.q && live.t ? { q: live.q, t: live.t } : { q: page.pool.quote_reserve, t: page.pool.token_reserve };
   const supply = facts.totalSupply ? Number(BigInt(facts.totalSupply)) / 1e6 : null;
-  const tiles = safetyTiles(page, holders.status === 'ready' ? holders.data.items : undefined, creatorBundle?.stream, detailData);
+  const holderItems = holders.status === 'ready' ? holders.data.items : undefined;
+  const instantBundle = instantData.status === 'ready' ? instantData.data : null;
+  const win = facts.terms && facts.openedAtSec ? openingWindow(facts.terms, facts.openedAtSec, nowSec) : null;
+  const openingNow = facts.terms ? (win ? `${fmtBps(Math.round(win.appliedBps))} now, base ${fmtBps(win.baseBps)}` : `${fmtBps(facts.terms.total_fee_bps)} base (opening fee over)`) : null;
+  const tiles = isInstant
+    ? instantTiles({ totalSupply: facts.totalSupply ?? instantBundle?.info?.total_supply ?? null, info: instantBundle?.info, sched: vestSchedule(instantBundle?.info, instantBundle?.vesting, nowSec), safety: page.safety, payout: page.creator?.payout_recipient ?? page.launch.payout_recipient, openingNow, top10Bps: top10ShareBps(holderItems) })
+    : safetyTiles(page, holderItems, creatorBundle?.stream, detailData);
+  const declared: Record<string, string> = { [page.launch.payout_recipient]: 'payout recipient', [page.launch.creator]: 'creator' };
+  const instantOrder = isInstant ? { declared: [page.launch.creator, page.launch.payout_recipient], config: marketCfg.status === 'ready' ? marketCfg.data : null } : undefined;
   const trading = state === 'trading' || state === 'halted';
   const supplyPage = { ...page, pool: { ...page.pool, quote_reserve: reserves.q, token_reserve: reserves.t } };
 
-  const order = (side?: SheetSide) => <TradePanel key={side ?? 'rail'} page={page} facts={facts} reserves={reserves} nowSec={nowSec} onSubmitted={refreshAfterTrade} initialSide={side} />;
+  const order = (side?: SheetSide) => <TradePanel key={side ?? 'rail'} page={page} facts={facts} reserves={reserves} nowSec={nowSec} onSubmitted={refreshAfterTrade} initialSide={side} instant={instantOrder} />;
   const fees = <FeePanel page={page} facts={facts} nowSec={nowSec} />;
-  const mech = <MechanicsPanel launchId={id} detail={detail} epochTrades={wide} openedAtSec={facts.openedAtSec} onRetry={() => { reloadDetail(); reloadWide(); }} />;
+  const mech = <MechanicsPanel launchId={id} detail={detail} epochTrades={wide} openedAtSec={facts.openedAtSec} onRetry={() => { reloadDetail(); reloadWide(); }} instant={isInstant} />;
+  const alloc = <AllocationPanel page={page} instant={instantData} nowSec={nowSec} onClaimed={() => { refreshAfterTrade(); reloadInstant(); }} onRetry={reloadInstant} />;
   const creator = <CreatorPanel page={page} facts={facts} earnings={earnings} onClaimed={refreshAfterTrade} onRetry={reloadEarnings} />;
   const where = <WhereToTrade page={page} facts={facts} />;
   const pool = <PoolPanel pool={supplyPage.pool} symbol={page.launch.symbol} depth={depth} onRetry={reloadDepth} />;
-  const verify = <div className="mkt-stack"><VerifyPanel launchId={id} /><SafetyPanel page={page} /></div>;
-  const trades_ = <TradesFeed trades={trades} nowSec={nowSec} onRetry={reloadTrades} />;
+  const verify = isInstant ? <ContractFacts page={page} facts={facts} instant={instantData} nowSec={nowSec} /> : <div className="mkt-stack"><VerifyPanel launchId={id} /><SafetyPanel page={page} /></div>;
+  const verifyLabel = isInstant ? 'Contract facts' : 'Verify';
+  const creatorTab = isInstant ? <div className="mkt-stack">{alloc}{creator}</div> : creator;
+  const trades_ = <TradesFeed trades={trades} nowSec={nowSec} onRetry={reloadTrades} declared={declared} />;
   const holders_ = <HoldersPanel holders={holders} onRetry={reloadHolders} />;
   const stats = <StatsRail rows={rows} partial={!!wideTrades && wideTrades.next_cursor !== null} />;
 
   const tabDefs: TabDef[] = desktop
-    ? [{ id: 'trades', label: 'Trades', body: trades_ }, { id: 'holders', label: 'Holders', body: holders_ }, { id: 'mechanics', label: 'Mechanics', body: mech }, { id: 'creator', label: 'Creator', body: creator }, { id: 'verify', label: 'Verify', body: verify }]
-    : [{ id: 'trades', label: 'Trades', body: trades_ }, { id: 'holders', label: 'Holders', body: holders_ }, { id: 'info', label: 'Info', body: <div className="mkt-stack">{fees}{mech}{creator}{where}{pool}</div> }, { id: 'verify', label: 'Verify', body: verify }];
+    ? [{ id: 'trades', label: 'Trades', body: trades_ }, { id: 'holders', label: 'Holders', body: holders_ }, { id: 'mechanics', label: 'Mechanics', body: mech }, { id: 'creator', label: 'Creator', body: creatorTab }, { id: 'verify', label: verifyLabel, body: verify }]
+    : [{ id: 'trades', label: 'Trades', body: trades_ }, { id: 'holders', label: 'Holders', body: holders_ }, { id: 'info', label: 'Info', body: <div className="mkt-stack">{fees}{mech}{creatorTab}{where}{pool}</div> }, { id: 'verify', label: verifyLabel, body: verify }];
   const allowed = desktop ? DESKTOP_TABS : MOBILE_TABS;
   const activeTab = allowed.includes(tab) ? tab : tab === 'mechanics' || tab === 'creator' ? 'info' : 'trades';
   const buyBlock = page.pool.paused ? 'Buys paused by the operator (sells and claims stay open)' : page.source === 'fixture' ? 'Fixture data: nothing here is on a chain' : null;
 
   return (
     <div className="mkt-root" data-state={state}>
-      <PriceHeader page={page} facts={facts} livePrice={live?.price} paused={page.pool.paused} phase={phase} showMarket={trading} />
-      {state === 'failed' ? <FailedState page={page} /> : (
+      <PriceHeader page={page} facts={facts} livePrice={live?.price} paused={page.pool.paused} phase={phase} showMarket={trading} mode={lmode} />
+      {isInstant && <InstantNotice />}
+      {state === 'failed' ? (isInstant ? <LaunchFailedState status={page.launch.status} /> : <FailedState page={page} />) : (
         <>
-          <SafetyTiles tiles={tiles} onOpenVerify={() => { changeTab('verify'); document.getElementById('mkt-tabs')?.scrollIntoView({ block: 'start' }); }} />
+          <SafetyTiles tiles={tiles} verifyLabel={isInstant ? 'See the contract facts' : 'Recompute in your browser'} onOpenVerify={() => { changeTab('verify'); document.getElementById('mkt-tabs')?.scrollIntoView({ block: 'start' }); }} />
           {state === 'halted' && <HaltedBanner />}
-          {state === 'trial' && <TrialState page={page} detail={detail} />}
-          {state === 'genesis' && <GenesisState steps={genesisSteps(page, detailData, false)} detail={detail} />}
+          {state === 'launching' && <LaunchingState steps={instantSteps({ poolOpen: page.pool.open, status: page.launch.status, timeline: detailData?.timeline, info: instantBundle?.info })} />}
+          {state === 'trial' && !isInstant && <TrialState page={page} detail={detail} />}
+          {state === 'genesis' && !isInstant && <GenesisState steps={genesisSteps(page, detailData, false)} detail={detail} />}
           {trading && (
             <div className="mkt-grid">
               <div className="mkt-col">
