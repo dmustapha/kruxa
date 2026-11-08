@@ -1,0 +1,115 @@
+{
+  "attempt": "A stranger abandons a fresh launch inside the 24 h window; the creator abandons a launch that already holds a seed; an abandoned launch is abandoned again and then seeded.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "seed returned in full, abandoned launch holds nothing"
+    },
+    {
+      "ok": true,
+      "what": "the seeded launch is still Seeded"
+    }
+  ],
+  "co4": "CO7",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_TOO_EARLY",
+  "id": "I22",
+  "invariants_after": {
+    "launcher": {
+      "market_locked_consistent": true,
+      "owed_usdc": "0",
+      "seeds_held_le_cap": true,
+      "usdc_custody": "250000000",
+      "usdc_custody_identity": true,
+      "usdc_expected": "250000000"
+    },
+    "launches": [
+      {
+        "get_invariants": {
+          "claimed_le_unlocked": true,
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "supply_conservation": true,
+          "token": "abn1.factory.test.near",
+          "token_custody": "1000000000000000",
+          "token_custody_identity": true,
+          "usdc_custody": "250000000",
+          "usdc_custody_identity": true,
+          "usdc_expected": "250000000",
+          "vest_bounds": true
+        },
+        "launch_id": "1000000000"
+      },
+      {
+        "get_invariants": {
+          "claimed_le_unlocked": true,
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "supply_conservation": true,
+          "token": "abn2.factory.test.near",
+          "token_custody": "1000000000000000",
+          "token_custody_identity": true,
+          "usdc_custody": "250000000",
+          "usdc_custody_identity": true,
+          "usdc_expected": "250000000",
+          "vest_bounds": true
+        },
+        "launch_id": "1000000001"
+      }
+    ]
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "instant",
+  "title": "abandon_instant abuse: stranger early, on a seeded launch, twice",
+  "transactions": [
+    {
+      "expected_rule_code": "R_TOO_EARLY",
+      "label": "abandon by a stranger inside 24 h",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_TOO_EARLY",
+      "status": "failed",
+      "tx": "GqXfoQWr718JPKdM962mypVTUnBDnwcqJED2SKT5QEkd"
+    },
+    {
+      "expected_rule_code": "R_INSTANT_STATE",
+      "label": "abandon a Seeded launch (creator)",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_INSTANT_STATE",
+      "status": "failed",
+      "tx": "Gvp9VX9sS891wcDpnHg9sEXyaoSsshfTxJynnS1LULzh"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "abandon by the creator (legitimate)",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "G5S3D6efwszQHfZwxZdfNbrk9DTbwwqtGdhu18hx5zbV"
+    },
+    {
+      "expected_rule_code": "R_INSTANT_STATE",
+      "label": "abandon again",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_INSTANT_STATE",
+      "status": "failed",
+      "tx": "8xxaSrMVwwGR1rjw39J9JTzK3fkGvKBmVZN1AUkogLPB"
+    },
+    {
+      "expected_rule_code": "R_INSTANT_STATE",
+      "label": "seed the abandoned launch",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_INSTANT_STATE",
+      "status": "succeeded",
+      "tx": "FTbBFUs5H5YNADEAX4pTqZcLYeT2AoUtd8t3WbXDrmsC"
+    }
+  ]
+}

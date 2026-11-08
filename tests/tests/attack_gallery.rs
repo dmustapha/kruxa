@@ -4,7 +4,9 @@
 //! (4) writes an evidence record under KRUXA_GALLERY_OUT (default evidence/attack-gallery/records) with the sandbox tx hashes.
 //! Run through `make attack-gallery`; `scripts/attack-gallery.sh` aggregates the records into attack-gallery.json.
 //! Red mode: KRUXA_GALLERY_SABOTAGE=<attack id> makes that one attack succeed (a test-only switch) to prove the gallery can fail.
+mod instant_common;
 mod market_common;
+use instant_common as ic;
 use kruxa_logic::TrialParams;
 use kruxa_tests::*;
 use market_common as mc;
@@ -1380,6 +1382,958 @@ async fn g09_payout_recipient_views_cannot_be_redirected() -> anyhow::Result<()>
     a.check("and are identical after the attacks", views(&env, id).await == before);
     a.check("neither attacker received USDC", env.usdc_balance(eve.id()).await == 0);
     let (inv, ok) = core_inv(&env).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+// ---------------------------------------------------------------- instant launcher and market 1.1.0 (CHANGE-ORDER-7)
+// Ids I01.. attack the REAL instant launcher wasm (and, where stated, the REAL market 1.1.0 wasm). A "stub market" is the
+// recording mock market (failure modes); a "real market" is kruxa_market_contract. The demo profile runs one "day" in 10 s.
+
+const MS: u64 = 1_000_000;
+const IUSDC: u128 = ic::USDC;
+
+/// Launcher identities for the given launches plus real custody, and (real market only) the market identities.
+async fn inst_inv(ix: &ic::Ix, ids: &[&str], real_market: bool) -> (Value, bool) {
+    let global = ix.view("get_invariants", json!({})).await;
+    let mut ok = global["usdc_custody_identity"] == true && global["seeds_held_le_cap"] == true && global["market_locked_consistent"] == true;
+    ok &= ix.usdc_bal(ix.launcher.id()).await >= ic::n(&global["usdc_custody"]);
+    let mut per = vec![];
+    for id in ids {
+        let inv = ix.view("get_invariants", ic::lid(id)).await;
+        for k in ["usdc_custody_identity", "token_custody_identity", "supply_conservation", "claimed_le_unlocked", "vest_bounds"] {
+            ok &= inv[k] == true;
+        }
+        let tok: near_workspaces::AccountId = inv["token"].as_str().unwrap().parse().unwrap();
+        ok &= ix.bal(&tok, ix.launcher.id()).await >= ic::n(&inv["token_custody"]);
+        per.push(json!({ "launch_id": id, "get_invariants": inv }));
+    }
+    let mut out = json!({ "launcher": global, "launches": per });
+    if real_market {
+        let m: Value = ix.market.view("get_invariants").await.unwrap().json().unwrap();
+        ok &= m["usdc_custody_identity"] == true && m["instant_q_matches"] == true;
+        let mut pools = vec![];
+        for id in ids {
+            let args = ic::lid(id);
+            let pool: Value = ix.market.view("get_pool").args_json(args.clone()).await.unwrap().json().unwrap();
+            if pool.is_null() {
+                continue;
+            }
+            let p: Value = ix.market.view("pool_invariants").args_json(args).await.unwrap().json().unwrap();
+            ok &= p["token_custody_identity"] == true && p["k_ge_k0"] == true;
+            pools.push(json!({ "launch_id": id, "pool_invariants": p }));
+        }
+        out["market"] = json!({ "get_invariants": m, "pools": pools });
+    }
+    (out, ok)
+}
+
+async fn mk_get_pool(ix: &ic::Ix, id: &str) -> Value {
+    ix.market.view("get_pool").args_json(ic::lid(id)).await.unwrap().json().unwrap()
+}
+
+/// create + seed with the declared amount (default 250 USDC), minting the creator's USDC. Returns the id (status Seeded).
+async fn seeded(ix: &ic::Ix, who: &Account, p: Value) -> anyhow::Result<String> {
+    let seed = p.get("seed_q").map_or(250 * IUSDC, ic::n);
+    let id = ix.create_ready(who, p, None).await?;
+    ix.mint_usdc(who.id(), seed).await?;
+    ix.seed(who, &id, seed).await?.into_result()?;
+    Ok(id)
+}
+
+/// A buy through the real market, optionally for another receiver.
+async fn ibuy(ix: &ic::Ix, who: &Account, id: &str, amount: u128, receiver: Option<&Account>) -> ExecutionFinalResult {
+    let msg = json!({ "v": 1, "op": "buy", "launch_id": id, "min_out": "1", "receiver": receiver.map(|r| r.id()) }).to_string();
+    who.call(ix.usdc.id(), "ft_transfer_call")
+        .args_json(json!({ "receiver_id": ix.market.id(), "amount": amount.to_string(), "msg": msg }))
+        .deposit(ONE)
+        .gas(ic::GAS)
+        .transact()
+        .await
+        .unwrap()
+}
+
+/// A trader funded with USDC and registered on the launch token.
+async fn itrader(ix: &ic::Ix, name: &str, symbol: &str, usdc: u128) -> anyhow::Result<Account> {
+    let t = ix.user(name, usdc).await?;
+    ix.register_on_token(&ix.token_id(symbol), t.id()).await?;
+    Ok(t)
+}
+
+fn vest30(symbol: &str) -> Value {
+    let mut p = ic::params(symbol);
+    p["vest_days"] = json!(30);
+    p
+}
+
+// ---- creator gate and symbols
+
+#[tokio::test]
+async fn i01_instant_gate_refuses_a_non_owner_on_the_mainnet_profile() -> anyhow::Result<()> {
+    let ix = ic::Ix::new("mainnet", true).await?;
+    ix.predeploy_token("GATE", ic::N_TOTAL).await?;
+    let eve = ix.user("eve", 0).await?;
+    let mut a = Attack::new("I01", "CO7", "create_instant by non-owners on the mainnet profile before open_beta", "instant", Expect::Refused, "R_CREATOR_GATE")
+        .attempt("Two ordinary accounts call create_instant with the full deposit on a launcher running the mainnet profile whose creator gate is closed.");
+    a.check("precondition: the gate is closed", ix.view("get_config", json!({})).await["creator_gate"] == true);
+    for who in [&ix.creator, &eve] {
+        a.attack(&format!("create_instant by {}", who.id()), &ix.create_raw(who, ic::params("GATE"), None).await?, "R_CREATOR_GATE");
+    }
+    a.check("nothing was created", ix.view("get_config", json!({})).await["next_launch_id"] == ic::ID0.to_string());
+    let (inv, ok) = inst_inv(&ix, &[], false).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn i02_instant_gate_refuses_the_owner_too_and_open_beta_is_owner_only() -> anyhow::Result<()> {
+    let ix = ic::Ix::new("mainnet", true).await?;
+    ix.predeploy_token("GATO", ic::N_TOTAL).await?;
+    let mut a = Attack::new("I02", "CO7", "create_instant by the owner and the guardian before open_beta; open_beta by non-owners", "instant", Expect::Refused, "R_CREATOR_GATE")
+        .attempt("The owner and the guardian try to launch while the gate is closed (no insider bypass), then the guardian and a creator try to open the gate themselves.");
+    a.attack("create_instant by the owner", &ix.create_raw(&ix.owner, ic::params("GATO"), None).await?, "R_CREATOR_GATE");
+    a.attack("create_instant by the guardian", &ix.create_raw(&ix.guardian, ic::params("GATO"), None).await?, "R_CREATOR_GATE");
+    a.attack("open_beta by the guardian", &ix.call(&ix.guardian, "open_beta", json!({})).await?, "R_NOT_AUTHORIZED");
+    a.attack("open_beta by a creator", &ix.call(&ix.creator, "open_beta", json!({})).await?, "R_NOT_AUTHORIZED");
+    a.check("the gate is still closed", ix.view("get_config", json!({})).await["creator_gate"] == true);
+    a.check("nothing was created", ix.view("get_config", json!({})).await["next_launch_id"] == ic::ID0.to_string());
+    let (inv, ok) = inst_inv(&ix, &[], false).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn i03_symbol_squat_on_a_used_symbol() -> anyhow::Result<()> {
+    let ix = ic::Ix::new("demo", true).await?;
+    let id = ix.create_ready(&ix.creator, ic::params("SQAT"), None).await?;
+    let squatter = ix.user("squatter", 0).await?;
+    ix.predeploy_token("SQAU", ic::N_TOTAL).await?;
+    let mut a = Attack::new("I03", "CO7", "Symbol squat: a second launch under a symbol already in use", "instant", Expect::Refused, "R_SYMBOL")
+        .attempt("A second account creates a launch with the symbol of a live launch, then with the lower-case spelling of it.");
+    a.attack("same symbol", &ix.create_raw(&squatter, ic::params("SQAT"), None).await?, "R_SYMBOL");
+    a.attack("lower-case spelling", &ix.create_raw(&squatter, json!({ "name": "squat", "symbol": "sqat" }), None).await?, "R_SYMBOL");
+    a.check("the symbol still belongs to the first launch", ix.inst(&id).await["creator"] == json!(ix.creator.id()));
+    a.check("only one launch exists", ix.view("get_config", json!({})).await["next_launch_id"] == (ic::ID0 + 1).to_string());
+    let (inv, ok) = inst_inv(&ix, &[&id], false).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn i04_the_reserved_kruxa_symbol_and_the_reserved_list() -> anyhow::Result<()> {
+    let ix = ic::Ix::new("demo", true).await?;
+    let eve = ix.user("eve", 0).await?;
+    ix.predeploy_token("KRUXA", ic::N_TOTAL).await?;
+    let mut a = Attack::new("I04", "CO7", "Squat the reserved symbol KRUXA and edit the reserved list", "instant", Expect::Refused, "R_SYMBOL_RESERVED")
+        .attempt("Two accounts launch under KRUXA (one naming a payout recipient) and a stranger tries to add a symbol to the reserved list.");
+    a.attack("create_instant KRUXA", &ix.create_raw(&ix.creator, ic::params("KRUXA"), None).await?, "R_SYMBOL_RESERVED");
+    a.attack("create_instant KRUXA with a recipient", &ix.create_raw(&eve, ic::params("KRUXA"), Some(eve.id())).await?, "R_SYMBOL_RESERVED");
+    a.attack("reserve_symbol by a stranger", &ix.call(&eve, "reserve_symbol", json!({ "symbol": "FREE" })).await?, "R_NOT_AUTHORIZED");
+    a.check("nothing was created", ix.view("get_config", json!({})).await["next_launch_id"] == ic::ID0.to_string());
+    let (inv, ok) = inst_inv(&ix, &[], false).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn i05_second_launch_within_24_hours() -> anyhow::Result<()> {
+    let ix = ic::Ix::new("demo", true).await?;
+    let id = ix.create_ready(&ix.creator, ic::params("RAT1"), None).await?;
+    ix.predeploy_token("RAT2", ic::N_TOTAL).await?;
+    let mut a = Attack::new("I05", "CO7", "Second instant launch by the same account within 24 hours", "instant", Expect::Refused, "R_RATE_LIMIT")
+        .attempt("An account that already has a launch creates another one with a fresh symbol right away.");
+    a.attack("second create_instant", &ix.create_raw(&ix.creator, ic::params("RAT2"), None).await?, "R_RATE_LIMIT");
+    a.check("still one launch", ix.view("get_config", json!({})).await["next_launch_id"] == (ic::ID0 + 1).to_string());
+    let (inv, ok) = inst_inv(&ix, &[&id], false).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn i06_rate_limit_via_a_second_wallet_is_bounded_not_blocked() -> anyhow::Result<()> {
+    let ix = ic::Ix::new("demo", true).await?;
+    let id1 = ix.create_ready(&ix.creator, ic::params("SYB1"), None).await?;
+    let second = ix.user("wallet2", 0).await?;
+    let mut a = Attack::new("I06", "CO7", "Rate limit evaded with a second wallet (Sybil)", "instant", Expect::Bounded, "")
+        .attempt("The creator funds a second wallet and launches again at once. The per-account limit does not link accounts; this is disclosed, not a win.");
+    ix.predeploy_token("SYB2", ic::N_TOTAL).await?;
+    let res = ix.create_raw(&second, ic::params("SYB2"), None).await?;
+    a.attack("second wallet's create_instant (succeeds, as disclosed)", &res, "");
+    let id2 = (ic::ID0 + 1).to_string();
+    a.check("both launches exist (not blocked)", ix.status(&id1).await == "TokenReady" && ix.status(&id2).await == "TokenReady");
+    a.check(
+        "bound: each launch costs its own deposit, a unique symbol and a $100 to $1,000 seed, and the aggregate unconsumed-seed cap ($3,000) still applies",
+        ic::n(&ix.inst(&id2).await["deposit_paid"]) >= ix.required_deposit().await && ic::n(&ix.view("get_config", json!({})).await["seed_cap_aggregate"]) == 3_000 * IUSDC,
+    );
+    let (inv, ok) = inst_inv(&ix, &[&id1, &id2], false).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+// ---- hostile terms and seeds
+
+fn std_fees() -> Value {
+    json!({ "total_fee_bps": 100, "creator_bps": 5000, "platform_bps": 1500, "holders_bps": 1500, "lp_bps": 1000, "referral_bps": 1000,
+            "opening_fee_start_bps": 500, "opening_decay_minutes": 60, "fee_vest_bps": 5000, "fee_vest_days": 90 })
+}
+
+fn fees_with(edit: impl FnOnce(&mut Value)) -> Value {
+    let mut f = std_fees();
+    edit(&mut f);
+    json!({ "name": "Hostile", "symbol": "HFEE", "fees": f })
+}
+
+#[tokio::test]
+async fn i07_hostile_fee_terms_are_refused_field_by_field() -> anyhow::Result<()> {
+    let ix = ic::Ix::new("demo", true).await?;
+    ix.predeploy_token("HFEE", ic::N_TOTAL).await?;
+    let mut a = Attack::new("I07", "CO7", "Hostile fee terms in create_instant (creator-set fees)", "instant", Expect::Refused, "R_FEE_*")
+        .attempt("The creator submits fee terms that break each rule in turn: total over 2% or under 0.3%, creator share and take, platform floor and fixed share, holders, LP, referral, split sum, fee vest, opening fee.");
+    let cases: Vec<(&str, &str, Value)> = vec![
+        ("total 201 bps", "R_FEE_TOTAL", fees_with(|f| f["total_fee_bps"] = json!(201))),
+        ("total 29 bps", "R_FEE_TOTAL", fees_with(|f| f["total_fee_bps"] = json!(29))),
+        ("creator share 6001", "R_CREATOR_SHARE", fees_with(|f| f["creator_bps"] = json!(6001))),
+        ("creator take over 1%", "R_CREATOR_TAKE", fees_with(|f| { f["total_fee_bps"] = json!(200); f["creator_bps"] = json!(5100); })),
+        ("platform 1400", "R_PLATFORM_FLOOR", fees_with(|f| f["platform_bps"] = json!(1400))),
+        ("platform 2100", "R_PLATFORM_FIXED", fees_with(|f| f["platform_bps"] = json!(2100))),
+        ("holders 999", "R_HOLDER_RANGE", fees_with(|f| f["holders_bps"] = json!(999))),
+        ("lp 3001", "R_LP_RANGE", fees_with(|f| f["lp_bps"] = json!(3001))),
+        ("referral 2001", "R_REFERRAL", fees_with(|f| f["referral_bps"] = json!(2001))),
+        ("split sums to 9400", "R_SPLIT_SUM", fees_with(|f| f["referral_bps"] = json!(400))),
+        ("fee vest 2499", "R_FEE_VEST", fees_with(|f| f["fee_vest_bps"] = json!(2499))),
+        ("opening fee 1001 bps", "R_OPENING", fees_with(|f| f["opening_fee_start_bps"] = json!(1001))),
+    ];
+    for (label, code, p) in cases {
+        a.attack(label, &ix.create_raw(&ix.creator, p, None).await?, code);
+    }
+    a.check("nothing was created", ix.view("get_config", json!({})).await["next_launch_id"] == ic::ID0.to_string());
+    let (inv, ok) = inst_inv(&ix, &[], false).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn i08_seed_with_the_wrong_amount() -> anyhow::Result<()> {
+    let ix = ic::Ix::new("demo", true).await?;
+    let id = ix.create_ready(&ix.creator, ic::params("SDAM"), None).await?;
+    ix.mint_usdc(ix.creator.id(), 1_000 * IUSDC).await?;
+    let mut a = Attack::new("I08", "CO7", "Seed with the wrong amount", "instant", Expect::Refused, "R_SEED_AMOUNT")
+        .attempt("The creator seeds a launch declared at 250 USDC with 250 USDC plus 1 micro-USDC, 249 USDC, 1 USDC and 1,000 USDC.");
+    for (label, amt) in [("250 USDC + 1", 250 * IUSDC + 1), ("249 USDC", 249 * IUSDC), ("1 USDC", IUSDC), ("1,000 USDC", 1_000 * IUSDC)] {
+        a.attack(label, &ix.seed(&ix.creator, &id, amt).await?, "R_SEED_AMOUNT");
+    }
+    a.check("every amount came back to the creator", ix.usdc_bal(ix.creator.id()).await == 1_000 * IUSDC);
+    a.check("the launcher kept nothing", ix.usdc_bal(ix.launcher.id()).await == 0);
+    a.check("status is still TokenReady", ix.status(&id).await == "TokenReady");
+    let (inv, ok) = inst_inv(&ix, &[&id], false).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn i09_seed_with_the_wrong_token_or_a_forged_call() -> anyhow::Result<()> {
+    let ix = ic::Ix::new("demo", true).await?;
+    let id = ix.create_ready(&ix.creator, ic::params("SDTK"), None).await?;
+    let root = ix.worker.root_account()?;
+    let fake = root.create_subaccount("fakeusdc").initial_balance(NearToken::from_near(50)).transact().await?.into_result()?;
+    let fake = fake.deploy(&ic::wasm("mock_ft")).await?.into_result()?;
+    fake.call("new").args_json(json!({ "owner_id": ix.owner.id(), "total_supply": "0" })).transact().await?.into_result()?;
+    ix.register(&fake, ix.launcher.id()).await?;
+    ix.register(&fake, ix.creator.id()).await?;
+    fake.call("mint").args_json(json!({ "account_id": ix.creator.id(), "amount": "250000000" })).transact().await?.into_result()?;
+    let mut a = Attack::new("I09", "CO7", "Seed with a look-alike token, and a forged ft_on_transfer", "instant", Expect::Refused, "R_UNEXPECTED_TOKEN")
+        .attempt("The creator seeds with 250 units of a look-alike USDC contract, then calls ft_on_transfer on the launcher directly with the right message.");
+    a.attack("fake-USDC seed", &ix.seed_via(&ix.creator, fake.id(), &id, 250 * IUSDC).await?, "R_UNEXPECTED_TOKEN");
+    let msg = json!({ "v": 1, "op": "seed_instant", "launch_id": id }).to_string();
+    let direct = ix.creator.call(ix.launcher.id(), "ft_on_transfer")
+        .args_json(json!({ "sender_id": ix.creator.id(), "amount": "250000000", "msg": msg })).gas(ic::GAS).transact().await?;
+    a.attack("direct ft_on_transfer from a non-token account", &direct, "R_UNEXPECTED_TOKEN");
+    a.check("direct call returned the full amount", direct.json::<String>().map(|s| s == "250000000").unwrap_or(false));
+    a.check("fake tokens refunded", ix.bal(fake.id(), ix.creator.id()).await == 250 * IUSDC);
+    a.check("status is still TokenReady and nothing is held", ix.status(&id).await == "TokenReady" && ix.usdc_bal(ix.launcher.id()).await == 0);
+    let (inv, ok) = inst_inv(&ix, &[&id], false).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn i10_seed_before_the_token_exists() -> anyhow::Result<()> {
+    let ix = ic::Ix::new("demo", true).await?;
+    ix.factory.call("set_fail").args_json(json!({ "fail": true })).transact().await?.into_result()?;
+    ix.create_raw(&ix.creator, ic::params("NTOK"), None).await?;
+    let dead = ic::ID0.to_string();
+    let live_creator = ix.user("live", 0).await?;
+    ix.factory.call("set_fail").args_json(json!({ "fail": false })).transact().await?.into_result()?;
+    let live = ix.create_ready(&live_creator, ic::params("LIVE"), None).await?;
+    ix.mint_usdc(ix.creator.id(), 500 * IUSDC).await?;
+    let mut a = Attack::new("I10", "CO7", "Seed before the token exists (unknown id, failed creation, malformed message)", "instant", Expect::Refused, "R_INSTANT_STATE")
+        .attempt("The creator seeds an id that was never created, the id of a launch whose token creation failed, and sends a seed message with the wrong version and op.");
+    a.check("precondition: the first launch is CreationFailed", ix.status(&dead).await == "CreationFailed");
+    a.attack("seed an id that does not exist", &ix.seed(&ix.creator, "1999999999", 250 * IUSDC).await?, "R_INSTANT_STATE");
+    a.attack("seed the next id, not yet created", &ix.seed(&ix.creator, &(ic::ID0 + 2).to_string(), 250 * IUSDC).await?, "R_INSTANT_STATE");
+    a.attack("seed a CreationFailed launch", &ix.seed(&ix.creator, &dead, 250 * IUSDC).await?, "R_INSTANT_STATE");
+    let bad = json!({ "v": 2, "op": "seed_quote", "launch_id": live }).to_string();
+    let r = ix.creator.call(ix.usdc.id(), "ft_transfer_call")
+        .args_json(json!({ "receiver_id": ix.launcher.id(), "amount": "250000000", "msg": bad })).deposit(ONE).gas(ic::GAS).transact().await?;
+    a.attack("wrong version and op in the seed message", &r, "R_BAD_MSG");
+    a.check("everything came back", ix.usdc_bal(ix.creator.id()).await == 500 * IUSDC && ix.usdc_bal(ix.launcher.id()).await == 0);
+    a.check("the dead launch stays CreationFailed", ix.status(&dead).await == "CreationFailed");
+    let (inv, ok) = inst_inv(&ix, &[&live], false).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn i11_a_stranger_seeds_someone_elses_launch() -> anyhow::Result<()> {
+    let ix = ic::Ix::new("demo", true).await?;
+    let id = ix.create_ready(&ix.creator, ic::params("FRNT"), None).await?;
+    let eve = ix.user("eve", 250 * IUSDC).await?;
+    let mut a = Attack::new("I11", "CO7", "A stranger seeds the creator's launch (front-run the seed)", "instant", Expect::Refused, "R_NOT_CREATOR")
+        .attempt("An account that is not the creator sends the exact seed amount with the right launch id, hoping to take over the seed and its refund rights.");
+    a.attack("seed by a stranger with the exact amount", &ix.seed(&eve, &id, 250 * IUSDC).await?, "R_NOT_CREATOR");
+    a.check("the stranger was refunded in full", ix.usdc_bal(eve.id()).await == 250 * IUSDC);
+    a.check("status unchanged", ix.status(&id).await == "TokenReady");
+    ix.mint_usdc(ix.creator.id(), 250 * IUSDC).await?;
+    a.step("the real creator seeds afterwards", &ix.seed(&ix.creator, &id, 250 * IUSDC).await?);
+    a.check("the creator's seed is accepted", ix.status(&id).await == "Seeded");
+    let (inv, ok) = inst_inv(&ix, &[&id], false).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+// ---- open_instant
+
+#[tokio::test]
+async fn i12_double_open_instant() -> anyhow::Result<()> {
+    let ix = ic::Ix::new("demo", false).await?;
+    let id = seeded(&ix, &ix.creator, ic::params("DOPN")).await?;
+    let first = ix.open(&ix.creator, &id).await?;
+    let stranger = ix.user("stranger", 0).await?;
+    let mut a = Attack::new("I12", "CO7", "open_instant called again after the pool is open", "instant+market", Expect::Refused, "R_INSTANT_STATE")
+        .attempt("After the pool opened, the creator and a stranger call open_instant again, hoping to push the seed or the token bucket a second time.");
+    a.step("first open_instant", &first);
+    let q = ic::n(&mk_get_pool(&ix, &id).await["q"]);
+    a.attack("second open_instant by the creator", &ix.open(&ix.creator, &id).await?, "R_INSTANT_STATE");
+    a.attack("third open_instant by a stranger", &ix.open(&stranger, &id).await?, "R_INSTANT_STATE");
+    a.check("pool reserve unchanged", ic::n(&mk_get_pool(&ix, &id).await["q"]) == q && q == 250 * IUSDC);
+    a.check("market holds exactly the seed", ix.usdc_bal(ix.market.id()).await == 250 * IUSDC);
+    a.check("the launcher paid the pool bucket once", ix.bal(&ix.token_id("DOPN"), ix.market.id()).await == ic::N_TOTAL / 20 * 19);
+    let (inv, ok) = inst_inv(&ix, &[&id], true).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn i13_three_concurrent_open_instant_calls() -> anyhow::Result<()> {
+    let ix = ic::Ix::new("demo", true).await?;
+    let id = seeded(&ix, &ix.creator, ic::params("CONC")).await?;
+    let (x, y, z) = (ix.user("x", 0).await?, ix.user("y", 0).await?, ix.user("z", 0).await?);
+    let mut a = Attack::new("I13", "CO7", "Three open_instant calls in the same block", "instant", Expect::NoEffect, "")
+        .attempt("Three accounts call open_instant for the same seeded launch at once, hoping each leg is sent more than once.");
+    let (rx, ry, rz) = tokio::join!(ix.open(&x, &id), ix.open(&y, &id), ix.open(&z, &id));
+    for (who, r) in [("x", rx?), ("y", ry?), ("z", rz?)] {
+        a.attack(&format!("concurrent open_instant by {who}"), &r, "");
+    }
+    let legs: Vec<Value> = ix.market.view("get_legs").await?.json()?;
+    a.check("the seed leg was sent exactly once", legs.iter().filter(|l| l["msg"]["op"] == "seed_quote").count() == 1);
+    a.check("the token leg was sent exactly once", legs.iter().filter(|l| l["msg"]["op"] == "open_pool_token").count() == 1);
+    a.check("market holds one seed and one bucket", ix.usdc_bal(ix.market.id()).await == 250 * IUSDC && ix.bal(&ix.token_id("CONC"), ix.market.id()).await == ic::N_TOTAL / 20 * 19);
+    a.check("status is Open", ix.status(&id).await == "Open");
+    let (inv, ok) = inst_inv(&ix, &[&id], false).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+// ---- vesting claims (IL-5)
+
+#[tokio::test]
+async fn i14_claim_vested_before_the_cliff() -> anyhow::Result<()> {
+    let ix = ic::Ix::new("demo", true).await?;
+    let id = ix.launch_to_open(&ix.creator, vest30("CLF1")).await?;
+    let tok = ix.token_id("CLF1");
+    ix.register_on_token(&tok, ix.creator.id()).await?;
+    let mut a = Attack::new("I14", "CO7", "claim_vested before the cliff", "instant", Expect::Refused, "R_NOTHING_TO_CLAIM")
+        .attempt("Right after the pool opens the payout recipient claims the whole allocation, a quarter of it, and 1 base unit.");
+    let n_alloc = ic::n(&ix.inst(&id).await["n_alloc"]);
+    a.attack("claim all (no amount)", &ix.call(&ix.creator, "claim_vested", json!({ "launch_id": id })).await?, "R_NOTHING_TO_CLAIM");
+    a.attack("claim n_alloc / 4", &ix.call(&ix.creator, "claim_vested", json!({ "launch_id": id, "amount": (n_alloc / 4).to_string() })).await?, "STREAM_CAP");
+    a.attack("claim 1 base unit", &ix.call(&ix.creator, "claim_vested", json!({ "launch_id": id, "amount": "1" })).await?, "STREAM_CAP");
+    a.check("nothing was paid", ix.bal(&tok, ix.creator.id()).await == 0);
+    a.check("claimed stays zero", ic::n(&ix.view("get_vesting", ic::lid(&id)).await["claimed"]) == 0);
+    let (inv, ok) = inst_inv(&ix, &[&id], false).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn i15_claim_vested_above_the_claimable_amount() -> anyhow::Result<()> {
+    let ix = ic::Ix::new("demo", true).await?;
+    let id = ix.launch_to_open(&ix.creator, vest30("CLF2")).await?;
+    let tok = ix.token_id("CLF2");
+    ix.register_on_token(&tok, ix.creator.id()).await?;
+    let r = ix.inst(&id).await;
+    let (opened, n_alloc) = (ic::n(&r["opened_at_ns"]) as u64, ic::n(&r["n_alloc"]));
+    ix.wait_until(opened + 72_000 * MS).await;
+    let mut a = Attack::new("I15", "CO7", "claim_vested above the claimable amount (just after the cliff)", "instant", Expect::Refused, "STREAM_CAP")
+        .attempt("Just after the cliff only a sliver has unlocked; the recipient asks for half the allocation, the whole allocation and u128::MAX.");
+    let v = ix.view("get_vesting", ic::lid(&id)).await;
+    a.check("precondition: claimable is far below half", ic::n(&v["claimable"]) < n_alloc / 2);
+    for (label, amt) in [("half", n_alloc / 2), ("all", n_alloc), ("u128::MAX", u128::MAX)] {
+        a.attack(label, &ix.call(&ix.creator, "claim_vested", json!({ "launch_id": id, "amount": amt.to_string() })).await?, "STREAM_CAP");
+    }
+    a.check("nothing was paid", ix.bal(&tok, ix.creator.id()).await == 0);
+    a.check("claimed stays zero", ic::n(&ix.view("get_vesting", ic::lid(&id)).await["claimed"]) == 0);
+    let (inv, ok) = inst_inv(&ix, &[&id], false).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn i16_claim_vested_by_a_non_recipient() -> anyhow::Result<()> {
+    let ix = ic::Ix::new("demo", true).await?;
+    let rec = ix.user("recipient", 0).await?;
+    let id = {
+        let id = ix.create_ready(&ix.creator, vest30("CLF3"), Some(rec.id())).await?;
+        ix.mint_usdc(ix.creator.id(), 250 * IUSDC).await?;
+        ix.seed(&ix.creator, &id, 250 * IUSDC).await?.into_result()?;
+        ix.open(&ix.creator, &id).await?.into_result()?;
+        id
+    };
+    let tok = ix.token_id("CLF3");
+    for w in [ix.creator.id(), rec.id()] {
+        ix.register_on_token(&tok, w).await?;
+    }
+    let eve = ix.user("eve", 0).await?;
+    ix.register_on_token(&tok, eve.id()).await?;
+    let opened = ic::n(&ix.inst(&id).await["opened_at_ns"]) as u64;
+    ix.wait_until(opened + 150_000 * MS).await;
+    let mut a = Attack::new("I16", "CO7", "claim_vested by someone other than the payout recipient", "instant", Expect::Refused, "R_NOT_AUTHORIZED")
+        .attempt("After the cliff the creator (who named a separate recipient) and a stranger both call claim_vested.");
+    a.check("precondition: something is claimable", ic::n(&ix.view("get_vesting", ic::lid(&id)).await["claimable"]) > 0);
+    a.attack("claim by the creator who is not the recipient", &ix.call(&ix.creator, "claim_vested", json!({ "launch_id": id })).await?, "R_NOT_AUTHORIZED");
+    a.attack("claim by a stranger", &ix.call(&eve, "claim_vested", json!({ "launch_id": id })).await?, "R_NOT_AUTHORIZED");
+    a.check("neither received tokens", ix.bal(&tok, ix.creator.id()).await == 0 && ix.bal(&tok, eve.id()).await == 0);
+    a.check("the recipient is still the named account", ix.view("get_vesting", ic::lid(&id)).await["recipient"] == json!(rec.id()));
+    a.step("the real recipient claims", &ix.call(&rec, "claim_vested", json!({ "launch_id": id })).await?);
+    a.check("the recipient was paid", ix.bal(&tok, rec.id()).await > 0);
+    let (inv, ok) = inst_inv(&ix, &[&id], false).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn i17_claim_vested_again_after_the_full_claim() -> anyhow::Result<()> {
+    let ix = ic::Ix::new("demo", true).await?;
+    let id = ix.launch_to_open(&ix.creator, vest30("CLF4")).await?;
+    let tok = ix.token_id("CLF4");
+    ix.register_on_token(&tok, ix.creator.id()).await?;
+    let r = ix.inst(&id).await;
+    let (opened, n_alloc) = (ic::n(&r["opened_at_ns"]) as u64, ic::n(&r["n_alloc"]));
+    ix.wait_until(opened + 302_000 * MS).await;
+    let mut a = Attack::new("I17", "CO7", "claim_vested again after the allocation was claimed in full", "instant", Expect::Refused, "R_NOTHING_TO_CLAIM")
+        .attempt("The recipient claims everything after the vest ends, then claims again, with and without an amount.");
+    a.step("full claim after the vest", &ix.call(&ix.creator, "claim_vested", json!({ "launch_id": id })).await?);
+    a.check("the recipient holds exactly n_alloc", ix.bal(&tok, ix.creator.id()).await == n_alloc);
+    a.attack("second claim (no amount)", &ix.call(&ix.creator, "claim_vested", json!({ "launch_id": id })).await?, "R_NOTHING_TO_CLAIM");
+    a.attack("third claim of 1 base unit", &ix.call(&ix.creator, "claim_vested", json!({ "launch_id": id, "amount": "1" })).await?, "STREAM_CAP");
+    a.check("balance still exactly n_alloc", ix.bal(&tok, ix.creator.id()).await == n_alloc);
+    let (inv, ok) = inst_inv(&ix, &[&id], false).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn i18_claim_vested_before_the_pool_is_open() -> anyhow::Result<()> {
+    let ix = ic::Ix::new("demo", true).await?;
+    let id = ix.create_ready(&ix.creator, ic::params("CLF5"), None).await?;
+    let mut a = Attack::new("I18", "CO7", "claim_vested while the launch is not Open (TokenReady, Seeded)", "instant", Expect::Refused, "R_INSTANT_STATE")
+        .attempt("The creator claims the allocation before the pool exists: once right after create, once right after the seed.");
+    a.attack("claim in TokenReady", &ix.call(&ix.creator, "claim_vested", json!({ "launch_id": id })).await?, "R_INSTANT_STATE");
+    ix.mint_usdc(ix.creator.id(), 250 * IUSDC).await?;
+    ix.seed(&ix.creator, &id, 250 * IUSDC).await?.into_result()?;
+    a.attack("claim in Seeded", &ix.call(&ix.creator, "claim_vested", json!({ "launch_id": id, "amount": "1" })).await?, "R_INSTANT_STATE");
+    a.check("the creator holds no launch token", ix.bal(&ix.token_id("CLF5"), ix.creator.id()).await == 0);
+    let (inv, ok) = inst_inv(&ix, &[&id], false).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+// ---- abort, abandon, reclaim
+
+async fn stub_mode(ix: &ic::Ix, mode: &str) {
+    ix.market.call("set_mode").args_json(json!({ "mode": mode })).transact().await.unwrap().into_result().unwrap();
+}
+
+#[tokio::test]
+async fn i19_abort_abuse() -> anyhow::Result<()> {
+    let ix = ic::Ix::new("demo", true).await?;
+    let id = seeded(&ix, &ix.creator, ic::params("ABRT")).await?;
+    stub_mode(&ix, "refuse_seed").await;
+    ix.open(&ix.creator, &id).await?.into_result()?;
+    let stranger = ix.user("stranger", 0).await?;
+    let mut a = Attack::new("I19", "CO7", "abort_instant abuse: too early, by a stranger, twice, then reuse of the dead launch", "instant", Expect::Refused, "R_TOO_EARLY")
+        .attempt("The seed was refused by the market. A stranger and the creator abort early, a stranger aborts after the wait, the creator aborts twice, then open_instant, claim_vested and a new seed are tried on the aborted launch.");
+    a.attack("abort by the creator before the wait", &ix.call(&ix.creator, "abort_instant", ic::lid(&id)).await?, "R_TOO_EARLY");
+    let seeded_at = ic::n(&ix.inst(&id).await["seeded_at_ns"]) as u64;
+    ix.wait_until(seeded_at + 31_000 * MS).await;
+    a.attack("abort by a stranger after the wait", &ix.call(&stranger, "abort_instant", ic::lid(&id)).await?, "R_NOT_AUTHORIZED");
+    a.step("abort by the creator after the wait (legitimate)", &ix.call(&ix.creator, "abort_instant", ic::lid(&id)).await?);
+    a.check("the whole seed came back once", ix.usdc_bal(ix.creator.id()).await == 250 * IUSDC && ix.status(&id).await == "Aborted");
+    a.attack("second abort", &ix.call(&ix.creator, "abort_instant", ic::lid(&id)).await?, "R_INSTANT_STATE");
+    a.attack("open_instant on the aborted launch", &ix.open(&stranger, &id).await?, "R_INSTANT_STATE");
+    a.attack("claim_vested on the aborted launch", &ix.call(&ix.creator, "claim_vested", json!({ "launch_id": id })).await?, "R_INSTANT_STATE");
+    a.attack("seed the aborted launch again", &ix.seed(&ix.creator, &id, 250 * IUSDC).await?, "R_INSTANT_STATE");
+    a.check("the creator still holds exactly the one refund", ix.usdc_bal(ix.creator.id()).await == 250 * IUSDC && ix.usdc_bal(ix.launcher.id()).await == 0);
+    let (inv, ok) = inst_inv(&ix, &[&id], false).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn i20_abort_after_the_market_consumed_the_seed() -> anyhow::Result<()> {
+    let ix = ic::Ix::new("demo", true).await?;
+    let id = seeded(&ix, &ix.creator, ic::params("IL8Y")).await?;
+    stub_mode(&ix, "refuse_token").await;
+    ix.open(&ix.creator, &id).await?.into_result()?;
+    let seeded_at = ic::n(&ix.inst(&id).await["seeded_at_ns"]) as u64;
+    ix.wait_until(seeded_at + 31_000 * MS).await;
+    let mut a = Attack::new("I20", "CO7", "Abort to take the seed back after the market already consumed it (IL-8)", "instant", Expect::Refused, "R_INSTANT_STATE")
+        .attempt("The market consumed the seed but refused the token bucket. After the wait the creator calls abort_instant to pull the seed back out of a half-open pool.");
+    a.check("precondition: the market holds the seed", ix.usdc_bal(ix.market.id()).await == 250 * IUSDC);
+    a.attack("abort_instant after the seed was consumed", &ix.call(&ix.creator, "abort_instant", ic::lid(&id)).await?, "R_INSTANT_STATE");
+    a.check("creator got nothing back", ix.usdc_bal(ix.creator.id()).await == 0);
+    a.check("the launch is still Handoff with seed_sent = 250 USDC", ix.status(&id).await == "Handoff" && ic::n(&ix.inst(&id).await["seed_sent"]) == 250 * IUSDC);
+    let (inv, ok) = inst_inv(&ix, &[&id], false).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn i21_reclaim_deposit_abuse() -> anyhow::Result<()> {
+    let ix = ic::Ix::new("demo", true).await?;
+    ix.factory.call("set_fail").args_json(json!({ "fail": true })).transact().await?.into_result()?;
+    ix.create_raw(&ix.creator, ic::params("RCL1"), None).await?;
+    ix.factory.call("set_fail").args_json(json!({ "fail": false })).transact().await?.into_result()?;
+    let dead = ic::ID0.to_string();
+    let other = ix.user("other", 0).await?;
+    let live = ix.create_ready(&other, ic::params("RCL2"), None).await?;
+    let eve = ix.user("eve", 0).await?;
+    let mut a = Attack::new("I21", "CO7", "reclaim_deposit abuse: stranger, live launch, double reclaim", "instant", Expect::Refused, "R_NOT_AUTHORIZED")
+        .attempt("A stranger reclaims another creator's refund; the owner of a live launch reclaims its deposit; the refund is claimed twice.");
+    a.check("precondition: first launch CreationFailed, second TokenReady", ix.status(&dead).await == "CreationFailed" && ix.status(&live).await == "TokenReady");
+    a.attack("reclaim by a stranger", &ix.call(&eve, "reclaim_deposit", ic::lid(&dead)).await?, "R_NOT_AUTHORIZED");
+    a.attack("reclaim on a live TokenReady launch", &ix.call(&other, "reclaim_deposit", ic::lid(&live)).await?, "R_INSTANT_STATE");
+    a.step("reclaim by the creator (legitimate)", &ix.call_gas(&ix.creator, "reclaim_deposit", ic::lid(&dead), 30).await?);
+    a.attack("second reclaim", &ix.call(&ix.creator, "reclaim_deposit", ic::lid(&dead)).await?, "R_NOTHING_TO_CLAIM");
+    a.check("refundable is now zero", ic::n(&ix.inst(&dead).await["deposit_refundable"]) == 0);
+    a.check("the live launch deposit is intact", ic::n(&ix.inst(&live).await["deposit_refundable"]) == 0 && ix.status(&live).await == "TokenReady");
+    let (inv, ok) = inst_inv(&ix, &[&live], false).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn i22_abandon_abuse() -> anyhow::Result<()> {
+    let ix = ic::Ix::new("demo", true).await?;
+    let id = ix.create_ready(&ix.creator, ic::params("ABN1"), None).await?;
+    let stranger = ix.user("stranger", 0).await?;
+    let b_creator = ix.user("bcreator", 250 * IUSDC).await?;
+    let seeded_id = ix.create_ready(&b_creator, ic::params("ABN2"), None).await?;
+    ix.seed(&b_creator, &seeded_id, 250 * IUSDC).await?.into_result()?;
+    let mut a = Attack::new("I22", "CO7", "abandon_instant abuse: stranger early, on a seeded launch, twice", "instant", Expect::Refused, "R_TOO_EARLY")
+        .attempt("A stranger abandons a fresh launch inside the 24 h window; the creator abandons a launch that already holds a seed; an abandoned launch is abandoned again and then seeded.");
+    a.attack("abandon by a stranger inside 24 h", &ix.call(&stranger, "abandon_instant", ic::lid(&id)).await?, "R_TOO_EARLY");
+    a.attack("abandon a Seeded launch (creator)", &ix.call(&b_creator, "abandon_instant", ic::lid(&seeded_id)).await?, "R_INSTANT_STATE");
+    a.step("abandon by the creator (legitimate)", &ix.call(&ix.creator, "abandon_instant", ic::lid(&id)).await?);
+    a.attack("abandon again", &ix.call(&ix.creator, "abandon_instant", ic::lid(&id)).await?, "R_INSTANT_STATE");
+    ix.mint_usdc(ix.creator.id(), 250 * IUSDC).await?;
+    a.attack("seed the abandoned launch", &ix.seed(&ix.creator, &id, 250 * IUSDC).await?, "R_INSTANT_STATE");
+    a.check("seed returned in full, abandoned launch holds nothing", ix.usdc_bal(ix.creator.id()).await == 250 * IUSDC);
+    a.check("the seeded launch is still Seeded", ix.status(&seeded_id).await == "Seeded");
+    let (inv, ok) = inst_inv(&ix, &[&id, &seeded_id], false).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+// ---- set_launcher, set_market, mode and namespace (market 1.1.0)
+
+#[tokio::test]
+async fn i23_set_launcher_by_a_non_owner_or_to_a_protected_account() -> anyhow::Result<()> {
+    let mk = mc::Mk::new(None).await?;
+    let other = mk.user("other", 0).await?;
+    let call = |who: &Account, acct: &near_workspaces::AccountId| who.call(mk.market.id(), "set_launcher").args_json(json!({ "account": acct })).transact();
+    let mut a = Attack::new("I23", "CO7", "set_launcher by a non-owner, or pointing it at core, USDC or the treasury", "market", Expect::Refused, "R_NOT_AUTHORIZED")
+        .attempt("The guardian, a creator and a stranger name themselves as the launcher; the owner is also tried with the core, the USDC contract and the treasury (each would let a second sender open pools).");
+    for (label, who) in [("guardian", &mk.guardian), ("creator", &mk.creator), ("stranger", &other)] {
+        a.attack(&format!("set_launcher by the {label}"), &call(who, other.id()).await?, "R_NOT_AUTHORIZED");
+    }
+    for (label, bad) in [("core", mk.core.id()), ("USDC", mk.usdc.id()), ("treasury", mk.treasury.id())] {
+        a.attack(&format!("owner points the launcher at the {label}"), &call(&mk.owner, bad).await?, "R_NOT_AUTHORIZED");
+    }
+    a.check("the market still has no launcher", mk.view("get_config", json!({})).await["launcher"].is_null());
+    let (inv, ok) = market_inv(&mk, &[]).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn i24_re_point_the_launcher_after_the_first_instant_pool() -> anyhow::Result<()> {
+    let mk = mc::Mk::new(None).await?;
+    mk.set_launcher().await?;
+    let other = mk.user("other", 0).await?;
+    mk.open_instant(mc::INSTANT_BASE, 500 * mc::USDC, mk.creator.id(), mk.creator.id()).await?;
+    let call = |acct: &near_workspaces::AccountId| mk.owner.call(mk.market.id(), "set_launcher").args_json(json!({ "account": acct })).transact();
+    let mut a = Attack::new("I24", "CO7", "Re-point the launcher after the first instant pool exists", "market", Expect::Refused, "R_LAUNCHER_LOCKED")
+        .attempt("Even the owner tries to switch the launcher to another account, and to re-set the same one, once a launcher pool is live.");
+    a.attack("owner re-points the launcher", &call(other.id()).await?, "R_LAUNCHER_LOCKED");
+    a.attack("owner re-sets the same launcher", &call(mk.launcher.id()).await?, "R_LAUNCHER_LOCKED");
+    a.check("get_config still names the original launcher", mk.view("get_config", json!({})).await["launcher"] == mk.launcher.id().as_str());
+    let (inv, ok) = market_inv(&mk, &[mc::INSTANT_BASE]).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn i25_set_market_on_the_launcher_after_first_use_or_by_a_non_owner() -> anyhow::Result<()> {
+    let ix = ic::Ix::new("demo", false).await?;
+    let id = seeded(&ix, &ix.creator, ic::params("SMKT")).await?;
+    let evil = ix.user("evilmarket", 0).await?;
+    let mut a = Attack::new("I25", "CO7", "set_market on the launcher: non-owner, then after the first open_instant", "instant", Expect::Refused, "R_NOT_AUTHORIZED")
+        .attempt("A creator and the guardian name an account of their own as the market; after the pool opened, the owner is asked to re-point the market (pool tokens would follow it).");
+    a.attack("set_market by a creator", &ix.call(&ix.creator, "set_market", json!({ "account": evil.id() })).await?, "R_NOT_AUTHORIZED");
+    a.attack("set_market by the guardian", &ix.call(&ix.guardian, "set_market", json!({ "account": evil.id() })).await?, "R_NOT_AUTHORIZED");
+    a.step("first open_instant (locks the market)", &ix.open(&ix.creator, &id).await?);
+    a.attack("owner re-points the market after first use", &ix.call(&ix.owner, "set_market", json!({ "account": evil.id() })).await?, "R_NOTHING");
+    let cfg = ix.view("get_config", json!({})).await;
+    a.check("market unchanged and locked", cfg["market"] == json!(ix.market.id()) && cfg["market_locked"] == true);
+    let (inv, ok) = inst_inv(&ix, &[&id], true).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn i26_spoofed_mode_in_the_seed_message() -> anyhow::Result<()> {
+    let mk = mc::Mk::new(None).await?;
+    mk.set_launcher().await?;
+    let mut a = Attack::new("I26", "CO7", "Spoofed mode in a seed_quote message (trial pool from the launcher, instant pool from core)", "market", Expect::NoEffect, "")
+        .attempt("The launcher's seed message carries mode \"trial\" (mc::instant_seed_msg does); core's carries mode \"instant\". The market must derive the mode from the authenticated sender only.");
+    let (c, r) = (mk.creator.id().clone(), mk.creator.id().clone());
+    mk.mint(&mk.usdc, mk.launcher.id(), 500 * mc::USDC).await?;
+    mk.mint(&mk.token, mk.launcher.id(), mc::SEED_T).await?;
+    let m = mk.instant_seed_msg(mc::INSTANT_BASE, mk.token.id(), &c, &r);
+    a.check("precondition: the message really says mode trial", serde_json::from_str::<Value>(&m)?["mode"] == "trial");
+    a.attack("launcher seed with mode:\"trial\"", &mk.send(&mk.launcher, &mk.usdc, 500 * mc::USDC, m).await?, "");
+    a.attack("launcher token leg", &mk.send(&mk.launcher, &mk.token, mc::SEED_T, mc::Mk::leg_msg(mc::INSTANT_BASE)).await?, "");
+    let root = mk.worker.root_account()?;
+    let tok2 = mc::deploy_ft(&root, "tok2").await?;
+    mk.mint(&tok2, mk.market.id(), 0).await?;
+    let mut core_msg: Value = serde_json::from_str(&mk.seed_msg(1, tok2.id()))?;
+    core_msg["mode"] = json!("instant");
+    mk.mint(&mk.usdc, mk.core.id(), mc::SEED_Q).await?;
+    mk.mint(&tok2, mk.core.id(), mc::SEED_T).await?;
+    a.attack("core seed with mode:\"instant\"", &mk.send(&mk.core, &mk.usdc, mc::SEED_Q, core_msg.to_string()).await?, "");
+    a.attack("core token leg", &mk.send(&mk.core, &tok2, mc::SEED_T, mc::Mk::leg_msg(1)).await?, "");
+    let pi = mk.view("get_pool", json!({ "launch_id": mc::INSTANT_BASE.to_string() })).await;
+    let pt = mk.view("get_pool", json!({ "launch_id": "1" })).await;
+    a.check("the launcher pool is instant despite mode:trial", pi["mode"] == "instant" && pi["state"] == "Open");
+    a.check("the core pool is trial despite mode:instant", pt["mode"] == "trial" && pt["state"] == "Open");
+    let (inv, ok) = market_inv(&mk, &[mc::INSTANT_BASE, 1]).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn i27_wrong_id_namespace_on_either_leg() -> anyhow::Result<()> {
+    let mk = mc::Mk::new(None).await?;
+    mk.set_launcher().await?;
+    let (c, r) = (mk.creator.id().clone(), mk.creator.id().clone());
+    mk.mint(&mk.usdc, mk.launcher.id(), 500 * mc::USDC).await?;
+    mk.mint(&mk.token, mk.launcher.id(), mc::SEED_T).await?;
+    mk.mint(&mk.usdc, mk.core.id(), mc::SEED_Q).await?;
+    mk.mint(&mk.token, mk.core.id(), mc::SEED_T).await?;
+    let mut a = Attack::new("I27", "CO7", "Launcher below 1e9 and core at or above 1e9, on the seed leg and the token leg", "market", Expect::Refused, "R_ID_NAMESPACE")
+        .attempt("The launcher sends a seed and a token leg for a core-range id (7); core sends a seed and a token leg for an instant-range id.");
+    a.attack("launcher seed_quote for id 7", &mk.send(&mk.launcher, &mk.usdc, 500 * mc::USDC, mk.instant_seed_msg(7, mk.token.id(), &c, &r)).await?, "R_ID_NAMESPACE");
+    a.attack("launcher token leg for id 7", &mk.send(&mk.launcher, &mk.token, mc::SEED_T, mc::Mk::leg_msg(7)).await?, "R_ID_NAMESPACE");
+    a.attack("core seed_quote for id 1e9", &mk.send(&mk.core, &mk.usdc, mc::SEED_Q, mk.seed_msg(mc::INSTANT_BASE, mk.token.id())).await?, "R_ID_NAMESPACE");
+    a.attack("core token leg for id 1e9", &mk.send(&mk.core, &mk.token, mc::SEED_T, mc::Mk::leg_msg(mc::INSTANT_BASE)).await?, "R_ID_NAMESPACE");
+    a.check("everything was refunded", mk.bal(&mk.usdc, mk.launcher.id()).await == 500 * mc::USDC && mk.bal(&mk.usdc, mk.core.id()).await == mc::SEED_Q);
+    a.check("no pool was created", mk.view("get_pool", json!({ "launch_id": "7" })).await.is_null() && mk.view("get_pool", json!({ "launch_id": mc::INSTANT_BASE.to_string() })).await.is_null());
+    let (inv, ok) = market_inv(&mk, &[]).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+// ---- self-buy (declared wallets)
+
+#[tokio::test]
+async fn i28_self_buy_by_creator_recipient_and_receiver() -> anyhow::Result<()> {
+    let ix = ic::Ix::new("demo", false).await?;
+    let rec = ix.user("recipient", 100 * IUSDC).await?;
+    let id = ix.create_ready(&ix.creator, ic::params("SELF"), Some(rec.id())).await?;
+    ix.mint_usdc(ix.creator.id(), 350 * IUSDC).await?;
+    ix.seed(&ix.creator, &id, 250 * IUSDC).await?.into_result()?;
+    ix.open(&ix.creator, &id).await?.into_result()?;
+    let tok = ix.token_id("SELF");
+    ix.register_on_token(&tok, ix.creator.id()).await?;
+    ix.register_on_token(&tok, rec.id()).await?;
+    let bob = itrader(&ix, "bob", "SELF", 100 * IUSDC).await?;
+    let mut a = Attack::new("I28", "CO7", "Self-buy by the creator, the payout recipient, and through the receiver field", "market", Expect::Refused, "R_SELF_BUY")
+        .attempt("On an instant pool the creator buys, the separate payout recipient buys, and a third wallet buys with receiver set to the creator and to the recipient.");
+    let q = ic::n(&mk_get_pool(&ix, &id).await["q"]);
+    for (label, who, receiver) in [("creator buys", &ix.creator, None), ("recipient buys", &rec, None), ("bob buys for the creator", &bob, Some(&ix.creator)), ("bob buys for the recipient", &bob, Some(&rec))] {
+        a.attack(label, &ibuy(&ix, who, &id, 20 * IUSDC, receiver).await, "R_SELF_BUY");
+    }
+    a.check("every buyer was refunded in full", ix.usdc_bal(ix.creator.id()).await == 100 * IUSDC && ix.usdc_bal(rec.id()).await == 100 * IUSDC && ix.usdc_bal(bob.id()).await == 100 * IUSDC);
+    a.check("pool reserve unchanged", ic::n(&mk_get_pool(&ix, &id).await["q"]) == q);
+    a.check("pool names the declared wallets", mk_get_pool(&ix, &id).await["creator"] == json!(ix.creator.id()));
+    let (inv, ok) = inst_inv(&ix, &[&id], true).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn i29_self_buy_through_an_undeclared_second_wallet_is_bounded() -> anyhow::Result<()> {
+    let ix = ic::Ix::new("demo", false).await?;
+    let id = ix.launch_to_open(&ix.creator, ic::params("SYBL")).await?;
+    let alt = itrader(&ix, "altwallet", "SYBL", 100 * IUSDC).await?;
+    let mut a = Attack::new("I29", "CO7", "Self-buy through an undeclared second wallet", "market", Expect::Bounded, "")
+        .attempt("The creator funds a fresh wallet that is neither the creator nor the payout recipient and buys with it. The market cannot link wallets; this is a disclosed limit, never counted as a win.");
+    a.attack("buy of 20 USDC from an undeclared wallet", &ibuy(&ix, &alt, &id, 20 * IUSDC, None).await, "");
+    a.check("the buy went through (not blocked)", ix.bal(&ix.token_id("SYBL"), alt.id()).await > 0);
+    a.check(
+        "bound: the buyer pays the full opening-fee decay (500 bps falling to 100 over 60 minutes) and every fee slice, and the buy moves the price against itself",
+        ic::n(&ix.market.view("quote_buy").args_json(json!({ "launch_id": id, "amount_in": "20000000" })).await?.json::<Value>()?["fee_bps"]) >= 100,
+    );
+    let (inv, ok) = inst_inv(&ix, &[&id], true).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+// ---- caps
+
+#[tokio::test]
+async fn i30_seed_above_the_market_per_pool_cap() -> anyhow::Result<()> {
+    let ix = ic::Ix::real("demo", Some((200 * IUSDC, 15_000 * IUSDC, 5_000 * IUSDC)), true).await?;
+    let id = seeded(&ix, &ix.creator, ic::params("CAPP")).await?;
+    let mut a = Attack::new("I30", "CO7", "Seed above the market's per-pool reserve cap", "instant+market", Expect::Refused, "R_MARKET_CAP")
+        .attempt("A 250 USDC seed is handed to a market whose per-pool cap is 200 USDC. The leg is refused and the money must stay recoverable by the creator.");
+    a.attack("open_instant with a 250 USDC seed against a 200 USDC cap", &ix.open(&ix.creator, &id).await?, "R_MARKET_CAP");
+    a.check("no pool exists", mk_get_pool(&ix, &id).await.is_null());
+    a.check("the seed is back at the launcher", ix.usdc_bal(ix.launcher.id()).await == 250 * IUSDC && ix.usdc_bal(ix.market.id()).await == 0);
+    let seeded_at = ic::n(&ix.inst(&id).await["seeded_at_ns"]) as u64;
+    ix.wait_until(seeded_at + 31_000 * MS).await;
+    a.step("abort_instant by the creator", &ix.call(&ix.creator, "abort_instant", ic::lid(&id)).await?);
+    a.check("the creator recovered the whole seed", ix.usdc_bal(ix.creator.id()).await == 250 * IUSDC);
+    let (inv, ok) = inst_inv(&ix, &[&id], true).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn i31_buy_above_the_market_global_cap_on_an_instant_pool() -> anyhow::Result<()> {
+    let ix = ic::Ix::real("demo", Some((5_000 * IUSDC, 1_200 * IUSDC, 5_000 * IUSDC)), true).await?;
+    let mut p = ic::params("GLB1");
+    p["seed_q"] = json!((1_000 * IUSDC).to_string());
+    let first = ix.launch_to_open(&ix.creator, p).await?;
+    let bob = itrader(&ix, "bob", "GLB1", 1_000 * IUSDC).await?;
+    let q0 = ic::n(&mk_get_pool(&ix, &first).await["q"]);
+    let mut a = Attack::new("I31", "CO7", "Buy that would push the market past the global reserve cap (instant pool)", "market", Expect::Refused, "R_MARKET_CAP")
+        .attempt("With 1,000 USDC in an instant pool and a 1,200 USDC global cap, a buyer sends 300 USDC. (Market 1.1.1: instant seeds are no longer checked against the global cap, only buys are.)");
+    a.attack("buy of 300 USDC past the global cap", &ibuy(&ix, &bob, &first, 300 * IUSDC, None).await, "R_MARKET_CAP");
+    a.check("buyer refunded in full", ix.usdc_bal(bob.id()).await == 1_000 * IUSDC);
+    a.check("the pool reserve is unchanged", ic::n(&mk_get_pool(&ix, &first).await["q"]) == q0);
+    a.step("a 100 USDC buy inside the cap still works", &ibuy(&ix, &bob, &first, 100 * IUSDC, None).await);
+    let (inv, ok) = inst_inv(&ix, &[&first], true).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn i32_seeds_above_the_instant_sub_cap() -> anyhow::Result<()> {
+    let ix = ic::Ix::real("demo", Some((5_000 * IUSDC, 15_000 * IUSDC, 300 * IUSDC)), true).await?;
+    let first = ix.launch_to_open(&ix.creator, ic::params("SUB1")).await?;
+    let b_creator = ix.user("creatorb", 250 * IUSDC).await?;
+    let second = ix.create_ready(&b_creator, ic::params("SUB2"), None).await?;
+    ix.seed(&b_creator, &second, 250 * IUSDC).await?.into_result()?;
+    let bob = itrader(&ix, "bob", "SUB1", 1_000 * IUSDC).await?;
+    let mut a = Attack::new("I32", "CO7", "Instant seeds crowd out the market: a seed above the instant sub-cap", "instant+market", Expect::Refused, "R_MARKET_CAP")
+        .attempt("With a 300 USDC instant sub-cap (a cap on the SUM OF SEEDS since market 1.1.1) and one 250 USDC pool open, a second 250 USDC seed is sent. A buyer then pushes the first pool well past the sub-cap with a buy, which must no longer be blocked (trading cannot block seeding).");
+    a.attack("second launch's seed past the sub-cap", &ix.open(&b_creator, &second).await?, "R_MARKET_CAP");
+    a.step("a 100 USDC buy that takes the reserve past the sub-cap (allowed since 1.1.1)", &ibuy(&ix, &bob, &first, 100 * IUSDC, None).await);
+    a.check("the buy was not blocked by the sub-cap", ix.bal(&ix.token_id("SUB1"), bob.id()).await > 0);
+    a.check("the second launch is still in Handoff, seed intact", ix.status(&second).await == "Handoff" && ix.usdc_bal(ix.launcher.id()).await == 250 * IUSDC);
+    let (inv, ok) = inst_inv(&ix, &[&first, &second], true).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn i33_launcher_seed_caps_aggregate_and_per_launch() -> anyhow::Result<()> {
+    let ix = ic::Ix::new("demo", true).await?;
+    let (c1, c2) = (ix.user("c1", 500 * IUSDC).await?, ix.user("c2", 500 * IUSDC).await?);
+    let (id1, id2) = (ix.create_ready(&c1, ic::params("LCA1"), None).await?, ix.create_ready(&c2, ic::params("LCA2"), None).await?);
+    ix.predeploy_token("LCA3", ic::N_TOTAL).await?;
+    ix.call(&ix.guardian, "set_seed_cap", json!({ "kind": "aggregate", "value": "400000000" })).await?.into_result()?;
+    let c3 = ix.user("c3", 0).await?;
+    let mut a = Attack::new("I33", "CO7", "Unconsumed seeds above the launcher's aggregate cap; a seed above the per-launch cap", "instant", Expect::Refused, "R_CAP_GLOBAL")
+        .attempt("With the aggregate cap lowered to 400 USDC and one 250 USDC seed held, a second 250 USDC seed arrives; a third creator declares a 1,000.000001 USDC seed.");
+    a.step("first seed (inside the cap)", &ix.seed(&c1, &id1, 250 * IUSDC).await?);
+    a.attack("second seed above the aggregate cap", &ix.seed(&c2, &id2, 250 * IUSDC).await?, "R_CAP_GLOBAL");
+    a.attack("create_instant with seed_q above the per-launch cap", &ix.create_raw(&c3, json!({ "name": "Big", "symbol": "LCA3", "seed_q": "1000000001" }), None).await?, "R_SEED_RANGE");
+    a.check("second seed refunded in full", ix.usdc_bal(c2.id()).await == 500 * IUSDC && ix.status(&id2).await == "TokenReady");
+    a.check("only one seed is held", ix.usdc_bal(ix.launcher.id()).await == 250 * IUSDC);
+    let (inv, ok) = inst_inv(&ix, &[&id1, &id2], false).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+// ---- fake token, pause, freeze, cap timelock
+
+#[tokio::test]
+async fn i34_fake_launch_token_and_fake_usdc_against_an_instant_pool() -> anyhow::Result<()> {
+    let mk = mc::Mk::new(None).await?;
+    mk.set_launcher().await?;
+    let iid = mc::INSTANT_BASE;
+    mk.open_instant(iid, 500 * mc::USDC, mk.creator.id(), mk.creator.id()).await?;
+    // a second instant pool whose seed landed but whose token leg has not
+    mk.mint(&mk.usdc, mk.launcher.id(), 500 * mc::USDC).await?;
+    let (c, r) = (mk.creator.id().clone(), mk.creator.id().clone());
+    let root = mk.worker.root_account()?;
+    let tok2 = mc::deploy_ft(&root, "tok2").await?;
+    mk.mint(&tok2, mk.market.id(), 0).await?;
+    mk.send(&mk.launcher, &mk.usdc, 500 * mc::USDC, mk.instant_seed_msg(iid + 1, tok2.id(), &c, &r)).await?.into_result()?;
+    let fake = mc::deploy_ft(&root, "fake").await?;
+    mk.mint(&fake, mk.market.id(), 0).await?;
+    let eve = mk.user("eve", 0).await?;
+    mk.mint(&fake, eve.id(), 500 * mc::USDC).await?;
+    mk.mint(&fake, mk.launcher.id(), mc::SEED_T).await?;
+    let mut a = Attack::new("I34", "CO7", "Fake launch token and fake USDC against instant pools", "market", Expect::Refused, "R_UNEXPECTED_TOKEN")
+        .attempt("A look-alike token is used to buy, to sell, to open a new instant pool as 'USDC', and as the token bucket for a pool waiting for its token (once by a stranger, once even from the launcher account).");
+    let before = mk.view("get_pool", json!({ "launch_id": iid.to_string() })).await;
+    a.attack("fake-USDC buy on the instant pool", &mk.send(&eve, &fake, 100 * mc::USDC, mc::Mk::buy_msg(iid, 1)).await?, "R_UNEXPECTED_TOKEN");
+    a.attack("fake-token sell on the instant pool", &mk.send(&eve, &fake, 100 * mc::USDC, mc::Mk::sell_msg(iid, 1)).await?, "R_UNEXPECTED_TOKEN");
+    a.attack("fake-USDC seed_quote for a new instant id", &mk.send(&eve, &fake, 100 * mc::USDC, mk.instant_seed_msg(iid + 2, fake.id(), &c, &r)).await?, "R_UNEXPECTED_TOKEN");
+    a.attack("stranger sends a fake token as the token bucket", &mk.send(&eve, &fake, 100 * mc::USDC, mc::Mk::leg_msg(iid + 1)).await?, "R_NOT_AUTHORIZED");
+    a.attack("launcher account sends a look-alike token as the bucket", &mk.send(&mk.launcher, &fake, mc::SEED_T, mc::Mk::leg_msg(iid + 1)).await?, "R_UNEXPECTED_TOKEN");
+    a.check("fakes refunded", mk.bal(&fake, eve.id()).await == 500 * mc::USDC && mk.bal(&fake, mk.launcher.id()).await == mc::SEED_T);
+    a.check("pool 1 unchanged, pool 2 still waiting for its token, no pool 3",
+        mk.view("get_pool", json!({ "launch_id": iid.to_string() })).await == before
+            && mk.view("get_pool", json!({ "launch_id": (iid + 1).to_string() })).await["state"] == "AwaitToken"
+            && mk.view("get_pool", json!({ "launch_id": (iid + 2).to_string() })).await.is_null());
+    mk.mint(&tok2, mk.launcher.id(), mc::SEED_T).await?;
+    a.step("the real token bucket still completes pool 2", &mk.send(&mk.launcher, &tok2, mc::SEED_T, mc::Mk::leg_msg(iid + 1)).await?);
+    a.check("pool 2 is Open", mk.view("get_pool", json!({ "launch_id": (iid + 1).to_string() })).await["state"] == "Open");
+    let (inv, ok) = market_inv(&mk, &[iid, iid + 1]).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn i35_launcher_pause_blocks_new_risk_but_not_the_exits() -> anyhow::Result<()> {
+    let ix = ic::Ix::new("demo", true).await?;
+    let open_id = ix.launch_to_open(&ix.creator, vest30("PAUS")).await?;
+    let tok = ix.token_id("PAUS");
+    ix.register_on_token(&tok, ix.creator.id()).await?;
+    let (b, c, d) = (ix.user("b", 250 * IUSDC).await?, ix.user("c", 250 * IUSDC).await?, ix.user("d", 0).await?);
+    let b_id = ix.create_ready(&b, ic::params("PAUB"), None).await?;
+    ix.seed(&b, &b_id, 250 * IUSDC).await?.into_result()?;
+    let c_id = ix.create_ready(&c, ic::params("PAUC"), None).await?;
+    ix.predeploy_token("PAUD", ic::N_TOTAL).await?;
+    let mut a = Attack::new("I35", "CO7", "Pause: new launches, seeds and opens are refused; exits stay open", "instant", Expect::Refused, "R_PAUSED")
+        .attempt("The launcher is paused. A new launch, a seed, and an open of an already seeded launch are tried; then the vesting claim, the abandon and the deposit reclaim (exits) are exercised.");
+    a.step("guardian pause", &ix.call(&ix.guardian, "pause", json!({})).await?);
+    a.attack("create_instant while paused", &ix.create_raw(&d, ic::params("PAUD"), None).await?, "R_PAUSED");
+    a.attack("seed while paused", &ix.seed(&c, &c_id, 250 * IUSDC).await?, "R_PAUSED");
+    a.attack("open_instant while paused", &ix.open(&b, &b_id).await?, "R_PAUSED");
+    a.attack("unpause by the guardian", &ix.call(&ix.guardian, "unpause", json!({})).await?, "R_NOT_AUTHORIZED");
+    let opened = ic::n(&ix.inst(&open_id).await["opened_at_ns"]) as u64;
+    ix.wait_until(opened + 100_000 * MS).await;
+    a.step("claim_vested while paused (exit)", &ix.call(&ix.creator, "claim_vested", json!({ "launch_id": open_id })).await?);
+    a.check("the vesting claim paid", ix.bal(&tok, ix.creator.id()).await > 0);
+    a.step("abandon_instant while paused (exit)", &ix.call(&c, "abandon_instant", ic::lid(&c_id)).await?);
+    a.check("abandon worked", ix.status(&c_id).await == "Abandoned");
+    a.step("reclaim_deposit while paused (exit)", &ix.call_gas(&c, "reclaim_deposit", ic::lid(&c_id), 30).await?);
+    a.check("nothing new was created and c's seed was refunded", ix.view("get_config", json!({})).await["next_launch_id"] == (ic::ID0 + 3).to_string() && ix.usdc_bal(c.id()).await == 250 * IUSDC);
+    let (inv, ok) = inst_inv(&ix, &[&open_id, &b_id], false).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn i36_launcher_freeze_closes_exits_but_only_for_seven_days() -> anyhow::Result<()> {
+    let ix = ic::Ix::new("demo", true).await?;
+    let id = ix.launch_to_open(&ix.creator, vest30("FRZN")).await?;
+    let tok = ix.token_id("FRZN");
+    ix.register_on_token(&tok, ix.creator.id()).await?;
+    let c = ix.user("c", 0).await?;
+    let c_id = ix.create_ready(&c, ic::params("FRZC"), None).await?;
+    let opened = ic::n(&ix.inst(&id).await["opened_at_ns"]) as u64;
+    ix.wait_until(opened + 100_000 * MS).await;
+    let mut a = Attack::new("I36", "CO7", "Freeze closes the launcher's exits (disclosed limit: bounded to 7 days)", "instant", Expect::Bounded, "R_FROZEN")
+        .attempt("The guardian freezes the launcher; the recipient claims and a creator abandons while frozen. This is NOT blocked by design; it ends by auto-expiry (7 days; the demo clock makes that 70 s) or an owner unpause.");
+    let frozen = ix.call(&ix.guardian, "freeze", json!({})).await?;
+    a.step("guardian freeze", &frozen);
+    a.attack("claim_vested while FROZEN", &ix.call(&ix.creator, "claim_vested", json!({ "launch_id": id })).await?, "R_FROZEN");
+    a.attack("claim_owed while FROZEN", &ix.call(&ix.creator, "claim_owed", json!({ "token_id": ix.usdc.id() })).await?, "R_FROZEN");
+    a.attack("withdraw_platform while FROZEN", &ix.call(&ix.treasury, "withdraw_platform", json!({})).await?, "R_FROZEN");
+    a.check("config reports Frozen", ix.view("get_config", json!({})).await["paused"] == "Frozen");
+    a.check("nothing was paid while frozen", ix.bal(&tok, ix.creator.id()).await == 0);
+    let until = kruxa_logic::frozen_until(1_000);
+    a.check("bound (pure-logic check; the 7 days are real days, not demo units): freeze ends 7 days after it starts", until - 1_000 == 7 * 86_400 * 1_000_000_000);
+    a.check("bound (pure-logic check): the effective level at the end is Paused, not Frozen", kruxa_logic::pause_at(kruxa_logic::Pause::Frozen, until, until) == kruxa_logic::Pause::Paused);
+    let ab = ix.call(&c, "abandon_instant", ic::lid(&c_id)).await?;
+    a.step("abandon_instant while FROZEN (observation: the ABI says freeze closes it, the code does not gate it)", &ab);
+    a.check("observation recorded: abandon_instant is not closed by a freeze (doc and code differ, harmless to users)", ab.is_success() && ix.status(&c_id).await == "Abandoned");
+    a.step("owner unpause", &ix.call(&ix.owner, "unpause", json!({})).await?);
+    a.step("claim_vested after the owner lifted the freeze", &ix.call(&ix.creator, "claim_vested", json!({ "launch_id": id })).await?);
+    a.check("the recipient was paid after the unpause", ix.bal(&tok, ix.creator.id()).await > 0);
+    let (inv, ok) = inst_inv(&ix, &[&id], false).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn i37_market_pause_cannot_trap_sells_on_an_instant_pool() -> anyhow::Result<()> {
+    let ix = ic::Ix::new("demo", false).await?;
+    let id = ix.launch_to_open(&ix.creator, ic::params("MPAU")).await?;
+    let bob = itrader(&ix, "bob", "MPAU", 500 * IUSDC).await?;
+    ibuy(&ix, &bob, &id, 100 * IUSDC, None).await.into_result()?;
+    let tok = ix.token_id("MPAU");
+    let held = ix.bal(&tok, bob.id()).await;
+    let mut a = Attack::new("I37", "CO7", "Market pause used to trap holders of an instant pool", "market", Expect::NoEffect, "")
+        .attempt("The guardian pauses the market; the holder tries to buy more (refused) and to sell everything back out (must succeed).");
+    a.step("guardian pauses the market", &ix.guardian.call(ix.market.id(), "pause").transact().await?);
+    a.check("a new buy is refused while paused (R_PAUSED)", has_code(&ibuy(&ix, &bob, &id, 10 * IUSDC, None).await, "R_PAUSED"));
+    let msg = json!({ "v": 1, "op": "sell", "launch_id": id, "min_out": "1" }).to_string();
+    let sell = bob.call(&tok, "ft_transfer_call").args_json(json!({ "receiver_id": ix.market.id(), "amount": held.to_string(), "msg": msg }))
+        .deposit(ONE).gas(ic::GAS).transact().await?;
+    a.attack("holder sells everything while the market is PAUSED", &sell, "");
+    a.check("the sell executed and the holder is out", ix.bal(&tok, bob.id()).await == 0 && ix.usdc_bal(bob.id()).await > 400 * IUSDC);
+    let (inv, ok) = inst_inv(&ix, &[&id], true).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn i38_seed_cap_raise_without_the_seven_day_timelock() -> anyhow::Result<()> {
+    let ix = ic::Ix::new("demo", true).await?;
+    let stranger = ix.user("stranger", 0).await?;
+    let mut a = Attack::new("I38", "CO7", "Raise a seed cap without the 7-day timelock", "instant", Expect::Refused, "R_NOT_YET")
+        .attempt("The guardian tries to raise the caps (owner only), the owner queues a raise and a stranger applies it at once, and the guardian lowers a cap below the minimum seed.");
+    a.attack("guardian raises the aggregate cap", &ix.call(&ix.guardian, "set_seed_cap", json!({ "kind": "aggregate", "value": "9000000000" })).await?, "R_NOT_AUTHORIZED");
+    a.attack("stranger raises the per-launch cap", &ix.call(&stranger, "set_seed_cap", json!({ "kind": "per_launch", "value": "9000000000" })).await?, "R_NOT_AUTHORIZED");
+    let queued = ix.call(&ix.owner, "set_seed_cap", json!({ "kind": "aggregate", "value": "9000000000" })).await?;
+    a.step("owner queues the raise (event cap_queued)", &queued);
+    let ev = ic::events(&queued, "cap_queued");
+    a.check("the raise was queued, not applied", ev.len() == 1 && ic::n(&ix.view("get_config", json!({})).await["seed_cap_aggregate"]) == 3_000 * IUSDC);
+    let wait_ns = ev.first().map(|e| e["effective_at"].as_u64().or_else(|| e["effective_at"].as_str().and_then(|x| x.parse().ok())).unwrap_or(0)).unwrap_or(0).saturating_sub(ix.now().await);
+    a.check("the queued raise takes effect at least 6.9 days later (real days, not demo units)", wait_ns > 6 * 86_400 * 1_000_000_000 + 20 * 3_600 * 1_000_000_000);
+    a.attack("apply_seed_cap immediately", &ix.call(&stranger, "apply_seed_cap", json!({ "kind": "aggregate" })).await?, "R_NOT_YET");
+    a.attack("apply_seed_cap for a cap with nothing queued", &ix.call(&stranger, "apply_seed_cap", json!({ "kind": "per_launch" })).await?, "R_NOTHING");
+    a.attack("guardian lowers the per-launch cap below the minimum seed", &ix.call(&ix.guardian, "set_seed_cap", json!({ "kind": "per_launch", "value": "50000000" })).await?, "R_CAP_GLOBAL");
+    a.check("caps unchanged", ic::n(&ix.view("get_config", json!({})).await["seed_cap_aggregate"]) == 3_000 * IUSDC && ic::n(&ix.view("get_config", json!({})).await["seed_max"]) == 1_000 * IUSDC);
+    let (inv, ok) = inst_inv(&ix, &[], false).await;
     a.finish(inv, ok);
     Ok(())
 }

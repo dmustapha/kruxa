@@ -1,0 +1,58 @@
+{
+  "attempt": "Two accounts launch under KRUXA (one naming a payout recipient) and a stranger tries to add a symbol to the reserved list.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "nothing was created"
+    }
+  ],
+  "co4": "CO7",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_SYMBOL_RESERVED",
+  "id": "I04",
+  "invariants_after": {
+    "launcher": {
+      "market_locked_consistent": true,
+      "owed_usdc": "0",
+      "seeds_held_le_cap": true,
+      "usdc_custody": "0",
+      "usdc_custody_identity": true,
+      "usdc_expected": "0"
+    },
+    "launches": []
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "instant",
+  "title": "Squat the reserved symbol KRUXA and edit the reserved list",
+  "transactions": [
+    {
+      "expected_rule_code": "R_SYMBOL_RESERVED",
+      "label": "create_instant KRUXA",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_SYMBOL_RESERVED",
+      "status": "failed",
+      "tx": "92RWPH5ZVkrSS2KTopNc2rLTEMdQqRLHiED5ubsGW7e3"
+    },
+    {
+      "expected_rule_code": "R_SYMBOL_RESERVED",
+      "label": "create_instant KRUXA with a recipient",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_SYMBOL_RESERVED",
+      "status": "failed",
+      "tx": "FV5uPrupebLXd3VAguDRhAMPLCRGe655drL9MKYNGt7R"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "reserve_symbol by a stranger",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "735U1GwfLnt5GMrmaAbq7NTsE6tMWugPtAvVBQ61NrmA"
+    }
+  ]
+}

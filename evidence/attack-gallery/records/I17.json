@@ -1,0 +1,80 @@
+{
+  "attempt": "The recipient claims everything after the vest ends, then claims again, with and without an amount.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "the recipient holds exactly n_alloc"
+    },
+    {
+      "ok": true,
+      "what": "balance still exactly n_alloc"
+    }
+  ],
+  "co4": "CO7",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_NOTHING_TO_CLAIM",
+  "id": "I17",
+  "invariants_after": {
+    "launcher": {
+      "market_locked_consistent": true,
+      "owed_usdc": "0",
+      "seeds_held_le_cap": true,
+      "usdc_custody": "0",
+      "usdc_custody_identity": true,
+      "usdc_expected": "0"
+    },
+    "launches": [
+      {
+        "get_invariants": {
+          "claimed_le_unlocked": true,
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "supply_conservation": true,
+          "token": "clf4.factory.test.near",
+          "token_custody": "0",
+          "token_custody_identity": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0",
+          "vest_bounds": true
+        },
+        "launch_id": "1000000000"
+      }
+    ]
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "instant",
+  "title": "claim_vested again after the allocation was claimed in full",
+  "transactions": [
+    {
+      "expected_rule_code": null,
+      "label": "full claim after the vest",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "Awje7Q3HzvYp7SZaUANhMe9r9KQRMHGUexuL3zMWCv95"
+    },
+    {
+      "expected_rule_code": "R_NOTHING_TO_CLAIM",
+      "label": "second claim (no amount)",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOTHING_TO_CLAIM",
+      "status": "failed",
+      "tx": "DAham9HoeqUT2hQeTerdQDaHCJkWYhnXqTVLSErL5P4x"
+    },
+    {
+      "expected_rule_code": "STREAM_CAP",
+      "label": "third claim of 1 base unit",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "STREAM_CAP",
+      "status": "failed",
+      "tx": "A7b9xBc4tHFb1srw8oSkETp1hK1FhTNrcEGuLGkyKy4j"
+    }
+  ]
+}

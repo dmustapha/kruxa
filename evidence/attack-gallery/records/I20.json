@@ -1,0 +1,66 @@
+{
+  "attempt": "The market consumed the seed but refused the token bucket. After the wait the creator calls abort_instant to pull the seed back out of a half-open pool.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "precondition: the market holds the seed"
+    },
+    {
+      "ok": true,
+      "what": "creator got nothing back"
+    },
+    {
+      "ok": true,
+      "what": "the launch is still Handoff with seed_sent = 250 USDC"
+    }
+  ],
+  "co4": "CO7",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_INSTANT_STATE",
+  "id": "I20",
+  "invariants_after": {
+    "launcher": {
+      "market_locked_consistent": true,
+      "owed_usdc": "0",
+      "seeds_held_le_cap": true,
+      "usdc_custody": "0",
+      "usdc_custody_identity": true,
+      "usdc_expected": "0"
+    },
+    "launches": [
+      {
+        "get_invariants": {
+          "claimed_le_unlocked": true,
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "supply_conservation": true,
+          "token": "il8y.factory.test.near",
+          "token_custody": "1000000000000000",
+          "token_custody_identity": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0",
+          "vest_bounds": true
+        },
+        "launch_id": "1000000000"
+      }
+    ]
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "instant",
+  "title": "Abort to take the seed back after the market already consumed it (IL-8)",
+  "transactions": [
+    {
+      "expected_rule_code": "R_INSTANT_STATE",
+      "label": "abort_instant after the seed was consumed",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_INSTANT_STATE",
+      "status": "failed",
+      "tx": "Dk2LGojLEHf3yZT31CxJw8kyx1p4K3PBTBoS9Roq6qrv"
+    }
+  ]
+}

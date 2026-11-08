@@ -1,0 +1,67 @@
+{
+  "attempt": "The creator claims the allocation before the pool exists: once right after create, once right after the seed.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "the creator holds no launch token"
+    }
+  ],
+  "co4": "CO7",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_INSTANT_STATE",
+  "id": "I18",
+  "invariants_after": {
+    "launcher": {
+      "market_locked_consistent": true,
+      "owed_usdc": "0",
+      "seeds_held_le_cap": true,
+      "usdc_custody": "250000000",
+      "usdc_custody_identity": true,
+      "usdc_expected": "250000000"
+    },
+    "launches": [
+      {
+        "get_invariants": {
+          "claimed_le_unlocked": true,
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "supply_conservation": true,
+          "token": "clf5.factory.test.near",
+          "token_custody": "1000000000000000",
+          "token_custody_identity": true,
+          "usdc_custody": "250000000",
+          "usdc_custody_identity": true,
+          "usdc_expected": "250000000",
+          "vest_bounds": true
+        },
+        "launch_id": "1000000000"
+      }
+    ]
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "instant",
+  "title": "claim_vested while the launch is not Open (TokenReady, Seeded)",
+  "transactions": [
+    {
+      "expected_rule_code": "R_INSTANT_STATE",
+      "label": "claim in TokenReady",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_INSTANT_STATE",
+      "status": "failed",
+      "tx": "J8AvVST2hVTqcVxcsEoYVsSJe6xPmDzkf1NHd5mLHqoW"
+    },
+    {
+      "expected_rule_code": "R_INSTANT_STATE",
+      "label": "claim in Seeded",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_INSTANT_STATE",
+      "status": "failed",
+      "tx": "JDcULALjBbM8kjjaL8D8b8EHYLob6fs6QVLj68p3jBB7"
+    }
+  ]
+}

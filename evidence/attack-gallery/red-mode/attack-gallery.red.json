@@ -2,24 +2,30 @@
   "schema": "kruxa.attack-gallery/1",
   "network": "SANDBOX",
   "network_note": "Hashes are near-workspaces sandbox hashes. They cannot be looked up on a public explorer. A testnet re-run is planned (scripts/attack-gallery.sh --network testnet, not implemented).",
-  "generated_at": "2026-11-08T14:04:14Z",
-  "git_head": "71ce0b732e8df07f660b67077dbca8cc2e9f24e8",
+  "generated_at": "2026-11-08T16:37:43Z",
+  "git_head": "29a629cef1306d2ebb1546f39a7a8442c01ed864",
   "red_mode_sabotage": "A11",
   "wasm_sha256": {
-    "kruxa_core": "8ef81b02e6ef498062fcc67b18a4886cc7c3ca10930d72a2f1fb7236a0672f8f",
-    "kruxa_market_contract": "d4ab7c02930700cb57d9cfd91e7c1045f38a8bbbd47208f9df491d95df8d19e2"
+    "kruxa_core": "34d7f6b42654bd550fb13b558a9b7bb42d00958e75e60362b72a327d120483f7",
+    "kruxa_market_contract": "abf3d7aeadb1212361d6cfcdf14f2468fdfb231ce6e24b73ed52b60da7a54cda",
+    "kruxa_instant_contract": "7a76fa88f446d4c92490105c2d478c9d8f3497e28781c3aa5d2546cf0b0863f0"
   },
   "counts": {
-    "total": 43,
-    "tests_listed": 43,
-    "refused": 31,
-    "no_effect": 9,
-    "bounded": 2,
+    "total": 81,
+    "tests_listed": 81,
+    "refused": 63,
+    "no_effect": 12,
+    "bounded": 5,
     "failed": 0,
     "succeeded_unexpectedly": 1,
-    "invariants_held": 43,
-    "with_rule_code": 35,
-    "attack_transactions": 119
+    "by_group": {
+      "core_and_genesis": 34,
+      "market": 9,
+      "instant_launcher_and_market_1_1": 38
+    },
+    "invariants_held": 81,
+    "with_rule_code": 69,
+    "attack_transactions": 233
   },
   "ok": false,
   "not_done": [
@@ -57,6 +63,21 @@
       "id": "GENESIS-F0-SIGN",
       "what": "F0 genesis (MPC child key) attacks and Solana-side checks",
       "why": "sign_genesis (Task 4.6) is not built; NEAR cannot see Solana, so confirm_genesis is a signed claim audited by verify.sh (detected, not prevented). The gallery attacks only the contract-side state machine, leaves and plan."
+    },
+    {
+      "id": "INSTANT-REAL-FACTORY",
+      "what": "launcher against the real token factory (token.primitives.testnet)",
+      "why": "The sandbox factory is a mock that creates nothing. The real factory runs only on testnet: see evidence/instant-testnet (factory behaviour, registration with 0.00125 NEAR, failed-creation refund)."
+    },
+    {
+      "id": "INSTANT-SEVEN-DAY-CLOCKS",
+      "what": "freeze auto-expiry and the 7-day cap timelock by waiting",
+      "why": "Both are 7 real days even on the demo profile (only the launcher's day unit is 10 s). A sandbox wait would need about 2 million blocks. I36 and I38 assert the bound with the pure kruxa_logic functions and the queued effective_at instead."
+    },
+    {
+      "id": "INSTANT-ANNOUNCED-OPEN",
+      "what": "trade_from_ns announced open",
+      "why": "Not in market 1.1.0 (cut first in CO-7); nothing to attack."
     }
   ],
   "attacks": [
@@ -115,7 +136,7 @@
           "role": "attack",
           "rule_code": "R_NOT_CLEAR",
           "status": "failed",
-          "tx": "9VY4UNfxVHRswuvjoWVu5SMU7uQnG6g4aNj4yGdeQ5Uc"
+          "tx": "5fXNxGqKcNgkH8YFeLNE7SZze5d3Q6SjAtes2jipAPJN"
         },
         {
           "expected_rule_code": "R_NOT_CLEAR",
@@ -124,7 +145,7 @@
           "role": "attack",
           "rule_code": "R_NOT_CLEAR",
           "status": "failed",
-          "tx": "6AePxpuRVS94MKnGomFquSvty4Jh6yAWHbj5ARR4tPh6"
+          "tx": "EQuDVdsyMpgMACsoDxcybtkkH7CzTVTGHM9xxef9yhes"
         }
       ]
     },
@@ -187,7 +208,7 @@
           "role": "attack",
           "rule_code": "STREAM_CAP",
           "status": "failed",
-          "tx": "FYJFgxkqwhA6pPMYpuvY1Zue49CryE4uxyz7EzLAXGPR"
+          "tx": "AqPQgXa7nardYwBDWQ5VfAiE32pQ5G7pHNc1TgiiCgRY"
         }
       ]
     },
@@ -250,7 +271,7 @@
           "role": "attack",
           "rule_code": "STREAM_CAP",
           "status": "failed",
-          "tx": "B6JCnPsT1RqPAgg7RmMQwCK8oCgaZQfNSwj5UpRPuL4D"
+          "tx": "7yh88ZgTshNc5KpjCKZu9oJ4CUoCKcDSYDQBLtyDzQw7"
         }
       ]
     },
@@ -305,7 +326,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "HdD2NnDXRLj5xkApH3r6SEv8fDMKXZSenRtWGn5tNuff"
+          "tx": "22RGJo7iug9pAXvS2Qyex8uUc7dtxjuimGomgHX3rFX1"
         }
       ]
     },
@@ -356,7 +377,7 @@
           "role": "attack",
           "rule_code": "R_TOO_EARLY",
           "status": "failed",
-          "tx": "E1NEqQoVy43ko6pYjX3qoW896DmrPxzx9wgMi5vxqnEy"
+          "tx": "GgQuQ2rCfe3V5qnY6VYXwJ5Sxo2oxXDvMoEUmPwvy9GC"
         },
         {
           "expected_rule_code": "R_TOO_EARLY",
@@ -365,7 +386,7 @@
           "role": "attack",
           "rule_code": "R_TOO_EARLY",
           "status": "failed",
-          "tx": "8HNkPqF8Bvf5ajPWTo2V8wZpkPJymVbWVMP63sfFvjVb"
+          "tx": "BDs2zxiuHCY3LkFpA3D9tCKpL8dbPHsQxZwTfnEETBtA"
         }
       ]
     },
@@ -424,7 +445,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "GDG8wTgcGWS44oCy2sDCzQ2sKh6vHtPL8Ww137hWbrTq"
+          "tx": "FrMdBB1XDeWJEp51UhE2xboYw4dhESsnqFx8hgb4D7hD"
         },
         {
           "expected_rule_code": null,
@@ -433,7 +454,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "mvJVrjqA4UCTgAfjMFHV7yhqV8LqZCY2Aq1SJASsh2f"
+          "tx": "2PP326wBFftHRjtZ4s5zzKMCLsLCeSBHe2D9aT9W5q26"
         }
       ]
     },
@@ -484,7 +505,7 @@
           "role": "attack",
           "rule_code": "R_NOT_CLEAR",
           "status": "failed",
-          "tx": "6PYZ2n5oQaxH71H8aP4Twfxp8e6Hdc5AqpqRRg9BghrV"
+          "tx": "2XwKwYf4qkBu92n5pRocVHyVR5n3bEeTpPy9XXy5WTNi"
         },
         {
           "expected_rule_code": null,
@@ -493,7 +514,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "EfwnFq4JGYb2wfjcWPLpzN3mKuqCykfi3twf91qVE13S"
+          "tx": "EhHC5YJCnSZQ6utkE7KCrDLmcWYbtH1Q1aLnfGvYi8vn"
         }
       ]
     },
@@ -560,7 +581,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "Ef8CfiJ96hQvzfVPbrQSWcLgKMxadDseXRssSGsU5HrZ"
+          "tx": "G2nKHmJFpUTDAtgLWdmxiJDFPkLkVnqsTkVdaezqBSe4"
         },
         {
           "expected_rule_code": null,
@@ -569,7 +590,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "2NRV8GTxEGUiJir18w19Mang46PFW1V9Qb48sxJDWYjN"
+          "tx": "CdRfBqzaSBu9M4gHrkFoj55ckiLee3MJqDeBM97wRsF3"
         },
         {
           "expected_rule_code": null,
@@ -578,7 +599,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "3TXvSafvaGpaiY7SYVQ4CaNLc7em4sNzPstBW7qToXr1"
+          "tx": "5hUNFm1iVq3TB9Ri3iEPQr5JCGy2xqa62yvqp7VvgDun"
         }
       ]
     },
@@ -633,7 +654,7 @@
           "role": "attack",
           "rule_code": "R_UNEXPECTED_TOKEN",
           "status": "succeeded",
-          "tx": "HsJ1V3uN5UKQUVdFd2oHf2EimzyUnZ6XAvnSDXiUxvi8"
+          "tx": "7iRdC1tbt3YAwrogGkdBY9gKP1WuMqsKbr799Hr5QV7B"
         }
       ]
     },
@@ -684,7 +705,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "FiXtjo9oP9uY5c6USdqTvMYr9VSAsHUEKBHfc3v4PyhH"
+          "tx": "DQRvNCGfyjdBqSZg6abC8XewzEEJb2YzLNwPJiWwUiWB"
         },
         {
           "expected_rule_code": "PRIVATE_METHOD",
@@ -693,7 +714,7 @@
           "role": "attack",
           "rule_code": "PRIVATE_METHOD",
           "status": "failed",
-          "tx": "CGQJsizUuU9JJN68J5fW24Q1JBHikNSj1riYX5wYAwts"
+          "tx": "FmbKZacHQg1K7AjMZvHNcyTFdGfXRr3tFjKer793tocf"
         },
         {
           "expected_rule_code": "R_UNEXPECTED_TOKEN",
@@ -702,7 +723,7 @@
           "role": "attack",
           "rule_code": "R_UNEXPECTED_TOKEN",
           "status": "succeeded",
-          "tx": "5F9BvqsZTL3GvM1s9N1og8uLQFZ3ewVtjUyrbV5bBU8t"
+          "tx": "6Cbi6gbYUTXeW2Pa2LW8k7DxxEaNALNFypbuo7sfiTNH"
         }
       ]
     },
@@ -753,7 +774,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "2JKDdfXRn2vJCArainj6h4q9RRcXCD18LeC2GaX57jJq"
+          "tx": "CFwzbbXHMgbBYKGvDSj8ZijkxgwTY9uyibLNNfE9AZXr"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -762,7 +783,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "GV8vdWqLm57KH5raVFKjWVsEW7Uem92QDkbnBiUZJZSn"
+          "tx": "F1aiSTXeE3wKmyLRiQRLJhJpQZTtFqCdGDbdoMLEoRkD"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -771,7 +792,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "DKnFk1CZmEAM1g73CHaZPgUiy4JD5oVRPGiUtKuPWUH8"
+          "tx": "A8sjf7TLyBA7Wbyr4bsKk8yXywcZhcumm8vpbGhwnNhb"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -780,7 +801,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "FDCndhmmQFPABX4ebFUipyCmUJgyF8aGXuovMygLjeew"
+          "tx": "9ziUoTP5gwXfuMxzw2dkWySoAztvJTDKwSKHNk3eXHU6"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -789,7 +810,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "B8x4yNCh9eBRASMuiZShjKjQ54hCxKb67Zn9TaZsnM2i"
+          "tx": "FWMuD5a8Ebs9tDUuB241WVBbpUgnQVa2BDb12K6YR6C4"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -798,7 +819,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "6CtQ5zNDUGdCF8vaE3b3UABiepM2FMmLKYTTiMmzeTKW"
+          "tx": "EsDW8yLG8dUdwSAea38nnfye4rAiAvZkyrs4juDXJ7iB"
         }
       ]
     },
@@ -857,7 +878,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "7V2U6CxiBtvHTv4Joe3ohMD8mTyrGTd2bWCNh1Gt7W9e"
+          "tx": "xcwbPdVnzUgzN176qvYmkfsZTnnZg8pALGrqttCSn9Q"
         },
         {
           "expected_rule_code": null,
@@ -866,7 +887,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "6MTd4iLDJ4ZTLWwUn4dev59a3kNb7GejGjz3jQXmbsuL"
+          "tx": "FCHJwrQ3MpR1jVum2ijijLNZUBpQTRZxxuAeCZuotK3A"
         },
         {
           "expected_rule_code": null,
@@ -875,7 +896,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "65wCuwmCRhwU4DqkQdMN4YYqoDnbENL8nZQa9QgBdJ7H"
+          "tx": "6rUgUF2EsGRXEcoUcNqs6xfmPXgnexx3yfvHP6Xi2G1C"
         }
       ]
     },
@@ -934,7 +955,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "EoRQVuizhTKMzdGTYnRBPWvmKUHY2EQRVCBVoHmjsfUY"
+          "tx": "7ohKUiMHMbCYiiqUf5rS5TqnnMRAg28UqazXM4WjLT9d"
         }
       ]
     },
@@ -989,7 +1010,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "BFUAUFdcypHJRxRqq6WXsSeC1xac6Jre6cBdT2Q9z2w3"
+          "tx": "8FJbGFySr8z2gqBfwzpbZ5ii9xqkb2YoCJrWbhBr9396"
         }
       ]
     },
@@ -1040,7 +1061,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "9QwqtydT4LmxVBMG4AFJWiqeZoKvKu35Z4SWB5TYScEg"
+          "tx": "2Rc5Cm84q9gSZKxjc3HVBYeicbq5worPyNUb6zioEXjV"
         },
         {
           "expected_rule_code": null,
@@ -1049,7 +1070,7 @@
           "role": "support",
           "rule_code": "R_PAUSED",
           "status": "succeeded",
-          "tx": "66JT5xVxUax29gTjXi3Fc1Vw2FD6YRquVeqnUYzju8Zp"
+          "tx": "14iXESkdGUAa7Ki4uqF6N2KEhZfKXU4rtoA5JbHKnc5J"
         },
         {
           "expected_rule_code": null,
@@ -1058,7 +1079,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "F6qZr4jfZWuEPLY31uAXMkFCfNourXFz41vgydknaUpL"
+          "tx": "CvGrvpdVaMw9M7mZwsKpVTTveWZkKdMDWSti7BA9MWUQ"
         }
       ]
     },
@@ -1121,7 +1142,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "DdKe6Euqu6euMd5kWqvZTmLwxGdbYg25JFpBbr9HLFDD"
+          "tx": "Em1Pybst7C3VXWCq3B2SNjnveBGsPVNVrLYDjhmfrKT"
         },
         {
           "expected_rule_code": "R_FROZEN",
@@ -1130,7 +1151,7 @@
           "role": "attack",
           "rule_code": "R_FROZEN",
           "status": "failed",
-          "tx": "399qnVnQtxRkoP76JeFoPvh3CnDwQidZ964NPTdypTL1"
+          "tx": "2EeEjdtBGsgR4MxKejcrhcNURM56d9SDgqnQV2LrbNZa"
         },
         {
           "expected_rule_code": null,
@@ -1139,7 +1160,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "HsCEcVxvHKAzFCwiX8mYn4GRLKvrAMHAK2rkbRS6uaQN"
+          "tx": "9pwKMZXQA5Z914eoPQiQwRxDJMrQN2ouRLDX1S2YwLyn"
         },
         {
           "expected_rule_code": null,
@@ -1148,7 +1169,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "4pzhvA8HoeoDsgZikBUZdXn6iYHfe8m4VuqozTAVfXHh"
+          "tx": "HUsW7ySPG8f4wF9xcZES3y4vb4aqpQFN5HSHphdoWAuF"
         }
       ]
     },
@@ -1203,7 +1224,7 @@
           "role": "attack",
           "rule_code": "R_CAP_LAUNCH",
           "status": "succeeded",
-          "tx": "7bR1hqAigLvz2kRhv3u4i8kYkp4J6he6u6tos6avKSvu"
+          "tx": "HXDTfz4eNc963XzqxSJf7FbyZ1B2TFCbJLDEemRHiuKF"
         }
       ]
     },
@@ -1258,7 +1279,7 @@
           "role": "attack",
           "rule_code": "R_CAP_ACCOUNT",
           "status": "succeeded",
-          "tx": "CjmWRnyHDuyDRHTYJkbSen5VB4gCDFVccsqBLdZHWskv"
+          "tx": "CsueU1B2vwgYMHDZEHhXTwHjz2AT7wbTnp8qQtu9FF2"
         },
         {
           "expected_rule_code": null,
@@ -1267,7 +1288,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "6Vf14TMGE4DAZtk8RU3tAkbuokiRQz9awhhNhKy1HxC5"
+          "tx": "71CwpUoNJngioDC1gPFDBEjCM7m5anPQbazNAMaGAMxb"
         },
         {
           "expected_rule_code": "R_CAP_ACCOUNT",
@@ -1276,7 +1297,7 @@
           "role": "attack",
           "rule_code": "R_CAP_ACCOUNT",
           "status": "succeeded",
-          "tx": "EYr7L9yNiXJXkqEM2DrAxhooYYefsq24urX2sav6KfNf"
+          "tx": "7yQmfzr1NrRKDGtrYBbfoHZQGKRJnFUGv54E9GoLYynU"
         }
       ]
     },
@@ -1331,7 +1352,7 @@
           "role": "attack",
           "rule_code": "R_CAP_ACCOUNT",
           "status": "succeeded",
-          "tx": "CpE53EApLGjjUoGw5gg4rfudv3pqQCp9pLKgM9TvpNix"
+          "tx": "3iWZDSurgMiUwnb8NZqo7sZ5vKKammGDdYhCCrKRgW3b"
         },
         {
           "expected_rule_code": null,
@@ -1340,7 +1361,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "4L5gpJ7KHLZ1cZRbArA8XbPFFKcDQBg8Ho5cEQRpF6TR"
+          "tx": "58NtE7CuvP597fQp3TMkXbJX951z4fi74zEfPV3GmLzf"
         },
         {
           "expected_rule_code": null,
@@ -1349,7 +1370,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "E492TuXG1UUURHs8LepXYsUGqjF2MXX57CP79iHrWTJY"
+          "tx": "BEgBbCS2QFrVru9EppEcrj9DE12dc74Gwz1xhDRUnAzN"
         },
         {
           "expected_rule_code": null,
@@ -1358,7 +1379,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "AWDUL8PVsHmKz9P6ayVG34Ps1PTLynJ1ANNeyF6Yq4Rg"
+          "tx": "4pnyyZ4tjPPZQSjXnyrKiAAmLmnHXcRgbmrTiQtF8R4G"
         },
         {
           "expected_rule_code": null,
@@ -1367,7 +1388,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "6BboR8FJ4AYUc9ETrmBxQZUWv8mip1aRtdfbfz18RQZd"
+          "tx": "B9oWApu6DDsNTfvueRb9fqsFxAjcD7bFFqd6nHVt2Jp6"
         },
         {
           "expected_rule_code": null,
@@ -1376,7 +1397,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "9KcJtGgUvxJ6PVd5gFD7Pguoo7Fys1NZprLdwDMAZSAS"
+          "tx": "9BAU3gYcWvYzwUHpnAzZChJZ9hBaViUmeWYsvi5se6qX"
         },
         {
           "expected_rule_code": null,
@@ -1385,7 +1406,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "Bs3iXPpmHxV7jwjprPzjjgxSLzt9EJCoxV2j3QubywZN"
+          "tx": "DBfd9ivmVxYKPSNFv1Sitwc9dwMwg4EjfE1jQoUmoLP1"
         },
         {
           "expected_rule_code": null,
@@ -1394,7 +1415,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "EKsgpYhvADh4SYbZY3RNk4WoMzHvuW8v1zpuJwacHwqg"
+          "tx": "FhvEqwRbES9EdKMj3TrDCHqCTVzr5eXMWwivzWGasm6X"
         },
         {
           "expected_rule_code": null,
@@ -1403,7 +1424,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "7H35Kgwpb89HwkFZc9753kMvFiTdBzBqTexCKn3HJiUC"
+          "tx": "3qjJWx4HZvQeZkMqMyhqkqfidNLxuhoWnC3r2jV8oXLq"
         },
         {
           "expected_rule_code": null,
@@ -1412,7 +1433,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "GjzoKuCqMYXpU9jowicvgm2DuAmpAyf5Efox37dBoRCc"
+          "tx": "AXEYkcjVJKZ6cX2hePnG3udaanBvxtaFJiEzoaT3k746"
         },
         {
           "expected_rule_code": null,
@@ -1421,7 +1442,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "96mhdGZC1hiT8ZE7CSBz6uLDpTRd2PV5rY65tmxE8MkG"
+          "tx": "6BrdGnsABWySQFzUFEW8BWc1ZpBHKibkssrTbC7oKgbB"
         },
         {
           "expected_rule_code": null,
@@ -1430,7 +1451,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "AMrxFwmEDsWuCKaFPZJHMuvn45VsBxCzH1hyBj9TkjNm"
+          "tx": "EkgzxYADLTJPkuwoH9jTGhpkJYaFMALN9y6snkRVMFj2"
         },
         {
           "expected_rule_code": null,
@@ -1439,7 +1460,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "FRSntKsonTjeMNQ3s8gY9YAPpLvPHybckmNJ9UzFudKN"
+          "tx": "7pcxgGKJrMJ5s8kKKz56E2qoCNfAyfjE15BtUNj2fw3t"
         },
         {
           "expected_rule_code": null,
@@ -1448,7 +1469,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "Gmj4MpY6sD1hvv1tPw5wPaaf3DNmWabH4Lkx1uxpEDSj"
+          "tx": "EDC8R7T6aRWMshmu5EudTXe6Apf1jd7qaBgm9o1Lx3SJ"
         }
       ]
     },
@@ -1503,7 +1524,7 @@
           "role": "attack",
           "rule_code": "R_WALK_CLOSED",
           "status": "failed",
-          "tx": "2XfSu1QnawDnDQkeHGjuMdAJgPYvnxVh3XpwjKV9nrs5"
+          "tx": "38JZ6ZjSZjwPBscC3jBrEiSPgeEGpV3bCGNLkhb4eCEH"
         }
       ]
     },
@@ -1558,7 +1579,7 @@
           "role": "attack",
           "rule_code": "R_WRONG_PHASE",
           "status": "succeeded",
-          "tx": "4DsyEBF9QsHuTMUgQTnCd4mqQJKVE3EXNRAZqft7Bao6"
+          "tx": "7zfDscEcoYNZHVbyQKEGt2dYbE8nAEeMoBRXgDfqtE7t"
         }
       ]
     },
@@ -1609,7 +1630,7 @@
           "role": "attack",
           "rule_code": "R_WRONG_PHASE",
           "status": "failed",
-          "tx": "9eDEjvtDsk2URxfuZRWd6nQEXMsrVej43Uu5oKxCrKwz"
+          "tx": "C89BaiFkD4dxKSAyaqKefXjG3sNGRixxHomqLpJH8XnV"
         },
         {
           "expected_rule_code": null,
@@ -1618,7 +1639,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "ESHTvDp3bHDN4gRFND8jcq265hUSW5cM3hyvdRRE7uuj"
+          "tx": "2FbYu9yjBKMTPmwbXfgyE8ZkeyQiNDkxV7ARYSGcxKaV"
         },
         {
           "expected_rule_code": "R_WRONG_PHASE",
@@ -1627,7 +1648,7 @@
           "role": "attack",
           "rule_code": "R_WRONG_PHASE",
           "status": "failed",
-          "tx": "EfdcGRkSLjnyPtDgqrr3rHzQ3GJPtt2eEDibr1XYzSXm"
+          "tx": "HDgCX72mQVPUfbX1FXS2TZ9dHDrWEZ6qUWqnzwtV31wM"
         }
       ]
     },
@@ -1678,7 +1699,7 @@
           "role": "attack",
           "rule_code": "R_SELF_BUY",
           "status": "succeeded",
-          "tx": "66ewE8zwfm1T7uWJfRz97kFbp3tMNbsHb6qquu9ewS78"
+          "tx": "21vy6h7dQUYs7D6as1fzqQTxDVLjpWpCEMZQTJBwojYQ"
         }
       ]
     },
@@ -1733,7 +1754,7 @@
           "role": "attack",
           "rule_code": "R_SIG",
           "status": "failed",
-          "tx": "BYg4FKundKpNX5fhP1qDiNkLcjThx5Nqr7Q3EwpEpLg9"
+          "tx": "CE7SHNZDvSn4y4TocyY5zbiJWNhrjsNryVD7aWMmcHyN"
         },
         {
           "expected_rule_code": "R_DEADLINE",
@@ -1742,7 +1763,7 @@
           "role": "attack",
           "rule_code": "R_DEADLINE",
           "status": "failed",
-          "tx": "HJEh6u5fUhwuedzFbhWMEBBUgpqKYBYL59a3TwnuXMVx"
+          "tx": "4FjT8kkat16S9XCVAETDHmojmMJ914YhwzdxjG1sHfGH"
         },
         {
           "expected_rule_code": null,
@@ -1751,7 +1772,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "ExVtm8dqvWiB5JTSetcNkZb16xRaAJR8fo7obrfU5qri"
+          "tx": "AHVGLsy2J4ySS1g9jSS4sxfKfs7VCUBy9vYPfjC5tyhN"
         },
         {
           "expected_rule_code": "R_NONCE",
@@ -1760,7 +1781,7 @@
           "role": "attack",
           "rule_code": "R_NONCE",
           "status": "failed",
-          "tx": "AFntyXpTjhzFmV3DZPBncLHBdSzioTfsa7XRzGMcNqLr"
+          "tx": "6qr2KBnfXg5Pg2cAfSBF53x7u8U6cjsbsnUiKdjvMnNH"
         }
       ]
     },
@@ -1811,7 +1832,7 @@
           "role": "attack",
           "rule_code": "R_ACTIVE_TRIAL",
           "status": "failed",
-          "tx": "955sxptZsceNySWcNwHpraQWB42AcnnXvUbu4mf7VuJS"
+          "tx": "Ea29ZqjFf96M1pZ3FE2mWGr1vEN4Y6kXgXzzyrGcaUQ5"
         }
       ]
     },
@@ -1849,7 +1870,7 @@
           "role": "attack",
           "rule_code": "R_CREATOR_GATE",
           "status": "failed",
-          "tx": "99Q6uYVN3crFTF46kk2U1i3NRCor7HAhQjtfRM92dG7"
+          "tx": "HVn1acf6SYQf7hitbJ1PQRUQWSCk3T14sL7gyKX4nfEW"
         },
         {
           "expected_rule_code": "R_CREATOR_GATE",
@@ -1858,7 +1879,7 @@
           "role": "attack",
           "rule_code": "R_CREATOR_GATE",
           "status": "failed",
-          "tx": "5UTeXjnswD5KxRxMBCME5FXFWGcghYW3GZTUDUqa9kwF"
+          "tx": "7DyP4N7SiPSAcm33ErZDZcJFPW8WjrGSp7VkBFqSevh7"
         },
         {
           "expected_rule_code": "R_CREATOR_GATE",
@@ -1867,7 +1888,7 @@
           "role": "attack",
           "rule_code": "R_CREATOR_GATE",
           "status": "failed",
-          "tx": "5uMabYq8GWr19aHbdfBxHLPYmW8Dg2kEhhDqbHDCcW2E"
+          "tx": "3P2waup82W7KdjJsPEiffqnVn7JGr213cbA1cRo3vDxo"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -1876,7 +1897,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "HbXFwYZubMuRvrBnnFYkcUT4Uz7bHPfqfSBkJVGFeU5e"
+          "tx": "EJsXVVDm1aiBguSh3hhhbZioUeNi4JaMwZm3BEDbEycw"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -1885,7 +1906,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "CD5M4RMcvqk5fpGHQwGsjJ8zYsKXhy8KHgcm7T5iQGFy"
+          "tx": "GYmek31SXAnrQg61uRiLuCU6ofD7y3koyVXPcnvCpJPM"
         },
         {
           "expected_rule_code": null,
@@ -1894,7 +1915,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "3joWprQgxQiA28ArCdqHg9z7nXMNPHNnr8Bxd5wpyD5h"
+          "tx": "GLobRCJVofJD8YEKfiRooQLeMK9uktCVQTufYRYhMhAN"
         },
         {
           "expected_rule_code": null,
@@ -1903,7 +1924,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "9godNi1bVShLtaxcrsWmp7w4zwex6DNfiM7bmQ4joqWi"
+          "tx": "DNYreEVmpM5buzVr22czJGAgsxT3jPe76JcqXcunhBwW"
         },
         {
           "expected_rule_code": "R_CREATOR_GATE",
@@ -1912,7 +1933,7 @@
           "role": "attack",
           "rule_code": "R_CREATOR_GATE",
           "status": "failed",
-          "tx": "9GpEx9JXZhZ9ebrAsquxADvLzn7rFcxoL85fSPhscZdm"
+          "tx": "MoWLJyaAJoShwqBnrgq9vyR2AhV3KNjZxLfVLPwPmVm"
         },
         {
           "expected_rule_code": null,
@@ -1921,7 +1942,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "8M6bzfwvJJhfBttzWcGnCk7aVqEMNAC51nCcSS4z119T"
+          "tx": "AXzfmXKFRmnPfHBhawjoDvVkcgJ1Bt9UnMxTJVXJGRaH"
         },
         {
           "expected_rule_code": "R_NOTHING",
@@ -1930,7 +1951,7 @@
           "role": "attack",
           "rule_code": "R_NOTHING",
           "status": "failed",
-          "tx": "3EvCdRBfSVUCahT6vhLz96XFdNgdNgLtBRDozsLn5bfZ"
+          "tx": "8SEeBUEHchpon3UVkyJz46sWqyk8XrjrfWuG8Nw1h7as"
         },
         {
           "expected_rule_code": null,
@@ -1939,7 +1960,7 @@
           "role": "support",
           "rule_code": "R_TOKEN_CREATE",
           "status": "succeeded",
-          "tx": "HvioRC6rVDJGXm2b8o1esnAY8aUWg9NQBiHaodBpCQk1"
+          "tx": "5Rf3rjp144BeVBDNWLrXpzfSGzGoeePCSecUsx7zDXB1"
         }
       ]
     },
@@ -1990,7 +2011,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "4Y3BGKeqeHBuh2uzwjaftRQsH6sbC4A4hShEEUoUkK6N"
+          "tx": "FNBAvq6qnXraH81TLDe4hhLeCSyZFettnbRZKedVejtq"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -1999,7 +2020,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "8EEQwy2T59c1k4shxKTved89aodSGe79Ns8RH7R7XNoD"
+          "tx": "4RDwjtAH78m4t148aCiMvzSG8XupzbshkUa5x1zT98u5"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -2008,7 +2029,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "C8LXAvFbprsdnzjXYvF2bzzh82SEGNF7FkWTSQsD2yYw"
+          "tx": "EGGnJ2JUiP13QNG9u7finxcCB9ybaLk82G374euzMUrG"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -2017,7 +2038,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "Gb1KCNBFJVWTYfgjv8h4uoTTrEkvApKKrDVAvrjeAN2d"
+          "tx": "AbV1XfvVrkWyoYaktAFYvuEoyRC9iwNbp7UKXxkArUbQ"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -2026,7 +2047,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "2QezYDyySTyo1cwvTn2uwVzs3UFYYqMpPvac3VEUrPrT"
+          "tx": "E6rfcJVPbrp2RJdQJdMVHXwADZkf4dX8znx6j6NjS7Po"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -2035,7 +2056,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "GYhEwbj5NhTGXczje6Vxz8ewJa2hFXCxDTw9Nz74fBEk"
+          "tx": "5kcdcPgMUeZiyGV2XRaSByBBKRiVhqT5mW6L44R3CNL"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -2044,7 +2065,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "5GFB4QYY6W5xuo1up6YzGaCwT5dCLLQatDMCRwtbGVJa"
+          "tx": "C2ictyZjHnDeh2f7vMsRcBLZ64TBkmZnoF4KsZgWTjKE"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -2053,7 +2074,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "D5WkQ3FLiGCPDwaw4ChupjYJQd7tnrEUr8dmkh9mC55T"
+          "tx": "2Z88RsbXJmxbDSC97Q5oqh9b3C1MVJtqJzhWH3up6PWB"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -2062,7 +2083,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "92QL17qafwPsp8ifp7xPM4a92CqTjLL8ogMdiP6Rrrnr"
+          "tx": "GoCkkpuPFEcW7dmRQV3gSYRacMjGMiW6EWMXY5mASfM8"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -2071,7 +2092,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "3LAf4SD7RQtfQLomMjQLpHbXsnRLmvKjnLhZgC2GrTwo"
+          "tx": "2Ss92Prk4DQun51BuXnDB4FEyHqXUeJ4XYiNxr5GXh5P"
         }
       ]
     },
@@ -2122,7 +2143,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_STATE",
           "status": "failed",
-          "tx": "ERPWGnAV4G7hk9J3oR5ELzFM5EFJBDMH2jmQFdpWEH45"
+          "tx": "F3Ceyb36JjZDPFhbdMjFmeSEWhEDFPb236WzFB93JDa3"
         },
         {
           "expected_rule_code": "R_GENESIS_STATE",
@@ -2131,7 +2152,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_STATE",
           "status": "failed",
-          "tx": "AgjU9sWFWz7XRHmyQh72JDnH57kH1jdekJBXrjtSoy2B"
+          "tx": "54sArapWDscEMfKjQWDYoTuuw97EFFrVmsWwUy3HTbun"
         },
         {
           "expected_rule_code": "R_GENESIS_STATE",
@@ -2140,7 +2161,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_STATE",
           "status": "failed",
-          "tx": "6ZrXjT3hbaKDtnbYs68VdtucihXWcd21727fsDdm72Jj"
+          "tx": "4N95kCfJSxBZx1vDWjpD1y5qXduw3V6y5e4RvtVBxXLk"
         },
         {
           "expected_rule_code": null,
@@ -2149,7 +2170,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "6NCusF8bjML4G8ZF2L53AgQ4W6dLJZRT1VBeeMhd2ocx"
+          "tx": "AvY94VsMu2hhU6AEroN8tCtzpznJz3BewQuxeRDNo9wL"
         },
         {
           "expected_rule_code": "R_GENESIS_ALREADY",
@@ -2158,7 +2179,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_ALREADY",
           "status": "failed",
-          "tx": "FkXuucPgxb9WXv1EGq622Ei6z3TSk4Nw9mGL3vvpX4Y4"
+          "tx": "GdPxwQbFjcGCA2FnfxbCnxqR9q5aFdr3QdFMYZexTLSX"
         },
         {
           "expected_rule_code": "R_GENESIS_ALREADY",
@@ -2167,7 +2188,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_ALREADY",
           "status": "failed",
-          "tx": "5YUESU9rZP2UajXupQMvCff6g2SHWFLsTmX8Cv8WKKyN"
+          "tx": "2XS4EDPo2xvkm9r7hTQEN8MKW5Z5nMz1tmfHZSC5p2A8"
         }
       ]
     },
@@ -2218,7 +2239,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "HNtyGV1iqqbjUC67sEzRFyqWRQC7q57nFDn5P5wKXtkV"
+          "tx": "Np1pBN9bNraAPCh1pf6FksofMesj8JrX9782Azed6Gi"
         },
         {
           "expected_rule_code": "R_GENESIS_LEAF",
@@ -2227,7 +2248,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_LEAF",
           "status": "failed",
-          "tx": "WWD38LqLJP3HBUc2s2W5AoVLQJBgEM5wH6aC7kbuJmd"
+          "tx": "HUM44NAAqFWiPE9Em5XGjD9p2d2ie7pg6tXpFYJnkjrg"
         },
         {
           "expected_rule_code": "R_GENESIS_LEAF",
@@ -2236,7 +2257,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_LEAF",
           "status": "failed",
-          "tx": "A31d3ip5MGiM9rTY5Utrq6qGGSdpPkTjdKk6XimqofWk"
+          "tx": "DrRwHaFQm8co8vUmETJHFW9pFBUXLXLzELdLTE2FZuzc"
         },
         {
           "expected_rule_code": "R_GENESIS_ORDER",
@@ -2245,7 +2266,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_ORDER",
           "status": "failed",
-          "tx": "6UpEjT3ntGB92bXfp5NA7iXDFgSX47Pd7Chvjtz9jksQ"
+          "tx": "14GyxSFKsqYt4BqMZty27swXqyN1VQ3mqMum5kh1HTBt"
         },
         {
           "expected_rule_code": null,
@@ -2254,7 +2275,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "5KpU1NSAKFCCgoNvbDaSTGEmVAYjia9qKBHf8gmj7a6P"
+          "tx": "9J248jd8HVpcQiocL4o7TN9fMmnQLnEotKD5nq4LMHDL"
         },
         {
           "expected_rule_code": "R_GENESIS_ORDER",
@@ -2263,7 +2284,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_ORDER",
           "status": "failed",
-          "tx": "DSd5fyjCQqfiobjjFkfRM6qXN6w4c1sCkZytiXXwR6LM"
+          "tx": "EaHASujR3PUuB7xTm68Ko6WkqGSCtzuRBfrDBdPJBbVm"
         },
         {
           "expected_rule_code": "R_GENESIS_ARG",
@@ -2272,7 +2293,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_ARG",
           "status": "failed",
-          "tx": "5rQi7Ld7eerUNyBc4bEHRYx1AmgQCnTinMh1CeNuVsiY"
+          "tx": "CwVit2ggyav1ZQyiCCsg33hQF8gyqhLUnw2t7MNAv8yM"
         }
       ]
     },
@@ -2323,7 +2344,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "6cTc745gSX6EY4QQB8X7dpaKArwmpcp4r9yPq2RgAnMK"
+          "tx": "Enfy5hNPgvJu2L8KrvjFb6Y8SV3qBNmA73EGJu2aniV1"
         },
         {
           "expected_rule_code": "R_GENESIS_STATE",
@@ -2332,7 +2353,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_STATE",
           "status": "failed",
-          "tx": "Cw7bXzYXYFePzRBUSbvuQenhh3UhemFfhy3whc5hVNRt"
+          "tx": "3qzLzAFQmGpPnuQd4p4BfAsCFbDCzuTB7kpTR8TSkjob"
         },
         {
           "expected_rule_code": null,
@@ -2341,7 +2362,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "255KFSCE7uY7Rrpw5kxiDNBybpACmXs3w3NWBMX3ZRXG"
+          "tx": "57uQBtWpb9jKoRY23H83Zo2evsDiFcPHfGPM9Bu6H15s"
         },
         {
           "expected_rule_code": "R_GENESIS_ARG",
@@ -2350,7 +2371,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_ARG",
           "status": "failed",
-          "tx": "4y4p2yQbSr1n85ugWGqs9Xxizn3kW8qD9pveMp5bLTKu"
+          "tx": "CwXYG385pbQUyXWe7w32uPjZjHcHsxbhWpnennECfQdB"
         },
         {
           "expected_rule_code": null,
@@ -2359,7 +2380,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "44uy2y52s8kNHR9gfw7JXw7R42QxFfrFZLF4t3yqmQkz"
+          "tx": "6fJShSAfjKf68qjqhsz2um7sgEhwUYghxhk64quc7bka"
         },
         {
           "expected_rule_code": "R_GENESIS_STATE",
@@ -2368,7 +2389,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_STATE",
           "status": "failed",
-          "tx": "62ekbQVAyJEiwSLkNHNcKcs7iZbJAkF9A1cND51yXi8K"
+          "tx": "EdGLf6gEftacoV5DTjxgXGHvcmif9SYFxT2Li4dyM41M"
         },
         {
           "expected_rule_code": "R_GENESIS_STATE",
@@ -2377,7 +2398,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_STATE",
           "status": "failed",
-          "tx": "4oZ663NPQzTZtq4SxZmzfft7U9Zdp6qGJAofuRAxPt4m"
+          "tx": "DT4gh7vuvecNQ6Qd61fu4CQ3qYd864UA5pSnipbeZeqa"
         },
         {
           "expected_rule_code": "R_GENESIS_STATE",
@@ -2386,7 +2407,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_STATE",
           "status": "failed",
-          "tx": "Gz7rosA6NHo1wPMZqHzg2whSKuMdo1DhB3poKRewtjS3"
+          "tx": "58gsUYWZxhiRkguC23JHfqFSyjAgf4FKS81Wc53dYvM7"
         },
         {
           "expected_rule_code": "R_GENESIS_STATE",
@@ -2395,7 +2416,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_STATE",
           "status": "failed",
-          "tx": "F7Qu6vN5WW5rG3qivXoJBraTdKyrA7d3QGNrMBx4xHfG"
+          "tx": "5g8L32eT5AJMFZsqQAZJ2VzNYSMcyALxMgEiEFzXGros"
         }
       ]
     },
@@ -2446,7 +2467,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_STATE",
           "status": "failed",
-          "tx": "E5HAfz7oPWYGPaW4Ck2Bm9QdgxrACrujuFNLNpHh6zV6"
+          "tx": "AgPiDoTX48kN4gwyq3nWNghodB5YAkzc6WbKDU3Js5YQ"
         },
         {
           "expected_rule_code": null,
@@ -2455,7 +2476,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "HAWqjS5kC9jQSnqMQ6p7QwwHmcWaCJRpiyjhNCRKJoCY"
+          "tx": "GjJ1dfgXUY7g5rVBQhS9cgeX7KiQargaWpTmxh6GLD4P"
         },
         {
           "expected_rule_code": "R_GENESIS_STATE",
@@ -2464,7 +2485,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_STATE",
           "status": "failed",
-          "tx": "LzbZhvi49313LdXX3qZyeC944TxsFJZUmA7ZtWq6xDt"
+          "tx": "7AJLCjWY9wKkpCVAzwMDZ3dyh72LbkEVD2idapjvWFFB"
         }
       ]
     },
@@ -2494,7 +2515,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_AUTH",
           "status": "failed",
-          "tx": "DPcboRi5vUomgnFKTgSEVapeYSNSai9pf6a3KffLXWmQ"
+          "tx": "6odC5psz2ezWaJjEutoHRHB8C3BFvhU6nmsWXREBei3D"
         },
         {
           "expected_rule_code": "R_GENESIS_AUTH",
@@ -2503,7 +2524,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_AUTH",
           "status": "failed",
-          "tx": "9fN1yyrA93jN6aHTTkBT3cRHxd5rREzXgKnRJqNDMHaY"
+          "tx": "3R6NRELXBhrFmosvH5x2GYxm2odEBNgZHNZXE41bqBSW"
         },
         {
           "expected_rule_code": "R_GENESIS_AUTH",
@@ -2512,7 +2533,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_AUTH",
           "status": "failed",
-          "tx": "DGGAhjk3QkkJPLzdn8niHJsRpZzTffk7PmYhkdvqQzUr"
+          "tx": "7tmmHzeA7p1G77qAvacHHV5kfrK7y14wZKn5ApXqBGDe"
         },
         {
           "expected_rule_code": "R_GENESIS_ARG",
@@ -2521,7 +2542,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_ARG",
           "status": "failed",
-          "tx": "AT6m3EqzzLwUtS6tXTZHFFp3Ciztk8hmj1BRkztWrwZa"
+          "tx": "9EXacGn1GbEtxZ13KYyYB6a6jExLcqpP1PE4sZWhMsp7"
         },
         {
           "expected_rule_code": "R_GENESIS_ARG",
@@ -2530,7 +2551,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_ARG",
           "status": "failed",
-          "tx": "7fc59duH9AmERiKmGqEj3K8vpSu2a3oM4iEcBbtugi7d"
+          "tx": "3Lfrix5dRPPTHich3C3g8T3zuxYcaMCqiypd6nuHGSWf"
         },
         {
           "expected_rule_code": "R_GENESIS_ARG",
@@ -2539,7 +2560,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_ARG",
           "status": "failed",
-          "tx": "3epMVkmUd2DWmnVUPmBpn1jMN97hnx2mD2Wr2eqDmdMH"
+          "tx": "7kzsCZ25ELFeEYWN1sP1yCibhi7ujRD8P2Lgzp2jkHDc"
         }
       ]
     },
@@ -2590,7 +2611,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "4ZnhH7CzDqnAWT9qeNX1h7tokvqwChZEVCaeeA9beaAj"
+          "tx": "39bpZW8eeGH7Jasf9Hi28hG2rRKL2sG86na7SdnaJh6e"
         },
         {
           "expected_rule_code": "R_PAUSED",
@@ -2599,7 +2620,7 @@
           "role": "attack",
           "rule_code": "R_PAUSED",
           "status": "failed",
-          "tx": "A2phmEfrALVfLFQiNKsgWdzjtFKBGriHRLrReD28f6SV"
+          "tx": "9cAaMSmkhZDSAY8wu19eXEfJQKmCD7cuiqeogBomT4fS"
         },
         {
           "expected_rule_code": null,
@@ -2608,7 +2629,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "DhfH7T9bQpUuuh9eQtf8WSuxMYFU2AtAKqXWsY3qD2NX"
+          "tx": "4GotzJTjnYANj4WpYMhdh7V1wZ1dwy9ChD43L1LBt7HH"
         },
         {
           "expected_rule_code": null,
@@ -2617,7 +2638,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "GX8cbGHxkKLX8pdzDuYgRGAuwdT3CVeh17a43aHkdR1t"
+          "tx": "GRDLAkA7uxq8jWST74MqCLyYzqXhzBp5wLLijw5kyNGo"
         },
         {
           "expected_rule_code": null,
@@ -2626,7 +2647,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "BL449UN1ShgH8cg5i1wxFgJfxRTihtVcX3VPwxCdTJPk"
+          "tx": "C1pksD8yjjbXmxGkSUQJ6ixjMPo45d4TTm1G9zSD7oA9"
         },
         {
           "expected_rule_code": "R_GENESIS_ALREADY",
@@ -2635,7 +2656,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_ALREADY",
           "status": "failed",
-          "tx": "9YDiytN1vahy3aG64esiz5fNGLF5VVDfB4EnSeSXzdYb"
+          "tx": "4CETMe1h5g9TvrsmB2en9iQh4UmjpAQzMVtJRmfXRL2v"
         },
         {
           "expected_rule_code": "R_GENESIS_STATE",
@@ -2644,7 +2665,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_STATE",
           "status": "failed",
-          "tx": "ACzrZDAnUcXnkQ4zCLGebDrDZM3TnL1A9sSrwseZRVN7"
+          "tx": "6pmE28Ut8zAn2GQRf2LUr3hYKFyM2GyUnnk3Rs9L2Brw"
         },
         {
           "expected_rule_code": "R_GENESIS_STATE",
@@ -2653,7 +2674,7 @@
           "role": "attack",
           "rule_code": "R_GENESIS_STATE",
           "status": "failed",
-          "tx": "Aiy92pWLBCpeANT2gYPumT5n7sBEUHut97LxRM4h1c2r"
+          "tx": "AHAVcoCqLvbQTNMmRG2FRwXVmxXTMNNko6Tm75HSWfNg"
         }
       ]
     },
@@ -2712,7 +2733,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "Cams78xCRwZfc1Y5BnVkTshdUbLQtT7hdbN5k1JC4PGd"
+          "tx": "DwjBQdR6atrpydTJ2e2vbKnbddCQLsPxJXPXrP9DYrXK"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -2721,7 +2742,3401 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "3zjhsDsntQXvhNQDyD68LD9S2jeFtrmvFaMG3wae5K7U"
+          "tx": "C2KhLGZC1iTea2ohNxHx9V6DUZe1WrcHzu22L7phWEUD"
+        }
+      ]
+    },
+    {
+      "attempt": "Two ordinary accounts call create_instant with the full deposit on a launcher running the mainnet profile whose creator gate is closed.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "precondition: the gate is closed"
+        },
+        {
+          "ok": true,
+          "what": "nothing was created"
+        }
+      ],
+      "co4": "CO7",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_CREATOR_GATE",
+      "id": "I01",
+      "invariants_after": {
+        "launcher": {
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0"
+        },
+        "launches": []
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "instant",
+      "title": "create_instant by non-owners on the mainnet profile before open_beta",
+      "transactions": [
+        {
+          "expected_rule_code": "R_CREATOR_GATE",
+          "label": "create_instant by creator.test.near",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_CREATOR_GATE",
+          "status": "failed",
+          "tx": "DNqnwJuFmL6TaVmFnfkHawvtVu2u1Ysb9UTDHjNNw6r1"
+        },
+        {
+          "expected_rule_code": "R_CREATOR_GATE",
+          "label": "create_instant by eve.test.near",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_CREATOR_GATE",
+          "status": "failed",
+          "tx": "J4LEdsTNYq9BnaB5s5CKGHYHLmCVn7oe3tuvVnZvuzVC"
+        }
+      ]
+    },
+    {
+      "attempt": "The owner and the guardian try to launch while the gate is closed (no insider bypass), then the guardian and a creator try to open the gate themselves.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "the gate is still closed"
+        },
+        {
+          "ok": true,
+          "what": "nothing was created"
+        }
+      ],
+      "co4": "CO7",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_CREATOR_GATE",
+      "id": "I02",
+      "invariants_after": {
+        "launcher": {
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0"
+        },
+        "launches": []
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "instant",
+      "title": "create_instant by the owner and the guardian before open_beta; open_beta by non-owners",
+      "transactions": [
+        {
+          "expected_rule_code": "R_CREATOR_GATE",
+          "label": "create_instant by the owner",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_CREATOR_GATE",
+          "status": "failed",
+          "tx": "8em2qpDwwVL7xxLYz3mZyCAzALiPP9ybgF8AP8CtJiDD"
+        },
+        {
+          "expected_rule_code": "R_CREATOR_GATE",
+          "label": "create_instant by the guardian",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_CREATOR_GATE",
+          "status": "failed",
+          "tx": "F2qhQNZL2d3Z6fBznWUZrsqPWuxAP4ytkXSSLHk9FXSj"
+        },
+        {
+          "expected_rule_code": "R_NOT_AUTHORIZED",
+          "label": "open_beta by the guardian",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOT_AUTHORIZED",
+          "status": "failed",
+          "tx": "9hKec8xLmxDoFFjfSADzjwMpiHBBQRGW1RXh5Q1unfTu"
+        },
+        {
+          "expected_rule_code": "R_NOT_AUTHORIZED",
+          "label": "open_beta by a creator",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOT_AUTHORIZED",
+          "status": "failed",
+          "tx": "3AWzHH7FUX9u5yzGaJ2pEgcWz3Ns4DZkENt6d114o2DP"
+        }
+      ]
+    },
+    {
+      "attempt": "A second account creates a launch with the symbol of a live launch, then with the lower-case spelling of it.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "the symbol still belongs to the first launch"
+        },
+        {
+          "ok": true,
+          "what": "only one launch exists"
+        }
+      ],
+      "co4": "CO7",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_SYMBOL",
+      "id": "I03",
+      "invariants_after": {
+        "launcher": {
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0"
+        },
+        "launches": [
+          {
+            "get_invariants": {
+              "claimed_le_unlocked": true,
+              "market_locked_consistent": true,
+              "owed_usdc": "0",
+              "seeds_held_le_cap": true,
+              "supply_conservation": true,
+              "token": "sqat.factory.test.near",
+              "token_custody": "1000000000000000",
+              "token_custody_identity": true,
+              "usdc_custody": "0",
+              "usdc_custody_identity": true,
+              "usdc_expected": "0",
+              "vest_bounds": true
+            },
+            "launch_id": "1000000000"
+          }
+        ]
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "instant",
+      "title": "Symbol squat: a second launch under a symbol already in use",
+      "transactions": [
+        {
+          "expected_rule_code": "R_SYMBOL",
+          "label": "same symbol",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_SYMBOL",
+          "status": "failed",
+          "tx": "YvF5NWdwiDUE6FGqSZray6yUYD3YPQLcCq3q1X2boR8"
+        },
+        {
+          "expected_rule_code": "R_SYMBOL",
+          "label": "lower-case spelling",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_SYMBOL",
+          "status": "failed",
+          "tx": "27YfEVtdCV7vLe6ssAPmrX6nmKyUT4vJERTACigKNZdD"
+        }
+      ]
+    },
+    {
+      "attempt": "Two accounts launch under KRUXA (one naming a payout recipient) and a stranger tries to add a symbol to the reserved list.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "nothing was created"
+        }
+      ],
+      "co4": "CO7",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_SYMBOL_RESERVED",
+      "id": "I04",
+      "invariants_after": {
+        "launcher": {
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0"
+        },
+        "launches": []
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "instant",
+      "title": "Squat the reserved symbol KRUXA and edit the reserved list",
+      "transactions": [
+        {
+          "expected_rule_code": "R_SYMBOL_RESERVED",
+          "label": "create_instant KRUXA",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_SYMBOL_RESERVED",
+          "status": "failed",
+          "tx": "92RWPH5ZVkrSS2KTopNc2rLTEMdQqRLHiED5ubsGW7e3"
+        },
+        {
+          "expected_rule_code": "R_SYMBOL_RESERVED",
+          "label": "create_instant KRUXA with a recipient",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_SYMBOL_RESERVED",
+          "status": "failed",
+          "tx": "FV5uPrupebLXd3VAguDRhAMPLCRGe655drL9MKYNGt7R"
+        },
+        {
+          "expected_rule_code": "R_NOT_AUTHORIZED",
+          "label": "reserve_symbol by a stranger",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOT_AUTHORIZED",
+          "status": "failed",
+          "tx": "735U1GwfLnt5GMrmaAbq7NTsE6tMWugPtAvVBQ61NrmA"
+        }
+      ]
+    },
+    {
+      "attempt": "An account that already has a launch creates another one with a fresh symbol right away.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "still one launch"
+        }
+      ],
+      "co4": "CO7",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_RATE_LIMIT",
+      "id": "I05",
+      "invariants_after": {
+        "launcher": {
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0"
+        },
+        "launches": [
+          {
+            "get_invariants": {
+              "claimed_le_unlocked": true,
+              "market_locked_consistent": true,
+              "owed_usdc": "0",
+              "seeds_held_le_cap": true,
+              "supply_conservation": true,
+              "token": "rat1.factory.test.near",
+              "token_custody": "1000000000000000",
+              "token_custody_identity": true,
+              "usdc_custody": "0",
+              "usdc_custody_identity": true,
+              "usdc_expected": "0",
+              "vest_bounds": true
+            },
+            "launch_id": "1000000000"
+          }
+        ]
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "instant",
+      "title": "Second instant launch by the same account within 24 hours",
+      "transactions": [
+        {
+          "expected_rule_code": "R_RATE_LIMIT",
+          "label": "second create_instant",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_RATE_LIMIT",
+          "status": "failed",
+          "tx": "3ApxJBkhDARYQtWfySgmGRkLb8LAAsyWRLecYjTkNJGU"
+        }
+      ]
+    },
+    {
+      "attempt": "The creator funds a second wallet and launches again at once. The per-account limit does not link accounts; this is disclosed, not a win.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "both launches exist (not blocked)"
+        },
+        {
+          "ok": true,
+          "what": "bound: each launch costs its own deposit, a unique symbol and a $100 to $1,000 seed, and the aggregate unconsumed-seed cap ($3,000) still applies"
+        }
+      ],
+      "co4": "CO7",
+      "expected_result": "BOUNDED",
+      "expected_rule_code": "",
+      "id": "I06",
+      "invariants_after": {
+        "launcher": {
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0"
+        },
+        "launches": [
+          {
+            "get_invariants": {
+              "claimed_le_unlocked": true,
+              "market_locked_consistent": true,
+              "owed_usdc": "0",
+              "seeds_held_le_cap": true,
+              "supply_conservation": true,
+              "token": "syb1.factory.test.near",
+              "token_custody": "1000000000000000",
+              "token_custody_identity": true,
+              "usdc_custody": "0",
+              "usdc_custody_identity": true,
+              "usdc_expected": "0",
+              "vest_bounds": true
+            },
+            "launch_id": "1000000000"
+          },
+          {
+            "get_invariants": {
+              "claimed_le_unlocked": true,
+              "market_locked_consistent": true,
+              "owed_usdc": "0",
+              "seeds_held_le_cap": true,
+              "supply_conservation": true,
+              "token": "syb2.factory.test.near",
+              "token_custody": "1000000000000000",
+              "token_custody_identity": true,
+              "usdc_custody": "0",
+              "usdc_custody_identity": true,
+              "usdc_expected": "0",
+              "vest_bounds": true
+            },
+            "launch_id": "1000000001"
+          }
+        ]
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "BOUNDED",
+      "target": "instant",
+      "title": "Rate limit evaded with a second wallet (Sybil)",
+      "transactions": [
+        {
+          "expected_rule_code": null,
+          "label": "second wallet's create_instant (succeeds, as disclosed)",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "xuoFx52BZ5cKESsXDwKyNhggqdugE2vdFMAw73FsnJB"
+        }
+      ]
+    },
+    {
+      "attempt": "The creator submits fee terms that break each rule in turn: total over 2% or under 0.3%, creator share and take, platform floor and fixed share, holders, LP, referral, split sum, fee vest, opening fee.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "nothing was created"
+        }
+      ],
+      "co4": "CO7",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_FEE_*",
+      "id": "I07",
+      "invariants_after": {
+        "launcher": {
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0"
+        },
+        "launches": []
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "instant",
+      "title": "Hostile fee terms in create_instant (creator-set fees)",
+      "transactions": [
+        {
+          "expected_rule_code": "R_FEE_TOTAL",
+          "label": "total 201 bps",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_FEE_TOTAL",
+          "status": "failed",
+          "tx": "D7VgYprWVmB5asdZkLXstJYT58dkme6tyBjpnmZVEFtY"
+        },
+        {
+          "expected_rule_code": "R_FEE_TOTAL",
+          "label": "total 29 bps",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_FEE_TOTAL",
+          "status": "failed",
+          "tx": "ufBaR7EKTzVmk5dovcMk4ayA74LV69JWeAcAkBMhUSN"
+        },
+        {
+          "expected_rule_code": "R_CREATOR_SHARE",
+          "label": "creator share 6001",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_CREATOR_SHARE",
+          "status": "failed",
+          "tx": "5s1Azjt1fcVFwagkqtgSaeTUsHijyQ6ik4BtdnCXVWuu"
+        },
+        {
+          "expected_rule_code": "R_CREATOR_TAKE",
+          "label": "creator take over 1%",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_CREATOR_TAKE",
+          "status": "failed",
+          "tx": "6sN9VrTZdKpChVBkFqBQ1A4ajrrZ2pRUwsAdMnUQe6pq"
+        },
+        {
+          "expected_rule_code": "R_PLATFORM_FLOOR",
+          "label": "platform 1400",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_PLATFORM_FLOOR",
+          "status": "failed",
+          "tx": "Et8n8Qg79eU4RCabQwskTXP92BXuv41W1SUrC2pPbsUx"
+        },
+        {
+          "expected_rule_code": "R_PLATFORM_FIXED",
+          "label": "platform 2100",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_PLATFORM_FIXED",
+          "status": "failed",
+          "tx": "GUBgvLN23arcPg9JzRN82CSQxfCEoQtCk6x5mXxW4QPL"
+        },
+        {
+          "expected_rule_code": "R_HOLDER_RANGE",
+          "label": "holders 999",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_HOLDER_RANGE",
+          "status": "failed",
+          "tx": "2X68YJG7MueqTTUB8JhpeG89beAoUpQCoNR2ZUkRKZJe"
+        },
+        {
+          "expected_rule_code": "R_LP_RANGE",
+          "label": "lp 3001",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_LP_RANGE",
+          "status": "failed",
+          "tx": "7YWRPpD55Hr9CwoJuxQwdNEjjxz42D9CzyDxjbA6ijEr"
+        },
+        {
+          "expected_rule_code": "R_REFERRAL",
+          "label": "referral 2001",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_REFERRAL",
+          "status": "failed",
+          "tx": "44vvCbWfbGkL63PrjLSSBvxQ1DpMTrKThH35DzU43pry"
+        },
+        {
+          "expected_rule_code": "R_SPLIT_SUM",
+          "label": "split sums to 9400",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_SPLIT_SUM",
+          "status": "failed",
+          "tx": "CdFkjiEsqzdCfu1WgAEY3P9w8uy9vsADB8ryf1mE6Fca"
+        },
+        {
+          "expected_rule_code": "R_FEE_VEST",
+          "label": "fee vest 2499",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_FEE_VEST",
+          "status": "failed",
+          "tx": "G41rx8xZ5XFnhmbedJQyzoEf98gMC8qab95RpPSDfDDt"
+        },
+        {
+          "expected_rule_code": "R_OPENING",
+          "label": "opening fee 1001 bps",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_OPENING",
+          "status": "failed",
+          "tx": "5M1AvgJ7i8APrbgk6pq62jNvsizyarEQSZgrS3gd4MBd"
+        }
+      ]
+    },
+    {
+      "attempt": "The creator seeds a launch declared at 250 USDC with 250 USDC plus 1 micro-USDC, 249 USDC, 1 USDC and 1,000 USDC.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "every amount came back to the creator"
+        },
+        {
+          "ok": true,
+          "what": "the launcher kept nothing"
+        },
+        {
+          "ok": true,
+          "what": "status is still TokenReady"
+        }
+      ],
+      "co4": "CO7",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_SEED_AMOUNT",
+      "id": "I08",
+      "invariants_after": {
+        "launcher": {
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0"
+        },
+        "launches": [
+          {
+            "get_invariants": {
+              "claimed_le_unlocked": true,
+              "market_locked_consistent": true,
+              "owed_usdc": "0",
+              "seeds_held_le_cap": true,
+              "supply_conservation": true,
+              "token": "sdam.factory.test.near",
+              "token_custody": "1000000000000000",
+              "token_custody_identity": true,
+              "usdc_custody": "0",
+              "usdc_custody_identity": true,
+              "usdc_expected": "0",
+              "vest_bounds": true
+            },
+            "launch_id": "1000000000"
+          }
+        ]
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "instant",
+      "title": "Seed with the wrong amount",
+      "transactions": [
+        {
+          "expected_rule_code": "R_SEED_AMOUNT",
+          "label": "250 USDC + 1",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_SEED_AMOUNT",
+          "status": "succeeded",
+          "tx": "BoUuQcCLVYKFSKURoemD46rjbwsRJxSH8fQBm3nx2tdP"
+        },
+        {
+          "expected_rule_code": "R_SEED_AMOUNT",
+          "label": "249 USDC",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_SEED_AMOUNT",
+          "status": "succeeded",
+          "tx": "Ge9UgWE8xGzRuDdPGo5hgz8zinnCduTivBKDt4o2iSLC"
+        },
+        {
+          "expected_rule_code": "R_SEED_AMOUNT",
+          "label": "1 USDC",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_SEED_AMOUNT",
+          "status": "succeeded",
+          "tx": "3ASDuJBVTXghH3W1XRxukHCJdDFtBNdStMLL14CUBaCm"
+        },
+        {
+          "expected_rule_code": "R_SEED_AMOUNT",
+          "label": "1,000 USDC",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_SEED_AMOUNT",
+          "status": "succeeded",
+          "tx": "CNLTuBH4iQDEcCR7ToyqC4trtepHArzujxxiYFUUkVKw"
+        }
+      ]
+    },
+    {
+      "attempt": "The creator seeds with 250 units of a look-alike USDC contract, then calls ft_on_transfer on the launcher directly with the right message.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "direct call returned the full amount"
+        },
+        {
+          "ok": true,
+          "what": "fake tokens refunded"
+        },
+        {
+          "ok": true,
+          "what": "status is still TokenReady and nothing is held"
+        }
+      ],
+      "co4": "CO7",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_UNEXPECTED_TOKEN",
+      "id": "I09",
+      "invariants_after": {
+        "launcher": {
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0"
+        },
+        "launches": [
+          {
+            "get_invariants": {
+              "claimed_le_unlocked": true,
+              "market_locked_consistent": true,
+              "owed_usdc": "0",
+              "seeds_held_le_cap": true,
+              "supply_conservation": true,
+              "token": "sdtk.factory.test.near",
+              "token_custody": "1000000000000000",
+              "token_custody_identity": true,
+              "usdc_custody": "0",
+              "usdc_custody_identity": true,
+              "usdc_expected": "0",
+              "vest_bounds": true
+            },
+            "launch_id": "1000000000"
+          }
+        ]
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "instant",
+      "title": "Seed with a look-alike token, and a forged ft_on_transfer",
+      "transactions": [
+        {
+          "expected_rule_code": "R_UNEXPECTED_TOKEN",
+          "label": "fake-USDC seed",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_UNEXPECTED_TOKEN",
+          "status": "succeeded",
+          "tx": "esq3BcnHvBS2Wq4RnbjXbyiGnSMhUNvQ3UwgsMRPFzp"
+        },
+        {
+          "expected_rule_code": "R_UNEXPECTED_TOKEN",
+          "label": "direct ft_on_transfer from a non-token account",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_UNEXPECTED_TOKEN",
+          "status": "succeeded",
+          "tx": "2gJfyqkxQmriDEVoB1z6odcRbRghsD3VxzQqmQLjyF9v"
+        }
+      ]
+    },
+    {
+      "attempt": "The creator seeds an id that was never created, the id of a launch whose token creation failed, and sends a seed message with the wrong version and op.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "precondition: the first launch is CreationFailed"
+        },
+        {
+          "ok": true,
+          "what": "everything came back"
+        },
+        {
+          "ok": true,
+          "what": "the dead launch stays CreationFailed"
+        }
+      ],
+      "co4": "CO7",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_INSTANT_STATE",
+      "id": "I10",
+      "invariants_after": {
+        "launcher": {
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0"
+        },
+        "launches": [
+          {
+            "get_invariants": {
+              "claimed_le_unlocked": true,
+              "market_locked_consistent": true,
+              "owed_usdc": "0",
+              "seeds_held_le_cap": true,
+              "supply_conservation": true,
+              "token": "live.factory.test.near",
+              "token_custody": "1000000000000000",
+              "token_custody_identity": true,
+              "usdc_custody": "0",
+              "usdc_custody_identity": true,
+              "usdc_expected": "0",
+              "vest_bounds": true
+            },
+            "launch_id": "1000000001"
+          }
+        ]
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "instant",
+      "title": "Seed before the token exists (unknown id, failed creation, malformed message)",
+      "transactions": [
+        {
+          "expected_rule_code": "R_INSTANT_STATE",
+          "label": "seed an id that does not exist",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_INSTANT_STATE",
+          "status": "succeeded",
+          "tx": "HVUHuN9JJtYPgSscGbwE6h9mN1RCmtAMfc76LhsmmyLJ"
+        },
+        {
+          "expected_rule_code": "R_INSTANT_STATE",
+          "label": "seed the next id, not yet created",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_INSTANT_STATE",
+          "status": "succeeded",
+          "tx": "BTkyWGQVmZXpF3AxEGi38at9yvi9wT8mW43TkuesRybS"
+        },
+        {
+          "expected_rule_code": "R_INSTANT_STATE",
+          "label": "seed a CreationFailed launch",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_INSTANT_STATE",
+          "status": "succeeded",
+          "tx": "DZkb2e8J4NZ28iyxwJnKD9RUfJ6N27fe6xYWFQK2QbWt"
+        },
+        {
+          "expected_rule_code": "R_BAD_MSG",
+          "label": "wrong version and op in the seed message",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_BAD_MSG",
+          "status": "succeeded",
+          "tx": "6TjgeH7u7vuFAKP7KGg8q9rYRq3dzoJS1AAYcryEsNvR"
+        }
+      ]
+    },
+    {
+      "attempt": "An account that is not the creator sends the exact seed amount with the right launch id, hoping to take over the seed and its refund rights.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "the stranger was refunded in full"
+        },
+        {
+          "ok": true,
+          "what": "status unchanged"
+        },
+        {
+          "ok": true,
+          "what": "the creator's seed is accepted"
+        }
+      ],
+      "co4": "CO7",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_NOT_CREATOR",
+      "id": "I11",
+      "invariants_after": {
+        "launcher": {
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "usdc_custody": "250000000",
+          "usdc_custody_identity": true,
+          "usdc_expected": "250000000"
+        },
+        "launches": [
+          {
+            "get_invariants": {
+              "claimed_le_unlocked": true,
+              "market_locked_consistent": true,
+              "owed_usdc": "0",
+              "seeds_held_le_cap": true,
+              "supply_conservation": true,
+              "token": "frnt.factory.test.near",
+              "token_custody": "1000000000000000",
+              "token_custody_identity": true,
+              "usdc_custody": "250000000",
+              "usdc_custody_identity": true,
+              "usdc_expected": "250000000",
+              "vest_bounds": true
+            },
+            "launch_id": "1000000000"
+          }
+        ]
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "instant",
+      "title": "A stranger seeds the creator's launch (front-run the seed)",
+      "transactions": [
+        {
+          "expected_rule_code": "R_NOT_CREATOR",
+          "label": "seed by a stranger with the exact amount",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOT_CREATOR",
+          "status": "succeeded",
+          "tx": "7nAYrXR9wsEyAy3RsqfnNav27MnB7M4rXuzfKUGJJAYK"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "the real creator seeds afterwards",
+          "network": "SANDBOX",
+          "role": "support",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "J4gw6HkvzExHNZgMMEFeLXHYtQEU1NByVPo33r62QcGs"
+        }
+      ]
+    },
+    {
+      "attempt": "After the pool opened, the creator and a stranger call open_instant again, hoping to push the seed or the token bucket a second time.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "pool reserve unchanged"
+        },
+        {
+          "ok": true,
+          "what": "market holds exactly the seed"
+        },
+        {
+          "ok": true,
+          "what": "the launcher paid the pool bucket once"
+        }
+      ],
+      "co4": "CO7",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_INSTANT_STATE",
+      "id": "I12",
+      "invariants_after": {
+        "launcher": {
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0"
+        },
+        "launches": [
+          {
+            "get_invariants": {
+              "claimed_le_unlocked": true,
+              "market_locked_consistent": true,
+              "owed_usdc": "0",
+              "seeds_held_le_cap": true,
+              "supply_conservation": true,
+              "token": "dopn.factory.test.near",
+              "token_custody": "50000000000000",
+              "token_custody_identity": true,
+              "usdc_custody": "0",
+              "usdc_custody_identity": true,
+              "usdc_expected": "0",
+              "vest_bounds": true
+            },
+            "launch_id": "1000000000"
+          }
+        ],
+        "market": {
+          "get_invariants": {
+            "global_q": "250000000",
+            "instant_q_matches": true,
+            "parked_count": 0,
+            "usdc_custody": "250000000",
+            "usdc_custody_identity": true,
+            "usdc_expected": "250000000"
+          },
+          "pools": [
+            {
+              "launch_id": "1000000000",
+              "pool_invariants": {
+                "k_ge_k0": true,
+                "token_custody_identity": true
+              }
+            }
+          ]
+        }
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "instant+market",
+      "title": "open_instant called again after the pool is open",
+      "transactions": [
+        {
+          "expected_rule_code": null,
+          "label": "first open_instant",
+          "network": "SANDBOX",
+          "role": "support",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "CTBbqdP2XApCQQCVzqnKyBtj7zEETaQWgkmuSLVmUg1B"
+        },
+        {
+          "expected_rule_code": "R_INSTANT_STATE",
+          "label": "second open_instant by the creator",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_INSTANT_STATE",
+          "status": "failed",
+          "tx": "AQMV1QH9bf7xptyEAWxxYfwZDS9o9Kso2odKBhY2SAX8"
+        },
+        {
+          "expected_rule_code": "R_INSTANT_STATE",
+          "label": "third open_instant by a stranger",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_INSTANT_STATE",
+          "status": "failed",
+          "tx": "FqcAUCedwfK9pqfjwytsu5HHXfP3nYPSffPv3Yu7dVeY"
+        }
+      ]
+    },
+    {
+      "attempt": "Three accounts call open_instant for the same seeded launch at once, hoping each leg is sent more than once.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "the seed leg was sent exactly once"
+        },
+        {
+          "ok": true,
+          "what": "the token leg was sent exactly once"
+        },
+        {
+          "ok": true,
+          "what": "market holds one seed and one bucket"
+        },
+        {
+          "ok": true,
+          "what": "status is Open"
+        }
+      ],
+      "co4": "CO7",
+      "expected_result": "NO_EFFECT",
+      "expected_rule_code": "",
+      "id": "I13",
+      "invariants_after": {
+        "launcher": {
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0"
+        },
+        "launches": [
+          {
+            "get_invariants": {
+              "claimed_le_unlocked": true,
+              "market_locked_consistent": true,
+              "owed_usdc": "0",
+              "seeds_held_le_cap": true,
+              "supply_conservation": true,
+              "token": "conc.factory.test.near",
+              "token_custody": "50000000000000",
+              "token_custody_identity": true,
+              "usdc_custody": "0",
+              "usdc_custody_identity": true,
+              "usdc_expected": "0",
+              "vest_bounds": true
+            },
+            "launch_id": "1000000000"
+          }
+        ]
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "NO_EFFECT",
+      "target": "instant",
+      "title": "Three open_instant calls in the same block",
+      "transactions": [
+        {
+          "expected_rule_code": null,
+          "label": "concurrent open_instant by x",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "2FccLVbg9mXxhWH5a9K2dqC5DYHMTXsTjuZEb6vVXjbL"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "concurrent open_instant by y",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_INSTANT_STATE",
+          "status": "failed",
+          "tx": "EcasTRZttvun9HdEXtVH6r29h6Ffyo42nZXgsSenBysh"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "concurrent open_instant by z",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_INSTANT_STATE",
+          "status": "failed",
+          "tx": "4t8ZxmCTzrtjSeUvCqV8Z6yMFBMmMx174XEMH3SttM33"
+        }
+      ]
+    },
+    {
+      "attempt": "Right after the pool opens the payout recipient claims the whole allocation, a quarter of it, and 1 base unit.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "nothing was paid"
+        },
+        {
+          "ok": true,
+          "what": "claimed stays zero"
+        }
+      ],
+      "co4": "CO7",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_NOTHING_TO_CLAIM",
+      "id": "I14",
+      "invariants_after": {
+        "launcher": {
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0"
+        },
+        "launches": [
+          {
+            "get_invariants": {
+              "claimed_le_unlocked": true,
+              "market_locked_consistent": true,
+              "owed_usdc": "0",
+              "seeds_held_le_cap": true,
+              "supply_conservation": true,
+              "token": "clf1.factory.test.near",
+              "token_custody": "50000000000000",
+              "token_custody_identity": true,
+              "usdc_custody": "0",
+              "usdc_custody_identity": true,
+              "usdc_expected": "0",
+              "vest_bounds": true
+            },
+            "launch_id": "1000000000"
+          }
+        ]
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "instant",
+      "title": "claim_vested before the cliff",
+      "transactions": [
+        {
+          "expected_rule_code": "R_NOTHING_TO_CLAIM",
+          "label": "claim all (no amount)",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOTHING_TO_CLAIM",
+          "status": "failed",
+          "tx": "69HpumuyN2kZ8Pm9tVZD13qSP5XShL7uh7LvbhcYUkoA"
+        },
+        {
+          "expected_rule_code": "STREAM_CAP",
+          "label": "claim n_alloc / 4",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "STREAM_CAP",
+          "status": "failed",
+          "tx": "9sjMKSnNLurMTGR9AFs6i9NJR47jfEqJD4kpKJMhCc5y"
+        },
+        {
+          "expected_rule_code": "STREAM_CAP",
+          "label": "claim 1 base unit",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "STREAM_CAP",
+          "status": "failed",
+          "tx": "BZfrXkmYtaDAzYkmHM921H6GDFR2WxMu3ieXodrnGRjy"
+        }
+      ]
+    },
+    {
+      "attempt": "Just after the cliff only a sliver has unlocked; the recipient asks for half the allocation, the whole allocation and u128::MAX.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "precondition: claimable is far below half"
+        },
+        {
+          "ok": true,
+          "what": "nothing was paid"
+        },
+        {
+          "ok": true,
+          "what": "claimed stays zero"
+        }
+      ],
+      "co4": "CO7",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "STREAM_CAP",
+      "id": "I15",
+      "invariants_after": {
+        "launcher": {
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0"
+        },
+        "launches": [
+          {
+            "get_invariants": {
+              "claimed_le_unlocked": true,
+              "market_locked_consistent": true,
+              "owed_usdc": "0",
+              "seeds_held_le_cap": true,
+              "supply_conservation": true,
+              "token": "clf2.factory.test.near",
+              "token_custody": "50000000000000",
+              "token_custody_identity": true,
+              "usdc_custody": "0",
+              "usdc_custody_identity": true,
+              "usdc_expected": "0",
+              "vest_bounds": true
+            },
+            "launch_id": "1000000000"
+          }
+        ]
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "instant",
+      "title": "claim_vested above the claimable amount (just after the cliff)",
+      "transactions": [
+        {
+          "expected_rule_code": "STREAM_CAP",
+          "label": "half",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "STREAM_CAP",
+          "status": "failed",
+          "tx": "CYA3CMA9r2WNAY4pwZ2ASQ7wVAFLH7tCTtNnfZuwspkF"
+        },
+        {
+          "expected_rule_code": "STREAM_CAP",
+          "label": "all",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "STREAM_CAP",
+          "status": "failed",
+          "tx": "FyRjRCZVwCrTn2ujxirDzPB1RdwA73oCtBoarATKTxep"
+        },
+        {
+          "expected_rule_code": "STREAM_CAP",
+          "label": "u128::MAX",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "STREAM_CAP",
+          "status": "failed",
+          "tx": "7V63syj4x7KYR87sDmTNz6QJUerzkczf8Rd279K1m91L"
+        }
+      ]
+    },
+    {
+      "attempt": "After the cliff the creator (who named a separate recipient) and a stranger both call claim_vested.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "precondition: something is claimable"
+        },
+        {
+          "ok": true,
+          "what": "neither received tokens"
+        },
+        {
+          "ok": true,
+          "what": "the recipient is still the named account"
+        },
+        {
+          "ok": true,
+          "what": "the recipient was paid"
+        }
+      ],
+      "co4": "CO7",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "id": "I16",
+      "invariants_after": {
+        "launcher": {
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0"
+        },
+        "launches": [
+          {
+            "get_invariants": {
+              "claimed_le_unlocked": true,
+              "market_locked_consistent": true,
+              "owed_usdc": "0",
+              "seeds_held_le_cap": true,
+              "supply_conservation": true,
+              "token": "clf3.factory.test.near",
+              "token_custody": "24212208333334",
+              "token_custody_identity": true,
+              "usdc_custody": "0",
+              "usdc_custody_identity": true,
+              "usdc_expected": "0",
+              "vest_bounds": true
+            },
+            "launch_id": "1000000000"
+          }
+        ]
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "instant",
+      "title": "claim_vested by someone other than the payout recipient",
+      "transactions": [
+        {
+          "expected_rule_code": "R_NOT_AUTHORIZED",
+          "label": "claim by the creator who is not the recipient",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOT_AUTHORIZED",
+          "status": "failed",
+          "tx": "2YHp5iBp6y8bo43NU9z3GPKzX88hFxjTH86QYswzNACV"
+        },
+        {
+          "expected_rule_code": "R_NOT_AUTHORIZED",
+          "label": "claim by a stranger",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOT_AUTHORIZED",
+          "status": "failed",
+          "tx": "H1eVXps9JY993QHNjuCgsePm516XRkEjqpHbPzQy9WbB"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "the real recipient claims",
+          "network": "SANDBOX",
+          "role": "support",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "FEyaUw3XL1Xd1BFBDeQQzoHSADvKJ9S3YShRFVzHfW6W"
+        }
+      ]
+    },
+    {
+      "attempt": "The recipient claims everything after the vest ends, then claims again, with and without an amount.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "the recipient holds exactly n_alloc"
+        },
+        {
+          "ok": true,
+          "what": "balance still exactly n_alloc"
+        }
+      ],
+      "co4": "CO7",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_NOTHING_TO_CLAIM",
+      "id": "I17",
+      "invariants_after": {
+        "launcher": {
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0"
+        },
+        "launches": [
+          {
+            "get_invariants": {
+              "claimed_le_unlocked": true,
+              "market_locked_consistent": true,
+              "owed_usdc": "0",
+              "seeds_held_le_cap": true,
+              "supply_conservation": true,
+              "token": "clf4.factory.test.near",
+              "token_custody": "0",
+              "token_custody_identity": true,
+              "usdc_custody": "0",
+              "usdc_custody_identity": true,
+              "usdc_expected": "0",
+              "vest_bounds": true
+            },
+            "launch_id": "1000000000"
+          }
+        ]
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "instant",
+      "title": "claim_vested again after the allocation was claimed in full",
+      "transactions": [
+        {
+          "expected_rule_code": null,
+          "label": "full claim after the vest",
+          "network": "SANDBOX",
+          "role": "support",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "3NpeLEeeexsLTvjcmDXUkVnYSF4zr436yB1afrg8pZ3g"
+        },
+        {
+          "expected_rule_code": "R_NOTHING_TO_CLAIM",
+          "label": "second claim (no amount)",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOTHING_TO_CLAIM",
+          "status": "failed",
+          "tx": "3pUQ9boHk9KqeShpcvsDpZYYyGd9y9y2jnkd1LBD1tZg"
+        },
+        {
+          "expected_rule_code": "STREAM_CAP",
+          "label": "third claim of 1 base unit",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "STREAM_CAP",
+          "status": "failed",
+          "tx": "FkVP3owzJHyBEJehq6CirLAeobZVz5iS9FdSGHsBeKyR"
+        }
+      ]
+    },
+    {
+      "attempt": "The creator claims the allocation before the pool exists: once right after create, once right after the seed.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "the creator holds no launch token"
+        }
+      ],
+      "co4": "CO7",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_INSTANT_STATE",
+      "id": "I18",
+      "invariants_after": {
+        "launcher": {
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "usdc_custody": "250000000",
+          "usdc_custody_identity": true,
+          "usdc_expected": "250000000"
+        },
+        "launches": [
+          {
+            "get_invariants": {
+              "claimed_le_unlocked": true,
+              "market_locked_consistent": true,
+              "owed_usdc": "0",
+              "seeds_held_le_cap": true,
+              "supply_conservation": true,
+              "token": "clf5.factory.test.near",
+              "token_custody": "1000000000000000",
+              "token_custody_identity": true,
+              "usdc_custody": "250000000",
+              "usdc_custody_identity": true,
+              "usdc_expected": "250000000",
+              "vest_bounds": true
+            },
+            "launch_id": "1000000000"
+          }
+        ]
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "instant",
+      "title": "claim_vested while the launch is not Open (TokenReady, Seeded)",
+      "transactions": [
+        {
+          "expected_rule_code": "R_INSTANT_STATE",
+          "label": "claim in TokenReady",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_INSTANT_STATE",
+          "status": "failed",
+          "tx": "AjLY1i95uB6nt33kHyJkEiYWa5wpXY3Z1NFJtxaRFj9H"
+        },
+        {
+          "expected_rule_code": "R_INSTANT_STATE",
+          "label": "claim in Seeded",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_INSTANT_STATE",
+          "status": "failed",
+          "tx": "EhyufREzhMGx3ykSaFDBAqJikDbS9NqkZs6hZYZzwZqT"
+        }
+      ]
+    },
+    {
+      "attempt": "The seed was refused by the market. A stranger and the creator abort early, a stranger aborts after the wait, the creator aborts twice, then open_instant, claim_vested and a new seed are tried on the aborted launch.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "the whole seed came back once"
+        },
+        {
+          "ok": true,
+          "what": "the creator still holds exactly the one refund"
+        }
+      ],
+      "co4": "CO7",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_TOO_EARLY",
+      "id": "I19",
+      "invariants_after": {
+        "launcher": {
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0"
+        },
+        "launches": [
+          {
+            "get_invariants": {
+              "claimed_le_unlocked": true,
+              "market_locked_consistent": true,
+              "owed_usdc": "0",
+              "seeds_held_le_cap": true,
+              "supply_conservation": true,
+              "token": "abrt.factory.test.near",
+              "token_custody": "1000000000000000",
+              "token_custody_identity": true,
+              "usdc_custody": "0",
+              "usdc_custody_identity": true,
+              "usdc_expected": "0",
+              "vest_bounds": true
+            },
+            "launch_id": "1000000000"
+          }
+        ]
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "instant",
+      "title": "abort_instant abuse: too early, by a stranger, twice, then reuse of the dead launch",
+      "transactions": [
+        {
+          "expected_rule_code": "R_TOO_EARLY",
+          "label": "abort by the creator before the wait",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_TOO_EARLY",
+          "status": "failed",
+          "tx": "5EMX8537usnjPB5DKi7Aaed8ksYetv4xaYUmtGByg2dn"
+        },
+        {
+          "expected_rule_code": "R_NOT_AUTHORIZED",
+          "label": "abort by a stranger after the wait",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOT_AUTHORIZED",
+          "status": "failed",
+          "tx": "2k4TGS52cdpFC4PmfYYcxMmatFiPuxLrjuQ6wwxedQ8q"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "abort by the creator after the wait (legitimate)",
+          "network": "SANDBOX",
+          "role": "support",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "275cSHnV8c6MezQG6UzYmpnHBaTWmBc6nnefux1D6Ae2"
+        },
+        {
+          "expected_rule_code": "R_INSTANT_STATE",
+          "label": "second abort",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_INSTANT_STATE",
+          "status": "failed",
+          "tx": "GUjjMjbhdq9m7Xrkjd7ZGox6ju5r7LYpd724sFSxpqwy"
+        },
+        {
+          "expected_rule_code": "R_INSTANT_STATE",
+          "label": "open_instant on the aborted launch",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_INSTANT_STATE",
+          "status": "failed",
+          "tx": "CBfvCkfoS1HsFhK41Y8bS9CzEaLyY9wT2fmFh9wmw6LL"
+        },
+        {
+          "expected_rule_code": "R_INSTANT_STATE",
+          "label": "claim_vested on the aborted launch",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_INSTANT_STATE",
+          "status": "failed",
+          "tx": "DnmC8GZ6yXYziFCQEcTHPpgETMmJfczD3yZoFcEL9R7o"
+        },
+        {
+          "expected_rule_code": "R_INSTANT_STATE",
+          "label": "seed the aborted launch again",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_INSTANT_STATE",
+          "status": "succeeded",
+          "tx": "25sgHRMnmM7z631NJRb2dwtcycpmCX66kBtk1jUFifYR"
+        }
+      ]
+    },
+    {
+      "attempt": "The market consumed the seed but refused the token bucket. After the wait the creator calls abort_instant to pull the seed back out of a half-open pool.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "precondition: the market holds the seed"
+        },
+        {
+          "ok": true,
+          "what": "creator got nothing back"
+        },
+        {
+          "ok": true,
+          "what": "the launch is still Handoff with seed_sent = 250 USDC"
+        }
+      ],
+      "co4": "CO7",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_INSTANT_STATE",
+      "id": "I20",
+      "invariants_after": {
+        "launcher": {
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0"
+        },
+        "launches": [
+          {
+            "get_invariants": {
+              "claimed_le_unlocked": true,
+              "market_locked_consistent": true,
+              "owed_usdc": "0",
+              "seeds_held_le_cap": true,
+              "supply_conservation": true,
+              "token": "il8y.factory.test.near",
+              "token_custody": "1000000000000000",
+              "token_custody_identity": true,
+              "usdc_custody": "0",
+              "usdc_custody_identity": true,
+              "usdc_expected": "0",
+              "vest_bounds": true
+            },
+            "launch_id": "1000000000"
+          }
+        ]
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "instant",
+      "title": "Abort to take the seed back after the market already consumed it (IL-8)",
+      "transactions": [
+        {
+          "expected_rule_code": "R_INSTANT_STATE",
+          "label": "abort_instant after the seed was consumed",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_INSTANT_STATE",
+          "status": "failed",
+          "tx": "Bwc21AERJuypPRcAVtkuvRgspbYvo1tyMEEj979Sv2Zp"
+        }
+      ]
+    },
+    {
+      "attempt": "A stranger reclaims another creator's refund; the owner of a live launch reclaims its deposit; the refund is claimed twice.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "precondition: first launch CreationFailed, second TokenReady"
+        },
+        {
+          "ok": true,
+          "what": "refundable is now zero"
+        },
+        {
+          "ok": true,
+          "what": "the live launch deposit is intact"
+        }
+      ],
+      "co4": "CO7",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "id": "I21",
+      "invariants_after": {
+        "launcher": {
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0"
+        },
+        "launches": [
+          {
+            "get_invariants": {
+              "claimed_le_unlocked": true,
+              "market_locked_consistent": true,
+              "owed_usdc": "0",
+              "seeds_held_le_cap": true,
+              "supply_conservation": true,
+              "token": "rcl2.factory.test.near",
+              "token_custody": "1000000000000000",
+              "token_custody_identity": true,
+              "usdc_custody": "0",
+              "usdc_custody_identity": true,
+              "usdc_expected": "0",
+              "vest_bounds": true
+            },
+            "launch_id": "1000000001"
+          }
+        ]
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "instant",
+      "title": "reclaim_deposit abuse: stranger, live launch, double reclaim",
+      "transactions": [
+        {
+          "expected_rule_code": "R_NOT_AUTHORIZED",
+          "label": "reclaim by a stranger",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOT_AUTHORIZED",
+          "status": "failed",
+          "tx": "MW324t7GjgN4vfEeCi4mN3hP3C4WCh1aDAhu1bHPWim"
+        },
+        {
+          "expected_rule_code": "R_INSTANT_STATE",
+          "label": "reclaim on a live TokenReady launch",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_INSTANT_STATE",
+          "status": "failed",
+          "tx": "EEsyVHU6hRh1b6fxqrjpeVSy8znzcB9D8Xy4izwGJHo4"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "reclaim by the creator (legitimate)",
+          "network": "SANDBOX",
+          "role": "support",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "4c8RVP1Te6WcNsLMPeqxS6839SCczhCuGDzFniF5CFZk"
+        },
+        {
+          "expected_rule_code": "R_NOTHING_TO_CLAIM",
+          "label": "second reclaim",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOTHING_TO_CLAIM",
+          "status": "failed",
+          "tx": "86s3ojJjEir5CcVNb3XNrwcpUsvHRgqX49o2whDu6hAV"
+        }
+      ]
+    },
+    {
+      "attempt": "A stranger abandons a fresh launch inside the 24 h window; the creator abandons a launch that already holds a seed; an abandoned launch is abandoned again and then seeded.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "seed returned in full, abandoned launch holds nothing"
+        },
+        {
+          "ok": true,
+          "what": "the seeded launch is still Seeded"
+        }
+      ],
+      "co4": "CO7",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_TOO_EARLY",
+      "id": "I22",
+      "invariants_after": {
+        "launcher": {
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "usdc_custody": "250000000",
+          "usdc_custody_identity": true,
+          "usdc_expected": "250000000"
+        },
+        "launches": [
+          {
+            "get_invariants": {
+              "claimed_le_unlocked": true,
+              "market_locked_consistent": true,
+              "owed_usdc": "0",
+              "seeds_held_le_cap": true,
+              "supply_conservation": true,
+              "token": "abn1.factory.test.near",
+              "token_custody": "1000000000000000",
+              "token_custody_identity": true,
+              "usdc_custody": "250000000",
+              "usdc_custody_identity": true,
+              "usdc_expected": "250000000",
+              "vest_bounds": true
+            },
+            "launch_id": "1000000000"
+          },
+          {
+            "get_invariants": {
+              "claimed_le_unlocked": true,
+              "market_locked_consistent": true,
+              "owed_usdc": "0",
+              "seeds_held_le_cap": true,
+              "supply_conservation": true,
+              "token": "abn2.factory.test.near",
+              "token_custody": "1000000000000000",
+              "token_custody_identity": true,
+              "usdc_custody": "250000000",
+              "usdc_custody_identity": true,
+              "usdc_expected": "250000000",
+              "vest_bounds": true
+            },
+            "launch_id": "1000000001"
+          }
+        ]
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "instant",
+      "title": "abandon_instant abuse: stranger early, on a seeded launch, twice",
+      "transactions": [
+        {
+          "expected_rule_code": "R_TOO_EARLY",
+          "label": "abandon by a stranger inside 24 h",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_TOO_EARLY",
+          "status": "failed",
+          "tx": "GqXfoQWr718JPKdM962mypVTUnBDnwcqJED2SKT5QEkd"
+        },
+        {
+          "expected_rule_code": "R_INSTANT_STATE",
+          "label": "abandon a Seeded launch (creator)",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_INSTANT_STATE",
+          "status": "failed",
+          "tx": "Gvp9VX9sS891wcDpnHg9sEXyaoSsshfTxJynnS1LULzh"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "abandon by the creator (legitimate)",
+          "network": "SANDBOX",
+          "role": "support",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "G5S3D6efwszQHfZwxZdfNbrk9DTbwwqtGdhu18hx5zbV"
+        },
+        {
+          "expected_rule_code": "R_INSTANT_STATE",
+          "label": "abandon again",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_INSTANT_STATE",
+          "status": "failed",
+          "tx": "8xxaSrMVwwGR1rjw39J9JTzK3fkGvKBmVZN1AUkogLPB"
+        },
+        {
+          "expected_rule_code": "R_INSTANT_STATE",
+          "label": "seed the abandoned launch",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_INSTANT_STATE",
+          "status": "succeeded",
+          "tx": "FTbBFUs5H5YNADEAX4pTqZcLYeT2AoUtd8t3WbXDrmsC"
+        }
+      ]
+    },
+    {
+      "attempt": "The guardian, a creator and a stranger name themselves as the launcher; the owner is also tried with the core, the USDC contract and the treasury (each would let a second sender open pools).",
+      "checks": [
+        {
+          "ok": true,
+          "what": "the market still has no launcher"
+        }
+      ],
+      "co4": "CO7",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "id": "I23",
+      "invariants_after": {
+        "market": {
+          "global_q": "0",
+          "instant_q_matches": true,
+          "parked_count": 0,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0"
+        },
+        "pools": []
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "market",
+      "title": "set_launcher by a non-owner, or pointing it at core, USDC or the treasury",
+      "transactions": [
+        {
+          "expected_rule_code": "R_NOT_AUTHORIZED",
+          "label": "set_launcher by the guardian",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOT_AUTHORIZED",
+          "status": "failed",
+          "tx": "ECXkkA621ioEDRBjmKVNq9mYXd7s7u66R1XPPJKcewUn"
+        },
+        {
+          "expected_rule_code": "R_NOT_AUTHORIZED",
+          "label": "set_launcher by the creator",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOT_AUTHORIZED",
+          "status": "failed",
+          "tx": "7RmYKLXQWAmbfSmZ4EmEtPpqdpjwzhUWx3y9ndGD4MpR"
+        },
+        {
+          "expected_rule_code": "R_NOT_AUTHORIZED",
+          "label": "set_launcher by the stranger",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOT_AUTHORIZED",
+          "status": "failed",
+          "tx": "J71bYA4NnqpPeGuW8QffR3cyT9mSYhNatEXUogzCsxDX"
+        },
+        {
+          "expected_rule_code": "R_NOT_AUTHORIZED",
+          "label": "owner points the launcher at the core",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOT_AUTHORIZED",
+          "status": "failed",
+          "tx": "Ex7YbW8sBAvVV2Jyuobk1FRKRivQQb9A7d8ZqyVsF9zA"
+        },
+        {
+          "expected_rule_code": "R_NOT_AUTHORIZED",
+          "label": "owner points the launcher at the USDC",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOT_AUTHORIZED",
+          "status": "failed",
+          "tx": "7WVQS68hpgxY5qhbqwdYwJxorHLB8feQzNiB6NHrmcEf"
+        },
+        {
+          "expected_rule_code": "R_NOT_AUTHORIZED",
+          "label": "owner points the launcher at the treasury",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOT_AUTHORIZED",
+          "status": "failed",
+          "tx": "BojZDrpELohZV62gxrwyjVDiBT21rSfJy8Ke79Q329xU"
+        }
+      ]
+    },
+    {
+      "attempt": "Even the owner tries to switch the launcher to another account, and to re-set the same one, once a launcher pool is live.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "get_config still names the original launcher"
+        }
+      ],
+      "co4": "CO7",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_LAUNCHER_LOCKED",
+      "id": "I24",
+      "invariants_after": {
+        "market": {
+          "global_q": "500000000",
+          "instant_q_matches": true,
+          "parked_count": 0,
+          "usdc_custody": "500000000",
+          "usdc_custody_identity": true,
+          "usdc_expected": "500000000"
+        },
+        "pools": [
+          {
+            "launch_id": 1000000000,
+            "pool_invariants": {
+              "k_ge_k0": true,
+              "token_custody_identity": true
+            }
+          }
+        ]
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "market",
+      "title": "Re-point the launcher after the first instant pool exists",
+      "transactions": [
+        {
+          "expected_rule_code": "R_LAUNCHER_LOCKED",
+          "label": "owner re-points the launcher",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_LAUNCHER_LOCKED",
+          "status": "failed",
+          "tx": "8qAdMoFL5kRhrTJ5NV9tv2eynHsfqc9UWALnjJs9nrPp"
+        },
+        {
+          "expected_rule_code": "R_LAUNCHER_LOCKED",
+          "label": "owner re-sets the same launcher",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_LAUNCHER_LOCKED",
+          "status": "failed",
+          "tx": "7nc6xXpVXVev4cwbHStXxtwTzncWjsNNpEgpUD7kFfxQ"
+        }
+      ]
+    },
+    {
+      "attempt": "A creator and the guardian name an account of their own as the market; after the pool opened, the owner is asked to re-point the market (pool tokens would follow it).",
+      "checks": [
+        {
+          "ok": true,
+          "what": "market unchanged and locked"
+        }
+      ],
+      "co4": "CO7",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "id": "I25",
+      "invariants_after": {
+        "launcher": {
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0"
+        },
+        "launches": [
+          {
+            "get_invariants": {
+              "claimed_le_unlocked": true,
+              "market_locked_consistent": true,
+              "owed_usdc": "0",
+              "seeds_held_le_cap": true,
+              "supply_conservation": true,
+              "token": "smkt.factory.test.near",
+              "token_custody": "50000000000000",
+              "token_custody_identity": true,
+              "usdc_custody": "0",
+              "usdc_custody_identity": true,
+              "usdc_expected": "0",
+              "vest_bounds": true
+            },
+            "launch_id": "1000000000"
+          }
+        ],
+        "market": {
+          "get_invariants": {
+            "global_q": "250000000",
+            "instant_q_matches": true,
+            "parked_count": 0,
+            "usdc_custody": "250000000",
+            "usdc_custody_identity": true,
+            "usdc_expected": "250000000"
+          },
+          "pools": [
+            {
+              "launch_id": "1000000000",
+              "pool_invariants": {
+                "k_ge_k0": true,
+                "token_custody_identity": true
+              }
+            }
+          ]
+        }
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "instant",
+      "title": "set_market on the launcher: non-owner, then after the first open_instant",
+      "transactions": [
+        {
+          "expected_rule_code": "R_NOT_AUTHORIZED",
+          "label": "set_market by a creator",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOT_AUTHORIZED",
+          "status": "failed",
+          "tx": "d3WzVJGPeG4J8ASuBMzqGB9mM3kxyoJiZB4JbSnom7p"
+        },
+        {
+          "expected_rule_code": "R_NOT_AUTHORIZED",
+          "label": "set_market by the guardian",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOT_AUTHORIZED",
+          "status": "failed",
+          "tx": "D66AhVJzAVaqqJz8Grh7ZezoHzsgsJH8Q3T3GYSivBs2"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "first open_instant (locks the market)",
+          "network": "SANDBOX",
+          "role": "support",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "B9XXFWmXuWpeCmtBmQhrSpLcwH5fBzTWoAXf6CfjZGDX"
+        },
+        {
+          "expected_rule_code": "R_NOTHING",
+          "label": "owner re-points the market after first use",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOTHING",
+          "status": "failed",
+          "tx": "AKjoCQqQyro1GMrDphpvfrzANaEcLAuPZn3YCegUTPqQ"
+        }
+      ]
+    },
+    {
+      "attempt": "The launcher's seed message carries mode \"trial\" (mc::instant_seed_msg does); core's carries mode \"instant\". The market must derive the mode from the authenticated sender only.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "precondition: the message really says mode trial"
+        },
+        {
+          "ok": true,
+          "what": "the launcher pool is instant despite mode:trial"
+        },
+        {
+          "ok": true,
+          "what": "the core pool is trial despite mode:instant"
+        }
+      ],
+      "co4": "CO7",
+      "expected_result": "NO_EFFECT",
+      "expected_rule_code": "",
+      "id": "I26",
+      "invariants_after": {
+        "market": {
+          "global_q": "1500000000",
+          "instant_q_matches": true,
+          "parked_count": 0,
+          "usdc_custody": "1500000000",
+          "usdc_custody_identity": true,
+          "usdc_expected": "1500000000"
+        },
+        "pools": [
+          {
+            "launch_id": 1000000000,
+            "pool_invariants": {
+              "k_ge_k0": true,
+              "token_custody_identity": true
+            }
+          },
+          {
+            "launch_id": 1,
+            "pool_invariants": {
+              "k_ge_k0": true,
+              "token_custody_identity": true
+            }
+          }
+        ]
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "NO_EFFECT",
+      "target": "market",
+      "title": "Spoofed mode in a seed_quote message (trial pool from the launcher, instant pool from core)",
+      "transactions": [
+        {
+          "expected_rule_code": null,
+          "label": "launcher seed with mode:\"trial\"",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "ffxQgUQ3YetXt7hPVjwRGctJXLeuKSmVbWHJiMRffMJ"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "launcher token leg",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "9wDC4FDD9yAbKzKijCBsoPcV2rjWioYbmFsJyN3Qrnv5"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "core seed with mode:\"instant\"",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "7yPk67AvY7MgbNVtbag6F5e6FbLbb1pFw8X8xk2ZvR5w"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "core token leg",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "4S6QrgENPUe7Bte5EGA5oujS1Wde9esd2UUe9UnHbwTu"
+        }
+      ]
+    },
+    {
+      "attempt": "The launcher sends a seed and a token leg for a core-range id (7); core sends a seed and a token leg for an instant-range id.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "everything was refunded"
+        },
+        {
+          "ok": true,
+          "what": "no pool was created"
+        }
+      ],
+      "co4": "CO7",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_ID_NAMESPACE",
+      "id": "I27",
+      "invariants_after": {
+        "market": {
+          "global_q": "0",
+          "instant_q_matches": true,
+          "parked_count": 0,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0"
+        },
+        "pools": []
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "market",
+      "title": "Launcher below 1e9 and core at or above 1e9, on the seed leg and the token leg",
+      "transactions": [
+        {
+          "expected_rule_code": "R_ID_NAMESPACE",
+          "label": "launcher seed_quote for id 7",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_ID_NAMESPACE",
+          "status": "succeeded",
+          "tx": "Auijx5LtBSYHma1Sa1CGbFqxhRjTkCaTU8K4xJCTjgdF"
+        },
+        {
+          "expected_rule_code": "R_ID_NAMESPACE",
+          "label": "launcher token leg for id 7",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_ID_NAMESPACE",
+          "status": "succeeded",
+          "tx": "HThNUaav1x4qKdycQZHUm62pkQSQceHAq7oBXV39cpu9"
+        },
+        {
+          "expected_rule_code": "R_ID_NAMESPACE",
+          "label": "core seed_quote for id 1e9",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_ID_NAMESPACE",
+          "status": "succeeded",
+          "tx": "Gt9BdeeBKeP3zAqYTkHEKpEqwdokn5BnSfJtPeaNu927"
+        },
+        {
+          "expected_rule_code": "R_ID_NAMESPACE",
+          "label": "core token leg for id 1e9",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_ID_NAMESPACE",
+          "status": "succeeded",
+          "tx": "C7HhPJB9XopHL6RsfhDTBvm5Zb2SuivwCZJBJCFMmnAF"
+        }
+      ]
+    },
+    {
+      "attempt": "On an instant pool the creator buys, the separate payout recipient buys, and a third wallet buys with receiver set to the creator and to the recipient.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "every buyer was refunded in full"
+        },
+        {
+          "ok": true,
+          "what": "pool reserve unchanged"
+        },
+        {
+          "ok": true,
+          "what": "pool names the declared wallets"
+        }
+      ],
+      "co4": "CO7",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_SELF_BUY",
+      "id": "I28",
+      "invariants_after": {
+        "launcher": {
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0"
+        },
+        "launches": [
+          {
+            "get_invariants": {
+              "claimed_le_unlocked": true,
+              "market_locked_consistent": true,
+              "owed_usdc": "0",
+              "seeds_held_le_cap": true,
+              "supply_conservation": true,
+              "token": "self.factory.test.near",
+              "token_custody": "50000000000000",
+              "token_custody_identity": true,
+              "usdc_custody": "0",
+              "usdc_custody_identity": true,
+              "usdc_expected": "0",
+              "vest_bounds": true
+            },
+            "launch_id": "1000000000"
+          }
+        ],
+        "market": {
+          "get_invariants": {
+            "global_q": "250000000",
+            "instant_q_matches": true,
+            "parked_count": 0,
+            "usdc_custody": "250000000",
+            "usdc_custody_identity": true,
+            "usdc_expected": "250000000"
+          },
+          "pools": [
+            {
+              "launch_id": "1000000000",
+              "pool_invariants": {
+                "k_ge_k0": true,
+                "token_custody_identity": true
+              }
+            }
+          ]
+        }
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "market",
+      "title": "Self-buy by the creator, the payout recipient, and through the receiver field",
+      "transactions": [
+        {
+          "expected_rule_code": "R_SELF_BUY",
+          "label": "creator buys",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_SELF_BUY",
+          "status": "succeeded",
+          "tx": "DXecWrGQFeEFqUa8YtnNzVN7EPzvAYr6uchcaiVmjzpJ"
+        },
+        {
+          "expected_rule_code": "R_SELF_BUY",
+          "label": "recipient buys",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_SELF_BUY",
+          "status": "succeeded",
+          "tx": "6nPzFjgCHfVVGP6Fj1QXeqpts5B2A8dCaVvbNzerz11i"
+        },
+        {
+          "expected_rule_code": "R_SELF_BUY",
+          "label": "bob buys for the creator",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_SELF_BUY",
+          "status": "succeeded",
+          "tx": "ACsaoVX7iQGREm9no2ProDZpaXqfGmwmiLDYTc21Fuma"
+        },
+        {
+          "expected_rule_code": "R_SELF_BUY",
+          "label": "bob buys for the recipient",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_SELF_BUY",
+          "status": "succeeded",
+          "tx": "CtJmpp2451iqAtJ8pGKLaf5J3FMUf8gLepEt6dM8n5oE"
+        }
+      ]
+    },
+    {
+      "attempt": "The creator funds a fresh wallet that is neither the creator nor the payout recipient and buys with it. The market cannot link wallets; this is a disclosed limit, never counted as a win.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "the buy went through (not blocked)"
+        },
+        {
+          "ok": true,
+          "what": "bound: the buyer pays the full opening-fee decay (500 bps falling to 100 over 60 minutes) and every fee slice, and the buy moves the price against itself"
+        }
+      ],
+      "co4": "CO7",
+      "expected_result": "BOUNDED",
+      "expected_rule_code": "",
+      "id": "I29",
+      "invariants_after": {
+        "launcher": {
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0"
+        },
+        "launches": [
+          {
+            "get_invariants": {
+              "claimed_le_unlocked": true,
+              "market_locked_consistent": true,
+              "owed_usdc": "0",
+              "seeds_held_le_cap": true,
+              "supply_conservation": true,
+              "token": "sybl.factory.test.near",
+              "token_custody": "50000000000000",
+              "token_custody_identity": true,
+              "usdc_custody": "0",
+              "usdc_custody_identity": true,
+              "usdc_expected": "0",
+              "vest_bounds": true
+            },
+            "launch_id": "1000000000"
+          }
+        ],
+        "market": {
+          "get_invariants": {
+            "global_q": "269870000",
+            "instant_q_matches": true,
+            "parked_count": 0,
+            "usdc_custody": "270000000",
+            "usdc_custody_identity": true,
+            "usdc_expected": "270000000"
+          },
+          "pools": [
+            {
+              "launch_id": "1000000000",
+              "pool_invariants": {
+                "k_ge_k0": true,
+                "token_custody_identity": true
+              }
+            }
+          ]
+        }
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "BOUNDED",
+      "target": "market",
+      "title": "Self-buy through an undeclared second wallet",
+      "transactions": [
+        {
+          "expected_rule_code": null,
+          "label": "buy of 20 USDC from an undeclared wallet",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "6mXEaj7htW9vXs2MDw4sKb44drbkvE66h1bpaGcTUPcq"
+        }
+      ]
+    },
+    {
+      "attempt": "A 250 USDC seed is handed to a market whose per-pool cap is 200 USDC. The leg is refused and the money must stay recoverable by the creator.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "no pool exists"
+        },
+        {
+          "ok": true,
+          "what": "the seed is back at the launcher"
+        },
+        {
+          "ok": true,
+          "what": "the creator recovered the whole seed"
+        }
+      ],
+      "co4": "CO7",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_MARKET_CAP",
+      "id": "I30",
+      "invariants_after": {
+        "launcher": {
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0"
+        },
+        "launches": [
+          {
+            "get_invariants": {
+              "claimed_le_unlocked": true,
+              "market_locked_consistent": true,
+              "owed_usdc": "0",
+              "seeds_held_le_cap": true,
+              "supply_conservation": true,
+              "token": "capp.factory.test.near",
+              "token_custody": "1000000000000000",
+              "token_custody_identity": true,
+              "usdc_custody": "0",
+              "usdc_custody_identity": true,
+              "usdc_expected": "0",
+              "vest_bounds": true
+            },
+            "launch_id": "1000000000"
+          }
+        ],
+        "market": {
+          "get_invariants": {
+            "global_q": "0",
+            "instant_q_matches": true,
+            "parked_count": 0,
+            "usdc_custody": "0",
+            "usdc_custody_identity": true,
+            "usdc_expected": "0"
+          },
+          "pools": []
+        }
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "instant+market",
+      "title": "Seed above the market's per-pool reserve cap",
+      "transactions": [
+        {
+          "expected_rule_code": "R_MARKET_CAP",
+          "label": "open_instant with a 250 USDC seed against a 200 USDC cap",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_MARKET_CAP",
+          "status": "succeeded",
+          "tx": "5d2CVyx55WWRA4czkpF5WFPTzvAC6RSGzF6qDYqrncvK"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "abort_instant by the creator",
+          "network": "SANDBOX",
+          "role": "support",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "H67J5fLYxpj31y7LNZX1EUW1nJtBu6BRo64oKtXNq7Se"
+        }
+      ]
+    },
+    {
+      "attempt": "With 1,000 USDC in an instant pool and a 1,200 USDC global cap, a buyer sends 300 USDC. (Market 1.1.1: instant seeds are no longer checked against the global cap, only buys are.)",
+      "checks": [
+        {
+          "ok": true,
+          "what": "buyer refunded in full"
+        },
+        {
+          "ok": true,
+          "what": "the pool reserve is unchanged"
+        }
+      ],
+      "co4": "CO7",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_MARKET_CAP",
+      "id": "I31",
+      "invariants_after": {
+        "launcher": {
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0"
+        },
+        "launches": [
+          {
+            "get_invariants": {
+              "claimed_le_unlocked": true,
+              "market_locked_consistent": true,
+              "owed_usdc": "0",
+              "seeds_held_le_cap": true,
+              "supply_conservation": true,
+              "token": "glb1.factory.test.near",
+              "token_custody": "50000000000000",
+              "token_custody_identity": true,
+              "usdc_custody": "0",
+              "usdc_custody_identity": true,
+              "usdc_expected": "0",
+              "vest_bounds": true
+            },
+            "launch_id": "1000000000"
+          }
+        ],
+        "market": {
+          "get_invariants": {
+            "global_q": "1099350000",
+            "instant_q_matches": true,
+            "parked_count": 0,
+            "usdc_custody": "1100000000",
+            "usdc_custody_identity": true,
+            "usdc_expected": "1100000000"
+          },
+          "pools": [
+            {
+              "launch_id": "1000000000",
+              "pool_invariants": {
+                "k_ge_k0": true,
+                "token_custody_identity": true
+              }
+            }
+          ]
+        }
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "market",
+      "title": "Buy that would push the market past the global reserve cap (instant pool)",
+      "transactions": [
+        {
+          "expected_rule_code": "R_MARKET_CAP",
+          "label": "buy of 300 USDC past the global cap",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_MARKET_CAP",
+          "status": "succeeded",
+          "tx": "ENMR12gZdJ5FVXie4rQnwi21Sc2g23fRf5QsUx82PrzY"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "a 100 USDC buy inside the cap still works",
+          "network": "SANDBOX",
+          "role": "support",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "A5RaQXdw63BJFXEcPCitT5WKMvVqtSoUS8p7egTx7RLE"
+        }
+      ]
+    },
+    {
+      "attempt": "With a 300 USDC instant sub-cap (a cap on the SUM OF SEEDS since market 1.1.1) and one 250 USDC pool open, a second 250 USDC seed is sent. A buyer then pushes the first pool well past the sub-cap with a buy, which must no longer be blocked (trading cannot block seeding).",
+      "checks": [
+        {
+          "ok": true,
+          "what": "the buy was not blocked by the sub-cap"
+        },
+        {
+          "ok": true,
+          "what": "the second launch is still in Handoff, seed intact"
+        }
+      ],
+      "co4": "CO7",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_MARKET_CAP",
+      "id": "I32",
+      "invariants_after": {
+        "launcher": {
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "usdc_custody": "250000000",
+          "usdc_custody_identity": true,
+          "usdc_expected": "250000000"
+        },
+        "launches": [
+          {
+            "get_invariants": {
+              "claimed_le_unlocked": true,
+              "market_locked_consistent": true,
+              "owed_usdc": "0",
+              "seeds_held_le_cap": true,
+              "supply_conservation": true,
+              "token": "sub1.factory.test.near",
+              "token_custody": "50000000000000",
+              "token_custody_identity": true,
+              "usdc_custody": "250000000",
+              "usdc_custody_identity": true,
+              "usdc_expected": "250000000",
+              "vest_bounds": true
+            },
+            "launch_id": "1000000000"
+          },
+          {
+            "get_invariants": {
+              "claimed_le_unlocked": true,
+              "market_locked_consistent": true,
+              "owed_usdc": "0",
+              "seeds_held_le_cap": true,
+              "supply_conservation": true,
+              "token": "sub2.factory.test.near",
+              "token_custody": "1000000000000000",
+              "token_custody_identity": true,
+              "usdc_custody": "250000000",
+              "usdc_custody_identity": true,
+              "usdc_expected": "250000000",
+              "vest_bounds": true
+            },
+            "launch_id": "1000000001"
+          }
+        ],
+        "market": {
+          "get_invariants": {
+            "global_q": "349350000",
+            "instant_q_matches": true,
+            "parked_count": 0,
+            "usdc_custody": "350000000",
+            "usdc_custody_identity": true,
+            "usdc_expected": "350000000"
+          },
+          "pools": [
+            {
+              "launch_id": "1000000000",
+              "pool_invariants": {
+                "k_ge_k0": true,
+                "token_custody_identity": true
+              }
+            }
+          ]
+        }
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "instant+market",
+      "title": "Instant seeds crowd out the market: a seed above the instant sub-cap",
+      "transactions": [
+        {
+          "expected_rule_code": "R_MARKET_CAP",
+          "label": "second launch's seed past the sub-cap",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_MARKET_CAP",
+          "status": "succeeded",
+          "tx": "D8AdrQ939Sc1zeMZ7wcuRfHbvP6FxNb7P9aMFc17SC7F"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "a 100 USDC buy that takes the reserve past the sub-cap (allowed since 1.1.1)",
+          "network": "SANDBOX",
+          "role": "support",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "5Mprw4J91Arnt33ZU5LMP79scCq3bRwAyn1VeKpLAZW1"
+        }
+      ]
+    },
+    {
+      "attempt": "With the aggregate cap lowered to 400 USDC and one 250 USDC seed held, a second 250 USDC seed arrives; a third creator declares a 1,000.000001 USDC seed.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "second seed refunded in full"
+        },
+        {
+          "ok": true,
+          "what": "only one seed is held"
+        }
+      ],
+      "co4": "CO7",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_CAP_GLOBAL",
+      "id": "I33",
+      "invariants_after": {
+        "launcher": {
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "usdc_custody": "250000000",
+          "usdc_custody_identity": true,
+          "usdc_expected": "250000000"
+        },
+        "launches": [
+          {
+            "get_invariants": {
+              "claimed_le_unlocked": true,
+              "market_locked_consistent": true,
+              "owed_usdc": "0",
+              "seeds_held_le_cap": true,
+              "supply_conservation": true,
+              "token": "lca1.factory.test.near",
+              "token_custody": "1000000000000000",
+              "token_custody_identity": true,
+              "usdc_custody": "250000000",
+              "usdc_custody_identity": true,
+              "usdc_expected": "250000000",
+              "vest_bounds": true
+            },
+            "launch_id": "1000000000"
+          },
+          {
+            "get_invariants": {
+              "claimed_le_unlocked": true,
+              "market_locked_consistent": true,
+              "owed_usdc": "0",
+              "seeds_held_le_cap": true,
+              "supply_conservation": true,
+              "token": "lca2.factory.test.near",
+              "token_custody": "1000000000000000",
+              "token_custody_identity": true,
+              "usdc_custody": "250000000",
+              "usdc_custody_identity": true,
+              "usdc_expected": "250000000",
+              "vest_bounds": true
+            },
+            "launch_id": "1000000001"
+          }
+        ]
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "instant",
+      "title": "Unconsumed seeds above the launcher's aggregate cap; a seed above the per-launch cap",
+      "transactions": [
+        {
+          "expected_rule_code": null,
+          "label": "first seed (inside the cap)",
+          "network": "SANDBOX",
+          "role": "support",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "4Xd2MT1gGqTgK8RzuYqKqCnnJjZKL2ns6yDVrDYWBhbY"
+        },
+        {
+          "expected_rule_code": "R_CAP_GLOBAL",
+          "label": "second seed above the aggregate cap",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_CAP_GLOBAL",
+          "status": "succeeded",
+          "tx": "4rQUxAv4Vr3Rfx6onBUqYgbC2CLNWtpLRVTCEnvBi56o"
+        },
+        {
+          "expected_rule_code": "R_SEED_RANGE",
+          "label": "create_instant with seed_q above the per-launch cap",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_SEED_RANGE",
+          "status": "failed",
+          "tx": "5XzRBjj93zz4j9CteiZtokhYmUFFwMEZoSShfhzrd3cw"
+        }
+      ]
+    },
+    {
+      "attempt": "A look-alike token is used to buy, to sell, to open a new instant pool as 'USDC', and as the token bucket for a pool waiting for its token (once by a stranger, once even from the launcher account).",
+      "checks": [
+        {
+          "ok": true,
+          "what": "fakes refunded"
+        },
+        {
+          "ok": true,
+          "what": "pool 1 unchanged, pool 2 still waiting for its token, no pool 3"
+        },
+        {
+          "ok": true,
+          "what": "pool 2 is Open"
+        }
+      ],
+      "co4": "CO7",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_UNEXPECTED_TOKEN",
+      "id": "I34",
+      "invariants_after": {
+        "market": {
+          "global_q": "1000000000",
+          "instant_q_matches": true,
+          "parked_count": 0,
+          "usdc_custody": "1000000000",
+          "usdc_custody_identity": true,
+          "usdc_expected": "1000000000"
+        },
+        "pools": [
+          {
+            "launch_id": 1000000000,
+            "pool_invariants": {
+              "k_ge_k0": true,
+              "token_custody_identity": true
+            }
+          },
+          {
+            "launch_id": 1000000001,
+            "pool_invariants": {
+              "k_ge_k0": true,
+              "token_custody_identity": true
+            }
+          }
+        ]
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "market",
+      "title": "Fake launch token and fake USDC against instant pools",
+      "transactions": [
+        {
+          "expected_rule_code": "R_UNEXPECTED_TOKEN",
+          "label": "fake-USDC buy on the instant pool",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_UNEXPECTED_TOKEN",
+          "status": "succeeded",
+          "tx": "BuML7Cd97daXhrTEiask1LQmbiJPPFPnbFkM1dNj8jnv"
+        },
+        {
+          "expected_rule_code": "R_UNEXPECTED_TOKEN",
+          "label": "fake-token sell on the instant pool",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_UNEXPECTED_TOKEN",
+          "status": "succeeded",
+          "tx": "BY7MYNkvAFeRMiutCRgNozhJUEAnLYNKwwF4KM51gv2k"
+        },
+        {
+          "expected_rule_code": "R_UNEXPECTED_TOKEN",
+          "label": "fake-USDC seed_quote for a new instant id",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_UNEXPECTED_TOKEN",
+          "status": "succeeded",
+          "tx": "B66RyUWkhrodKkAXLcov1fcjNpLQTJPFZydDS5XAtcxW"
+        },
+        {
+          "expected_rule_code": "R_NOT_AUTHORIZED",
+          "label": "stranger sends a fake token as the token bucket",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOT_AUTHORIZED",
+          "status": "succeeded",
+          "tx": "69QQPUE2w13wsW2oQGazhtNxWjWrneXGmJh87FbwRBoo"
+        },
+        {
+          "expected_rule_code": "R_UNEXPECTED_TOKEN",
+          "label": "launcher account sends a look-alike token as the bucket",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_UNEXPECTED_TOKEN",
+          "status": "succeeded",
+          "tx": "EvsE2TKPN9yq92djJjPsWZoT7sH7mjLdSuwLBDFshPEd"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "the real token bucket still completes pool 2",
+          "network": "SANDBOX",
+          "role": "support",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "CBZJsPaL2aXt5wKVmVJfNBXxk6HLwQbDtDk7uRHSiTTQ"
+        }
+      ]
+    },
+    {
+      "attempt": "The launcher is paused. A new launch, a seed, and an open of an already seeded launch are tried; then the vesting claim, the abandon and the deposit reclaim (exits) are exercised.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "the vesting claim paid"
+        },
+        {
+          "ok": true,
+          "what": "abandon worked"
+        },
+        {
+          "ok": true,
+          "what": "nothing new was created and c's seed was refunded"
+        }
+      ],
+      "co4": "CO7",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_PAUSED",
+      "id": "I35",
+      "invariants_after": {
+        "launcher": {
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "usdc_custody": "250000000",
+          "usdc_custody_identity": true,
+          "usdc_expected": "250000000"
+        },
+        "launches": [
+          {
+            "get_invariants": {
+              "claimed_le_unlocked": true,
+              "market_locked_consistent": true,
+              "owed_usdc": "0",
+              "seeds_held_le_cap": true,
+              "supply_conservation": true,
+              "token": "paus.factory.test.near",
+              "token_custody": "33096988833334",
+              "token_custody_identity": true,
+              "usdc_custody": "250000000",
+              "usdc_custody_identity": true,
+              "usdc_expected": "250000000",
+              "vest_bounds": true
+            },
+            "launch_id": "1000000000"
+          },
+          {
+            "get_invariants": {
+              "claimed_le_unlocked": true,
+              "market_locked_consistent": true,
+              "owed_usdc": "0",
+              "seeds_held_le_cap": true,
+              "supply_conservation": true,
+              "token": "paub.factory.test.near",
+              "token_custody": "1000000000000000",
+              "token_custody_identity": true,
+              "usdc_custody": "250000000",
+              "usdc_custody_identity": true,
+              "usdc_expected": "250000000",
+              "vest_bounds": true
+            },
+            "launch_id": "1000000001"
+          }
+        ]
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "instant",
+      "title": "Pause: new launches, seeds and opens are refused; exits stay open",
+      "transactions": [
+        {
+          "expected_rule_code": null,
+          "label": "guardian pause",
+          "network": "SANDBOX",
+          "role": "support",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "4dZ76D5SrYbLLLt8nRosk3WjohKqHNDLpxE6FxDgUQwR"
+        },
+        {
+          "expected_rule_code": "R_PAUSED",
+          "label": "create_instant while paused",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_PAUSED",
+          "status": "failed",
+          "tx": "9VNRKNDP3FFKYD4Q8Dx4tjVBgPwQYB1aa7cWWfdyywx"
+        },
+        {
+          "expected_rule_code": "R_PAUSED",
+          "label": "seed while paused",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_PAUSED",
+          "status": "succeeded",
+          "tx": "DJ8tTAAT1AUZ9W99D591wZCkcgHErqVofAcmoexvbjLY"
+        },
+        {
+          "expected_rule_code": "R_PAUSED",
+          "label": "open_instant while paused",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_PAUSED",
+          "status": "failed",
+          "tx": "ChxTh33zhgrH6mRjbM5FK96hggkP37Shf3aMY3v1Sd8v"
+        },
+        {
+          "expected_rule_code": "R_NOT_AUTHORIZED",
+          "label": "unpause by the guardian",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOT_AUTHORIZED",
+          "status": "failed",
+          "tx": "6ANPoHuufkfNGP2bbZmxCAz8wPt6FPriA7oWXVradBiV"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "claim_vested while paused (exit)",
+          "network": "SANDBOX",
+          "role": "support",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "7htE5MSi9PmLRsfNVGBgndNPVM9mYvUP1bxYmN3W7sPn"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "abandon_instant while paused (exit)",
+          "network": "SANDBOX",
+          "role": "support",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "6yM9qTx2irvAMfHjrbEar3eQDWkKuoz1qnBX79UtrJBa"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "reclaim_deposit while paused (exit)",
+          "network": "SANDBOX",
+          "role": "support",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "6XP865bvEazSw9xLPWMTWcow8pR2yp25WPyuDxLPKkVD"
+        }
+      ]
+    },
+    {
+      "attempt": "The guardian freezes the launcher; the recipient claims and a creator abandons while frozen. This is NOT blocked by design; it ends by auto-expiry (7 days; the demo clock makes that 70 s) or an owner unpause.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "config reports Frozen"
+        },
+        {
+          "ok": true,
+          "what": "nothing was paid while frozen"
+        },
+        {
+          "ok": true,
+          "what": "bound (pure-logic check; the 7 days are real days, not demo units): freeze ends 7 days after it starts"
+        },
+        {
+          "ok": true,
+          "what": "bound (pure-logic check): the effective level at the end is Paused, not Frozen"
+        },
+        {
+          "ok": true,
+          "what": "observation recorded: abandon_instant is not closed by a freeze (doc and code differ, harmless to users)"
+        },
+        {
+          "ok": true,
+          "what": "the recipient was paid after the unpause"
+        }
+      ],
+      "co4": "CO7",
+      "expected_result": "BOUNDED",
+      "expected_rule_code": "R_FROZEN",
+      "id": "I36",
+      "invariants_after": {
+        "launcher": {
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0"
+        },
+        "launches": [
+          {
+            "get_invariants": {
+              "claimed_le_unlocked": true,
+              "market_locked_consistent": true,
+              "owed_usdc": "0",
+              "seeds_held_le_cap": true,
+              "supply_conservation": true,
+              "token": "frzn.factory.test.near",
+              "token_custody": "31442702833334",
+              "token_custody_identity": true,
+              "usdc_custody": "0",
+              "usdc_custody_identity": true,
+              "usdc_expected": "0",
+              "vest_bounds": true
+            },
+            "launch_id": "1000000000"
+          }
+        ]
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "BOUNDED",
+      "target": "instant",
+      "title": "Freeze closes the launcher's exits (disclosed limit: bounded to 7 days)",
+      "transactions": [
+        {
+          "expected_rule_code": null,
+          "label": "guardian freeze",
+          "network": "SANDBOX",
+          "role": "support",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "8XJ5hTBkxma7JJgYkvDRRnerGihm5pWHTPoHJHanm47F"
+        },
+        {
+          "expected_rule_code": "R_FROZEN",
+          "label": "claim_vested while FROZEN",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_FROZEN",
+          "status": "failed",
+          "tx": "DzdczDcHjhwqvyfqvo5jogskiwwej4NskanLJKbJFfv1"
+        },
+        {
+          "expected_rule_code": "R_FROZEN",
+          "label": "claim_owed while FROZEN",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_FROZEN",
+          "status": "failed",
+          "tx": "8bmQbnBTzCvjByvTmPTYXFwDn7smjTjk4gjj1SFwU7VK"
+        },
+        {
+          "expected_rule_code": "R_FROZEN",
+          "label": "withdraw_platform while FROZEN",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_FROZEN",
+          "status": "failed",
+          "tx": "45Mm1mx2MyQPYTtFDTDKRWDgyRMsKmfxyyAMPVE3aZ7t"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "abandon_instant while FROZEN (observation: the ABI says freeze closes it, the code does not gate it)",
+          "network": "SANDBOX",
+          "role": "support",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "Aiw5eLSSSQnwaKCK1vKw7oCzLYsTQoR2LiEw3XGfzCfq"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "owner unpause",
+          "network": "SANDBOX",
+          "role": "support",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "DiSKEGoGq8L9gpJGfT5NrveKJox1XXsenFWTyTYGntxK"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "claim_vested after the owner lifted the freeze",
+          "network": "SANDBOX",
+          "role": "support",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "96SL77W9iqof67TAigM8rEdadzaYUusTonBctEPf2zgm"
+        }
+      ]
+    },
+    {
+      "attempt": "The guardian pauses the market; the holder tries to buy more (refused) and to sell everything back out (must succeed).",
+      "checks": [
+        {
+          "ok": true,
+          "what": "a new buy is refused while paused (R_PAUSED)"
+        },
+        {
+          "ok": true,
+          "what": "the sell executed and the holder is out"
+        }
+      ],
+      "co4": "CO7",
+      "expected_result": "NO_EFFECT",
+      "expected_rule_code": "",
+      "id": "I37",
+      "invariants_after": {
+        "launcher": {
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0"
+        },
+        "launches": [
+          {
+            "get_invariants": {
+              "claimed_le_unlocked": true,
+              "market_locked_consistent": true,
+              "owed_usdc": "0",
+              "seeds_held_le_cap": true,
+              "supply_conservation": true,
+              "token": "mpau.factory.test.near",
+              "token_custody": "50000000000000",
+              "token_custody_identity": true,
+              "usdc_custody": "0",
+              "usdc_custody_identity": true,
+              "usdc_expected": "0",
+              "vest_bounds": true
+            },
+            "launch_id": "1000000000"
+          }
+        ],
+        "market": {
+          "get_invariants": {
+            "global_q": "257330767",
+            "instant_q_matches": true,
+            "parked_count": 0,
+            "usdc_custody": "258606064",
+            "usdc_custody_identity": true,
+            "usdc_expected": "258606064"
+          },
+          "pools": [
+            {
+              "launch_id": "1000000000",
+              "pool_invariants": {
+                "k_ge_k0": true,
+                "token_custody_identity": true
+              }
+            }
+          ]
+        }
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "NO_EFFECT",
+      "target": "market",
+      "title": "Market pause used to trap holders of an instant pool",
+      "transactions": [
+        {
+          "expected_rule_code": null,
+          "label": "guardian pauses the market",
+          "network": "SANDBOX",
+          "role": "support",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "DFQViqNAnfzeFTgKFTRtJWCBhBKQuYhRbj3k9CuG4baX"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "holder sells everything while the market is PAUSED",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "JAtpAZyMr8FaWBoHePqSET8kM6TidG4kYrUi7d8kHQR1"
+        }
+      ]
+    },
+    {
+      "attempt": "The guardian tries to raise the caps (owner only), the owner queues a raise and a stranger applies it at once, and the guardian lowers a cap below the minimum seed.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "the raise was queued, not applied"
+        },
+        {
+          "ok": true,
+          "what": "the queued raise takes effect at least 6.9 days later (real days, not demo units)"
+        },
+        {
+          "ok": true,
+          "what": "caps unchanged"
+        }
+      ],
+      "co4": "CO7",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_NOT_YET",
+      "id": "I38",
+      "invariants_after": {
+        "launcher": {
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0"
+        },
+        "launches": []
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "instant",
+      "title": "Raise a seed cap without the 7-day timelock",
+      "transactions": [
+        {
+          "expected_rule_code": "R_NOT_AUTHORIZED",
+          "label": "guardian raises the aggregate cap",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOT_AUTHORIZED",
+          "status": "failed",
+          "tx": "GyckqUzZ4QWqoQ9JYTKFJ9HgVSTaKYj5UBRxWcKbCe8A"
+        },
+        {
+          "expected_rule_code": "R_NOT_AUTHORIZED",
+          "label": "stranger raises the per-launch cap",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOT_AUTHORIZED",
+          "status": "failed",
+          "tx": "GmxrHKrWa6T1257HV8kGaVfk5Zp1xjt5qERD7Tzk3JL1"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "owner queues the raise (event cap_queued)",
+          "network": "SANDBOX",
+          "role": "support",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "ANqWXGyJDqsoL6GB9zDG4Qt61nmSwgd76GchgBh9hFPg"
+        },
+        {
+          "expected_rule_code": "R_NOT_YET",
+          "label": "apply_seed_cap immediately",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOT_YET",
+          "status": "failed",
+          "tx": "C3yCRC8PU3zeg7W9xQC5bA5dqQCMPuWmvbGw8Lc2HRD5"
+        },
+        {
+          "expected_rule_code": "R_NOTHING",
+          "label": "apply_seed_cap for a cap with nothing queued",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOTHING",
+          "status": "failed",
+          "tx": "2LGRybc2gX498tc4VeeXXTPqGmYn3DX4QnrB2vfGWtKF"
+        },
+        {
+          "expected_rule_code": "R_CAP_GLOBAL",
+          "label": "guardian lowers the per-launch cap below the minimum seed",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_CAP_GLOBAL",
+          "status": "failed",
+          "tx": "8PDNNtY8RK8M75QkessEKF5TqygvDJTeZ1wjKaqtUgHW"
         }
       ]
     },
@@ -2744,6 +6159,7 @@
       "invariants_after": {
         "market": {
           "global_q": "1000000000",
+          "instant_q_matches": true,
           "parked_count": 0,
           "usdc_custody": "1000000000",
           "usdc_custody_identity": true,
@@ -2772,7 +6188,7 @@
           "role": "attack",
           "rule_code": "R_UNEXPECTED_TOKEN",
           "status": "succeeded",
-          "tx": "5rfYnQ9fvVn5QJxGNSTnrm5BW9vY8pprgEcJYLuVdpGk"
+          "tx": "yJxhz3dbYSKkfmcgwZSSinY1QEjr7Ahud5H4CcN3CdP"
         },
         {
           "expected_rule_code": "R_UNEXPECTED_TOKEN",
@@ -2781,7 +6197,7 @@
           "role": "attack",
           "rule_code": "R_UNEXPECTED_TOKEN",
           "status": "succeeded",
-          "tx": "A88pdFMNeByxX72GTknQcSbUbtfT2ZDZjGrQGoyTyHdB"
+          "tx": "DGguUe564gva6yBkPMCZhsHqtwMFwQmCQ6vQFWmC9YfU"
         },
         {
           "expected_rule_code": "R_UNEXPECTED_TOKEN",
@@ -2790,7 +6206,7 @@
           "role": "attack",
           "rule_code": "R_UNEXPECTED_TOKEN",
           "status": "succeeded",
-          "tx": "13Ncu6x1ALAt5QAVLQ3ah3Mf6cRcRreZy56zEnyAH1Z8"
+          "tx": "66QdDCf4NbjX6Gb2XaNvGfixNDZ8PQYc6oRfB3htLhQ2"
         }
       ]
     },
@@ -2813,6 +6229,7 @@
       "invariants_after": {
         "market": {
           "global_q": "1000000000",
+          "instant_q_matches": true,
           "parked_count": 0,
           "usdc_custody": "1000000000",
           "usdc_custody_identity": true,
@@ -2841,7 +6258,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "succeeded",
-          "tx": "JBnWcPacREjxKKmsUmo8a74omNcshAay75uNCHVJKTJz"
+          "tx": "GDwRp3QqT56j4k3EuRRziuXEnnKKJ6a5Qa45GUYBquCW"
         },
         {
           "expected_rule_code": "R_DUP_LAUNCH",
@@ -2850,7 +6267,7 @@
           "role": "attack",
           "rule_code": "R_DUP_LAUNCH",
           "status": "succeeded",
-          "tx": "95DBZrnAz85vB5CvD1scBTeVdwmMWFc6F2raDrezB6Lq"
+          "tx": "4LQkiBCZm3rJBLQVr3NAgqiRCQG92e9jS53g6h4GT2x2"
         }
       ]
     },
@@ -2869,6 +6286,7 @@
       "invariants_after": {
         "market": {
           "global_q": "1000000000",
+          "instant_q_matches": true,
           "parked_count": 0,
           "usdc_custody": "1000000000",
           "usdc_custody_identity": true,
@@ -2897,7 +6315,7 @@
           "role": "attack",
           "rule_code": "PRIVATE_METHOD",
           "status": "failed",
-          "tx": "31EEXcff3bS7ui36EZWEHRyLMBXx9AU7fNWqSi3bsm7d"
+          "tx": "5mGs2F3DBzT5ACRw1ySv3SWuCC6cdvR6z7pGYQWq4fZP"
         },
         {
           "expected_rule_code": "R_UNEXPECTED_TOKEN",
@@ -2906,7 +6324,7 @@
           "role": "attack",
           "rule_code": "R_UNEXPECTED_TOKEN",
           "status": "succeeded",
-          "tx": "5mybSMs5M1TjvbZ7huP6DgMJjo4SWTVuNWSrASC3Y9Hr"
+          "tx": "Bt2ZRfmUGYAjgnYrJFdKtg2RgB76Po7R2RT5d7bnD8Zr"
         },
         {
           "expected_rule_code": "R_BAD_MSG",
@@ -2915,7 +6333,7 @@
           "role": "attack",
           "rule_code": "R_BAD_MSG",
           "status": "succeeded",
-          "tx": "58nbpFcYyy17qG8jwi6kGGJ1Pp1pftXrafctKxfqpRWY"
+          "tx": "UGBqL1aPGUk9VoqKznQBw1VuVUaR4ZgbkcpgUGBd1dS"
         }
       ]
     },
@@ -2938,6 +6356,7 @@
       "invariants_after": {
         "market": {
           "global_q": "1496750000",
+          "instant_q_matches": true,
           "parked_count": 0,
           "usdc_custody": "1500000000",
           "usdc_custody_identity": true,
@@ -2966,7 +6385,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "EwHUodZR5T3SBujou2uPkQVt96ZayHUpEHPxggz3Ue5K"
+          "tx": "26DsY8naABTA22ocdabsohUNvr1aevxvz76vvxsW6A7d"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -2975,7 +6394,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "2MuWV2PuBe6jeBer7bjqS6rbyhs5f5pE1zhSgxdWXzJP"
+          "tx": "HiNDDUakDgeXLW8m7Pvb7RaJeoxhgnXCofvyQZPQoPdL"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -2984,7 +6403,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "Df7V7SqxG4sG5SgyeMuDw9pfm8AtQGLxKNJVtDUrQ8Ww"
+          "tx": "F1AToSN3t4s7qNyygvMgLp4Z4vL7zJWdDF4xdG6nHbk5"
         },
         {
           "expected_rule_code": null,
@@ -2993,7 +6412,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "8XeP6Jhq5qvYHaQgBvqETex7ufaF3AkpM4trdRW89HG"
+          "tx": "DXPxKj5XKz2Lw5wiNhbfcs6s48nsGmsVmZFafRqKYvYL"
         },
         {
           "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -3002,7 +6421,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "failed",
-          "tx": "4QxkqadUuuKSnV9oekELiDVJs4zyWzmuQppPxaiPnLn9"
+          "tx": "JBYwioqkdsdVYKR5j58Zjbcmw3SNC7eLbAqEKYAVprwR"
         }
       ]
     },
@@ -3029,6 +6448,7 @@
       "invariants_after": {
         "market": {
           "global_q": "1596100000",
+          "instant_q_matches": true,
           "parked_count": 0,
           "usdc_custody": "1598500000",
           "usdc_custody_identity": true,
@@ -3057,7 +6477,7 @@
           "role": "attack",
           "rule_code": "R_NOT_AUTHORIZED",
           "status": "succeeded",
-          "tx": "3zv7g28KesaQx5Cj216wGurCTz42jMnDSrmXzi8Qi2cB"
+          "tx": "CwfqVSePR1oATheDwh4yKPLeXtYDmy1gWQtgVukqX4Wb"
         },
         {
           "expected_rule_code": null,
@@ -3066,7 +6486,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "BiWQ9KBroKN91UGLV84XZwFc11pEF76SsCsKih8QSkh7"
+          "tx": "2z7g7389CpqnfgqvSTcYTRa8Fa8SRxvKHcdZTGfgCD6W"
         },
         {
           "expected_rule_code": "R_NOTHING_TO_CLAIM",
@@ -3075,7 +6495,7 @@
           "role": "attack",
           "rule_code": "R_NOTHING_TO_CLAIM",
           "status": "failed",
-          "tx": "GdyTdEbQyrUfYV9agSrWL5Xj7wTASwL46YCHLbe6uEMH"
+          "tx": "HKsGvRWEKti5GbEg2Q2UWXpN9B4wr5Hm3a3hPDwVDyRX"
         }
       ]
     },
@@ -3098,6 +6518,7 @@
       "invariants_after": {
         "market": {
           "global_q": "1794800000",
+          "instant_q_matches": true,
           "parked_count": 0,
           "usdc_custody": "1800000000",
           "usdc_custody_identity": true,
@@ -3126,7 +6547,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "3xNuCEQZMR2AgC2cvfvEX9jtJEzuXzDgr5reh21fhSWP"
+          "tx": "GmB5jmvUPuXZMJAEZg8NDWpgediptpAV8L3dfuECDG1Q"
         },
         {
           "expected_rule_code": "R_MIN_OUT",
@@ -3135,7 +6556,7 @@
           "role": "attack",
           "rule_code": "R_MIN_OUT",
           "status": "succeeded",
-          "tx": "FTXogBSbzycp1x3Vmur4SUU1ej53gjgAqhdwqnsLsMSn"
+          "tx": "9rGeJxWdBJDXSRV8A5kKim4uUoHAe5mBXcozAc5zm8jJ"
         },
         {
           "expected_rule_code": "R_MIN_OUT",
@@ -3144,7 +6565,7 @@
           "role": "attack",
           "rule_code": "R_MIN_OUT",
           "status": "succeeded",
-          "tx": "DeNsNhZFgrKjC8BXccezniCLKM58J2nzeP3DERy9SweV"
+          "tx": "4uXzj2Br9oc87ALUj5XYTLnRV3TcMT3AwmuaFqmAEAGL"
         },
         {
           "expected_rule_code": "R_MIN_OUT",
@@ -3153,7 +6574,7 @@
           "role": "attack",
           "rule_code": "R_MIN_OUT",
           "status": "succeeded",
-          "tx": "GUd5pMoA8KXNZNZGznCfHmSkAzQuU7YGHb7p4wrYcrBJ"
+          "tx": "6xEgr82NdtpJbyZ7ChJA7A6H7PpvL4872p38TVrRC3Dj"
         }
       ]
     },
@@ -3176,6 +6597,7 @@
       "invariants_after": {
         "market": {
           "global_q": "1000000000",
+          "instant_q_matches": true,
           "parked_count": 0,
           "usdc_custody": "1000000000",
           "usdc_custody_identity": true,
@@ -3204,7 +6626,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "DTBDhswtGBV8yt7H1TKcNx7ddJB8nMfvGmrSSsEQBzi7"
+          "tx": "EhSgjqtTyv2JnzV74Hv39GA8gjiBrNY2wxTKyHG6PXpu"
         }
       ]
     },
@@ -3226,11 +6648,12 @@
       "id": "M08",
       "invariants_after": {
         "market": {
-          "global_q": "1008116310",
+          "global_q": "1008116223",
+          "instant_q_matches": true,
           "parked_count": 0,
-          "usdc_custody": "1009386273",
+          "usdc_custody": "1009386186",
           "usdc_custody_identity": true,
-          "usdc_expected": "1009386273"
+          "usdc_expected": "1009386186"
         },
         "pools": [
           {
@@ -3255,7 +6678,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "3aKQRtY2vighRxbA3CdosnDh7rVJTTv21HXMfyAfN18G"
+          "tx": "Dn8GZHdZAAuzuSuMoREEn3SFU3oxwdoDveo3TNwAa63F"
         },
         {
           "expected_rule_code": null,
@@ -3264,7 +6687,7 @@
           "role": "attack",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "Bw15BRcQyRfQ7pCXoCF13sf7nGvkRXn413sy73qi67Vc"
+          "tx": "CbonET4M6gEfAFbt9sHfrv6TCLQQgYdu78FTXRqzTks2"
         }
       ]
     },
@@ -3283,6 +6706,7 @@
       "invariants_after": {
         "market": {
           "global_q": "2049675000",
+          "instant_q_matches": true,
           "parked_count": 0,
           "usdc_custody": "2050000000",
           "usdc_custody_identity": true,
@@ -3318,7 +6742,7 @@
           "role": "attack",
           "rule_code": "R_MARKET_CAP",
           "status": "succeeded",
-          "tx": "DNaYPwZDcBwwPpKTrUCEb2CFCboqwWA6XFttKgtru3u2"
+          "tx": "ESfyyeGtar1J6UXA59NNg5fZ3uFN6zqmSiKyruFSFp8A"
         },
         {
           "expected_rule_code": null,
@@ -3327,7 +6751,7 @@
           "role": "support",
           "rule_code": null,
           "status": "succeeded",
-          "tx": "7Xtv9HjDVfA6eG34g2i23auAvdkCDQTnsfcCo7jKBbaS"
+          "tx": "bRqZf8fJP6JXwa9GNQfp7F2xS1HcS4a4k3JNLNXfKjr"
         }
       ]
     }

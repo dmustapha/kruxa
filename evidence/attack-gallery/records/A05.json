@@ -45,7 +45,7 @@
       "role": "attack",
       "rule_code": "R_TOO_EARLY",
       "status": "failed",
-      "tx": "E7rUYjtLvKkcPRYD7aqjwzWoZYC6TbRt88cKwEbW82WB"
+      "tx": "6hpfLAm6hpVP8QaPGmNGw3n9AeunYoSurCft95mKVRg8"
     },
     {
       "expected_rule_code": "R_TOO_EARLY",
@@ -54,7 +54,7 @@
       "role": "attack",
       "rule_code": "R_TOO_EARLY",
       "status": "failed",
-      "tx": "CM26b4tceszyGqZkYYs8q77ygwXH41XjMfWf9ZQEKhN"
+      "tx": "DogcEJuiNgr4kNSmGJecAUN3rBed9xnpVv9H2W12TACw"
     }
   ]
 }

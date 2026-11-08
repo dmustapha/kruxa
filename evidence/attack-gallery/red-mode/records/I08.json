@@ -1,0 +1,93 @@
+{
+  "attempt": "The creator seeds a launch declared at 250 USDC with 250 USDC plus 1 micro-USDC, 249 USDC, 1 USDC and 1,000 USDC.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "every amount came back to the creator"
+    },
+    {
+      "ok": true,
+      "what": "the launcher kept nothing"
+    },
+    {
+      "ok": true,
+      "what": "status is still TokenReady"
+    }
+  ],
+  "co4": "CO7",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_SEED_AMOUNT",
+  "id": "I08",
+  "invariants_after": {
+    "launcher": {
+      "market_locked_consistent": true,
+      "owed_usdc": "0",
+      "seeds_held_le_cap": true,
+      "usdc_custody": "0",
+      "usdc_custody_identity": true,
+      "usdc_expected": "0"
+    },
+    "launches": [
+      {
+        "get_invariants": {
+          "claimed_le_unlocked": true,
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "supply_conservation": true,
+          "token": "sdam.factory.test.near",
+          "token_custody": "1000000000000000",
+          "token_custody_identity": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0",
+          "vest_bounds": true
+        },
+        "launch_id": "1000000000"
+      }
+    ]
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "instant",
+  "title": "Seed with the wrong amount",
+  "transactions": [
+    {
+      "expected_rule_code": "R_SEED_AMOUNT",
+      "label": "250 USDC + 1",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_SEED_AMOUNT",
+      "status": "succeeded",
+      "tx": "BoUuQcCLVYKFSKURoemD46rjbwsRJxSH8fQBm3nx2tdP"
+    },
+    {
+      "expected_rule_code": "R_SEED_AMOUNT",
+      "label": "249 USDC",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_SEED_AMOUNT",
+      "status": "succeeded",
+      "tx": "Ge9UgWE8xGzRuDdPGo5hgz8zinnCduTivBKDt4o2iSLC"
+    },
+    {
+      "expected_rule_code": "R_SEED_AMOUNT",
+      "label": "1 USDC",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_SEED_AMOUNT",
+      "status": "succeeded",
+      "tx": "3ASDuJBVTXghH3W1XRxukHCJdDFtBNdStMLL14CUBaCm"
+    },
+    {
+      "expected_rule_code": "R_SEED_AMOUNT",
+      "label": "1,000 USDC",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_SEED_AMOUNT",
+      "status": "succeeded",
+      "tx": "CNLTuBH4iQDEcCR7ToyqC4trtepHArzujxxiYFUUkVKw"
+    }
+  ]
+}

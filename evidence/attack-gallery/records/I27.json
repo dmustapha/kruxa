@@ -1,0 +1,71 @@
+{
+  "attempt": "The launcher sends a seed and a token leg for a core-range id (7); core sends a seed and a token leg for an instant-range id.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "everything was refunded"
+    },
+    {
+      "ok": true,
+      "what": "no pool was created"
+    }
+  ],
+  "co4": "CO7",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_ID_NAMESPACE",
+  "id": "I27",
+  "invariants_after": {
+    "market": {
+      "global_q": "0",
+      "instant_q_matches": true,
+      "parked_count": 0,
+      "usdc_custody": "0",
+      "usdc_custody_identity": true,
+      "usdc_expected": "0"
+    },
+    "pools": []
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "market",
+  "title": "Launcher below 1e9 and core at or above 1e9, on the seed leg and the token leg",
+  "transactions": [
+    {
+      "expected_rule_code": "R_ID_NAMESPACE",
+      "label": "launcher seed_quote for id 7",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_ID_NAMESPACE",
+      "status": "succeeded",
+      "tx": "2yZK7Jwa113kmSqX2kdLR1pu41Cv55fXctqLr79TU62V"
+    },
+    {
+      "expected_rule_code": "R_ID_NAMESPACE",
+      "label": "launcher token leg for id 7",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_ID_NAMESPACE",
+      "status": "succeeded",
+      "tx": "2Tejsz9Pe7aMX6hX4pTNBeqMTKNqrojpTiHzephxcUbU"
+    },
+    {
+      "expected_rule_code": "R_ID_NAMESPACE",
+      "label": "core seed_quote for id 1e9",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_ID_NAMESPACE",
+      "status": "succeeded",
+      "tx": "HdYVGSMDkzCi5vAG1cTTHRnn2PHRMxc3TykxBwhcFNxj"
+    },
+    {
+      "expected_rule_code": "R_ID_NAMESPACE",
+      "label": "core token leg for id 1e9",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_ID_NAMESPACE",
+      "status": "succeeded",
+      "tx": "FvMUUhg4vGTmJswEvaxazLTjby6ypeF3GzyGSxRfdzRC"
+    }
+  ]
+}

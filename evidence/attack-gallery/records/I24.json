@@ -1,0 +1,57 @@
+{
+  "attempt": "Even the owner tries to switch the launcher to another account, and to re-set the same one, once a launcher pool is live.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "get_config still names the original launcher"
+    }
+  ],
+  "co4": "CO7",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_LAUNCHER_LOCKED",
+  "id": "I24",
+  "invariants_after": {
+    "market": {
+      "global_q": "500000000",
+      "instant_q_matches": true,
+      "parked_count": 0,
+      "usdc_custody": "500000000",
+      "usdc_custody_identity": true,
+      "usdc_expected": "500000000"
+    },
+    "pools": [
+      {
+        "launch_id": 1000000000,
+        "pool_invariants": {
+          "k_ge_k0": true,
+          "token_custody_identity": true
+        }
+      }
+    ]
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "market",
+  "title": "Re-point the launcher after the first instant pool exists",
+  "transactions": [
+    {
+      "expected_rule_code": "R_LAUNCHER_LOCKED",
+      "label": "owner re-points the launcher",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_LAUNCHER_LOCKED",
+      "status": "failed",
+      "tx": "4RK3ja1zUVbej2iVmSWfsjXzivurfDSHzsnM5bmrRrPj"
+    },
+    {
+      "expected_rule_code": "R_LAUNCHER_LOCKED",
+      "label": "owner re-sets the same launcher",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_LAUNCHER_LOCKED",
+      "status": "failed",
+      "tx": "Ct677BvASj1JmAUctzuU2BTLpG6c1MECL5VAqituJWML"
+    }
+  ]
+}

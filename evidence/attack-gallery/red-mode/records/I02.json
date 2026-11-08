@@ -1,0 +1,71 @@
+{
+  "attempt": "The owner and the guardian try to launch while the gate is closed (no insider bypass), then the guardian and a creator try to open the gate themselves.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "the gate is still closed"
+    },
+    {
+      "ok": true,
+      "what": "nothing was created"
+    }
+  ],
+  "co4": "CO7",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_CREATOR_GATE",
+  "id": "I02",
+  "invariants_after": {
+    "launcher": {
+      "market_locked_consistent": true,
+      "owed_usdc": "0",
+      "seeds_held_le_cap": true,
+      "usdc_custody": "0",
+      "usdc_custody_identity": true,
+      "usdc_expected": "0"
+    },
+    "launches": []
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "instant",
+  "title": "create_instant by the owner and the guardian before open_beta; open_beta by non-owners",
+  "transactions": [
+    {
+      "expected_rule_code": "R_CREATOR_GATE",
+      "label": "create_instant by the owner",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_CREATOR_GATE",
+      "status": "failed",
+      "tx": "8em2qpDwwVL7xxLYz3mZyCAzALiPP9ybgF8AP8CtJiDD"
+    },
+    {
+      "expected_rule_code": "R_CREATOR_GATE",
+      "label": "create_instant by the guardian",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_CREATOR_GATE",
+      "status": "failed",
+      "tx": "F2qhQNZL2d3Z6fBznWUZrsqPWuxAP4ytkXSSLHk9FXSj"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "open_beta by the guardian",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "9hKec8xLmxDoFFjfSADzjwMpiHBBQRGW1RXh5Q1unfTu"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "open_beta by a creator",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "3AWzHH7FUX9u5yzGaJ2pEgcWz3Ns4DZkENt6d114o2DP"
+    }
+  ]
+}

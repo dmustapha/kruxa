@@ -1,0 +1,75 @@
+{
+  "attempt": "The creator seeds with 250 units of a look-alike USDC contract, then calls ft_on_transfer on the launcher directly with the right message.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "direct call returned the full amount"
+    },
+    {
+      "ok": true,
+      "what": "fake tokens refunded"
+    },
+    {
+      "ok": true,
+      "what": "status is still TokenReady and nothing is held"
+    }
+  ],
+  "co4": "CO7",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_UNEXPECTED_TOKEN",
+  "id": "I09",
+  "invariants_after": {
+    "launcher": {
+      "market_locked_consistent": true,
+      "owed_usdc": "0",
+      "seeds_held_le_cap": true,
+      "usdc_custody": "0",
+      "usdc_custody_identity": true,
+      "usdc_expected": "0"
+    },
+    "launches": [
+      {
+        "get_invariants": {
+          "claimed_le_unlocked": true,
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "supply_conservation": true,
+          "token": "sdtk.factory.test.near",
+          "token_custody": "1000000000000000",
+          "token_custody_identity": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0",
+          "vest_bounds": true
+        },
+        "launch_id": "1000000000"
+      }
+    ]
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "instant",
+  "title": "Seed with a look-alike token, and a forged ft_on_transfer",
+  "transactions": [
+    {
+      "expected_rule_code": "R_UNEXPECTED_TOKEN",
+      "label": "fake-USDC seed",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_UNEXPECTED_TOKEN",
+      "status": "succeeded",
+      "tx": "BocAAmZuPSqDvm11p4hvyf5nXxRg1rCzVP7BZybz3k8f"
+    },
+    {
+      "expected_rule_code": "R_UNEXPECTED_TOKEN",
+      "label": "direct ft_on_transfer from a non-token account",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_UNEXPECTED_TOKEN",
+      "status": "succeeded",
+      "tx": "pdEMuQRLNxVNUfa4JYqpfyNAtNYHhPHqkGtXdMaMSKZ"
+    }
+  ]
+}

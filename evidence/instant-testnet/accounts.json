@@ -1,0 +1,22 @@
+{
+  "network": "NEAR TESTNET (play money)",
+  "profile": "demo (10-second days): throwaway demo accounts, never a public deployment",
+  "accounts": {
+    "owner": "kxi-root-0811.testnet",
+    "guardian": "guardian.kxi-root-0811.testnet",
+    "treasury": "treasury.kxi-root-0811.testnet",
+    "usdc": "usdc.kxi-root-0811.testnet",
+    "factory": "factory.kxi-root-0811.testnet",
+    "launcher": "demo-instant.kxi-root-0811.testnet",
+    "market": "demo-market.kxi-root-0811.testnet",
+    "creatorA": "creator-a.kxi-root-0811.testnet",
+    "creatorB": "creator-b.kxi-root-0811.testnet",
+    "buyer": "buyer.kxi-root-0811.testnet"
+  },
+  "wasm_sha256": {
+    "launcher": "1ce3157607db3c0b5f8743b5378d7d0e2daa2b154910361c0a959440b134b15d",
+    "market": "2817cb45f52a5dbc22ace7d1d1e6a7041edd5d3cbb95ce5daa79225358b0bdcb",
+    "mock_ft": "6a7a0ba153a0f9f0a042818c776b283cc3b050fdee681a0097c00ce11f7aff04",
+    "mock_factory": "02a0a62a15f81cad13d636a2190092751bf6375e58cc14a8c01af750473d503e"
+  }
+}

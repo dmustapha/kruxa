@@ -1,0 +1,97 @@
+{
+  "attempt": "With the aggregate cap lowered to 400 USDC and one 250 USDC seed held, a second 250 USDC seed arrives; a third creator declares a 1,000.000001 USDC seed.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "second seed refunded in full"
+    },
+    {
+      "ok": true,
+      "what": "only one seed is held"
+    }
+  ],
+  "co4": "CO7",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_CAP_GLOBAL",
+  "id": "I33",
+  "invariants_after": {
+    "launcher": {
+      "market_locked_consistent": true,
+      "owed_usdc": "0",
+      "seeds_held_le_cap": true,
+      "usdc_custody": "250000000",
+      "usdc_custody_identity": true,
+      "usdc_expected": "250000000"
+    },
+    "launches": [
+      {
+        "get_invariants": {
+          "claimed_le_unlocked": true,
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "supply_conservation": true,
+          "token": "lca1.factory.test.near",
+          "token_custody": "1000000000000000",
+          "token_custody_identity": true,
+          "usdc_custody": "250000000",
+          "usdc_custody_identity": true,
+          "usdc_expected": "250000000",
+          "vest_bounds": true
+        },
+        "launch_id": "1000000000"
+      },
+      {
+        "get_invariants": {
+          "claimed_le_unlocked": true,
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "supply_conservation": true,
+          "token": "lca2.factory.test.near",
+          "token_custody": "1000000000000000",
+          "token_custody_identity": true,
+          "usdc_custody": "250000000",
+          "usdc_custody_identity": true,
+          "usdc_expected": "250000000",
+          "vest_bounds": true
+        },
+        "launch_id": "1000000001"
+      }
+    ]
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "instant",
+  "title": "Unconsumed seeds above the launcher's aggregate cap; a seed above the per-launch cap",
+  "transactions": [
+    {
+      "expected_rule_code": null,
+      "label": "first seed (inside the cap)",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "Ghm7jwxJoxGsxhMr3TFo4oK4pWPH5wUZhUjH4Qnibgi9"
+    },
+    {
+      "expected_rule_code": "R_CAP_GLOBAL",
+      "label": "second seed above the aggregate cap",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_CAP_GLOBAL",
+      "status": "succeeded",
+      "tx": "B427pLGSteVq7dQc8aMai9SrQyb1JuQN8RRheyfvt6Ld"
+    },
+    {
+      "expected_rule_code": "R_SEED_RANGE",
+      "label": "create_instant with seed_q above the per-launch cap",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_SEED_RANGE",
+      "status": "failed",
+      "tx": "7rfzQADoPykvEXqK7F5eCswVjUDX2STNaUToMM4JbcnS"
+    }
+  ]
+}

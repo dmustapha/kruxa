@@ -1,0 +1,146 @@
+{
+  "attempt": "The launcher is paused. A new launch, a seed, and an open of an already seeded launch are tried; then the vesting claim, the abandon and the deposit reclaim (exits) are exercised.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "the vesting claim paid"
+    },
+    {
+      "ok": true,
+      "what": "abandon worked"
+    },
+    {
+      "ok": true,
+      "what": "nothing new was created and c's seed was refunded"
+    }
+  ],
+  "co4": "CO7",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_PAUSED",
+  "id": "I35",
+  "invariants_after": {
+    "launcher": {
+      "market_locked_consistent": true,
+      "owed_usdc": "0",
+      "seeds_held_le_cap": true,
+      "usdc_custody": "250000000",
+      "usdc_custody_identity": true,
+      "usdc_expected": "250000000"
+    },
+    "launches": [
+      {
+        "get_invariants": {
+          "claimed_le_unlocked": true,
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "supply_conservation": true,
+          "token": "paus.factory.test.near",
+          "token_custody": "33096988833334",
+          "token_custody_identity": true,
+          "usdc_custody": "250000000",
+          "usdc_custody_identity": true,
+          "usdc_expected": "250000000",
+          "vest_bounds": true
+        },
+        "launch_id": "1000000000"
+      },
+      {
+        "get_invariants": {
+          "claimed_le_unlocked": true,
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "supply_conservation": true,
+          "token": "paub.factory.test.near",
+          "token_custody": "1000000000000000",
+          "token_custody_identity": true,
+          "usdc_custody": "250000000",
+          "usdc_custody_identity": true,
+          "usdc_expected": "250000000",
+          "vest_bounds": true
+        },
+        "launch_id": "1000000001"
+      }
+    ]
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "instant",
+  "title": "Pause: new launches, seeds and opens are refused; exits stay open",
+  "transactions": [
+    {
+      "expected_rule_code": null,
+      "label": "guardian pause",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "4dZ76D5SrYbLLLt8nRosk3WjohKqHNDLpxE6FxDgUQwR"
+    },
+    {
+      "expected_rule_code": "R_PAUSED",
+      "label": "create_instant while paused",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_PAUSED",
+      "status": "failed",
+      "tx": "9VNRKNDP3FFKYD4Q8Dx4tjVBgPwQYB1aa7cWWfdyywx"
+    },
+    {
+      "expected_rule_code": "R_PAUSED",
+      "label": "seed while paused",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_PAUSED",
+      "status": "succeeded",
+      "tx": "DJ8tTAAT1AUZ9W99D591wZCkcgHErqVofAcmoexvbjLY"
+    },
+    {
+      "expected_rule_code": "R_PAUSED",
+      "label": "open_instant while paused",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_PAUSED",
+      "status": "failed",
+      "tx": "ChxTh33zhgrH6mRjbM5FK96hggkP37Shf3aMY3v1Sd8v"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "unpause by the guardian",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "6ANPoHuufkfNGP2bbZmxCAz8wPt6FPriA7oWXVradBiV"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "claim_vested while paused (exit)",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "7htE5MSi9PmLRsfNVGBgndNPVM9mYvUP1bxYmN3W7sPn"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "abandon_instant while paused (exit)",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "6yM9qTx2irvAMfHjrbEar3eQDWkKuoz1qnBX79UtrJBa"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "reclaim_deposit while paused (exit)",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "6XP865bvEazSw9xLPWMTWcow8pR2yp25WPyuDxLPKkVD"
+    }
+  ]
+}

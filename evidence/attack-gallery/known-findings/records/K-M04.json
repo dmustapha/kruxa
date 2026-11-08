@@ -1,0 +1,12 @@
+{
+  "data": {
+    "mock_ft_exports_ft_transfer": true,
+    "reason": "needs a returning-FT fixture"
+  },
+  "id": "K-M04",
+  "network": "SANDBOX",
+  "result": "NOT_REPRODUCED",
+  "review_id": "M-04",
+  "summary": "No sandbox fixture can return bytes from ft_transfer (mock_ft returns nothing, and this workstream does not edit or add contracts). Checked instead on testnet against the real factory token: see evidence/instant-testnet.",
+  "title": "Market resolve_payout reads the ft_transfer result with max_len 0"
+}

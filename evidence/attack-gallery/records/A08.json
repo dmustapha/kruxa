@@ -61,7 +61,7 @@
       "role": "attack",
       "rule_code": null,
       "status": "succeeded",
-      "tx": "83Fr6S7Sh1RRng6ZPr9h25T5TvRbAss6ixPbbQQXYSNo"
+      "tx": "GMJs28FBkN9zbFhSBtEMztBjj877gExSFUmr3XQH2TUV"
     },
     {
       "expected_rule_code": null,
@@ -70,7 +70,7 @@
       "role": "support",
       "rule_code": null,
       "status": "succeeded",
-      "tx": "5auuGkyXc6JsnXu7WQmUVGZcka1S1qMDDbDCZ3LJD7d4"
+      "tx": "34GHJMnWkUzyn1LHKzXt4TCVrECCQxYs8UidUPQmkZKr"
     },
     {
       "expected_rule_code": null,
@@ -79,7 +79,7 @@
       "role": "support",
       "rule_code": null,
       "status": "succeeded",
-      "tx": "BGoZfKxHkYLnkthFBqr1HiWTJ4KBLeG4RJRUGYazTipE"
+      "tx": "GG7PQffUQJhyZz75jKRQ4Tz2bDugssCoHsAy8Ex7vTJC"
     }
   ]
 }

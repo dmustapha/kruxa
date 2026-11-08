@@ -49,7 +49,7 @@
       "role": "attack",
       "rule_code": "R_CAP_ACCOUNT",
       "status": "succeeded",
-      "tx": "776rUX9p9N4gYsfJeCk9ZrVwHePoSQuCNQYHFeUd4QjS"
+      "tx": "4HV9Sjnk2GxpQFz3fiQ7GbeX74WYgp3PNNDha9EgHuvb"
     },
     {
       "expected_rule_code": null,
@@ -58,7 +58,7 @@
       "role": "support",
       "rule_code": null,
       "status": "succeeded",
-      "tx": "8RmWrghZypNdU19mgoDitewez2z6ibE6PaY98eRVHLPk"
+      "tx": "2dKK5BuAUPUQyf5jKY1jFJDkWkjJRHCv4vYuCs9VFZEo"
     },
     {
       "expected_rule_code": "R_CAP_ACCOUNT",
@@ -67,7 +67,7 @@
       "role": "attack",
       "rule_code": "R_CAP_ACCOUNT",
       "status": "succeeded",
-      "tx": "CYmcv9PFcakQaSinyTe4vgNhaXg8ih7hobBP333eEhvA"
+      "tx": "9WYmiJauEsmPRy9P64KkifKCPhJY48LVwnamkggtz4MT"
     }
   ]
 }

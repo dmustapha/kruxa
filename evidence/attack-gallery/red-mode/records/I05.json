@@ -1,0 +1,58 @@
+{
+  "attempt": "An account that already has a launch creates another one with a fresh symbol right away.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "still one launch"
+    }
+  ],
+  "co4": "CO7",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_RATE_LIMIT",
+  "id": "I05",
+  "invariants_after": {
+    "launcher": {
+      "market_locked_consistent": true,
+      "owed_usdc": "0",
+      "seeds_held_le_cap": true,
+      "usdc_custody": "0",
+      "usdc_custody_identity": true,
+      "usdc_expected": "0"
+    },
+    "launches": [
+      {
+        "get_invariants": {
+          "claimed_le_unlocked": true,
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "supply_conservation": true,
+          "token": "rat1.factory.test.near",
+          "token_custody": "1000000000000000",
+          "token_custody_identity": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0",
+          "vest_bounds": true
+        },
+        "launch_id": "1000000000"
+      }
+    ]
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "instant",
+  "title": "Second instant launch by the same account within 24 hours",
+  "transactions": [
+    {
+      "expected_rule_code": "R_RATE_LIMIT",
+      "label": "second create_instant",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_RATE_LIMIT",
+      "status": "failed",
+      "tx": "3ApxJBkhDARYQtWfySgmGRkLb8LAAsyWRLecYjTkNJGU"
+    }
+  ]
+}

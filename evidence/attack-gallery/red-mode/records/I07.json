@@ -1,0 +1,139 @@
+{
+  "attempt": "The creator submits fee terms that break each rule in turn: total over 2% or under 0.3%, creator share and take, platform floor and fixed share, holders, LP, referral, split sum, fee vest, opening fee.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "nothing was created"
+    }
+  ],
+  "co4": "CO7",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_FEE_*",
+  "id": "I07",
+  "invariants_after": {
+    "launcher": {
+      "market_locked_consistent": true,
+      "owed_usdc": "0",
+      "seeds_held_le_cap": true,
+      "usdc_custody": "0",
+      "usdc_custody_identity": true,
+      "usdc_expected": "0"
+    },
+    "launches": []
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "instant",
+  "title": "Hostile fee terms in create_instant (creator-set fees)",
+  "transactions": [
+    {
+      "expected_rule_code": "R_FEE_TOTAL",
+      "label": "total 201 bps",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_FEE_TOTAL",
+      "status": "failed",
+      "tx": "D7VgYprWVmB5asdZkLXstJYT58dkme6tyBjpnmZVEFtY"
+    },
+    {
+      "expected_rule_code": "R_FEE_TOTAL",
+      "label": "total 29 bps",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_FEE_TOTAL",
+      "status": "failed",
+      "tx": "ufBaR7EKTzVmk5dovcMk4ayA74LV69JWeAcAkBMhUSN"
+    },
+    {
+      "expected_rule_code": "R_CREATOR_SHARE",
+      "label": "creator share 6001",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_CREATOR_SHARE",
+      "status": "failed",
+      "tx": "5s1Azjt1fcVFwagkqtgSaeTUsHijyQ6ik4BtdnCXVWuu"
+    },
+    {
+      "expected_rule_code": "R_CREATOR_TAKE",
+      "label": "creator take over 1%",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_CREATOR_TAKE",
+      "status": "failed",
+      "tx": "6sN9VrTZdKpChVBkFqBQ1A4ajrrZ2pRUwsAdMnUQe6pq"
+    },
+    {
+      "expected_rule_code": "R_PLATFORM_FLOOR",
+      "label": "platform 1400",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_PLATFORM_FLOOR",
+      "status": "failed",
+      "tx": "Et8n8Qg79eU4RCabQwskTXP92BXuv41W1SUrC2pPbsUx"
+    },
+    {
+      "expected_rule_code": "R_PLATFORM_FIXED",
+      "label": "platform 2100",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_PLATFORM_FIXED",
+      "status": "failed",
+      "tx": "GUBgvLN23arcPg9JzRN82CSQxfCEoQtCk6x5mXxW4QPL"
+    },
+    {
+      "expected_rule_code": "R_HOLDER_RANGE",
+      "label": "holders 999",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_HOLDER_RANGE",
+      "status": "failed",
+      "tx": "2X68YJG7MueqTTUB8JhpeG89beAoUpQCoNR2ZUkRKZJe"
+    },
+    {
+      "expected_rule_code": "R_LP_RANGE",
+      "label": "lp 3001",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_LP_RANGE",
+      "status": "failed",
+      "tx": "7YWRPpD55Hr9CwoJuxQwdNEjjxz42D9CzyDxjbA6ijEr"
+    },
+    {
+      "expected_rule_code": "R_REFERRAL",
+      "label": "referral 2001",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_REFERRAL",
+      "status": "failed",
+      "tx": "44vvCbWfbGkL63PrjLSSBvxQ1DpMTrKThH35DzU43pry"
+    },
+    {
+      "expected_rule_code": "R_SPLIT_SUM",
+      "label": "split sums to 9400",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_SPLIT_SUM",
+      "status": "failed",
+      "tx": "CdFkjiEsqzdCfu1WgAEY3P9w8uy9vsADB8ryf1mE6Fca"
+    },
+    {
+      "expected_rule_code": "R_FEE_VEST",
+      "label": "fee vest 2499",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_FEE_VEST",
+      "status": "failed",
+      "tx": "G41rx8xZ5XFnhmbedJQyzoEf98gMC8qab95RpPSDfDDt"
+    },
+    {
+      "expected_rule_code": "R_OPENING",
+      "label": "opening fee 1001 bps",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_OPENING",
+      "status": "failed",
+      "tx": "5M1AvgJ7i8APrbgk6pq62jNvsizyarEQSZgrS3gd4MBd"
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+{
+  "attempt": "With a 300 USDC instant sub-cap (a cap on the SUM OF SEEDS since market 1.1.1) and one 250 USDC pool open, a second 250 USDC seed is sent. A buyer then pushes the first pool well past the sub-cap with a buy, which must no longer be blocked (trading cannot block seeding).",
+  "checks": [
+    {
+      "ok": true,
+      "what": "the buy was not blocked by the sub-cap"
+    },
+    {
+      "ok": true,
+      "what": "the second launch is still in Handoff, seed intact"
+    }
+  ],
+  "co4": "CO7",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_MARKET_CAP",
+  "id": "I32",
+  "invariants_after": {
+    "launcher": {
+      "market_locked_consistent": true,
+      "owed_usdc": "0",
+      "seeds_held_le_cap": true,
+      "usdc_custody": "250000000",
+      "usdc_custody_identity": true,
+      "usdc_expected": "250000000"
+    },
+    "launches": [
+      {
+        "get_invariants": {
+          "claimed_le_unlocked": true,
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "supply_conservation": true,
+          "token": "sub1.factory.test.near",
+          "token_custody": "50000000000000",
+          "token_custody_identity": true,
+          "usdc_custody": "250000000",
+          "usdc_custody_identity": true,
+          "usdc_expected": "250000000",
+          "vest_bounds": true
+        },
+        "launch_id": "1000000000"
+      },
+      {
+        "get_invariants": {
+          "claimed_le_unlocked": true,
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "supply_conservation": true,
+          "token": "sub2.factory.test.near",
+          "token_custody": "1000000000000000",
+          "token_custody_identity": true,
+          "usdc_custody": "250000000",
+          "usdc_custody_identity": true,
+          "usdc_expected": "250000000",
+          "vest_bounds": true
+        },
+        "launch_id": "1000000001"
+      }
+    ],
+    "market": {
+      "get_invariants": {
+        "global_q": "349350000",
+        "instant_q_matches": true,
+        "parked_count": 0,
+        "usdc_custody": "350000000",
+        "usdc_custody_identity": true,
+        "usdc_expected": "350000000"
+      },
+      "pools": [
+        {
+          "launch_id": "1000000000",
+          "pool_invariants": {
+            "k_ge_k0": true,
+            "token_custody_identity": true
+          }
+        }
+      ]
+    }
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "instant+market",
+  "title": "Instant seeds crowd out the market: a seed above the instant sub-cap",
+  "transactions": [
+    {
+      "expected_rule_code": "R_MARKET_CAP",
+      "label": "second launch's seed past the sub-cap",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_MARKET_CAP",
+      "status": "succeeded",
+      "tx": "74R3TssGKCsWCQBFvMqqZ4d1ipACt5NtYEH7b36ngB6n"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "a 100 USDC buy that takes the reserve past the sub-cap (allowed since 1.1.1)",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "98uMHH6mvsUyTcephLP3YFLX9a1LXjRari8XKsgPWX4C"
+    }
+  ]
+}

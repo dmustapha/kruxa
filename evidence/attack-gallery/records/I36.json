@@ -1,0 +1,132 @@
+{
+  "attempt": "The guardian freezes the launcher; the recipient claims and a creator abandons while frozen. This is NOT blocked by design; it ends by auto-expiry (7 days; the demo clock makes that 70 s) or an owner unpause.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "config reports Frozen"
+    },
+    {
+      "ok": true,
+      "what": "nothing was paid while frozen"
+    },
+    {
+      "ok": true,
+      "what": "bound (pure-logic check; the 7 days are real days, not demo units): freeze ends 7 days after it starts"
+    },
+    {
+      "ok": true,
+      "what": "bound (pure-logic check): the effective level at the end is Paused, not Frozen"
+    },
+    {
+      "ok": true,
+      "what": "observation recorded: abandon_instant is not closed by a freeze (doc and code differ, harmless to users)"
+    },
+    {
+      "ok": true,
+      "what": "the recipient was paid after the unpause"
+    }
+  ],
+  "co4": "CO7",
+  "expected_result": "BOUNDED",
+  "expected_rule_code": "R_FROZEN",
+  "id": "I36",
+  "invariants_after": {
+    "launcher": {
+      "market_locked_consistent": true,
+      "owed_usdc": "0",
+      "seeds_held_le_cap": true,
+      "usdc_custody": "0",
+      "usdc_custody_identity": true,
+      "usdc_expected": "0"
+    },
+    "launches": [
+      {
+        "get_invariants": {
+          "claimed_le_unlocked": true,
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "supply_conservation": true,
+          "token": "frzn.factory.test.near",
+          "token_custody": "31364004666667",
+          "token_custody_identity": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0",
+          "vest_bounds": true
+        },
+        "launch_id": "1000000000"
+      }
+    ]
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "BOUNDED",
+  "target": "instant",
+  "title": "Freeze closes the launcher's exits (disclosed limit: bounded to 7 days)",
+  "transactions": [
+    {
+      "expected_rule_code": null,
+      "label": "guardian freeze",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "GA6JiJ9AXkPVjt2hdqnP8DUccw7BoMZwTesQUHk52oFP"
+    },
+    {
+      "expected_rule_code": "R_FROZEN",
+      "label": "claim_vested while FROZEN",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_FROZEN",
+      "status": "failed",
+      "tx": "3LtdfikVNw59q56z1eKzE6WH2xdAJN8hsas6knANvs12"
+    },
+    {
+      "expected_rule_code": "R_FROZEN",
+      "label": "claim_owed while FROZEN",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_FROZEN",
+      "status": "failed",
+      "tx": "4GfvD8PVjZ5noxCAgineQEgAVXa96Xe3Y4qmKv8KDmLQ"
+    },
+    {
+      "expected_rule_code": "R_FROZEN",
+      "label": "withdraw_platform while FROZEN",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_FROZEN",
+      "status": "failed",
+      "tx": "BXmCzC2zmFsbsacpQ99FDxL4ZsaZ9srnJgx3EdVPVnfz"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "abandon_instant while FROZEN (observation: the ABI says freeze closes it, the code does not gate it)",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "8RYZCnaifbPQgcg5hM8eBqyFQmKqH8u1g1G2HFchQAzj"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "owner unpause",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "5LPZ8yVUJMuEq8UWrVoFKfyCx92As3jVgFGVQpQdY6L2"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "claim_vested after the owner lifted the freeze",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "6P34vJ98K1kiM4mWj7oVTPwei8RpZZUYdYhMxAWPjz2b"
+    }
+  ]
+}

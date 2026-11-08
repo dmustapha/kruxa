@@ -1,0 +1,7 @@
+{
+  "name": "kruxa-instant-testnet",
+  "private": true,
+  "type": "module",
+  "description": "Testnet driver for the instant launcher (TESTNET ONLY, play money). Install with npm i, run stages with node.",
+  "dependencies": { "near-api-js": "5.1.1" }
+}

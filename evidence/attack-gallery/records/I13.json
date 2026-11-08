@@ -1,0 +1,88 @@
+{
+  "attempt": "Three accounts call open_instant for the same seeded launch at once, hoping each leg is sent more than once.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "the seed leg was sent exactly once"
+    },
+    {
+      "ok": true,
+      "what": "the token leg was sent exactly once"
+    },
+    {
+      "ok": true,
+      "what": "market holds one seed and one bucket"
+    },
+    {
+      "ok": true,
+      "what": "status is Open"
+    }
+  ],
+  "co4": "CO7",
+  "expected_result": "NO_EFFECT",
+  "expected_rule_code": "",
+  "id": "I13",
+  "invariants_after": {
+    "launcher": {
+      "market_locked_consistent": true,
+      "owed_usdc": "0",
+      "seeds_held_le_cap": true,
+      "usdc_custody": "0",
+      "usdc_custody_identity": true,
+      "usdc_expected": "0"
+    },
+    "launches": [
+      {
+        "get_invariants": {
+          "claimed_le_unlocked": true,
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "supply_conservation": true,
+          "token": "conc.factory.test.near",
+          "token_custody": "50000000000000",
+          "token_custody_identity": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0",
+          "vest_bounds": true
+        },
+        "launch_id": "1000000000"
+      }
+    ]
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "NO_EFFECT",
+  "target": "instant",
+  "title": "Three open_instant calls in the same block",
+  "transactions": [
+    {
+      "expected_rule_code": null,
+      "label": "concurrent open_instant by x",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_INSTANT_STATE",
+      "status": "failed",
+      "tx": "H9TsA6KHHSWJ5K5DTfpmTTyhxGQ48dJ9YMwcCkTj562u"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "concurrent open_instant by y",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "BHvcuJcodPbSnbAk9DVYR56sjRbhLZqHhBE7iASqUsBQ"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "concurrent open_instant by z",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_INSTANT_STATE",
+      "status": "failed",
+      "tx": "AwjSThq9g6cGtB1HdEY4E2cAJd6H4ZWR74cMzQxC4Qyq"
+    }
+  ]
+}
