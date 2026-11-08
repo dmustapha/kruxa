@@ -1,0 +1,65 @@
+{
+  "attempt": "An attacker calls resolve_payout directly (to forge a re-credit), calls ft_on_transfer as a plain account, and sends malformed messages.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "pool unchanged and attacker's USDC intact"
+    }
+  ],
+  "co4": "A9",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "PRIVATE_METHOD",
+  "id": "M03",
+  "invariants_after": {
+    "market": {
+      "global_q": "1000000000",
+      "parked_count": 0,
+      "usdc_custody": "1000000000",
+      "usdc_custody_identity": true,
+      "usdc_expected": "1000000000"
+    },
+    "pools": [
+      {
+        "launch_id": 1,
+        "pool_invariants": {
+          "k_ge_k0": true,
+          "token_custody_identity": true
+        }
+      }
+    ]
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "market",
+  "title": "Direct calls to the market callback and intake",
+  "transactions": [
+    {
+      "expected_rule_code": "PRIVATE_METHOD",
+      "label": "direct resolve_payout",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "PRIVATE_METHOD",
+      "status": "failed",
+      "tx": "C7e3Vs3wWPSdcGDfZowZ4jBKMbuPsw6w1Esp51ZLR25D"
+    },
+    {
+      "expected_rule_code": "R_UNEXPECTED_TOKEN",
+      "label": "direct ft_on_transfer from a plain account",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_UNEXPECTED_TOKEN",
+      "status": "succeeded",
+      "tx": "ENtCGJCcoRTaDPX2bav6bX45ktwqRJVueAK4252KMhYL"
+    },
+    {
+      "expected_rule_code": "R_BAD_MSG",
+      "label": "malformed message",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_BAD_MSG",
+      "status": "succeeded",
+      "tx": "CrKxhLo3WryPDYRo9vLhagmGkg89wXkVuh3zY34mpo6v"
+    }
+  ]
+}

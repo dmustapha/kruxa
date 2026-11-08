@@ -1,0 +1,69 @@
+{
+  "attempt": "A holder calls claim_tokens while the launch is still Open, then again after it FAILED, to extract tokens without a verdict.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "no launch tokens moved to the attacker"
+    }
+  ],
+  "co4": "",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_WRONG_PHASE",
+  "id": "A22",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true
+      },
+      "launch_id": 1
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "core",
+  "title": "Claim launch tokens before PASS (open and failed launches)",
+  "transactions": [
+    {
+      "expected_rule_code": "R_WRONG_PHASE",
+      "label": "claim_tokens while Open",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_WRONG_PHASE",
+      "status": "failed",
+      "tx": "9eDEjvtDsk2URxfuZRWd6nQEXMsrVej43Uu5oKxCrKwz"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "settle (FAIL: 3 funders)",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "ESHTvDp3bHDN4gRFND8jcq265hUSW5cM3hyvdRRE7uuj"
+    },
+    {
+      "expected_rule_code": "R_WRONG_PHASE",
+      "label": "claim_tokens after FAIL",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_WRONG_PHASE",
+      "status": "failed",
+      "tx": "EfdcGRkSLjnyPtDgqrr3rHzQ3GJPtt2eEDibr1XYzSXm"
+    }
+  ]
+}

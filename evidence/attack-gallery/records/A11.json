@@ -1,0 +1,96 @@
+{
+  "attempt": "The creator and the guardian call methods that need the owner (or owner or guardian): pause, freeze, unpause, queue_global_cap, queue_launch_cap, lower_global_cap.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "config unchanged: not paused, global cap and pending cap as before"
+    }
+  ],
+  "co4": "",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_NOT_AUTHORIZED",
+  "id": "A11",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true
+      },
+      "launch_id": 1
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "core",
+  "title": "Non-owner calls the owner-only admin methods (pause, caps, unpause)",
+  "transactions": [
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "pause by creator.test.near",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "9MNroF5nnu1MRvQMRFXiqaynDKLc5P8EtVMbt2HLBL3Y"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "freeze by creator.test.near",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "6skHbahaaYJmLdofcC1KqawjM2fvyrz3BgV1hJnXfdY"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "unpause by guardian.test.near",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "9NgoutRAS5gUHfGPxyqHrj1p38an5Jj3xQTsYb7mRvLn"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "queue_global_cap by creator.test.near",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "3Pvppi2WGyN1DGAijARLhC4n7ddFsnMhDmdDs3uDSHzy"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "queue_launch_cap by guardian.test.near",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "3pcGLLd2yZL9bYseMiRHZzkZdUStSfGZUusfcUqPdTov"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "lower_global_cap by creator.test.near",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "Ear9uMC97ZPseAnU6QrHsnxuDEHpDPbeUL2CUFJKt66K"
+    }
+  ]
+}

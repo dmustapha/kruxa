@@ -1,0 +1,73 @@
+{
+  "attempt": "One wallet commits 101 USDC at once, then 60 + 50 USDC across two commits, to exceed the 100 USDC per-wallet cap.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "wallet holds exactly the 60 USDC that was accepted"
+    },
+    {
+      "ok": true,
+      "what": "the refused amounts came back"
+    }
+  ],
+  "co4": "",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_CAP_ACCOUNT",
+  "id": "A18",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true
+      },
+      "launch_id": 1
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "core",
+  "title": "One wallet exceeds the per-wallet cap (single and cumulative)",
+  "transactions": [
+    {
+      "expected_rule_code": "R_CAP_ACCOUNT",
+      "label": "single commit of 101 USDC",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_CAP_ACCOUNT",
+      "status": "succeeded",
+      "tx": "CjmWRnyHDuyDRHTYJkbSen5VB4gCDFVccsqBLdZHWskv"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "commit 60 USDC (inside the cap)",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "6Vf14TMGE4DAZtk8RU3tAkbuokiRQz9awhhNhKy1HxC5"
+    },
+    {
+      "expected_rule_code": "R_CAP_ACCOUNT",
+      "label": "second commit pushes the wallet to 110 USDC",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_CAP_ACCOUNT",
+      "status": "succeeded",
+      "tx": "EYr7L9yNiXJXkqEM2DrAxhooYYefsq24urX2sav6KfNf"
+    }
+  ]
+}

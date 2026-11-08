@@ -1,0 +1,60 @@
+{
+  "attempt": "sweep_residue is called a second time to move the rounding residue twice; settle_positions_page is replayed over the same range.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "ledger and settlement unchanged"
+    }
+  ],
+  "co4": "",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_NOT_CLEAR",
+  "id": "A07",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true
+      },
+      "launch_id": 1
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "core",
+  "title": "Replayed settlement steps after the sweep",
+  "transactions": [
+    {
+      "expected_rule_code": "R_NOT_CLEAR",
+      "label": "second sweep_residue",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_CLEAR",
+      "status": "failed",
+      "tx": "81CPjHg51swX5Ks2SLBDttP15DQBHbSVVobrfEU5bBUc"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "replayed settle_positions_page (runs, settles nothing)",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "3GhNU2BeebYW9KzWGwXXPopv5k7tbSC9KDHzKkvffTPB"
+    }
+  ]
+}

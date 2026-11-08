@@ -1,0 +1,75 @@
+{
+  "attempt": "A creator asks for a plan that leaves the mint authority, the freeze authority or token extensions in place (so the Solana supply could be inflated or frozen), or a reserve, a zero clawback, or an F0 plan with no MPC key.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "no launch was created"
+    }
+  ],
+  "co4": "",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_GENESIS_AUTH",
+  "id": "G07",
+  "invariants_after": [],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "core",
+  "title": "Genesis plan that keeps a mint or freeze authority, allows extensions, or breaks the plan rules",
+  "transactions": [
+    {
+      "expected_rule_code": "R_GENESIS_AUTH",
+      "label": "mint authority kept",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_AUTH",
+      "status": "failed",
+      "tx": "DPcboRi5vUomgnFKTgSEVapeYSNSai9pf6a3KffLXWmQ"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_AUTH",
+      "label": "freeze authority kept",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_AUTH",
+      "status": "failed",
+      "tx": "9fN1yyrA93jN6aHTTkBT3cRHxd5rREzXgKnRJqNDMHaY"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_AUTH",
+      "label": "extensions allowed",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_AUTH",
+      "status": "failed",
+      "tx": "DGGAhjk3QkkJPLzdn8niHJsRpZzTffk7PmYhkdvqQzUr"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_ARG",
+      "label": "reserve_bps above zero",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_ARG",
+      "status": "failed",
+      "tx": "AT6m3EqzzLwUtS6tXTZHFFp3Ciztk8hmj1BRkztWrwZa"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_ARG",
+      "label": "clawback_days zero",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_ARG",
+      "status": "failed",
+      "tx": "7fc59duH9AmERiKmGqEj3K8vpSu2a3oM4iEcBbtugi7d"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_ARG",
+      "label": "F0 mode without an MPC key",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_ARG",
+      "status": "failed",
+      "tx": "3epMVkmUd2DWmnVUPmBpn1jMN97hnx2mD2Wr2eqDmdMH"
+    }
+  ]
+}

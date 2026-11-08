@@ -1,0 +1,73 @@
+{
+  "attempt": "The launch token is made hostile: during every transfer it calls claim on the market. The creator then claims twice in a row.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "swap completed once"
+    },
+    {
+      "ok": true,
+      "what": "the token contract, not being the recipient, was paid nothing"
+    },
+    {
+      "ok": true,
+      "what": "creator paid once, never above what has unlocked"
+    }
+  ],
+  "co4": "",
+  "expected_result": "NO_EFFECT",
+  "expected_rule_code": "",
+  "id": "M05",
+  "invariants_after": {
+    "market": {
+      "global_q": "1596100000",
+      "parked_count": 0,
+      "usdc_custody": "1598500000",
+      "usdc_custody_identity": true,
+      "usdc_expected": "1598500000"
+    },
+    "pools": [
+      {
+        "launch_id": 1,
+        "pool_invariants": {
+          "k_ge_k0": true,
+          "token_custody_identity": true
+        }
+      }
+    ]
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "NO_EFFECT",
+  "target": "market",
+  "title": "Reentrant claim from the token contract and a double creator claim",
+  "transactions": [
+    {
+      "expected_rule_code": null,
+      "label": "buy with a reentering token",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "succeeded",
+      "tx": "5iAiszfcAgLCmaZ7CG21u533hUeYpT1LR6ZoNt5ULyKx"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "first creator claim (legitimate)",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "jEohwXXcwgkwhgLCxVoYkaemAFFsTV6tsez32zGky9C"
+    },
+    {
+      "expected_rule_code": "R_NOTHING_TO_CLAIM",
+      "label": "second creator claim",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOTHING_TO_CLAIM",
+      "status": "failed",
+      "tx": "Et5hLkxkeUjJciuEHLLdofraAM18wctJS9PcEVowJDk2"
+    }
+  ]
+}

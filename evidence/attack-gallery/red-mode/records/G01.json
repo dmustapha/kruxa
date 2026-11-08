@@ -1,0 +1,128 @@
+{
+  "attempt": "On the mainnet profile a non-owner calls create_trial (plainly, naming the owner as recipient, and with a genesis plan); the guardian and the creator call open_beta; the guardian pauses and the owner unpauses hoping that reopens creation. Then the owner opens the beta and the same creator succeeds.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "precondition: creator_gate is true on the mainnet profile"
+    },
+    {
+      "ok": true,
+      "what": "gate still closed and no launch exists"
+    },
+    {
+      "ok": true,
+      "what": "after open_beta the same non-owner creation passes"
+    }
+  ],
+  "co4": "",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_CREATOR_GATE",
+  "id": "G01",
+  "invariants_after": [],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "core",
+  "title": "Creator-gate bypass: non-owner create_trial, open_beta by the wrong caller",
+  "transactions": [
+    {
+      "expected_rule_code": "R_CREATOR_GATE",
+      "label": "create_trial by a non-owner",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_CREATOR_GATE",
+      "status": "failed",
+      "tx": "99Q6uYVN3crFTF46kk2U1i3NRCor7HAhQjtfRM92dG7"
+    },
+    {
+      "expected_rule_code": "R_CREATOR_GATE",
+      "label": "create_trial by a non-owner naming the owner as recipient",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_CREATOR_GATE",
+      "status": "failed",
+      "tx": "5UTeXjnswD5KxRxMBCME5FXFWGcghYW3GZTUDUqa9kwF"
+    },
+    {
+      "expected_rule_code": "R_CREATOR_GATE",
+      "label": "create_trial by a non-owner with a genesis plan",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_CREATOR_GATE",
+      "status": "failed",
+      "tx": "5uMabYq8GWr19aHbdfBxHLPYmW8Dg2kEhhDqbHDCcW2E"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "open_beta by the guardian",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "HbXFwYZubMuRvrBnnFYkcUT4Uz7bHPfqfSBkJVGFeU5e"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "open_beta by the creator",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "CD5M4RMcvqk5fpGHQwGsjJ8zYsKXhy8KHgcm7T5iQGFy"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "guardian pause",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "3joWprQgxQiA28ArCdqHg9z7nXMNPHNnr8Bxd5wpyD5h"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "owner unpause",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "9godNi1bVShLtaxcrsWmp7w4zwex6DNfiM7bmQ4joqWi"
+    },
+    {
+      "expected_rule_code": "R_CREATOR_GATE",
+      "label": "create_trial after pause and unpause",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_CREATOR_GATE",
+      "status": "failed",
+      "tx": "9GpEx9JXZhZ9ebrAsquxADvLzn7rFcxoL85fSPhscZdm"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "owner open_beta (legitimate)",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "8M6bzfwvJJhfBttzWcGnCk7aVqEMNAC51nCcSS4z119T"
+    },
+    {
+      "expected_rule_code": "R_NOTHING",
+      "label": "second open_beta has nothing to do",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOTHING",
+      "status": "failed",
+      "tx": "3EvCdRBfSVUCahT6vhLz96XFdNgdNgLtBRDozsLn5bfZ"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "non-owner create_trial after open_beta",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": "R_TOKEN_CREATE",
+      "status": "succeeded",
+      "tx": "HvioRC6rVDJGXm2b8o1esnAY8aUWg9NQBiHaodBpCQk1"
+    }
+  ]
+}

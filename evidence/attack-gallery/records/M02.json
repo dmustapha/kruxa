@@ -1,0 +1,60 @@
+{
+  "attempt": "An attacker seeds a pool for launch 1 naming themselves as payout recipient; after the real handoff they try to seed again over the open pool.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "no pool was created and the attacker keeps their USDC"
+    },
+    {
+      "ok": true,
+      "what": "payout recipient is still the creator"
+    }
+  ],
+  "co4": "A12",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_NOT_AUTHORIZED",
+  "id": "M02",
+  "invariants_after": {
+    "market": {
+      "global_q": "1000000000",
+      "parked_count": 0,
+      "usdc_custody": "1000000000",
+      "usdc_custody_identity": true,
+      "usdc_expected": "1000000000"
+    },
+    "pools": [
+      {
+        "launch_id": 1,
+        "pool_invariants": {
+          "k_ge_k0": true,
+          "token_custody_identity": true
+        }
+      }
+    ]
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "market",
+  "title": "Redirect the market payout recipient at pool opening",
+  "transactions": [
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "seed_quote from a non-core sender naming the attacker as recipient",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "succeeded",
+      "tx": "EhuJnFLt3K6sdWv6MjjQqN2PCvuRszeDLmPLsxNiB53z"
+    },
+    {
+      "expected_rule_code": "R_DUP_LAUNCH",
+      "label": "second seed over the open pool",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_DUP_LAUNCH",
+      "status": "succeeded",
+      "tx": "AcpdPyLFDHtDZKkkU2FpKNttxCDNw89GessVJ8T5Yeie"
+    }
+  ]
+}

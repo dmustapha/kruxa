@@ -1,0 +1,90 @@
+{
+  "attempt": "The guardian freezes the protocol and the holder tries to Walk. This is NOT blocked by design; it is bounded by auto-expiry and an owner unpause.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "config reports Frozen"
+    },
+    {
+      "ok": true,
+      "what": "bound (pure-logic check, not a sandbox wait): freeze ends 7 days after it starts"
+    },
+    {
+      "ok": true,
+      "what": "bound (pure-logic check): effective level at the end of the freeze is Paused, not Frozen"
+    },
+    {
+      "ok": true,
+      "what": "after the owner lifts it the holder exits with the full commit"
+    }
+  ],
+  "co4": "",
+  "expected_result": "BOUNDED",
+  "expected_rule_code": "R_FROZEN",
+  "id": "A16",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true
+      },
+      "launch_id": 1
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "BOUNDED",
+  "target": "core",
+  "title": "Freeze blocks exits (disclosed limit: bounded to 7 days)",
+  "transactions": [
+    {
+      "expected_rule_code": null,
+      "label": "guardian freeze",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "Bu996uDwYgwccHG98nNmVi9gJkwoTe15WPArxkZnBDM"
+    },
+    {
+      "expected_rule_code": "R_FROZEN",
+      "label": "holder Walk while FROZEN",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_FROZEN",
+      "status": "failed",
+      "tx": "Gp8zoCapgtyx6zBzn3uVp4kEWQEHNQtFgMHpgxzo6r8V"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "owner unpause",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "AqKEQbxnKknZhJns6f9KuPRMR9sckKV9BDWWiqR1mRGm"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "holder Walk after unpause",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "A8E97QhNn6PEeJUMkbThA2hsS6ZKmRfBbgVRkHk6CKcS"
+    }
+  ]
+}

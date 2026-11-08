@@ -1,0 +1,51 @@
+{
+  "attempt": "An attacker transfers 900 USDC straight to the market (not through a swap) to skew the reserve ratio and the price.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "quote identical before and after (a transfer is not a deposit)"
+    },
+    {
+      "ok": true,
+      "what": "reserves unchanged"
+    }
+  ],
+  "co4": "",
+  "expected_result": "NO_EFFECT",
+  "expected_rule_code": "",
+  "id": "M07",
+  "invariants_after": {
+    "market": {
+      "global_q": "1000000000",
+      "parked_count": 0,
+      "usdc_custody": "1000000000",
+      "usdc_custody_identity": true,
+      "usdc_expected": "1000000000"
+    },
+    "pools": [
+      {
+        "launch_id": 1,
+        "pool_invariants": {
+          "k_ge_k0": true,
+          "token_custody_identity": true
+        }
+      }
+    ]
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "NO_EFFECT",
+  "target": "market",
+  "title": "Donation attack on pool reserves",
+  "transactions": [
+    {
+      "expected_rule_code": null,
+      "label": "ft_transfer 900 USDC to the market",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "DTBDhswtGBV8yt7H1TKcNx7ddJB8nMfvGmrSSsEQBzi7"
+    }
+  ]
+}

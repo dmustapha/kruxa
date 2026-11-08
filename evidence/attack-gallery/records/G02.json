@@ -1,0 +1,132 @@
+{
+  "attempt": "A stranger, the owner and the guardian call the relayer-only ceremony methods; a stranger also tries to name a new relayer, abort, and pause or resume the ceremony.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "genesis still not started"
+    }
+  ],
+  "co4": "",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_NOT_AUTHORIZED",
+  "id": "G02",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true
+      },
+      "launch_id": 1
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "core",
+  "title": "Genesis ceremony driven by the wrong account",
+  "transactions": [
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "commit_genesis by eve.test.near",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "6BBUJdgitagzRZfCWWPkVZwAYURqAxAE3HcTtLQAqs3d"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "commit_genesis by owner.test.near",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "5C5EspDg7CZfBLtxctBX3d9vzR454iLVgbXMQn3cZQGZ"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "commit_genesis by guardian.test.near",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "Eggcwk6BDrsAS1rdAAkCD7tEK186ep7nhLPjinGjpKV5"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "build_root_page by eve.test.near",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "7ktiejTmf4XrDra5PpptW7KdrXvQGDQ9wZDhr8hcVQC1"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "confirm_genesis by eve.test.near",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "GexXhkBNZGCcvRwuXv5ivvvyzBbdiTiYfD9vSwKNi4Gt"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "attest_log_append by eve.test.near",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "6eDtgrBfGmJxQYrCPwN6m1HnWuaTUJUHq1pojGbnGwqq"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "abort_genesis by eve.test.near",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "9MdAb2nHwPe1YMc1yzSnQ2fn26D7MEuurpsMHYZ7gVJJ"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "set_genesis_relayer by eve.test.near",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "C3kSG9pvL6R6MmcaupkwBvbaGEtWXvncKBNGh7Zo95T6"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "pause_genesis by eve.test.near",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "91tV4vJubhULg4ZorFmBXzqbzgE7pg9WCc7SkaAsGXg7"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "resume_genesis by guardian.test.near",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "HFpxjtuNkzTHbMse6W9sy37fnb45xQMxd3KSbc5fSx6e"
+    }
+  ]
+}

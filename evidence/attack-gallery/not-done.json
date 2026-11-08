@@ -1,0 +1,37 @@
+[
+  {
+    "id": "CO4-A3",
+    "what": "Solana devnet mintTo on the genesis mint",
+    "why": "Needs a Solana devnet program; the gallery is NEAR sandbox only."
+  },
+  {
+    "id": "CO4-A10",
+    "what": "tampered evidence file against verify.sh",
+    "why": "Offline verify.sh tamper is a separate deliverable (scripts/verify.sh --tamper-all), not a contract attack."
+  },
+  {
+    "id": "CO4-A13",
+    "what": "hijacked agent against the vault",
+    "why": "Cut with the vault (CHANGE-ORDER-6 E-2)."
+  },
+  {
+    "id": "REDIRECT-VIA-SETTER",
+    "what": "call a method that changes the stream or payout recipient after open",
+    "why": "No such method exists in core or market: the recipient is fixed at create_trial / pool open. A04 and M02 attack the only reachable paths and assert the recipient is unchanged."
+  },
+  {
+    "id": "CORE-PLATFORM-WITHDRAW",
+    "what": "non-owner platform withdraw on core",
+    "why": "Core has no platform-withdraw method (launch fee goes to a fixed treasury via permissionless pay_launch_fee). The market has withdraw_platform and M04 attacks it."
+  },
+  {
+    "id": "CORE-SANDWICH",
+    "what": "sandwich on core",
+    "why": "Core has no AMM. Sandwich and min_out are market attacks (M06)."
+  },
+  {
+    "id": "GENESIS-F0-SIGN",
+    "what": "F0 genesis (MPC child key) attacks and Solana-side checks",
+    "why": "sign_genesis (Task 4.6) is not built; NEAR cannot see Solana, so confirm_genesis is a signed claim audited by verify.sh (detected, not prevented). The gallery attacks only the contract-side state machine, leaves and plan."
+  }
+]

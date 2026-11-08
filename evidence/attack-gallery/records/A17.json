@@ -1,0 +1,55 @@
+{
+  "attempt": "Ten wallets fill the 1,000 USDC ceiling (twice the 500 hard cap); an eleventh tries to add 100 USDC more.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "total_active stays at the 1,000 USDC ceiling"
+    },
+    {
+      "ok": true,
+      "what": "the refused amount is back on the attacker's Intents balance"
+    }
+  ],
+  "co4": "",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_CAP_LAUNCH",
+  "id": "A17",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true
+      },
+      "launch_id": 1
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "core",
+  "title": "Oversubscription beyond twice the hard cap",
+  "transactions": [
+    {
+      "expected_rule_code": "R_CAP_LAUNCH",
+      "label": "eleventh commit over the ceiling",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_CAP_LAUNCH",
+      "status": "succeeded",
+      "tx": "GHVhDnRKQFfGurJjWM5L7E2xJx89kDfA8fyKzFHrGexD"
+    }
+  ]
+}

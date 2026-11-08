@@ -1,0 +1,69 @@
+{
+  "attempt": "An attacker calls mt_on_transfer directly (pretending to be intents.near), on_payout directly (to settle a fake payout), and ft_on_transfer directly (pretending to be USDC).",
+  "checks": [
+    {
+      "ok": true,
+      "what": "nothing credited"
+    }
+  ],
+  "co4": "A9",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_NOT_AUTHORIZED",
+  "id": "A10",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true
+      },
+      "launch_id": 1
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "core",
+  "title": "Direct calls to the Intents hook and to the payout callback",
+  "transactions": [
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "direct mt_on_transfer",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "FiXtjo9oP9uY5c6USdqTvMYr9VSAsHUEKBHfc3v4PyhH"
+    },
+    {
+      "expected_rule_code": "PRIVATE_METHOD",
+      "label": "direct on_payout",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "PRIVATE_METHOD",
+      "status": "failed",
+      "tx": "CGQJsizUuU9JJN68J5fW24Q1JBHikNSj1riYX5wYAwts"
+    },
+    {
+      "expected_rule_code": "R_UNEXPECTED_TOKEN",
+      "label": "direct ft_on_transfer from a plain account",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_UNEXPECTED_TOKEN",
+      "status": "succeeded",
+      "tx": "5F9BvqsZTL3GvM1s9N1og8uLQFZ3ewVtjUyrbV5bBU8t"
+    }
+  ]
+}

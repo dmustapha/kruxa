@@ -1,0 +1,105 @@
+{
+  "attempt": "After a valid commit the relayer submits pages with an inflated amount, an invented claimant, out-of-order leaves, an overlapping replay and an oversize page, to get a different Merkle root.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "only the one valid leaf was accepted, root not ready"
+    }
+  ],
+  "co4": "",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_GENESIS_LEAF",
+  "id": "G04",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true
+      },
+      "launch_id": 1
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "core",
+  "title": "Forged Merkle root page or leaf",
+  "transactions": [
+    {
+      "expected_rule_code": null,
+      "label": "commit_genesis (legitimate)",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "A9Ui1JPkvW6QfUkDJj18bGb8diYn8GJUfG5w6TXLxzYn"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_LEAF",
+      "label": "leaf amount inflated by 1",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_LEAF",
+      "status": "failed",
+      "tx": "FmppXjYAcHShjLveoqAgBS9k8oRQ9gBLxR9mdiiAoqUE"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_LEAF",
+      "label": "invented claimant",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_LEAF",
+      "status": "failed",
+      "tx": "4GR1XNfcUhNwSHmARKjiaJSNQFL711Mrp7o2wU7wRazm"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_ORDER",
+      "label": "leaves not ascending",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_ORDER",
+      "status": "failed",
+      "tx": "4W42n2p6MJCBCzxhWPTeUiNWLkARJfVJvaKi43Dzk3ah"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "first valid leaf",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "5oUJQ9WD9DHSkcTFEddgE3ZGEfy97iDg3rmA3wLw3gfZ"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_ORDER",
+      "label": "replay of the first leaf (overlap)",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_ORDER",
+      "status": "failed",
+      "tx": "3LwV4enPD9aNSR76LhM9LH8XXatMdExLGqG7AyRga3tR"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_ARG",
+      "label": "26 leaves in one page",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_ARG",
+      "status": "failed",
+      "tx": "re3MrNjkJni8c5rRZvhZePWNEz58V9V2KdGpH2BwKAM"
+    }
+  ]
+}

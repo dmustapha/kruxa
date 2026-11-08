@@ -1,0 +1,63 @@
+{
+  "attempt": "With two pools holding 2,000 USDC against a 2,100 USDC global cap, a buyer sends 150 USDC to one pool.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "buyer refunded in full"
+    }
+  ],
+  "co4": "",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_MARKET_CAP",
+  "id": "M09",
+  "invariants_after": {
+    "market": {
+      "global_q": "2049675000",
+      "parked_count": 0,
+      "usdc_custody": "2050000000",
+      "usdc_custody_identity": true,
+      "usdc_expected": "2050000000"
+    },
+    "pools": [
+      {
+        "launch_id": 1,
+        "pool_invariants": {
+          "k_ge_k0": true,
+          "token_custody_identity": true
+        }
+      },
+      {
+        "launch_id": 2,
+        "pool_invariants": {
+          "k_ge_k0": true,
+          "token_custody_identity": true
+        }
+      }
+    ]
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "market",
+  "title": "Oversubscription: buy past the global reserve cap",
+  "transactions": [
+    {
+      "expected_rule_code": "R_MARKET_CAP",
+      "label": "buy of 150 USDC past the cap",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_MARKET_CAP",
+      "status": "succeeded",
+      "tx": "DNaYPwZDcBwwPpKTrUCEb2CFCboqwWA6XFttKgtru3u2"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "a 50 USDC buy inside the cap still works",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "7Xtv9HjDVfA6eG34g2i23auAvdkCDQTnsfcCo7jKBbaS"
+    }
+  ]
+}

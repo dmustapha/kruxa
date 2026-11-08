@@ -1,0 +1,59 @@
+{
+  "attempt": "The USDC contract (made hostile for this test) calls claim_refund again from inside ft_transfer, before core's payout callback has run.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "the reentrant call paid nothing (refunded once, 30 USDC)"
+    },
+    {
+      "ok": true,
+      "what": "holder refunded exactly once"
+    },
+    {
+      "ok": true,
+      "what": "position record deleted after the single payment"
+    }
+  ],
+  "co4": "",
+  "expected_result": "NO_EFFECT",
+  "expected_rule_code": "",
+  "id": "A13",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true
+      },
+      "launch_id": 1
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "NO_EFFECT",
+  "target": "core",
+  "title": "Reentrant refund claim from inside the token transfer",
+  "transactions": [
+    {
+      "expected_rule_code": null,
+      "label": "claim_refund with a reentering token",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "CUTvbXMgHwJyctUUkK9RSfvfQqPiniAW8giiCQGWiaJc"
+    }
+  ]
+}
