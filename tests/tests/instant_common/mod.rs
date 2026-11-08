@@ -65,8 +65,18 @@ async fn deploy(root: &Account, name: &str, code: Vec<u8>) -> anyhow::Result<Con
 }
 
 impl Ix {
-    /// `profile`: demo (short clock, open gate, no fee), testnet, mainnet (closed gate, $10 fee). `stub`: use the stub market.
+    /// `profile`: demo (short clock, open gate, no fee), testnet, mainnet (closed gate, $10 fee). `stub`: use the stub market,
+    /// else the real market wasm with the launcher already named.
     pub async fn new(profile: &str, stub: bool) -> anyhow::Result<Ix> {
+        Self::build(profile, stub, None, true).await
+    }
+
+    /// Real market with explicit caps (per pool, global, instant sub-cap, micro-USDC) and optionally no `set_launcher` yet.
+    pub async fn real(profile: &str, caps: Option<(u128, u128, u128)>, set_launcher: bool) -> anyhow::Result<Ix> {
+        Self::build(profile, false, caps, set_launcher).await
+    }
+
+    async fn build(profile: &str, stub: bool, caps: Option<(u128, u128, u128)>, set_launcher: bool) -> anyhow::Result<Ix> {
         let worker = near_workspaces::sandbox().await?;
         let root = worker.root_account()?;
         let (owner, guardian, treasury, creator) =
@@ -84,8 +94,13 @@ impl Ix {
             m
         } else {
             let m = deploy(&root, "market", wasm("kruxa_market_contract")).await?;
-            let a = json!({ "owner": owner.id(), "guardian": guardian.id(), "treasury": treasury.id(), "usdc": usdc.id(), "core": owner.id() });
+            let (pq, gq, iq) = caps.map_or((None, None, None), |(p, g, i)| (Some(p.to_string()), Some(g.to_string()), Some(i.to_string())));
+            let a = json!({ "owner": owner.id(), "guardian": guardian.id(), "treasury": treasury.id(), "usdc": usdc.id(), "core": owner.id(),
+                            "max_pool_reserve_q": pq, "max_global_reserve_q": gq, "max_instant_reserve_q": iq });
             m.call("new").args_json(a).transact().await?.into_result()?;
+            if set_launcher {
+                owner.call(m.id(), "set_launcher").args_json(json!({ "account": launcher.id() })).transact().await?.into_result()?;
+            }
             m
         };
         let ix = Ix { worker, usdc, factory, launcher, market, owner, guardian, treasury, creator };
