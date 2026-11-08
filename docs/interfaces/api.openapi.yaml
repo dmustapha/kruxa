@@ -520,6 +520,8 @@ components:
       type: object
       required: [open, paused]
       properties:
+        mode: { type: string, enum: [trial, instant], description: 'the market pool mode, derived by the market from the authenticated sender' }
+        creator: { type: string, nullable: true, description: 'pool creator account from pool_opened (instant pools; null for older trial pools)' }
         token: { type: string, nullable: true, description: 'launch token account (from pool_opened)' }
         market: { type: string, nullable: true, description: 'market contract account that logged the pool' }
         total_supply: { allOf: [ { $ref: '#/components/schemas/Amount' } ], nullable: true, description: 'base units, null until an event carries it' }

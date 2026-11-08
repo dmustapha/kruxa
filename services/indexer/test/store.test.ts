@@ -2,12 +2,13 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { Store, ReorgError } from "../src/store.ts";
 import { FIXTURE_CONTRACTS, generateFixtureBlocks } from "../src/fixtures.ts";
-import { fixtureStore, rows } from "./helpers.ts";
+import { evLine, fixtureStore, mkBlock, rows } from "./helpers.ts";
 
 test("fixture fold: launches, verdicts, pool, balances", () => {
   const s = fixtureStore();
   const l = rows(s, "SELECT * FROM launches ORDER BY launch_id");
-  assert.deepEqual(l.map((r) => [r.symbol, r.status, r.verdict]), [["ALPHA", "passed", "PASS"], ["BRAVO", "dissolved", "FAIL"], ["CHARLIE", "open", null], ["DELTA", "passed", "PASS"]]);
+  assert.deepEqual(l.map((r) => [r.symbol, r.status, r.verdict]), [["ALPHA", "passed", "PASS"], ["BRAVO", "dissolved", "FAIL"], ["CHARLIE", "open", null], ["DELTA", "passed", "PASS"],
+    ["ECHO", "trading", null], ["FOXX", "abandoned", null], ["ZETA", "creation_failed", null], ["PEND", "token_ready", null]]);
   assert.equal(l[2]?.payout_recipient, "carol-treasury.testnet");
   assert.equal(l[0]?.payout_recipient, "alice.testnet");
   assert.ok(l.every((r) => r.source === "fixture"));
@@ -92,7 +93,7 @@ test("file-backed store uses WAL and survives reopen with the same hash", async 
 test("name and total supply come from charter_created; nothing is invented when absent", () => {
   const s = fixtureStore();
   const l = rows(s, "SELECT symbol, name, total_supply FROM launches ORDER BY launch_id");
-  assert.deepEqual(l.map((r) => r.name), ["Alpha Coin", "Bravo Cat", "Charlie Dog", "Delta Fox"]);
+  assert.deepEqual(l.map((r) => r.name), ["Alpha Coin", "Bravo Cat", "Charlie Dog", "Delta Fox", "Echo Wave", "Foxx Fire", "Zeta Zip", "Pend Pot"]);
   assert.equal(l[0]?.total_supply, "2000000000000");
 });
 
@@ -146,4 +147,50 @@ test("a database from an older schema is refolded from its events on open", asyn
   const r = new Store(path, { contracts: FIXTURE_CONTRACTS, network: "fixture" });
   assert.equal(r.stateHash(), h);
   r.close();
+});
+
+test("instant launch folds: mode from the authenticated pool, no verdict or book, vesting claim recorded", () => {
+  const s = fixtureStore();
+  const echo = rows(s, "SELECT * FROM launches WHERE launch_id = 1000000000")[0]!;
+  assert.equal(echo.mode, "instant");
+  assert.equal(echo.verdict, null);
+  assert.equal(echo.total_active, "0");
+  const pool = rows(s, "SELECT * FROM pools WHERE launch_id = 1000000000")[0]!;
+  assert.equal(pool.mode, "instant");
+  assert.equal(pool.creator, "eve.testnet");
+  assert.equal(pool.token, "echo.token.fixture.testnet");
+  const inst = rows(s, "SELECT * FROM instants WHERE launch_id = 1000000000")[0]!;
+  assert.equal(inst.alloc_claimed, "4000000000000");
+  assert.ok(inst.opened_at);
+  assert.equal(rows(s, "SELECT balance FROM balances WHERE launch_id = 1000000000 AND holder = 'eve.testnet'")[0]?.balance, "4000000000000");
+  assert.equal(rows(s, "SELECT COUNT(*) AS n FROM launches WHERE mode = 'trial'")[0]?.n, 4);
+  assert.equal(rows(s, "SELECT COUNT(*) AS n FROM positions WHERE launch_id >= 1000000000")[0]?.n, 0);
+});
+
+test("id namespaces: launcher cannot touch trial ids, core cannot touch instant ids, pool mode must match", () => {
+  const s = fixtureStore();
+  const before = s.stateHash();
+  const tip = s.checkpoint()!;
+  let n = 0;
+  const bad = (executor: string, event: string, data: Record<string, unknown>): void => {
+    n += 2;
+    s.ingestBlock(mkBlock(tip.height + n, `ns-${n}`, n === 2 ? tip.hash : `ns-${n - 2}`, 1_900_000_000 + n, [{ id: `ns-r${n}`, executor, line: evLine(event, data) }]), "fixture");
+  };
+  bad("instant.fixture.testnet", "instant_opened", { launch_id: "1", token: "x", opened_at: "1" });
+  bad("core.fixture.testnet", "verdict", { launch_id: "1000000000", outcome: "FAIL", reasons: [], total_active: "0", funders: 0 });
+  bad("market.fixture.testnet", "pool_opened", { launch_id: "3", mode: "instant", creator: "x", token: "t", q: "1", t: "1" });
+  bad("market.fixture.testnet", "pool_opened", { launch_id: "1000000003", mode: "trial", token: "t", q: "1", t: "1" });
+  assert.equal(s.badEvents, 4);
+  assert.equal(rows(s, "SELECT status FROM launches WHERE launch_id = 1000000000")[0]?.status, "trading");
+  assert.equal(rows(s, "SELECT status FROM launches WHERE launch_id = 1")[0]?.status, "passed");
+  assert.equal(rows(s, "SELECT COUNT(*) AS n FROM pools")[0]?.n, 2);
+  assert.notEqual(s.stateHash(), before);
+});
+
+test("launcher logs from unconfigured accounts are ignored, and a store without a launcher still folds trials", () => {
+  const blocks = generateFixtureBlocks(4, 30);
+  const noLauncher = new Store(":memory:", { contracts: { core: FIXTURE_CONTRACTS.core, market: FIXTURE_CONTRACTS.market }, network: "fixture" });
+  for (const b of blocks) noLauncher.ingestBlock(b, "fixture");
+  assert.equal(rows(noLauncher, "SELECT COUNT(*) AS n FROM launches")[0]?.n, 4);
+  assert.equal(rows(noLauncher, "SELECT COUNT(*) AS n FROM instants")[0]?.n, 0);
 });

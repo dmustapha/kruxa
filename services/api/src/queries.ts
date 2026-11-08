@@ -1,10 +1,11 @@
 import { cpOut, e12ToNumber, priceE12, quoteToNumber } from "../../indexer/src/price.ts";
-import { INTERVAL_SECONDS } from "../../indexer/src/types.ts";
+import { INSTANT_ID_BASE, INTERVAL_SECONDS } from "../../indexer/src/types.ts";
 import { ApiError, WINDOW_24H, all, asOf, candleJson, decodeCursor, encodeCursor, intParam, intervalParam, lastPrice, launchSummary, one, parseId, sourceOf, storeSource, tradeJson, volume } from "./common.ts";
 import type { Ctx, Json, Row } from "./common.ts";
 
-const STAGES = new Set(["all", "new", "open", "closing", "passed", "failed"]);
-const TABS = new Set(["all", "live", "walk", "trading", "passed", "failed"]);
+const STAGES = new Set(["all", "new", "open", "closing", "passed", "failed", "launching", "trading"]);
+const TABS = new Set(["all", "live", "walk", "launching", "trading", "passed", "failed"]);
+const TYPES = new Set(["all", "trial", "instant"]);
 const SORTS = new Set(["newest", "raised", "funders", "ending_soon", "volume_24h"]);
 
 type Q = URLSearchParams;
@@ -42,6 +43,8 @@ export function launches(ctx: Ctx, q: Q): Json {
   const sort = q.get("sort") ?? "newest";
   if (!STAGES.has(stage)) throw new ApiError(400, "bad_stage", "stage must be all, new, open, closing, passed or failed");
   if (!SORTS.has(sort)) throw new ApiError(400, "bad_sort", "unknown sort");
+  const type = q.get("launch_type") ?? q.get("mode") ?? "all";
+  if (!TYPES.has(type)) throw new ApiError(400, "bad_launch_type", "launch_type must be all, trial or instant");
   const tab = q.get("tab") ?? "all";
   if (!TABS.has(tab)) throw new ApiError(400, "bad_tab", "tab must be all, live, walk, trading, passed or failed");
   const limit = intParam(q.get("limit"), "limit", 1, 200, 50);
@@ -51,8 +54,10 @@ export function launches(ctx: Ctx, q: Q): Json {
   const rows = all(ctx.store, "SELECT * FROM launches");
   let items = rows.map((r) => launchSummary(ctx, r));
   if (stage !== "all") items = items.filter((j) => j.stage === stage);
+  if (type !== "all") items = items.filter((j) => j.mode === type);
   if (tab !== "all") items = items.filter((j) => j.tab === tab);
-  if (needle) items = items.filter((j) => `${j.name ?? ""} ${j.symbol} ${j.creator} ${j.payout_recipient} ${j.launch_id}`.toLowerCase().includes(needle));
+  else if (q.get("include_failed") !== "true") items = items.filter((j) => j.phase !== "instant_failed");
+  if (needle) items = items.filter((j) => `${j.name ?? ""} ${j.symbol} ${j.creator} ${j.payout_recipient} ${j.launch_id} ${j.mode}`.toLowerCase().includes(needle));
   if (q.get("creator")) items = items.filter((j) => j.creator === q.get("creator"));
   if (q.get("has_market") === "true") items = items.filter((j) => j.has_market === true);
   if (minRaised !== null) items = items.filter((j) => BigInt(String(j.total_active)) >= BigInt(minRaised));
@@ -75,8 +80,13 @@ export function launchDetail(ctx: Ctx, rawId: string): Json {
   const soft = l.soft_cap === null ? null : BigInt(String(l.soft_cap));
   const total = BigInt(String(l.total_active));
   const events = all(ctx.store, "SELECT event, block_height, receipt_id, log_index, time, source FROM events WHERE json_extract(data, '$.launch_id') = ? ORDER BY block_height, ord, log_index LIMIT 500", String(id));
+  const summary = launchSummary(ctx, l);
+  if (summary.mode === "instant") {
+    return { ...summary, charter_hash: l.charter_hash, genesis: null, verdict_inputs: null, instant: instantInfo(ctx, l), verdict_reasons: [], allocation: null,
+      walked_total: "0", contributed_total: "0", timeline: events.map(eventRef) };
+  }
   return {
-    ...launchSummary(ctx, l), charter_hash: l.charter_hash, genesis: genesisOf(ctx, l),
+    ...summary, charter_hash: l.charter_hash, genesis: genesisOf(ctx, l), instant: null,
     verdict_inputs: {
       total_active: l.total_active, funders: l.funders, soft_cap: l.soft_cap, min_funders: l.min_funders,
       margin_to_soft_cap: soft === null ? null : (total - soft).toString(), margin_funders: l.min_funders === null ? null : Number(l.funders) - Number(l.min_funders),
@@ -98,7 +108,7 @@ function poolInfo(ctx: Ctx, id: number): Json {
   const tr = p.token_reserve === null ? null : BigInt(String(p.token_reserve));
   const spot = qr !== null && tr !== null ? priceE12(qr, tr, Number(p.token_decimals)) : null;
   return {
-    open: true, paused: Number(p.paused) === 1, opened_at: p.opened_at, token: p.token, market: p.market,
+    open: true, mode: p.mode, creator: p.creator, paused: Number(p.paused) === 1, opened_at: p.opened_at, token: p.token, market: p.market,
     total_supply: one(ctx.store, "SELECT total_supply FROM launches WHERE launch_id = ?", id)?.total_supply ?? null, fee_terms: p.terms ? (JSON.parse(String(p.terms)) as unknown) : null, quote_reserve: p.quote_reserve, token_reserve: p.token_reserve, fee_bps: p.fee_bps,
     price: spot === null ? null : e12ToNumber(spot), tvl_quote: qr === null ? null : quoteToNumber(qr * 2n),
   };
@@ -115,6 +125,7 @@ function authority(id: string, label: string, v: unknown): Json {
 
 export function safety(ctx: Ctx, l: Row): Json[] {
   const p = one(ctx.store, "SELECT * FROM pools WHERE launch_id = ?", Number(l.launch_id));
+  if (launchMode(l, p) === "instant") return instantSafety(ctx, l, p);
   const verdict = l.verdict === "PASS" ? indicator("verdict_passed", "Trial verdict PASS", "pass", "event", "verdict event logged PASS")
     : l.verdict === "FAIL" ? indicator("verdict_passed", "Trial verdict PASS", "fail", "event", "verdict event logged FAIL")
     : indicator("verdict_passed", "Trial verdict PASS", "unknown", "derived", "no verdict yet");
@@ -134,6 +145,84 @@ export function safety(ctx: Ctx, l: Row): Json[] {
     bound,
     l.inputs_hash ? indicator("verdict_inputs_hash_present", "Verdict inputs hash recorded", "pass", "event", "verdict event carried inputs_hash") : indicator("verdict_inputs_hash_present", "Verdict inputs hash recorded", "unknown", "derived", "no verdict inputs hash yet"),
   ];
+}
+
+function launchMode(l: Row, pool: Row | undefined): string {
+  return pool?.mode === "instant" || pool?.mode === "trial" ? String(pool.mode) : String(l.mode);
+}
+
+function creatorFeeBound(p: Row | undefined): Json {
+  const creatorBps = p?.creator_bps === null || p?.creator_bps === undefined ? null : Number(p.creator_bps);
+  const feeBps = p?.fee_bps === null || p?.fee_bps === undefined ? null : Number(p.fee_bps);
+  const id = "creator_fee_within_bound";
+  const label = "Creator fee within bound";
+  if (creatorBps === null || feeBps === null) return indicator(id, label, "unknown", "not_indexed", "pool_opened lacks fee_bps or creator_bps");
+  const ok = creatorBps <= 6000 && feeBps * creatorBps <= 1_000_000;
+  return indicator(id, label, ok ? "pass" : "fail", "derived", `fee ${feeBps} bps, creator share ${creatorBps} bps${ok ? "" : " exceeds the bound"}`);
+}
+
+/** Instant launches have no verdict and no Solana mint, so the verdict and authority tiles are not offered at all. */
+function instantSafety(ctx: Ctx, l: Row, p: Row | undefined): Json[] {
+  const v = vestingOf(ctx, l);
+  const i = one(ctx.store, "SELECT * FROM instants WHERE launch_id = ?", Number(l.launch_id));
+  const noAlloc = i !== undefined && BigInt(String(i.creator_alloc)) === 0n;
+  return [
+    p ? indicator("lp_in_pool", "Liquidity seeded in the pool", "pass", "event", "pool_opened logged by the market; the market has no LP withdrawal method (MARKET-ABI)")
+      : indicator("lp_in_pool", "Liquidity seeded in the pool", "unknown", "derived", "no pool_opened yet"),
+    indicator("fixed_supply", "Fixed supply", "warn", "derived", "no Kruxa method mints more (INSTANT-ABI IL-2); the token code is the factory's global contract, which its publisher can update (disclosed)"),
+    noAlloc ? indicator("creator_allocation_vesting", "Creator allocation", "pass", "event", "no creator allocation")
+      : indicator("creator_allocation_vesting", "Creator allocation", "pass", "event", `${String(v.creator_alloc_bps)} bps of supply; cliff ${String(v.cliff_days)} days, linear over ${String(v.vest_days)} days; claimed ${String(v.claimed)} of ${String(v.total)}`),
+    indicator("solana_mint_none", "Solana mint: none", "pass", "derived", "NEAR-only launch; no Solana mint exists (INSTANT-ABI)"),
+    indicator("payout_recipient_declared", "Payout recipient declared", "pass", "derived", l.payout_recipient === l.creator ? "payout recipient is the creator" : `payout recipient ${String(l.payout_recipient)} differs from the creator`),
+    p ? (Number(p.paused) === 1 ? indicator("market_not_paused", "Market not paused", "warn", "event", "market_paused logged") : indicator("market_not_paused", "Market not paused", "pass", "event", "no pause logged"))
+      : indicator("market_not_paused", "Market not paused", "unknown", "derived", "no pool"),
+    creatorFeeBound(p),
+  ];
+}
+
+const STEP_EVENTS: Array<[string, string]> = [["created", "instant_created"], ["seeded", "instant_seeded"], ["trading", "instant_opened"]];
+
+/** Creator allocation vesting at the API clock. The launcher's `get_vesting` view is the authority. */
+export function vestingOf(ctx: Ctx, l: Row): Json {
+  const i = one(ctx.store, "SELECT * FROM instants WHERE launch_id = ?", Number(l.launch_id));
+  const total = BigInt(String(i?.creator_alloc ?? "0"));
+  const claimed = BigInt(String(i?.alloc_claimed ?? "0"));
+  const cliff = Number(i?.cliff_days ?? 0);
+  const vest = Number(i?.vest_days ?? 0);
+  const ds = ctx.daySeconds;
+  const opened = i?.opened_at === null || i?.opened_at === undefined ? null : Number(i.opened_at);
+  const now = ctx.now();
+  let unlocked = 0n;
+  if (opened !== null && vest > 0 && now >= opened + cliff * ds) {
+    const el = BigInt(Math.min(now - opened, vest * ds));
+    unlocked = (total * el) / BigInt(vest * ds);
+  }
+  const claimable = unlocked > claimed ? unlocked - claimed : 0n;
+  const totalSupply = l.total_supply === null || l.total_supply === undefined ? 0n : BigInt(String(l.total_supply));
+  const cliffEnd = opened === null ? null : opened + cliff * ds;
+  return {
+    recipient: l.payout_recipient, total: total.toString(), cliff_days: cliff, vest_days: vest,
+    creator_alloc_bps: totalSupply > 0n ? Number((total * 10_000n) / totalSupply) : null,
+    cliff_end: cliffEnd, vest_end: opened === null ? null : opened + vest * ds, unlocked: unlocked.toString(), claimed: claimed.toString(), claimable: claimable.toString(),
+    next_unlock_at: cliffEnd !== null && now < cliffEnd ? cliffEnd : null, day_seconds: ds,
+  };
+}
+
+export function instantInfo(ctx: Ctx, l: Row): Json | null {
+  const i = one(ctx.store, "SELECT * FROM instants WHERE launch_id = ?", Number(l.launch_id));
+  if (!i) return null;
+  const evs = all(ctx.store, "SELECT event, block_height, receipt_id, time FROM events WHERE kind = 'launcher' AND json_extract(data, '$.launch_id') = ? AND event IN ('instant_created', 'instant_seeded', 'instant_opened') ORDER BY block_height, ord, log_index", String(l.launch_id));
+  const steps = STEP_EVENTS.map(([step, ev]) => {
+    const e = evs.find((x) => x.event === ev);
+    return { step, done: e !== undefined, block_height: e ? Number(e.block_height) : null, receipt_id: e ? e.receipt_id : null, time: e ? Number(e.time) : null };
+  });
+  const seed = BigInt(String(i.seed_q));
+  const fee = BigInt(String(i.launch_fee));
+  return {
+    status: l.status, token: i.token, supply_model: i.supply_model, solana_mint: "none", total_supply: l.total_supply, creator_alloc: i.creator_alloc, pool_tokens: i.pool_tokens,
+    seed: { seed_q: seed.toString(), launch_fee: fee.toString(), pool_seed_q: (seed > fee ? seed - fee : 0n).toString(), note: "locked in the pool permanently, not withdrawable" },
+    vesting: vestingOf(ctx, l), steps, failure: i.failure, source: sourceOf(ctx.store, [i, l]),
+  };
 }
 
 export function tokenPage(ctx: Ctx, rawId: string): Json {
@@ -156,7 +245,7 @@ export function tokenPage(ctx: Ctx, rawId: string): Json {
       high_24h: prices.length ? e12ToNumber(prices.reduce((a, b) => (b > a ? b : a))) : null, low_24h: prices.length ? e12ToNumber(prices.reduce((a, b) => (b < a ? b : a))) : null,
       volume_24h: vol.quote, trades_24h: vol.trades, fees_total: pool?.fees_total ?? "0", windows: windowStats(ctx, id, now),
     },
-    genesis: genesisOf(ctx, l), external_pools: externalPools(ctx, id),
+    genesis: launchMode(l, pool) === "instant" ? null : genesisOf(ctx, l), instant: launchMode(l, pool) === "instant" ? instantInfo(ctx, l) : null, external_pools: externalPools(ctx, id),
     creator: { account: l.creator, payout_recipient: l.payout_recipient, creator_claimed: pool?.creator_claimed ?? "0" },
     safety: safety(ctx, l), as_of: asOf(ctx.store), source: sourceOf(ctx.store, [l, ...sum]),
   };
@@ -202,7 +291,8 @@ export function trades(ctx: Ctx, rawId: string, q: Q): Json {
   const page = rows.slice(0, limit);
   const last = page[page.length - 1];
   const next = rows.length > limit && last ? encodeCursor({ h: Number(last.block_height), o: Number(last.ord), l: Number(last.log_index) }) : null;
-  return { items: page.map(tradeJson), next_cursor: next, as_of: asOf(ctx.store), source: sourceOf(ctx.store, page) };
+  const launch = launchRow(ctx, id);
+  return { items: page.map((r) => tradeJson(r, launch)), next_cursor: next, as_of: asOf(ctx.store), source: sourceOf(ctx.store, page) };
 }
 
 export function holders(ctx: Ctx, rawId: string, q: Q): Json {
@@ -219,7 +309,9 @@ export function holders(ctx: Ctx, rawId: string, q: Q): Json {
     holder: r.holder, balance: r.balance.toString(), share_bps: total > 0n ? Number((r.balance * 10_000n) / total) : 0,
     is_creator: r.holder === l.creator, is_pool: r.holder === "pool",
   }));
-  return { basis: "trial claims plus net market flow, indexed estimate (not a token-contract read)", holder_count: rows.length, items, as_of: asOf(ctx.store), source: sourceOf(ctx.store, [l]) };
+  const inst = launchMode(l, pool) === "instant" ? one(ctx.store, "SELECT creator_alloc, alloc_claimed FROM instants WHERE launch_id = ?", id) : undefined;
+  const unclaimed = inst ? (BigInt(String(inst.creator_alloc)) - BigInt(String(inst.alloc_claimed))).toString() : null;
+  return { basis: "trial claims, creator allocation claims and net market flow, indexed estimate (not a token-contract read)", holder_count: rows.length, items, unclaimed_allocation: unclaimed, as_of: asOf(ctx.store), source: sourceOf(ctx.store, [l]) };
 }
 
 export function depth(ctx: Ctx, rawId: string): Json {
@@ -301,49 +393,87 @@ export function externalPools(ctx: Ctx, id: number): Json[] {
   return all(ctx.store, "SELECT venue, pool, url FROM external_pools WHERE launch_id = ? ORDER BY venue, pool", id).map((r) => ({ venue: r.venue, pool: r.pool, url: r.url }));
 }
 
-export function stats(ctx: Ctx): Json {
+function countBy(items: Json[], key: "phase" | "tab"): Json {
+  const out: Json = {};
+  for (const s of items) out[String(s[key])] = Number(out[String(s[key])] ?? 0) + 1;
+  return out;
+}
+
+/** Trades, volume and fees for one id range (trial ids are below INSTANT_ID_BASE, instant ids at or above it). */
+function volumeFor(ctx: Ctx, instant: boolean): Json {
   const store = ctx.store;
-  const sums = (sql: string): bigint => BigInt(String(one(store, sql)?.s ?? "0"));
-  const summaries = all(store, "SELECT * FROM launches").map((l) => launchSummary(ctx, l));
-  const count = (key: "phase" | "tab"): Json => {
-    const out: Json = {};
-    for (const s of summaries) out[String(s[key])] = Number(out[String(s[key])] ?? 0) + 1;
-    return out;
-  };
-  const passed = summaries.filter((s) => s.verdict === "PASS").length;
-  const failed = summaries.filter((s) => s.verdict === "FAIL").length;
-  const col = (c: string): bigint => sums(`SELECT COALESCE(SUM(CAST(${c} AS INTEGER)), 0) AS s FROM pools`);
-  const trade = one(store, "SELECT COUNT(*) AS n, COUNT(DISTINCT trader) AS u, COALESCE(SUM(CAST(quote_amount AS INTEGER)), 0) AS v FROM trades");
-  const first = one(store, "SELECT MIN(block_height) AS h FROM events");
-  const rows = [...all(store, "SELECT source FROM launches"), ...all(store, "SELECT source FROM trades LIMIT 1")];
+  const [lo, hi] = instant ? [INSTANT_ID_BASE, Number.MAX_SAFE_INTEGER] : [0, INSTANT_ID_BASE - 1];
+  const t = one(store, "SELECT COUNT(*) AS n, COUNT(DISTINCT trader) AS u, COALESCE(SUM(CAST(quote_amount AS INTEGER)), 0) AS v FROM trades WHERE launch_id BETWEEN ? AND ?", lo, hi);
+  const f = (c: string): bigint => BigInt(String(one(store, `SELECT COALESCE(SUM(CAST(${c} AS INTEGER)), 0) AS s FROM pools WHERE launch_id BETWEEN ? AND ?`, lo, hi)?.s ?? "0"));
+  const rows = all(store, "SELECT source FROM trades WHERE launch_id BETWEEN ? AND ? LIMIT 50", lo, hi);
   return {
-    launches: { total: summaries.length, by_phase: count("phase"), by_tab: count("tab"), passed, failed, pass_rate_bps: passed + failed > 0 ? Math.floor((passed * 10_000) / (passed + failed)) : null },
-    committed: {
-      total_committed: sums("SELECT COALESCE(SUM(CAST(contributed_total AS INTEGER)), 0) AS s FROM launches").toString(),
-      total_walked: sums("SELECT COALESCE(SUM(CAST(walked_total AS INTEGER)), 0) AS s FROM launches").toString(),
-      active_in_open_trials: sums("SELECT COALESCE(SUM(CAST(total_active AS INTEGER)), 0) AS s FROM launches WHERE status = 'open'").toString(),
-      refunds_paid: sums("SELECT COALESCE(SUM(CAST(amount AS INTEGER)), 0) AS s FROM payouts WHERE kind LIKE 'Refund%' AND ok = 1").toString(),
-      refund_attempts_failed: sums("SELECT COALESCE(SUM(CAST(amount AS INTEGER)), 0) AS s FROM payouts WHERE kind LIKE 'Refund%' AND ok = 0").toString(),
-    },
-    volume: {
-      trades: Number(trade?.n ?? 0), quote_volume: quoteToNumber(BigInt(Number(trade?.v ?? 0))), unique_traders: Number(trade?.u ?? 0), fees_total: col("fees_total").toString(),
-      fee_slices: { creator: col("creator_fees").toString(), platform: col("fees_platform").toString(), holders: col("fees_holders").toString(), lp: col("fees_lp").toString(), referral: col("fees_referral").toString() },
-    },
-    since_block: first?.h === null || first?.h === undefined ? null : Number(first.h),
-    basis: "folds of indexed events only; events before since_block were never seen and are not counted; no projections",
-    as_of: asOf(store), source: sourceOf(store, rows),
+    trades: Number(t?.n ?? 0), quote_volume: quoteToNumber(BigInt(Number(t?.v ?? 0))), unique_traders: Number(t?.u ?? 0), fees_total: f("fees_total").toString(),
+    fee_slices: { creator: f("creator_fees").toString(), platform: f("fees_platform").toString(), holders: f("fees_holders").toString(), lp: f("fees_lp").toString(), referral: f("fees_referral").toString() },
+    source: sourceOf(store, rows),
   };
 }
 
-const OPS_EVENTS = ["paused", "frozen", "unpaused", "global_cap_lowered", "global_cap_queued", "global_cap_applied", "launch_cap_queued", "launch_cap_applied", "market_paused", "platform_withdrawn"];
+/** `launches`, `committed` and `volume` are trial-only (their 1.1.0 meaning); instant and combined figures live in their own objects. */
+export function stats(ctx: Ctx): Json {
+  const store = ctx.store;
+  const sums = (sql: string): bigint => BigInt(String(one(store, sql)?.s ?? "0"));
+  const all_ = all(store, "SELECT * FROM launches").map((l) => launchSummary(ctx, l));
+  const trial = all_.filter((s) => s.mode === "trial");
+  const instant = all_.filter((s) => s.mode === "instant");
+  const passed = trial.filter((s) => s.verdict === "PASS").length;
+  const failed = trial.filter((s) => s.verdict === "FAIL").length;
+  const first = one(store, "SELECT MIN(block_height) AS h FROM events");
+  const trialVol = volumeFor(ctx, false);
+  const instVol = volumeFor(ctx, true);
+  const trialSrc = sourceOf(store, all(store, "SELECT source FROM launches WHERE mode = 'trial'"));
+  const instRows = all(store, "SELECT source FROM launches WHERE mode = 'instant'");
+  const instCol = (c: string): bigint => sums(`SELECT COALESCE(SUM(CAST(${c} AS INTEGER)), 0) AS s FROM instants`);
+  return {
+    launches: { total: trial.length, by_phase: countBy(trial, "phase"), by_tab: countBy(trial, "tab"), passed, failed, pass_rate_bps: passed + failed > 0 ? Math.floor((passed * 10_000) / (passed + failed)) : null, source: trialSrc },
+    committed: {
+      total_committed: sums("SELECT COALESCE(SUM(CAST(contributed_total AS INTEGER)), 0) AS s FROM launches WHERE mode = 'trial'").toString(),
+      total_walked: sums("SELECT COALESCE(SUM(CAST(walked_total AS INTEGER)), 0) AS s FROM launches WHERE mode = 'trial'").toString(),
+      active_in_open_trials: sums("SELECT COALESCE(SUM(CAST(total_active AS INTEGER)), 0) AS s FROM launches WHERE status = 'open' AND mode = 'trial'").toString(),
+      refunds_paid: sums("SELECT COALESCE(SUM(CAST(amount AS INTEGER)), 0) AS s FROM payouts WHERE kind LIKE 'Refund%' AND ok = 1 AND launch_id < 1000000000").toString(),
+      refund_attempts_failed: sums("SELECT COALESCE(SUM(CAST(amount AS INTEGER)), 0) AS s FROM payouts WHERE kind LIKE 'Refund%' AND ok = 0 AND launch_id < 1000000000").toString(),
+      source: trialSrc,
+    },
+    volume: trialVol,
+    instant: {
+      launches: { total: instant.length, by_phase: countBy(instant, "phase"), open: instant.filter((s) => s.phase === "instant_open").length, failed: instant.filter((s) => s.phase === "instant_failed").length },
+      seeds_declared: sums("SELECT COALESCE(SUM(CAST(seed_q AS INTEGER)), 0) AS s FROM instants WHERE opened_at IS NOT NULL").toString(),
+      alloc_claimed: instCol("alloc_claimed").toString(), volume: instVol, source: sourceOf(store, instRows),
+    },
+    combined: {
+      launches: all_.length, trades: Number(trialVol.trades) + Number(instVol.trades), quote_volume: Number(trialVol.quote_volume) + Number(instVol.quote_volume),
+      by_mode: { trial: trial.length, instant: instant.length }, source: sourceOf(store, all(store, "SELECT source FROM launches")),
+    },
+    since_block: first?.h === null || first?.h === undefined ? null : Number(first.h),
+    basis: "folds of indexed events only; events before since_block were never seen and are not counted; no projections; trial and instant figures are kept apart",
+    as_of: asOf(store), source: sourceOf(store, all(store, "SELECT source FROM launches")),
+  };
+}
 
-function opsSummary(event: string, d: Record<string, unknown>): string {
+const OPS_EVENTS = ["paused", "frozen", "unpaused", "global_cap_lowered", "global_cap_queued", "global_cap_applied", "launch_cap_queued", "launch_cap_applied", "market_paused", "platform_withdrawn",
+  "beta_opened", "market_set", "genesis_relayer_set", "genesis_paused", "genesis_resumed", "cap_lowered", "cap_queued", "cap_applied", "symbol_reserved"];
+
+function opsSummary(event: string, d: Record<string, unknown>, kind: string): string {
   const by = typeof d.by === "string" ? ` by ${d.by}` : "";
   const when = (v: unknown): string => (typeof v === "string" && /^[0-9]+$/.test(v) ? new Date(Number(BigInt(v) / 1_000_000n)).toISOString() : "unknown time");
+  const who = kind === "launcher" ? "instant launcher" : "core";
   switch (event) {
-    case "paused": return `core paused${by}`;
-    case "frozen": return `core frozen${by} until ${when(d.until)}`;
-    case "unpaused": return "core unpaused";
+    case "paused": return `${who} paused${by}`;
+    case "frozen": return `${who} frozen${by} until ${when(d.until)}`;
+    case "unpaused": return `${who} unpaused`;
+    case "beta_opened": return `${who} creator gate opened${by}`;
+    case "market_set": return `${who} market set to ${String(d.market)}`;
+    case "genesis_relayer_set": return `genesis relayer set to ${String(d.account)}`;
+    case "genesis_paused": return `genesis paused${by}`;
+    case "genesis_resumed": return "genesis resumed";
+    case "cap_lowered": return `instant ${String(d.kind)} seed cap lowered to ${String(d.value)}`;
+    case "cap_queued": return `instant ${String(d.kind)} seed cap raise to ${String(d.value)} queued, effective ${when(d.effective_at)}`;
+    case "cap_applied": return `instant ${String(d.kind)} seed cap set to ${String(d.value)}`;
+    case "symbol_reserved": return `symbol ${String(d.symbol)} reserved`;
     case "global_cap_lowered": return `global cap lowered to ${String(d.value)}`;
     case "global_cap_queued": return `global cap raise to ${String(d.value)} queued, effective ${when(d.effective_at)}`;
     case "global_cap_applied": return `global cap set to ${String(d.value)}`;
@@ -357,7 +487,7 @@ function opsSummary(event: string, d: Record<string, unknown>): string {
 export function opsLog(ctx: Ctx, q: Q): Json {
   const limit = intParam(q.get("limit"), "limit", 1, 200, 50);
   const scope = q.get("scope");
-  if (scope !== null && scope !== "core" && scope !== "market") throw new ApiError(400, "bad_scope", "scope must be core or market");
+  if (scope !== null && scope !== "core" && scope !== "market" && scope !== "launcher") throw new ApiError(400, "bad_scope", "scope must be core, market or launcher");
   const cur = decodeCursor<{ h: number; o: number; l: number }>(q.get("before"));
   const marks = OPS_EVENTS.map(() => "?").join(",");
   const rows = all(ctx.store,
@@ -368,7 +498,7 @@ export function opsLog(ctx: Ctx, q: Q): Json {
   const last = page[page.length - 1];
   const items = page.map((r) => {
     const data = JSON.parse(String(r.data)) as Record<string, unknown>;
-    return { event: r.event, scope: r.kind, contract: r.contract, summary: opsSummary(String(r.event), data), data, block_height: Number(r.block_height), receipt_id: r.receipt_id, time: Number(r.time), source: r.source };
+    return { event: r.event, scope: r.kind, contract: r.contract, summary: opsSummary(String(r.event), data, String(r.kind)), data, block_height: Number(r.block_height), receipt_id: r.receipt_id, time: Number(r.time), source: r.source };
   });
   const next = rows.length > limit && last ? encodeCursor({ h: Number(last.block_height), o: Number(last.ord), l: Number(last.log_index) }) : null;
   return { items, next_cursor: next, as_of: asOf(ctx.store), source: sourceOf(ctx.store, page) };

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Single-process run script: indexer tail + API in one Node process, state in one SQLite file.
 # Configuration is environment variables only (no secrets are needed; the indexer is read-only):
-#   KRUXA_NETWORK=testnet|mainnet|fixture   KRUXA_CORE=a.testnet   KRUXA_MARKET=b.testnet
+#   KRUXA_NETWORK=testnet|mainnet|fixture   KRUXA_CORE=a.testnet   KRUXA_MARKET=b.testnet   KRUXA_LAUNCHER=c.testnet (instant launcher, optional)
 #   KRUXA_DATA_DIR=/var/lib/kruxa  (persistent volume mount; the DB lives at $KRUXA_DATA_DIR/indexer.db)
 #   KRUXA_START_HEIGHT=tip|<height>   PORT=8787   KRUXA_MAX_LAG=120
 # Stop with SIGTERM; the process closes the DB cleanly.

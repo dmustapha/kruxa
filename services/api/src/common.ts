@@ -24,6 +24,8 @@ export interface Ctx {
   maxLagBlocks: number;
   tail: () => { headHeight: number | null; lastError: string | null };
   dataSource: string;
+  /** Seconds per vesting day. 86400 except on the fixture/demo profile. */
+  daySeconds: number;
 }
 
 export const WINDOW_24H = 86400;
@@ -90,9 +92,13 @@ export function candleJson(r: Row): Json {
   };
 }
 
-export function tradeJson(r: Row): Json {
+/** `l` (the launch row) lets the trade say whether its trader is a declared wallet: the creator or the payout recipient account. */
+export function tradeJson(r: Row, l?: Row): Json {
+  const isCreator = l !== undefined && r.trader === l.creator;
+  const isPayee = l !== undefined && r.trader === l.payout_recipient;
   return {
-    launch_id: String(r.launch_id), side: r.side, trader: r.trader, amount_in: r.amount_in, amount_out: r.amount_out,
+    launch_id: String(r.launch_id),
+    ...(l ? { declared: isCreator || isPayee, declared_as: isCreator && isPayee ? "both" : isCreator ? "creator" : isPayee ? "payout_recipient" : null } : {}), side: r.side, trader: r.trader, amount_in: r.amount_in, amount_out: r.amount_out,
     price: e12ToNumber(BigInt(String(r.price_e12))), quote_amount: r.quote_amount, token_amount: r.token_amount, fee_total: r.fee_total,
     ...(r.fee_slices ? { fee_slices: JSON.parse(String(r.fee_slices)) as unknown } : {}),
     ...(r.qr_after ? { quote_reserve_after: r.qr_after } : {}), ...(r.tr_after ? { token_reserve_after: r.tr_after } : {}),
@@ -110,8 +116,15 @@ export function volume(store: Store, id: number, since: number): { quote: number
   return { quote: quoteToNumber(BigInt(Number(r?.q ?? 0))), trades: Number(r?.n ?? 0) };
 }
 
-export function stageOf(l: Row, now: number): "new" | "open" | "closing" | "passed" | "failed" {
+export type Stage = "new" | "open" | "closing" | "passed" | "failed" | "launching" | "trading";
+
+export function isInstant(l: Row): boolean {
+  return l.mode === "instant";
+}
+
+export function stageOf(l: Row, now: number): Stage {
   const status = String(l.status);
+  if (isInstant(l)) return status === "trading" ? "trading" : ["creation_failed", "abandoned", "aborted"].includes(status) ? "failed" : "launching";
   if (status === "passed") return "passed";
   if (status === "failed" || status === "creation_failed" || status === "dissolved") return "failed";
   const commitEnd = l.commit_end === null ? null : Number(l.commit_end);
@@ -122,12 +135,19 @@ export function stageOf(l: Row, now: number): "new" | "open" | "closing" | "pass
   return "open";
 }
 
-export type Phase = "SCHEDULED" | "OPEN" | "WALK_WINDOW" | "AWAITING_SETTLE" | "PASS" | "TRADING" | "FAIL" | "DISSOLVED";
-export type Tab = "live" | "walk" | "trading" | "passed" | "failed";
+export type Phase = "SCHEDULED" | "OPEN" | "WALK_WINDOW" | "AWAITING_SETTLE" | "PASS" | "TRADING" | "FAIL" | "DISSOLVED"
+  | "instant_creating" | "instant_pending_seed" | "instant_pending_open" | "instant_open" | "instant_failed";
+export type Tab = "live" | "walk" | "launching" | "trading" | "passed" | "failed";
+
+const INSTANT_PHASE: Record<string, Phase> = {
+  creating: "instant_creating", token_ready: "instant_pending_seed", seeded: "instant_pending_open", handoff: "instant_pending_open",
+  trading: "instant_open", creation_failed: "instant_failed", abandoned: "instant_failed", aborted: "instant_failed",
+};
 
 /** APP-SPEC 2.4 lifecycle vocabulary, computed once on the server so every page derives the same badge. */
 export function phaseOf(l: Row, now: number, hasMarket: boolean): Phase {
   const status = String(l.status);
+  if (isInstant(l)) return INSTANT_PHASE[status] ?? "instant_creating";
   if (status === "passed") return hasMarket ? "TRADING" : "PASS";
   if (status === "failed" || status === "creation_failed") return "FAIL";
   if (status === "dissolved") return "DISSOLVED";
@@ -138,6 +158,7 @@ export function phaseOf(l: Row, now: number, hasMarket: boolean): Phase {
 
 const TAB_OF: Record<Phase, Tab> = {
   SCHEDULED: "live", OPEN: "live", WALK_WINDOW: "walk", AWAITING_SETTLE: "walk", PASS: "passed", TRADING: "trading", FAIL: "failed", DISSOLVED: "failed",
+  instant_creating: "launching", instant_pending_seed: "launching", instant_pending_open: "launching", instant_open: "trading", instant_failed: "failed",
 };
 
 export function tabOf(phase: Phase): Tab {
@@ -150,10 +171,12 @@ export function launchSummary(ctx: Ctx, l: Row): Json {
   const soft = l.soft_cap === null ? null : BigInt(String(l.soft_cap));
   const raw = soft && soft > 0n ? (BigInt(String(l.total_active)) * 10_000n) / soft : null;
   const progress = raw === null ? null : Number(raw > 20_000n ? 20_000n : raw);
-  const hasMarket = one(ctx.store, "SELECT 1 AS x FROM pools WHERE launch_id = ?", id) !== undefined;
-  const phase = phaseOf(l, now, hasMarket);
+  const pool = one(ctx.store, "SELECT mode FROM pools WHERE launch_id = ?", id);
+  const hasMarket = pool !== undefined;
+  const mode = pool?.mode === "instant" || pool?.mode === "trial" ? String(pool.mode) : String(l.mode);
+  const phase = phaseOf({ ...l, mode }, now, hasMarket);
   return {
-    launch_id: String(id), symbol: l.symbol, name: l.name, creator: l.creator, payout_recipient: l.payout_recipient, status: l.status, stage: stageOf(l, now), phase, tab: tabOf(phase),
+    launch_id: String(id), symbol: l.symbol, name: l.name, mode, creator: l.creator, payout_recipient: l.payout_recipient, status: l.status, stage: stageOf({ ...l, mode }, now), phase, tab: tabOf(phase),
     created_at: l.created_at, opens_at: l.opens_at, commit_end: l.commit_end, walk_end: l.walk_end,
     total_active: l.total_active, funders: l.funders, soft_cap: l.soft_cap, min_funders: l.min_funders, progress_bps: progress,
     verdict: l.verdict, has_market: hasMarket,

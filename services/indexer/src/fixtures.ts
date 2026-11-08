@@ -2,7 +2,10 @@ import { cpOut } from "./price.ts";
 import type { ContractSet, NearBlock } from "./types.ts";
 
 /** Offline event fixture generator. Output is shaped like neardata blocks, so tests and the demo use the real parse path. */
-export const FIXTURE_CONTRACTS: ContractSet = { core: ["core.fixture.testnet"], market: ["market.fixture.testnet"] };
+export const FIXTURE_CONTRACTS: ContractSet = { core: ["core.fixture.testnet"], market: ["market.fixture.testnet"], launcher: ["instant.fixture.testnet"] };
+/** Seconds per vesting "day" on the fixture profile, so a cliff and a claim fit inside the generated timeline (the demo profile idea in INSTANT-ABI). */
+export const FIXTURE_DAY_SECONDS = 600;
+export const ECHO_ID = 1_000_000_000;
 export const FIXTURE_BASE_TIME = 1_800_000_000; // unix seconds, fixed so output is reproducible
 export const FIXTURE_START_HEIGHT = 1000;
 
@@ -57,6 +60,7 @@ class Builder {
 
 const core = FIXTURE_CONTRACTS.core[0] as string;
 const market = FIXTURE_CONTRACTS.market[0] as string;
+const launcher = (FIXTURE_CONTRACTS.launcher as string[])[0] as string;
 const ns = (sec: number): string => (BigInt(sec) * 1_000_000_000n).toString();
 const TERMS = {
   total_fee_bps: 100, creator_bps: 5000, platform_bps: 1500, holders_bps: 1500, lp_bps: 1000, referral_bps: 1000,
@@ -65,8 +69,9 @@ const TERMS = {
 const TOTAL_SUPPLY = "2000000000000";
 
 /**
- * Four launches: ALPHA passes, has a Solana genesis and trades; BRAVO fails and refunds every backer (one payout retried);
+ * Eight launches (four trial, four instant). Trial: ALPHA passes, has a Solana genesis and trades; BRAVO fails and refunds every backer (one payout retried);
  * CHARLIE is still open; DELTA passes with genesis pending and no pool. `trades` swaps are generated for ALPHA.
+ * Instant (ids from 1e9): ECHO opens, trades and has a vesting claim; FOXX is abandoned; ZETA fails at token creation; PEND waits for its seed.
  */
 export function generateFixtureBlocks(seed = 7, trades = 240): NearBlock[] {
   const rnd = mulberry32(seed);
@@ -103,7 +108,8 @@ export function generateFixtureBlocks(seed = 7, trades = 240): NearBlock[] {
   b.push(settle + 60, [{ contract: market, event: "market_paused", data: { paused: true, by: "guardian.testnet" } }]);
   b.push(settle + 80, [{ contract: market, event: "market_paused", data: { paused: false, by: "owner.testnet" } }]);
   b.push(settle + 200, mk(3, "carol.testnet", "CHARLIE", "Charlie Dog", settle + 200, { payout_recipient: "carol-treasury.testnet" }));
-  tradeLoop(b, rnd, settle + 120, trades);
+  tradeLoop(b, rnd, settle + 120, trades, ALPHA_LOOP);
+  instantScenario(b, rnd, settle);
   const end = settle + 120 + trades * 45;
   b.push(end, [{ contract: market, event: "creator_claimed", data: { launch_id: "1", recipient: "alice.testnet", amount: "100000", paid_creator: "100000" } }]);
   b.push(end + 20, [{ contract: market, event: "platform_withdrawn", data: { to: "treasury.testnet", amount: "50000" } }]);
@@ -168,15 +174,26 @@ function poolOpened(at: number): Log {
   } };
 }
 
+interface Loop {
+  id: string;
+  q0: bigint;
+  t0: bigint;
+  base: number;
+  spread: number;
+  step: number;
+  traders: string[];
+}
+const ALPHA_LOOP: Loop = { id: "1", q0: 20_000_000n, t0: 1_000_000_000_000n, base: 100_000, spread: 900_000, step: 45, traders: ["dan", "erin", "fay", "gus", "kim", "lee"] };
+
 /** Swaps follow MARKET-ABI M-A: holders and referral slices are 0 and show up as red_holders and red_referral inside lp. */
-function tradeLoop(b: Builder, rnd: () => number, start: number, n: number): void {
-  let qr = 20_000_000n;
-  let tr = 1_000_000_000_000n;
-  const traders = ["dan", "erin", "fay", "gus", "kim", "lee"].map((x) => `${x}.testnet`);
+function tradeLoop(b: Builder, rnd: () => number, start: number, n: number, lp: Loop): void {
+  let qr = lp.q0;
+  let tr = lp.t0;
+  const traders = lp.traders.map((x) => `${x}.testnet`);
   for (let i = 0; i < n; i++) {
     const buy = rnd() < 0.55;
     const trader = traders[Math.floor(rnd() * traders.length)] as string;
-    const size = BigInt(100_000 + Math.floor(rnd() * 900_000));
+    const size = BigInt(lp.base + Math.floor(rnd() * lp.spread));
     const amountIn = buy ? size : (size * tr) / qr;
     const out = cpOut(buy ? qr : tr, buy ? tr : qr, amountIn, 100n);
     if (out === 0n) continue;
@@ -184,13 +201,55 @@ function tradeLoop(b: Builder, rnd: () => number, start: number, n: number): voi
     const feeTotal = gross / 100n;
     const creator = (feeTotal * 5000n) / 10_000n;
     const platform = (feeTotal * 1500n) / 10_000n;
-    const lp = feeTotal - creator - platform;
+    const lpSlice = feeTotal - creator - platform;
     if (buy) { qr += amountIn - creator - platform; tr -= out; } else { tr += amountIn; qr -= out + creator + platform; }
-    b.push(start + i * 45, [{ contract: market, event: "swap", data: {
-      launch_id: "1", side: buy ? "buy" : "sell", trader, receiver: trader, amount_in: amountIn.toString(), amount_out: out.toString(), fee_total: feeTotal.toString(),
-      fee_bps: "100", creator_bps: 5000, creator: creator.toString(), platform: platform.toString(), holders: "0", lp: lp.toString(), referral: "0",
+    const at = start + i * lp.step;
+    b.push(at, [{ contract: market, event: "swap", data: {
+      launch_id: lp.id, side: buy ? "buy" : "sell", trader, receiver: trader, amount_in: amountIn.toString(), amount_out: out.toString(), fee_total: feeTotal.toString(),
+      fee_bps: "100", creator_bps: 5000, creator: creator.toString(), platform: platform.toString(), holders: "0", lp: lpSlice.toString(), referral: "0",
       surcharge: "0", red_holders: ((feeTotal * 1500n) / 10_000n).toString(), red_referral: ((feeTotal * 1000n) / 10_000n).toString(),
-      q: qr.toString(), t: tr.toString(), ts_ns: ns(start + i * 45),
+      q: qr.toString(), t: tr.toString(), ts_ns: ns(at),
     } }]);
   }
+}
+
+const INSTANT_SUPPLY = 1_000_000_000_000_000n;
+const INSTANT_ALLOC = (INSTANT_SUPPLY * 500n) / 10_000n;
+
+function instantCreated(id: number, creator: string, sym: string, name: string): Log {
+  return { contract: launcher, event: "instant_created", data: {
+    launch_id: String(id), mode: "instant", creator, payout_recipient: creator, symbol: sym, name, total_supply: INSTANT_SUPPLY.toString(), token_decimals: 6,
+    creator_alloc: INSTANT_ALLOC.toString(), pool_tokens: (INSTANT_SUPPLY - INSTANT_ALLOC).toString(), cliff_days: 7, vest_days: 90, seed_q: "250000000",
+    launch_fee: "0", terms: TERMS, charter_hash: `ic${id}`.padEnd(64, "0"), supply_model: "near_factory_fixed",
+  } };
+}
+
+/** Four instant launches: ECHO full path with a vesting claim, FOXX abandoned, ZETA creation failed, PEND waiting for its seed. */
+function instantScenario(b: Builder, rnd: () => number, s0: number): void {
+  const echo = String(ECHO_ID);
+  const token = "echo.token.fixture.testnet";
+  const openAt = s0 + 350;
+  const open = (at: number): Record<string, string> => ({ opened_at: ns(at) });
+  b.push(s0 + 10, [{ contract: launcher, event: "beta_opened", data: { by: "owner.testnet" } }]);
+  b.push(s0 + 300, [instantCreated(ECHO_ID, "eve.testnet", "ECHO", "Echo Wave")]);
+  b.push(s0 + 305, [{ contract: launcher, event: "instant_token_ready", data: { launch_id: echo, token } }]);
+  b.push(s0 + 310, [instantCreated(ECHO_ID + 1, "fred.testnet", "FOXX", "Foxx Fire"), instantCreated(ECHO_ID + 2, "gina.testnet", "ZETA", "Zeta Zip")]);
+  b.push(s0 + 315, [{ contract: launcher, event: "instant_creation_failed", data: { launch_id: String(ECHO_ID + 2), code: "R_TOKEN_CREATE", reason: "fixture: factory refused" } }]);
+  b.push(s0 + 320, [{ contract: launcher, event: "instant_token_ready", data: { launch_id: String(ECHO_ID + 1), token: "foxx.token.fixture.testnet" } }]);
+  b.push(s0 + 330, [{ contract: launcher, event: "instant_seeded", data: { launch_id: echo, seed: "250000000", launch_fee: "0" } }]);
+  b.push(s0 + 340, [{ contract: launcher, event: "instant_handoff", data: { launch_id: echo, leg: "Seed", amount: "250000000", market } }]);
+  b.push(s0 + 349, [{ contract: market, event: "pool_opened", data: {
+    launch_id: echo, mode: "instant", creator: "eve.testnet", token, quote: "usdc.fixture.testnet", q: "250000000", t: (INSTANT_SUPPLY - INSTANT_ALLOC).toString(),
+    payout_recipient: "eve.testnet", opened_ns: ns(openAt), fee_bps: 100, creator_bps: 5000, terms: TERMS,
+  } }]);
+  b.push(openAt, [{ contract: launcher, event: "instant_opened", data: { launch_id: echo, token, market, q: "250000000", t: (INSTANT_SUPPLY - INSTANT_ALLOC).toString(), ...open(openAt) } }]);
+  b.push(s0 + 400, [instantCreated(ECHO_ID + 3, "hugo.testnet", "PEND", "Pend Pot")]);
+  b.push(s0 + 410, [{ contract: launcher, event: "instant_token_ready", data: { launch_id: String(ECHO_ID + 3), token: "pend.token.fixture.testnet" } }]);
+  b.push(s0 + 500, [{ contract: launcher, event: "paused", data: { by: "guardian.testnet" } }]);
+  b.push(s0 + 520, [{ contract: launcher, event: "unpaused", data: {} }]);
+  b.push(s0 + 540, [{ contract: launcher, event: "cap_queued", data: { kind: "aggregate", value: "4000000000", effective_at: ns(s0 + 540 + 7 * 86400) } }]);
+  b.push(s0 + 3000, [{ contract: launcher, event: "instant_abandoned", data: { launch_id: String(ECHO_ID + 1), by: "fred.testnet", refundable_deposit: "70000000000000000000000" } }]);
+  tradeLoop(b, rnd, openAt + 60, 60, { id: echo, q0: 250_000_000n, t0: INSTANT_SUPPLY - INSTANT_ALLOC, base: 1_000_000, spread: 19_000_000, step: 60, traders: ["kim", "lee", "max", "ned"] });
+  const unlocked = (INSTANT_ALLOC * BigInt(4500)) / BigInt(90 * FIXTURE_DAY_SECONDS);
+  b.push(openAt + 4500, [{ contract: launcher, event: "alloc_claimed", data: { launch_id: echo, recipient: "eve.testnet", amount: "4000000000000", claimed_total: "4000000000000", unlocked_total: unlocked.toString() } }]);
 }

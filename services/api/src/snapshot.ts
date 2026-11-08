@@ -12,7 +12,7 @@ import { createApp } from "./http.ts";
 const [dbPath, network = "testnet", outDir = "./snapshot", core = "", market = ""] = process.argv.slice(2);
 if (!dbPath) throw new Error("usage: snapshot.ts <db> <network> <outdir> [core] [market]");
 const store = new Store(dbPath, { contracts: { core: core.split(",").filter(Boolean), market: market.split(",").filter(Boolean) }, network });
-const ctx: Ctx = { store, startedAt: 0, maxLagBlocks: 0, now: () => (network === "fixture" ? (asOf(store).block_time ?? 0) : Math.floor(Date.now() / 1000)), tail: () => ({ headHeight: null, lastError: null }), dataSource: "snapshot" };
+const ctx: Ctx = { store, startedAt: 0, maxLagBlocks: 0, now: () => (network === "fixture" ? (asOf(store).block_time ?? 0) : Math.floor(Date.now() / 1000)), tail: () => ({ headHeight: null, lastError: null }), dataSource: "snapshot", daySeconds: network === "fixture" ? 600 : 86_400 };
 const app = createApp(ctx);
 const out = (rel: string, body: unknown): void => {
   mkdirSync(join(outDir, rel, ".."), { recursive: true });

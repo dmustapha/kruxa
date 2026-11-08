@@ -1,7 +1,7 @@
 
 import { ApiError, all, asOf, launchSummary, one, parseId, sourceOf, tradeJson, lastPrice } from "./common.ts";
 import type { Ctx, Json, Row } from "./common.ts";
-import { eventRef } from "./queries.ts";
+import { eventRef, vestingOf } from "./queries.ts";
 
 function bare(account: string): string {
   return account.startsWith("near:") ? account.slice(5) : account;
@@ -32,9 +32,9 @@ function streamMeter(l: Row, now: number): Json | null {
 
 function claimsFor(ctx: Ctx, ids: number[]): Json[] {
   if (ids.length === 0) return [];
-  const rows = all(ctx.store, `SELECT * FROM payouts WHERE launch_id IN (${ids.map(() => "?").join(",")}) AND ok = 1 AND kind IN ('Stream', 'creator_claimed') ORDER BY block_height, ord, log_index`, ...ids);
+  const rows = all(ctx.store, `SELECT * FROM payouts WHERE launch_id IN (${ids.map(() => "?").join(",")}) AND ok = 1 AND kind IN ('Stream', 'creator_claimed', 'alloc_claimed') ORDER BY block_height, ord, log_index`, ...ids);
   return rows.map((r) => ({
-    launch_id: String(r.launch_id), kind: r.kind === "Stream" ? "stream_draw" : "creator_claimed", amount: r.amount,
+    launch_id: String(r.launch_id), kind: r.kind === "Stream" ? "stream_draw" : r.kind === "alloc_claimed" ? "alloc_claim" : "creator_claimed", amount: r.amount,
     block_height: Number(r.block_height), receipt_id: r.receipt_id, time: Number(r.time), source: r.source,
   }));
 }
@@ -43,22 +43,24 @@ export function creatorDesk(ctx: Ctx, rawAccount: string): Json {
   const account = checkAccount(rawAccount);
   const ls = all(ctx.store, "SELECT * FROM launches WHERE creator = ? OR payout_recipient = ? ORDER BY launch_id", account, account);
   const now = ctx.now();
-  let drawn = 0n, fees = 0n, claimed = 0n;
+  let drawn = 0n, fees = 0n, claimed = 0n, allocClaimed = 0n;
   const launches = ls.map((l) => {
     const p = one(ctx.store, "SELECT * FROM pools WHERE launch_id = ?", Number(l.launch_id));
     const f = BigInt(String(p?.creator_fees ?? "0"));
     const c = BigInt(String(p?.creator_claimed ?? "0"));
     const sd = BigInt(String(l.stream_drawn));
-    drawn += sd; fees += f; claimed += c;
+    const inst = one(ctx.store, "SELECT alloc_claimed FROM instants WHERE launch_id = ?", Number(l.launch_id));
+    const ac = BigInt(String(inst?.alloc_claimed ?? "0"));
+    drawn += sd; fees += f; claimed += c; allocClaimed += ac;
     const role = l.creator === account && l.payout_recipient === account ? "both" : l.creator === account ? "creator" : "payout_recipient";
     return {
-      launch: launchSummary(ctx, l), role, stream: streamMeter(l, now),
-      earnings: { market_fees_creator_slice: f.toString(), claimed: c.toString(), claimable_estimate: (f > c ? f - c : 0n).toString(), stream_drawn: sd.toString() },
+      launch: launchSummary(ctx, l), role, stream: streamMeter(l, now), allocation: inst ? vestingOf(ctx, l) : null,
+      earnings: { market_fees_creator_slice: f.toString(), claimed: c.toString(), claimable_estimate: (f > c ? f - c : 0n).toString(), stream_drawn: sd.toString(), alloc_claimed: ac.toString() },
     };
   });
   const claims = claimsFor(ctx, ls.map((l) => Number(l.launch_id)));
   return {
-    account, launches, totals: { stream_drawn: drawn.toString(), market_fees_creator_slice: fees.toString(), claimed: claimed.toString() },
+    account, launches, totals: { stream_drawn: drawn.toString(), market_fees_creator_slice: fees.toString(), claimed: claimed.toString(), alloc_claimed: allocClaimed.toString() },
     claims, as_of: asOf(ctx.store), source: sourceOf(ctx.store, [...ls, ...claims] as Row[]),
   };
 }
@@ -116,10 +118,19 @@ export function verify(ctx: Ctx, rawId: string): Json {
   const id = parseId(rawId);
   const l = one(ctx.store, "SELECT * FROM launches WHERE launch_id = ?", id);
   if (!l) throw new ApiError(404, "not_found", `no launch ${id}`);
+  if (l.mode === "instant") {
+    const evs = all(ctx.store, "SELECT event, block_height, receipt_id, log_index, time, source FROM events WHERE json_extract(data, '$.launch_id') = ? AND event != 'swap' ORDER BY block_height, ord, log_index", String(id));
+    return {
+      launch_id: String(id), mode: "instant", charter_hash: l.charter_hash, inputs_hash: null, book_hash_folded: null, book_hash_stored: null, fold_ok: null,
+      fold_note: "instant launches have no trial, verdict or book to recompute; the launcher's get_instant and get_vesting views and the market's get_pool are the checks",
+      ledger_consistent: null, book_events: 0, verdict: null, event_count: evs.length, events: evs.map(eventRef), recompute: `near view <launcher> get_instant '{"launch_id":"${id}"}'`,
+      as_of: asOf(ctx.store), source: sourceOf(ctx.store, [l]),
+    };
+  }
   const ev = all(ctx.store, "SELECT event, block_height, receipt_id, log_index, time, source FROM events WHERE json_extract(data, '$.launch_id') = ? AND event NOT IN ('contributed', 'walked', 'swap') ORDER BY block_height, ord, log_index", String(id));
   const bookEvents = Number(one(ctx.store, "SELECT COUNT(*) AS n FROM events WHERE json_extract(data, '$.launch_id') = ? AND event IN ('contributed', 'walked')", String(id))?.n);
   return {
-    launch_id: String(id), charter_hash: l.charter_hash, inputs_hash: l.inputs_hash, book_hash_folded: l.book_hash,
+    launch_id: String(id), mode: "trial", charter_hash: l.charter_hash, inputs_hash: l.inputs_hash, book_hash_folded: l.book_hash,
     book_hash_stored: null, fold_ok: null,
     fold_note: "book_hash_folded is the hash the contract logged on its latest book event; it is not recomputed here and not compared with get_state. fold_ok stays null until a chain view comparison runs. Use scripts/verify.sh for the independent check.",
     ledger_consistent: ledgerConsistent(ctx, l), book_events: bookEvents, verdict: l.verdict, event_count: ev.length, events: ev.map(eventRef),

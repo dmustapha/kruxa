@@ -17,3 +17,9 @@ Event shapes are documented in `docs/interfaces/EVENTS.md`. Optional fields that
 `min_funders`, `stream_days`, `total_supply`, genesis and `external_pool` events) become `null` or `unknown` in the API, never guesses.
 Chart price is `q / t` after each swap (EVENTS.md); candle volume is gross USDC. A database written by an older schema version is
 dropped and refolded from its stored events when opened.
+
+Instant launches (CHANGE-ORDER-7): add the launcher account to `KRUXA_LAUNCHER`. Launcher events are read from INSTANT-ABI section 9
+(the launcher is a third contract kind next to core and market). Integrity rules: launcher events may only name ids at or above
+1,000,000,000, core events only ids below, and a market `pool_opened` whose `mode` does not match its id range is refused. `mode` in the
+API is the market's authenticated pool mode once a pool is open. Vesting is computed at the API clock from `instant_opened` time,
+`cliff_days` and `vest_days`; set `KRUXA_INSTANT_DAY_SECONDS=10` only for the launcher's demo profile (the fixture profile uses 600).
