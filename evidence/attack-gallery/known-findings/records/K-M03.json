@@ -1,0 +1,19 @@
+{
+  "data": {
+    "applied_in_sandbox": false,
+    "cap_after_lowering": "500000000",
+    "pending_caps_after_lowering": {
+      "aggregate": {
+        "effective_at": "1794757046381693000",
+        "value": "10000000000"
+      },
+      "per_launch": null
+    }
+  },
+  "id": "K-M03",
+  "network": "SANDBOX",
+  "result": "EXPLOITABLE",
+  "review_id": "M-03",
+  "summary": "owner queued 10000 USDC, guardian lowered the cap to 500 USDC (lowering ok: true); get_config.pending_caps still lists the raise: true. The timelock is 7 real days, which the sandbox cannot wait, so the final apply_seed_cap by a stranger was not executed: it is the existing permissionless path (admin.rs apply_seed_cap), which has no check against the lowering",
+  "title": "Queued cap raise survives a later guardian lowering and a stranger can apply it once the timelock ends"
+}

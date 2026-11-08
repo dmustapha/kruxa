@@ -1,0 +1,93 @@
+{
+  "attempt": "The guardian tries to raise the caps (owner only), the owner queues a raise and a stranger applies it at once, and the guardian lowers a cap below the minimum seed.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "the raise was queued, not applied"
+    },
+    {
+      "ok": true,
+      "what": "the queued raise takes effect at least 6.9 days later (real days, not demo units)"
+    },
+    {
+      "ok": true,
+      "what": "caps unchanged"
+    }
+  ],
+  "co4": "CO7",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_NOT_YET",
+  "id": "I38",
+  "invariants_after": {
+    "launcher": {
+      "market_locked_consistent": true,
+      "owed_usdc": "0",
+      "seeds_held_le_cap": true,
+      "usdc_custody": "0",
+      "usdc_custody_identity": true,
+      "usdc_expected": "0"
+    },
+    "launches": []
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "instant",
+  "title": "Raise a seed cap without the 7-day timelock",
+  "transactions": [
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "guardian raises the aggregate cap",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "GXTzf6QH5MWy4V722BwXuF63EB8PvUPnYcpSxAzSHW74"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "stranger raises the per-launch cap",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "F99SN9882nnmpBjyojBjFYFAyfG33Bo1QYVWmdGmLfUe"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "owner queues the raise (event cap_queued)",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "C78D8AUFrrMs6qtMrYB24RagVUa36svfDoLYJsedaxaL"
+    },
+    {
+      "expected_rule_code": "R_NOT_YET",
+      "label": "apply_seed_cap immediately",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_YET",
+      "status": "failed",
+      "tx": "8gaSbxBnDYL5e5yuPwgdz5554Hu7dxLKYbcwvZpo2nc3"
+    },
+    {
+      "expected_rule_code": "R_NOTHING",
+      "label": "apply_seed_cap for a cap with nothing queued",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOTHING",
+      "status": "failed",
+      "tx": "9YNTYzgkMmLYBnLbZGs9RgMfeTPoRTtAkBYgr5HoEugp"
+    },
+    {
+      "expected_rule_code": "R_CAP_GLOBAL",
+      "label": "guardian lowers the per-launch cap below the minimum seed",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_CAP_GLOBAL",
+      "status": "failed",
+      "tx": "2xpmj43e8aixrGDhFKXjUfiTxh7MLMmXkpk2voiRhR1K"
+    }
+  ]
+}

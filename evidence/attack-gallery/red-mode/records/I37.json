@@ -1,0 +1,90 @@
+{
+  "attempt": "The guardian pauses the market; the holder tries to buy more (refused) and to sell everything back out (must succeed).",
+  "checks": [
+    {
+      "ok": true,
+      "what": "a new buy is refused while paused (R_PAUSED)"
+    },
+    {
+      "ok": true,
+      "what": "the sell executed and the holder is out"
+    }
+  ],
+  "co4": "CO7",
+  "expected_result": "NO_EFFECT",
+  "expected_rule_code": "",
+  "id": "I37",
+  "invariants_after": {
+    "launcher": {
+      "market_locked_consistent": true,
+      "owed_usdc": "0",
+      "seeds_held_le_cap": true,
+      "usdc_custody": "0",
+      "usdc_custody_identity": true,
+      "usdc_expected": "0"
+    },
+    "launches": [
+      {
+        "get_invariants": {
+          "claimed_le_unlocked": true,
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "supply_conservation": true,
+          "token": "mpau.factory.test.near",
+          "token_custody": "50000000000000",
+          "token_custody_identity": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0",
+          "vest_bounds": true
+        },
+        "launch_id": "1000000000"
+      }
+    ],
+    "market": {
+      "get_invariants": {
+        "global_q": "257330767",
+        "instant_q_matches": true,
+        "parked_count": 0,
+        "usdc_custody": "258606064",
+        "usdc_custody_identity": true,
+        "usdc_expected": "258606064"
+      },
+      "pools": [
+        {
+          "launch_id": "1000000000",
+          "pool_invariants": {
+            "k_ge_k0": true,
+            "token_custody_identity": true
+          }
+        }
+      ]
+    }
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "NO_EFFECT",
+  "target": "market",
+  "title": "Market pause used to trap holders of an instant pool",
+  "transactions": [
+    {
+      "expected_rule_code": null,
+      "label": "guardian pauses the market",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "Apa3whgmSvPvqZTtghdqvWG9WBjjoQ9MAJ6dLk5BKa9o"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "holder sells everything while the market is PAUSED",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "CXveGTyjPNwWCPbpxkcq2qJc7jsR3tKXWmPZdmHKnaQP"
+    }
+  ]
+}

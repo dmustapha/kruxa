@@ -1,0 +1,75 @@
+{
+  "attempt": "An account that is not the creator sends the exact seed amount with the right launch id, hoping to take over the seed and its refund rights.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "the stranger was refunded in full"
+    },
+    {
+      "ok": true,
+      "what": "status unchanged"
+    },
+    {
+      "ok": true,
+      "what": "the creator's seed is accepted"
+    }
+  ],
+  "co4": "CO7",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_NOT_CREATOR",
+  "id": "I11",
+  "invariants_after": {
+    "launcher": {
+      "market_locked_consistent": true,
+      "owed_usdc": "0",
+      "seeds_held_le_cap": true,
+      "usdc_custody": "250000000",
+      "usdc_custody_identity": true,
+      "usdc_expected": "250000000"
+    },
+    "launches": [
+      {
+        "get_invariants": {
+          "claimed_le_unlocked": true,
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "supply_conservation": true,
+          "token": "frnt.factory.test.near",
+          "token_custody": "1000000000000000",
+          "token_custody_identity": true,
+          "usdc_custody": "250000000",
+          "usdc_custody_identity": true,
+          "usdc_expected": "250000000",
+          "vest_bounds": true
+        },
+        "launch_id": "1000000000"
+      }
+    ]
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "instant",
+  "title": "A stranger seeds the creator's launch (front-run the seed)",
+  "transactions": [
+    {
+      "expected_rule_code": "R_NOT_CREATOR",
+      "label": "seed by a stranger with the exact amount",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_CREATOR",
+      "status": "succeeded",
+      "tx": "ENERhqWzU54JoKS2vmrtHUjzEkJTDsyiEUpfC5Qs3umC"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "the real creator seeds afterwards",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "AvhPQ4ces584pNZXxtxL1ffrGRki4rvYujEKoZh6wDY4"
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "attempt": "The creator funds a second wallet and launches again at once. The per-account limit does not link accounts; this is disclosed, not a win.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "both launches exist (not blocked)"
+    },
+    {
+      "ok": true,
+      "what": "bound: each launch costs its own deposit, a unique symbol and a $100 to $1,000 seed, and the aggregate unconsumed-seed cap ($3,000) still applies"
+    }
+  ],
+  "co4": "CO7",
+  "expected_result": "BOUNDED",
+  "expected_rule_code": "",
+  "id": "I06",
+  "invariants_after": {
+    "launcher": {
+      "market_locked_consistent": true,
+      "owed_usdc": "0",
+      "seeds_held_le_cap": true,
+      "usdc_custody": "0",
+      "usdc_custody_identity": true,
+      "usdc_expected": "0"
+    },
+    "launches": [
+      {
+        "get_invariants": {
+          "claimed_le_unlocked": true,
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "supply_conservation": true,
+          "token": "syb1.factory.test.near",
+          "token_custody": "1000000000000000",
+          "token_custody_identity": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0",
+          "vest_bounds": true
+        },
+        "launch_id": "1000000000"
+      },
+      {
+        "get_invariants": {
+          "claimed_le_unlocked": true,
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "supply_conservation": true,
+          "token": "syb2.factory.test.near",
+          "token_custody": "1000000000000000",
+          "token_custody_identity": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0",
+          "vest_bounds": true
+        },
+        "launch_id": "1000000001"
+      }
+    ]
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "BOUNDED",
+  "target": "instant",
+  "title": "Rate limit evaded with a second wallet (Sybil)",
+  "transactions": [
+    {
+      "expected_rule_code": null,
+      "label": "second wallet's create_instant (succeeds, as disclosed)",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "7AgBYty5GRcyZacvv7FBT1NQBofrWAQ76E7KoiLbs3uY"
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "attempt": "A second account creates a launch with the symbol of a live launch, then with the lower-case spelling of it.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "the symbol still belongs to the first launch"
+    },
+    {
+      "ok": true,
+      "what": "only one launch exists"
+    }
+  ],
+  "co4": "CO7",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_SYMBOL",
+  "id": "I03",
+  "invariants_after": {
+    "launcher": {
+      "market_locked_consistent": true,
+      "owed_usdc": "0",
+      "seeds_held_le_cap": true,
+      "usdc_custody": "0",
+      "usdc_custody_identity": true,
+      "usdc_expected": "0"
+    },
+    "launches": [
+      {
+        "get_invariants": {
+          "claimed_le_unlocked": true,
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "supply_conservation": true,
+          "token": "sqat.factory.test.near",
+          "token_custody": "1000000000000000",
+          "token_custody_identity": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0",
+          "vest_bounds": true
+        },
+        "launch_id": "1000000000"
+      }
+    ]
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "instant",
+  "title": "Symbol squat: a second launch under a symbol already in use",
+  "transactions": [
+    {
+      "expected_rule_code": "R_SYMBOL",
+      "label": "same symbol",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_SYMBOL",
+      "status": "failed",
+      "tx": "HYbJ7DP2oxhBqeChh5nhtkiibYgaZcoGN43dEcQWGTuq"
+    },
+    {
+      "expected_rule_code": "R_SYMBOL",
+      "label": "lower-case spelling",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_SYMBOL",
+      "status": "failed",
+      "tx": "CCy1Th3QGjzaw221EFdo1HpJpyPpuPNb18V2nDY4F3rL"
+    }
+  ]
+}

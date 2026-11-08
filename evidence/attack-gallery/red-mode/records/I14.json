@@ -1,0 +1,80 @@
+{
+  "attempt": "Right after the pool opens the payout recipient claims the whole allocation, a quarter of it, and 1 base unit.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "nothing was paid"
+    },
+    {
+      "ok": true,
+      "what": "claimed stays zero"
+    }
+  ],
+  "co4": "CO7",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_NOTHING_TO_CLAIM",
+  "id": "I14",
+  "invariants_after": {
+    "launcher": {
+      "market_locked_consistent": true,
+      "owed_usdc": "0",
+      "seeds_held_le_cap": true,
+      "usdc_custody": "0",
+      "usdc_custody_identity": true,
+      "usdc_expected": "0"
+    },
+    "launches": [
+      {
+        "get_invariants": {
+          "claimed_le_unlocked": true,
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "supply_conservation": true,
+          "token": "clf1.factory.test.near",
+          "token_custody": "50000000000000",
+          "token_custody_identity": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0",
+          "vest_bounds": true
+        },
+        "launch_id": "1000000000"
+      }
+    ]
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "instant",
+  "title": "claim_vested before the cliff",
+  "transactions": [
+    {
+      "expected_rule_code": "R_NOTHING_TO_CLAIM",
+      "label": "claim all (no amount)",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOTHING_TO_CLAIM",
+      "status": "failed",
+      "tx": "533QNjMRuGWWVRNGjs73M7vi83yvotbgyBv4PUe57m8F"
+    },
+    {
+      "expected_rule_code": "STREAM_CAP",
+      "label": "claim n_alloc / 4",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "STREAM_CAP",
+      "status": "failed",
+      "tx": "D5RVuJHFDprHN7spaZX6Q3iLefZ9cLvB6Y5fDsNRLs2T"
+    },
+    {
+      "expected_rule_code": "STREAM_CAP",
+      "label": "claim 1 base unit",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "STREAM_CAP",
+      "status": "failed",
+      "tx": "Bs84AMPDsSzQXfAg4Ayw7GLoQRkmXkdsYhx5Ms6EA7KB"
+    }
+  ]
+}

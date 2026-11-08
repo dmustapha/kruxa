@@ -1,0 +1,93 @@
+{
+  "attempt": "A stranger reclaims another creator's refund; the owner of a live launch reclaims its deposit; the refund is claimed twice.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "precondition: first launch CreationFailed, second TokenReady"
+    },
+    {
+      "ok": true,
+      "what": "refundable is now zero"
+    },
+    {
+      "ok": true,
+      "what": "the live launch deposit is intact"
+    }
+  ],
+  "co4": "CO7",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_NOT_AUTHORIZED",
+  "id": "I21",
+  "invariants_after": {
+    "launcher": {
+      "market_locked_consistent": true,
+      "owed_usdc": "0",
+      "seeds_held_le_cap": true,
+      "usdc_custody": "0",
+      "usdc_custody_identity": true,
+      "usdc_expected": "0"
+    },
+    "launches": [
+      {
+        "get_invariants": {
+          "claimed_le_unlocked": true,
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "supply_conservation": true,
+          "token": "rcl2.factory.test.near",
+          "token_custody": "1000000000000000",
+          "token_custody_identity": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0",
+          "vest_bounds": true
+        },
+        "launch_id": "1000000001"
+      }
+    ]
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "instant",
+  "title": "reclaim_deposit abuse: stranger, live launch, double reclaim",
+  "transactions": [
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "reclaim by a stranger",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "9rP1j36KLFDNxNqxmnsRX7uakPfUgtHFaBQE93EY7zqm"
+    },
+    {
+      "expected_rule_code": "R_INSTANT_STATE",
+      "label": "reclaim on a live TokenReady launch",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_INSTANT_STATE",
+      "status": "failed",
+      "tx": "7QQnkLm1mGzpEkHK2JZYsQmgHPC8S6MXnhSaRVMqjnH8"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "reclaim by the creator (legitimate)",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "5cxJ9C8XvdKBY7b5w7tpfpym8zFE7xkkL2P4pfZgddkf"
+    },
+    {
+      "expected_rule_code": "R_NOTHING_TO_CLAIM",
+      "label": "second reclaim",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOTHING_TO_CLAIM",
+      "status": "failed",
+      "tx": "4oYngZ26qtshGbwzV52zH1ewcexayvv14pE7rPVYwQTs"
+    }
+  ]
+}

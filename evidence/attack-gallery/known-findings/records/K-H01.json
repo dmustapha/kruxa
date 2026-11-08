@@ -1,0 +1,44 @@
+{
+  "data": {
+    "rounds": [
+      {
+        "deposit_paid": "131250000000000000000000",
+        "deposit_refundable": "111250000000000000000000",
+        "rate_limited": false,
+        "refund_includes_factory_deposit": true,
+        "round": 0,
+        "status": "CreationFailed"
+      },
+      {
+        "deposit_paid": "131250000000000000000000",
+        "deposit_refundable": "111250000000000000000000",
+        "rate_limited": false,
+        "refund_includes_factory_deposit": true,
+        "round": 1,
+        "status": "CreationFailed"
+      },
+      {
+        "deposit_paid": "131250000000000000000000",
+        "deposit_refundable": "111250000000000000000000",
+        "rate_limited": false,
+        "refund_includes_factory_deposit": true,
+        "round": 2,
+        "status": "CreationFailed"
+      },
+      {
+        "deposit_paid": "131250000000000000000000",
+        "deposit_refundable": "111250000000000000000000",
+        "rate_limited": false,
+        "refund_includes_factory_deposit": true,
+        "round": 3,
+        "status": "CreationFailed"
+      }
+    ]
+  },
+  "id": "K-H01",
+  "network": "SANDBOX",
+  "result": "EXPLOITABLE",
+  "review_id": "H-01",
+  "summary": "4 failed creations in a row by one account, none rate limited: true. Sandbox mock panics so the deposit really returns; the drain half (real factory keeps the deposit) is tested on testnet",
+  "title": "A failed factory call clears the per-account rate limit and is refunded including the factory deposit"
+}

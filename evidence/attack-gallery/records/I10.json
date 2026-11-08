@@ -1,0 +1,93 @@
+{
+  "attempt": "The creator seeds an id that was never created, the id of a launch whose token creation failed, and sends a seed message with the wrong version and op.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "precondition: the first launch is CreationFailed"
+    },
+    {
+      "ok": true,
+      "what": "everything came back"
+    },
+    {
+      "ok": true,
+      "what": "the dead launch stays CreationFailed"
+    }
+  ],
+  "co4": "CO7",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_INSTANT_STATE",
+  "id": "I10",
+  "invariants_after": {
+    "launcher": {
+      "market_locked_consistent": true,
+      "owed_usdc": "0",
+      "seeds_held_le_cap": true,
+      "usdc_custody": "0",
+      "usdc_custody_identity": true,
+      "usdc_expected": "0"
+    },
+    "launches": [
+      {
+        "get_invariants": {
+          "claimed_le_unlocked": true,
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "supply_conservation": true,
+          "token": "live.factory.test.near",
+          "token_custody": "1000000000000000",
+          "token_custody_identity": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0",
+          "vest_bounds": true
+        },
+        "launch_id": "1000000001"
+      }
+    ]
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "instant",
+  "title": "Seed before the token exists (unknown id, failed creation, malformed message)",
+  "transactions": [
+    {
+      "expected_rule_code": "R_INSTANT_STATE",
+      "label": "seed an id that does not exist",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_INSTANT_STATE",
+      "status": "succeeded",
+      "tx": "3hb8Zn1WZpSqR4sNLHkAXgX3uNT2aAfAQ2cA25gEXgWv"
+    },
+    {
+      "expected_rule_code": "R_INSTANT_STATE",
+      "label": "seed the next id, not yet created",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_INSTANT_STATE",
+      "status": "succeeded",
+      "tx": "GWoeS1AMo5qppNaUmdioyPtCe7e4sv1EY2VWQLDfPxSP"
+    },
+    {
+      "expected_rule_code": "R_INSTANT_STATE",
+      "label": "seed a CreationFailed launch",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_INSTANT_STATE",
+      "status": "succeeded",
+      "tx": "12AwrQVi36Kdxo3JsxwVg9to6vyrK2dTvfLssN8mH9DY"
+    },
+    {
+      "expected_rule_code": "R_BAD_MSG",
+      "label": "wrong version and op in the seed message",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_BAD_MSG",
+      "status": "succeeded",
+      "tx": "FnHWj4zJEpzSsKBKUGkgcXxAZztfSTLunUUHvVtd5BA4"
+    }
+  ]
+}

@@ -1,0 +1,108 @@
+{
+  "attempt": "A look-alike token is used to buy, to sell, to open a new instant pool as 'USDC', and as the token bucket for a pool waiting for its token (once by a stranger, once even from the launcher account).",
+  "checks": [
+    {
+      "ok": true,
+      "what": "fakes refunded"
+    },
+    {
+      "ok": true,
+      "what": "pool 1 unchanged, pool 2 still waiting for its token, no pool 3"
+    },
+    {
+      "ok": true,
+      "what": "pool 2 is Open"
+    }
+  ],
+  "co4": "CO7",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_UNEXPECTED_TOKEN",
+  "id": "I34",
+  "invariants_after": {
+    "market": {
+      "global_q": "1000000000",
+      "instant_q_matches": true,
+      "parked_count": 0,
+      "usdc_custody": "1000000000",
+      "usdc_custody_identity": true,
+      "usdc_expected": "1000000000"
+    },
+    "pools": [
+      {
+        "launch_id": 1000000000,
+        "pool_invariants": {
+          "k_ge_k0": true,
+          "token_custody_identity": true
+        }
+      },
+      {
+        "launch_id": 1000000001,
+        "pool_invariants": {
+          "k_ge_k0": true,
+          "token_custody_identity": true
+        }
+      }
+    ]
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "market",
+  "title": "Fake launch token and fake USDC against instant pools",
+  "transactions": [
+    {
+      "expected_rule_code": "R_UNEXPECTED_TOKEN",
+      "label": "fake-USDC buy on the instant pool",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_UNEXPECTED_TOKEN",
+      "status": "succeeded",
+      "tx": "5n8QHpaK248s8ahYQtYFHPXtp4Bq2NHzQiSNVdAjqTfp"
+    },
+    {
+      "expected_rule_code": "R_UNEXPECTED_TOKEN",
+      "label": "fake-token sell on the instant pool",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_UNEXPECTED_TOKEN",
+      "status": "succeeded",
+      "tx": "ENCnZtnFsZ6Xp5yXWGQQofF4ngCo18sfeAe23YDGvVA5"
+    },
+    {
+      "expected_rule_code": "R_UNEXPECTED_TOKEN",
+      "label": "fake-USDC seed_quote for a new instant id",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_UNEXPECTED_TOKEN",
+      "status": "succeeded",
+      "tx": "2q9JxnPpmaQLRvLWD1jDUJsvyY4eehjdUe52jcBJomYF"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "stranger sends a fake token as the token bucket",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "succeeded",
+      "tx": "3UBNacbJQZeawcPJB1Vc5QiNpVjtN29JJyx2LZqjkwsh"
+    },
+    {
+      "expected_rule_code": "R_UNEXPECTED_TOKEN",
+      "label": "launcher account sends a look-alike token as the bucket",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_UNEXPECTED_TOKEN",
+      "status": "succeeded",
+      "tx": "ADXgSrrUvAEtwtnYjHQfBqZsLRr8i89ahs4avZ6uS3X3"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "the real token bucket still completes pool 2",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "JeEKKXrbh53iFfWj66GBzyQX3mUDKdnFvE436USG1uS"
+    }
+  ]
+}

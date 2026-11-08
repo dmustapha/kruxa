@@ -1,0 +1,52 @@
+{
+  "data": {
+    "profiles": [
+      {
+        "accepted": true,
+        "account_suffix_near": true,
+        "creator_gate": false,
+        "launch_fee": "0",
+        "launcher_account": "instant.test.near",
+        "profile": "Mainnet",
+        "stranger_create_instant_ok": true,
+        "unit_ns": "86400000000000"
+      },
+      {
+        "accepted": true,
+        "account_suffix_near": true,
+        "creator_gate": false,
+        "launch_fee": "0",
+        "launcher_account": "instant.test.near",
+        "profile": "prod",
+        "stranger_create_instant_ok": true,
+        "unit_ns": "86400000000000"
+      },
+      {
+        "accepted": true,
+        "account_suffix_near": true,
+        "creator_gate": false,
+        "launch_fee": "0",
+        "launcher_account": "instant.test.near",
+        "profile": "testnet",
+        "stranger_create_instant_ok": true,
+        "unit_ns": "86400000000000"
+      },
+      {
+        "accepted": true,
+        "account_suffix_near": true,
+        "creator_gate": false,
+        "launch_fee": "0",
+        "launcher_account": "instant.test.near",
+        "profile": "demo",
+        "stranger_create_instant_ok": true,
+        "unit_ns": "10000000000"
+      }
+    ]
+  },
+  "id": "K-M02",
+  "network": "SANDBOX",
+  "result": "EXPLOITABLE",
+  "review_id": "M-02",
+  "summary": "typo profile ('Mainnet' or 'prod') accepted with the gate open: true; demo accepted on a .near account: true; testnet accepted on a .near account: true",
+  "title": "Unvalidated profile string: a typo disables the mainnet gate and fee; demo and testnet profiles deploy on a .near account"
+}

@@ -1,0 +1,84 @@
+{
+  "attempt": "Just after the cliff only a sliver has unlocked; the recipient asks for half the allocation, the whole allocation and u128::MAX.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "precondition: claimable is far below half"
+    },
+    {
+      "ok": true,
+      "what": "nothing was paid"
+    },
+    {
+      "ok": true,
+      "what": "claimed stays zero"
+    }
+  ],
+  "co4": "CO7",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "STREAM_CAP",
+  "id": "I15",
+  "invariants_after": {
+    "launcher": {
+      "market_locked_consistent": true,
+      "owed_usdc": "0",
+      "seeds_held_le_cap": true,
+      "usdc_custody": "0",
+      "usdc_custody_identity": true,
+      "usdc_expected": "0"
+    },
+    "launches": [
+      {
+        "get_invariants": {
+          "claimed_le_unlocked": true,
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "supply_conservation": true,
+          "token": "clf2.factory.test.near",
+          "token_custody": "50000000000000",
+          "token_custody_identity": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0",
+          "vest_bounds": true
+        },
+        "launch_id": "1000000000"
+      }
+    ]
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "instant",
+  "title": "claim_vested above the claimable amount (just after the cliff)",
+  "transactions": [
+    {
+      "expected_rule_code": "STREAM_CAP",
+      "label": "half",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "STREAM_CAP",
+      "status": "failed",
+      "tx": "8RSZ7srK2aEjrNDDXJ4F8ZquHDDXDRVEs43XJmRPvnJV"
+    },
+    {
+      "expected_rule_code": "STREAM_CAP",
+      "label": "all",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "STREAM_CAP",
+      "status": "failed",
+      "tx": "6KSG82TUZRAQbaCvQTRyriTJb6qWuE6q6i1rLWjFK2SP"
+    },
+    {
+      "expected_rule_code": "STREAM_CAP",
+      "label": "u128::MAX",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "STREAM_CAP",
+      "status": "failed",
+      "tx": "6euiogoFHEEstmwMmX2WtVPDEdfyRKsaLybspQnx4CPd"
+    }
+  ]
+}

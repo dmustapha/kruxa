@@ -1,0 +1,116 @@
+{
+  "attempt": "The seed was refused by the market. A stranger and the creator abort early, a stranger aborts after the wait, the creator aborts twice, then open_instant, claim_vested and a new seed are tried on the aborted launch.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "the whole seed came back once"
+    },
+    {
+      "ok": true,
+      "what": "the creator still holds exactly the one refund"
+    }
+  ],
+  "co4": "CO7",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_TOO_EARLY",
+  "id": "I19",
+  "invariants_after": {
+    "launcher": {
+      "market_locked_consistent": true,
+      "owed_usdc": "0",
+      "seeds_held_le_cap": true,
+      "usdc_custody": "0",
+      "usdc_custody_identity": true,
+      "usdc_expected": "0"
+    },
+    "launches": [
+      {
+        "get_invariants": {
+          "claimed_le_unlocked": true,
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "supply_conservation": true,
+          "token": "abrt.factory.test.near",
+          "token_custody": "1000000000000000",
+          "token_custody_identity": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0",
+          "vest_bounds": true
+        },
+        "launch_id": "1000000000"
+      }
+    ]
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "instant",
+  "title": "abort_instant abuse: too early, by a stranger, twice, then reuse of the dead launch",
+  "transactions": [
+    {
+      "expected_rule_code": "R_TOO_EARLY",
+      "label": "abort by the creator before the wait",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_TOO_EARLY",
+      "status": "failed",
+      "tx": "GM3dRWksEFzhvm4pyNMXrdseLT1M1mz2vc17k5JRPm5m"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "abort by a stranger after the wait",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "4CYMmNtGVmmhzJtmuewfxqEjcPLPs61yyXT6Z5mJM4po"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "abort by the creator after the wait (legitimate)",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "81dFmbC3L2oB5AfmKxsXUGHnt5Sod2tXJcwbTGHEaCdm"
+    },
+    {
+      "expected_rule_code": "R_INSTANT_STATE",
+      "label": "second abort",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_INSTANT_STATE",
+      "status": "failed",
+      "tx": "DrTV1xGMa7aTS6am4mp9U6QDa5mSB9GSGdLd2sAGr3LE"
+    },
+    {
+      "expected_rule_code": "R_INSTANT_STATE",
+      "label": "open_instant on the aborted launch",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_INSTANT_STATE",
+      "status": "failed",
+      "tx": "AaTMmMYUkJd9fmXqZmcckFQSsdzsmHKX1TR3HwAcc8Mj"
+    },
+    {
+      "expected_rule_code": "R_INSTANT_STATE",
+      "label": "claim_vested on the aborted launch",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_INSTANT_STATE",
+      "status": "failed",
+      "tx": "4gBUw7WhXjTeiqZ1VnbDjwdizXTZHhvgd44rvwVFgZUR"
+    },
+    {
+      "expected_rule_code": "R_INSTANT_STATE",
+      "label": "seed the aborted launch again",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_INSTANT_STATE",
+      "status": "succeeded",
+      "tx": "8r99iYy2MsUQ15SGREngk6baumTBpWYYYBPe4fyaD3K"
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+   Compiling kruxa-tests v0.1.0 (/Users/MAC/near-hack/kruxa-wt-attacks2/tests)
+warning: unused `ExecutionFinalResult` that must be used
+   --> tests/tests/known_findings.rs:142:9
+    |
+142 |         buy(&ix, &whale, &a, amt).await;
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: use `into_result()` to handle potential execution errors
+    = note: `#[warn(unused_must_use)]` (part of `#[warn(unused)]`) on by default
+help: use `let _ = ...` to ignore the resulting value
+    |
+142 |         let _ = buy(&ix, &whale, &a, amt).await;
+    |         +++++++
+
+warning: unused `ExecutionFinalResult` that must be used
+   --> tests/tests/known_findings.rs:173:5
+    |
+173 | /     whale.call(&ix.token_id("WHAL"), "ft_transfer_call").args_json(json!({ "receiver_id": ix.market.id(), "amount": held.to_strin...
+174 | |         .deposit(NearToken::from_yoctonear(1)).gas(ic::GAS).transact().await?;
+    | |_____________________________________________________________________________^
+    |
+    = note: use `into_result()` to handle potential execution errors
+help: use `let _ = ...` to ignore the resulting value
+    |
+173 |     let _ = whale.call(&ix.token_id("WHAL"), "ft_transfer_call").args_json(json!({ "receiver_id": ix.market.id(), "amount": held.to_string(), "msg": msg }))
+    |     +++++++
+
+warning: `kruxa-tests` (test "known_findings") generated 2 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.05s
+     Running tests/known_findings.rs (target/debug/deps/known_findings-72055c3a9a5b2772)
+
+running 6 tests
+test k_h01_failed_creation_clears_the_rate_limit ... ok
+test k_m01_sub_cap_grief ... ok
+test k_c01_open_instant_gas_sweep has been running for over 60 seconds
+test k_c01_open_instant_gas_sweep ... ok
+test k_m03_queued_raise_survives_a_lowering ... ok
+test k_m04_market_resolve_payout_with_a_returning_ft ... ok
+test k_m02_profile_typo_and_demo_on_a_mainnet_suffix ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 91.37s
+

@@ -1,0 +1,90 @@
+{
+  "attempt": "The launcher's seed message carries mode \"trial\" (mc::instant_seed_msg does); core's carries mode \"instant\". The market must derive the mode from the authenticated sender only.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "precondition: the message really says mode trial"
+    },
+    {
+      "ok": true,
+      "what": "the launcher pool is instant despite mode:trial"
+    },
+    {
+      "ok": true,
+      "what": "the core pool is trial despite mode:instant"
+    }
+  ],
+  "co4": "CO7",
+  "expected_result": "NO_EFFECT",
+  "expected_rule_code": "",
+  "id": "I26",
+  "invariants_after": {
+    "market": {
+      "global_q": "1500000000",
+      "instant_q_matches": true,
+      "parked_count": 0,
+      "usdc_custody": "1500000000",
+      "usdc_custody_identity": true,
+      "usdc_expected": "1500000000"
+    },
+    "pools": [
+      {
+        "launch_id": 1000000000,
+        "pool_invariants": {
+          "k_ge_k0": true,
+          "token_custody_identity": true
+        }
+      },
+      {
+        "launch_id": 1,
+        "pool_invariants": {
+          "k_ge_k0": true,
+          "token_custody_identity": true
+        }
+      }
+    ]
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "NO_EFFECT",
+  "target": "market",
+  "title": "Spoofed mode in a seed_quote message (trial pool from the launcher, instant pool from core)",
+  "transactions": [
+    {
+      "expected_rule_code": null,
+      "label": "launcher seed with mode:\"trial\"",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "39V1XoTAhBm9JiPyRUZ7qrcTu8Kmw5AqRBwf1fre8qFn"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "launcher token leg",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "HCe5qSsurCqyMxRLHWY3WTwjCgc1NRhF5NhzAr8AEV6Z"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "core seed with mode:\"instant\"",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "Hrh6njieeZ48osEyhZpKxefptcd1qr9J7pqazKdokjV1"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "core token leg",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "G6aNhJZK34T77zaFZoQV4JaAQy9mSGr8yBKPm8cwST5E"
+    }
+  ]
+}

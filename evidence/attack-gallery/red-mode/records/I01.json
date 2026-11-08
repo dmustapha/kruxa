@@ -1,0 +1,53 @@
+{
+  "attempt": "Two ordinary accounts call create_instant with the full deposit on a launcher running the mainnet profile whose creator gate is closed.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "precondition: the gate is closed"
+    },
+    {
+      "ok": true,
+      "what": "nothing was created"
+    }
+  ],
+  "co4": "CO7",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_CREATOR_GATE",
+  "id": "I01",
+  "invariants_after": {
+    "launcher": {
+      "market_locked_consistent": true,
+      "owed_usdc": "0",
+      "seeds_held_le_cap": true,
+      "usdc_custody": "0",
+      "usdc_custody_identity": true,
+      "usdc_expected": "0"
+    },
+    "launches": []
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "instant",
+  "title": "create_instant by non-owners on the mainnet profile before open_beta",
+  "transactions": [
+    {
+      "expected_rule_code": "R_CREATOR_GATE",
+      "label": "create_instant by creator.test.near",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_CREATOR_GATE",
+      "status": "failed",
+      "tx": "HP22ae1rbFYtHS1J8FGoD9fW2nVhvMzYjU8cC8DTCTaY"
+    },
+    {
+      "expected_rule_code": "R_CREATOR_GATE",
+      "label": "create_instant by eve.test.near",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_CREATOR_GATE",
+      "status": "failed",
+      "tx": "GdgJ5ibawKxyJ43BZmYsSBWz485LL6mzFxKKorusTwiv"
+    }
+  ]
+}

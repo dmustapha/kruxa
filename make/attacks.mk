@@ -9,3 +9,8 @@ attack-gallery:
 # Red-mode proof: one attack is made to succeed on purpose (test-only switch); this target must exit NON-zero.
 attack-gallery-red:
 	./scripts/attack-gallery.sh --sabotage A11
+
+.PHONY: known-findings
+# Reproductions of the independent review against the current code. Exits 1 while any finding is EXPLOITABLE.
+known-findings:
+	./scripts/known-findings.sh

@@ -53,7 +53,7 @@
       "role": "support",
       "rule_code": null,
       "status": "succeeded",
-      "tx": "GDG8wTgcGWS44oCy2sDCzQ2sKh6vHtPL8Ww137hWbrTq"
+      "tx": "7CafHRXJFu7GEQnPWA5e7MAAg6tPfRwdrjV4qUCKULmk"
     },
     {
       "expected_rule_code": null,
@@ -62,7 +62,7 @@
       "role": "attack",
       "rule_code": null,
       "status": "succeeded",
-      "tx": "mvJVrjqA4UCTgAfjMFHV7yhqV8LqZCY2Aq1SJASsh2f"
+      "tx": "BbJr1fmZcaraTRFX1taQeLp1mSv4cZnPGkZQBvRzaKsw"
     }
   ]
 }

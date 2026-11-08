@@ -1,0 +1,20 @@
+{
+  "data": {
+    "room_left": "2164690",
+    "sub_cap": "5000000000",
+    "sybil_seed_launches": [
+      "1000000002",
+      "1000000003",
+      "1000000004"
+    ],
+    "victim_launch": "1000000005",
+    "whale_after_unwind_usdc": 4246,
+    "whale_spent_usdc": 3923
+  },
+  "id": "K-M01",
+  "network": "SANDBOX",
+  "result": "EXPLOITABLE",
+  "review_id": "M-01",
+  "summary": "whale spent 3923 USDC of buys and held room 2164690 micro-USDC; a 10 USDC buy in another instant pool refused R_MARKET_CAP: true; 3 of 3 sybil seeds refused by the market: 3/3; victim seed refused R_CAP_GLOBAL: true; whale ends with 4246 of its 4500 USDC after selling everything back (the difference is the cost of the grief)",
+  "title": "One buyer fills the $5,000 instant sub-cap; refused seeds then fill the $3,000 launcher aggregate cap"
+}

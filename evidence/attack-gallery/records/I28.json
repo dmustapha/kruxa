@@ -1,0 +1,112 @@
+{
+  "attempt": "On an instant pool the creator buys, the separate payout recipient buys, and a third wallet buys with receiver set to the creator and to the recipient.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "every buyer was refunded in full"
+    },
+    {
+      "ok": true,
+      "what": "pool reserve unchanged"
+    },
+    {
+      "ok": true,
+      "what": "pool names the declared wallets"
+    }
+  ],
+  "co4": "CO7",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_SELF_BUY",
+  "id": "I28",
+  "invariants_after": {
+    "launcher": {
+      "market_locked_consistent": true,
+      "owed_usdc": "0",
+      "seeds_held_le_cap": true,
+      "usdc_custody": "0",
+      "usdc_custody_identity": true,
+      "usdc_expected": "0"
+    },
+    "launches": [
+      {
+        "get_invariants": {
+          "claimed_le_unlocked": true,
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "supply_conservation": true,
+          "token": "self.factory.test.near",
+          "token_custody": "50000000000000",
+          "token_custody_identity": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0",
+          "vest_bounds": true
+        },
+        "launch_id": "1000000000"
+      }
+    ],
+    "market": {
+      "get_invariants": {
+        "global_q": "250000000",
+        "instant_q_matches": true,
+        "parked_count": 0,
+        "usdc_custody": "250000000",
+        "usdc_custody_identity": true,
+        "usdc_expected": "250000000"
+      },
+      "pools": [
+        {
+          "launch_id": "1000000000",
+          "pool_invariants": {
+            "k_ge_k0": true,
+            "token_custody_identity": true
+          }
+        }
+      ]
+    }
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "market",
+  "title": "Self-buy by the creator, the payout recipient, and through the receiver field",
+  "transactions": [
+    {
+      "expected_rule_code": "R_SELF_BUY",
+      "label": "creator buys",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_SELF_BUY",
+      "status": "succeeded",
+      "tx": "FhBbFeW2jrsnvUUS2gNCUivxyZQw6zcuGZL3nbBMLtiJ"
+    },
+    {
+      "expected_rule_code": "R_SELF_BUY",
+      "label": "recipient buys",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_SELF_BUY",
+      "status": "succeeded",
+      "tx": "3d1B7AM3QPSqEGaMA7dUQjqLYH7yEq1EoUBsaLbAUSCC"
+    },
+    {
+      "expected_rule_code": "R_SELF_BUY",
+      "label": "bob buys for the creator",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_SELF_BUY",
+      "status": "succeeded",
+      "tx": "ApY9oqPZGbrDjCPukm3TXAhwUKi7eCcUjWBQVa1RGfqZ"
+    },
+    {
+      "expected_rule_code": "R_SELF_BUY",
+      "label": "bob buys for the recipient",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_SELF_BUY",
+      "status": "succeeded",
+      "tx": "DMsT7bYMvVMTYYRPhto34XRdZioFRfvvQ5sGENojap9t"
+    }
+  ]
+}

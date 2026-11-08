@@ -1,0 +1,85 @@
+{
+  "attempt": "The guardian, a creator and a stranger name themselves as the launcher; the owner is also tried with the core, the USDC contract and the treasury (each would let a second sender open pools).",
+  "checks": [
+    {
+      "ok": true,
+      "what": "the market still has no launcher"
+    }
+  ],
+  "co4": "CO7",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_NOT_AUTHORIZED",
+  "id": "I23",
+  "invariants_after": {
+    "market": {
+      "global_q": "0",
+      "instant_q_matches": true,
+      "parked_count": 0,
+      "usdc_custody": "0",
+      "usdc_custody_identity": true,
+      "usdc_expected": "0"
+    },
+    "pools": []
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "market",
+  "title": "set_launcher by a non-owner, or pointing it at core, USDC or the treasury",
+  "transactions": [
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "set_launcher by the guardian",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "DtguWLDjDtY5TV85szHTQWvzQqn1RcEsPkEonDFLShAr"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "set_launcher by the creator",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "CThY4FVJrr6Tbwa3iqfbPTiz6jK2oSBEs5zSwQWndPgf"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "set_launcher by the stranger",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "7e8vfrNNzMHC22dk7NGU7NJtidEvkXRPm4eLNQERCBLV"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "owner points the launcher at the core",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "9Xv2hRCnEq7L5qDBZygvZ4ojM1UKq2takV4xhYNmvpWd"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "owner points the launcher at the USDC",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "CoQZsVmn8Qor6pCCwMZjREAnEHCF4mMhFZnLxJrEJUAa"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "owner points the launcher at the treasury",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "8iJ8mZgVRjq9CopLyb8y4tM4RYiKoJFBAe1RiTofybB1"
+    }
+  ]
+}

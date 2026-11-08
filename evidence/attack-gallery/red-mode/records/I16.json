@@ -1,0 +1,88 @@
+{
+  "attempt": "After the cliff the creator (who named a separate recipient) and a stranger both call claim_vested.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "precondition: something is claimable"
+    },
+    {
+      "ok": true,
+      "what": "neither received tokens"
+    },
+    {
+      "ok": true,
+      "what": "the recipient is still the named account"
+    },
+    {
+      "ok": true,
+      "what": "the recipient was paid"
+    }
+  ],
+  "co4": "CO7",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_NOT_AUTHORIZED",
+  "id": "I16",
+  "invariants_after": {
+    "launcher": {
+      "market_locked_consistent": true,
+      "owed_usdc": "0",
+      "seeds_held_le_cap": true,
+      "usdc_custody": "0",
+      "usdc_custody_identity": true,
+      "usdc_expected": "0"
+    },
+    "launches": [
+      {
+        "get_invariants": {
+          "claimed_le_unlocked": true,
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "supply_conservation": true,
+          "token": "clf3.factory.test.near",
+          "token_custody": "24185844666667",
+          "token_custody_identity": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0",
+          "vest_bounds": true
+        },
+        "launch_id": "1000000000"
+      }
+    ]
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "instant",
+  "title": "claim_vested by someone other than the payout recipient",
+  "transactions": [
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "claim by the creator who is not the recipient",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "Bb72mTtCa5FEzA8gprkG6YiDsTWFGD8J5oNqqHcJJxCQ"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "claim by a stranger",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "CJ2o77vaXGC4Ro8uadNgKGskLB5ur67i6bKTMPApwmQ1"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "the real recipient claims",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "FB6ck3k1nS8pHzzceF25u6xLXLte43hna3YwSh27mTme"
+    }
+  ]
+}

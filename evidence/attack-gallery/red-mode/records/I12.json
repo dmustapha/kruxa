@@ -1,0 +1,103 @@
+{
+  "attempt": "After the pool opened, the creator and a stranger call open_instant again, hoping to push the seed or the token bucket a second time.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "pool reserve unchanged"
+    },
+    {
+      "ok": true,
+      "what": "market holds exactly the seed"
+    },
+    {
+      "ok": true,
+      "what": "the launcher paid the pool bucket once"
+    }
+  ],
+  "co4": "CO7",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_INSTANT_STATE",
+  "id": "I12",
+  "invariants_after": {
+    "launcher": {
+      "market_locked_consistent": true,
+      "owed_usdc": "0",
+      "seeds_held_le_cap": true,
+      "usdc_custody": "0",
+      "usdc_custody_identity": true,
+      "usdc_expected": "0"
+    },
+    "launches": [
+      {
+        "get_invariants": {
+          "claimed_le_unlocked": true,
+          "market_locked_consistent": true,
+          "owed_usdc": "0",
+          "seeds_held_le_cap": true,
+          "supply_conservation": true,
+          "token": "dopn.factory.test.near",
+          "token_custody": "50000000000000",
+          "token_custody_identity": true,
+          "usdc_custody": "0",
+          "usdc_custody_identity": true,
+          "usdc_expected": "0",
+          "vest_bounds": true
+        },
+        "launch_id": "1000000000"
+      }
+    ],
+    "market": {
+      "get_invariants": {
+        "global_q": "250000000",
+        "instant_q_matches": true,
+        "parked_count": 0,
+        "usdc_custody": "250000000",
+        "usdc_custody_identity": true,
+        "usdc_expected": "250000000"
+      },
+      "pools": [
+        {
+          "launch_id": "1000000000",
+          "pool_invariants": {
+            "k_ge_k0": true,
+            "token_custody_identity": true
+          }
+        }
+      ]
+    }
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "instant+market",
+  "title": "open_instant called again after the pool is open",
+  "transactions": [
+    {
+      "expected_rule_code": null,
+      "label": "first open_instant",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "65PBQmXoVXhwejHMEusCfkTUY7fqi5EnEXwtRoQarkmj"
+    },
+    {
+      "expected_rule_code": "R_INSTANT_STATE",
+      "label": "second open_instant by the creator",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_INSTANT_STATE",
+      "status": "failed",
+      "tx": "7bAvVgi3bHAKdYaU7wrqDKiDqynMm1rYyFEzwrLtdZft"
+    },
+    {
+      "expected_rule_code": "R_INSTANT_STATE",
+      "label": "third open_instant by a stranger",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_INSTANT_STATE",
+      "status": "failed",
+      "tx": "AiASVbtbpQ89DPRBN89op7SrZZuedkKd8KreckWhBEoH"
+    }
+  ]
+}

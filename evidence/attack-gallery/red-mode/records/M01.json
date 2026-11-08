@@ -17,6 +17,7 @@
   "invariants_after": {
     "market": {
       "global_q": "1000000000",
+      "instant_q_matches": true,
       "parked_count": 0,
       "usdc_custody": "1000000000",
       "usdc_custody_identity": true,
@@ -45,7 +46,7 @@
       "role": "attack",
       "rule_code": "R_UNEXPECTED_TOKEN",
       "status": "succeeded",
-      "tx": "5rfYnQ9fvVn5QJxGNSTnrm5BW9vY8pprgEcJYLuVdpGk"
+      "tx": "3JGXK7a4aNc9bbL2YmE56X6acHYsMSXYrGg9dy3G5SGS"
     },
     {
       "expected_rule_code": "R_UNEXPECTED_TOKEN",
@@ -54,7 +55,7 @@
       "role": "attack",
       "rule_code": "R_UNEXPECTED_TOKEN",
       "status": "succeeded",
-      "tx": "A88pdFMNeByxX72GTknQcSbUbtfT2ZDZjGrQGoyTyHdB"
+      "tx": "9vsgcXdvqwzDmXbMLNs2Le7TDpiMevZt19HprqnF2sUn"
     },
     {
       "expected_rule_code": "R_UNEXPECTED_TOKEN",
@@ -63,7 +64,7 @@
       "role": "attack",
       "rule_code": "R_UNEXPECTED_TOKEN",
       "status": "succeeded",
-      "tx": "13Ncu6x1ALAt5QAVLQ3ah3Mf6cRcRreZy56zEnyAH1Z8"
+      "tx": "6pWq4pRJtUcYbF6zXR9zMmHXLHp3gXMNEJSdJ2anpoSZ"
     }
   ]
 }

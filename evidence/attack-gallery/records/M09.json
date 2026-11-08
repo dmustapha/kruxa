@@ -49,7 +49,7 @@
       "role": "attack",
       "rule_code": "R_MARKET_CAP",
       "status": "succeeded",
-      "tx": "36xNFxZGH4KZUh92auEX57AKB7ugb27i6mQ6T1vGv3C4"
+      "tx": "HTpDYDeNrHASNC1V7CXW74CW6kDLmVAqEJX3iBwPfqY9"
     },
     {
       "expected_rule_code": null,
@@ -58,7 +58,7 @@
       "role": "support",
       "rule_code": null,
       "status": "succeeded",
-      "tx": "D8oFw8GEFtQ1Lium9i5qSkGHABUygEiFZuEheFAVpSgK"
+      "tx": "59avHwYaUsGoh8n4Tfzs1S4KmQxZ281FKY2fygX5Pc5e"
     }
   ]
 }
