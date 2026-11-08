@@ -13,8 +13,7 @@ Rules the parser enforces: only logs from the configured contract accounts count
 kind, only from receipts that did not fail. Replay is by canonical order (block height, receipt position, log index);
 `state_hash` in `/api/health` is a sha256 of the whole read model and is equal for equal events.
 
-Event fields the fold reads (names follow core `events.rs` and ARCHITECTURE 5.8; missing optional fields become `null`
-in the API, never guesses): `charter_created` may carry `soft_cap`, `min_funders`, `stream_days`, `payout_recipient`,
-`token_decimals`; `pool_opened` may carry `quote_reserve`, `token_reserve`, `fee_bps`, `creator_bps`, `payout_recipient`,
-`mint_authority`, `freeze_authority` (null means revoked); `swap` carries `launch_id, side, trader, amount_in, amount_out,
-fee_total`, five fee slices (flat `fee_*` or a `slices` object) and the reserves after.
+Event shapes are documented in `docs/interfaces/EVENTS.md`. Optional fields that the core does not emit yet (`name`, `soft_cap`,
+`min_funders`, `stream_days`, `total_supply`, genesis and `external_pool` events) become `null` or `unknown` in the API, never guesses.
+Chart price is `q / t` after each swap (EVENTS.md); candle volume is gross USDC. A database written by an older schema version is
+dropped and refolded from its stored events when opened.

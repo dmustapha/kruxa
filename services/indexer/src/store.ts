@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { DatabaseSync } from "node:sqlite";
 import { Folder } from "./fold.ts";
 import { extractEvents } from "./parse.ts";
-import { DERIVED_TABLES, HASH_ORDER, SCHEMA } from "./schema.ts";
+import { DERIVED_TABLES, HASH_ORDER, SCHEMA, SCHEMA_VERSION } from "./schema.ts";
 import type { Change, ContractSet, NearBlock, PendingChange, Source, StoredEvent } from "./types.ts";
 
 type Row = Record<string, unknown>;
@@ -41,11 +41,23 @@ export class Store {
   constructor(path: string, opts: { contracts: ContractSet; network: string }) {
     this.db = new DatabaseSync(path);
     this.db.exec("PRAGMA journal_mode = WAL; PRAGMA synchronous = NORMAL; PRAGMA foreign_keys = OFF;");
-    this.db.exec(SCHEMA);
     this.contracts = opts.contracts;
     this.network = opts.network;
     this.folder = new Folder(this.db);
+    this.migrate();
     this.setMeta("network", opts.network);
+  }
+
+  /** Events are the source of truth, so a schema change just drops the derived tables and refolds. */
+  private migrate(): void {
+    this.db.exec("CREATE TABLE IF NOT EXISTS meta (k TEXT PRIMARY KEY, v TEXT NOT NULL)");
+    const have = this.getMeta("schema_version");
+    const legacy = have === undefined && this.db.prepare("SELECT 1 FROM sqlite_master WHERE name = 'launches'").get() !== undefined;
+    const stale = legacy || (have !== undefined && Number(have) !== SCHEMA_VERSION);
+    if (stale) for (const t of DERIVED_TABLES) this.db.exec(`DROP TABLE IF EXISTS ${t}`);
+    this.db.exec(SCHEMA);
+    if (stale) this.rebuild();
+    this.setMeta("schema_version", String(SCHEMA_VERSION));
   }
 
   close(): void {

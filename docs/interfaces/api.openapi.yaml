@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Kruxa indexer read API
-  version: 1.0.0
+  version: 1.1.0
   description: |
     Read-only JSON API over the Kruxa indexer (workstream I). Nothing here is authoritative:
     every number is a convenience view folded from NEP-297 `EVENT_JSON` logs (standard `kruxa`,
@@ -16,6 +16,12 @@ info:
     - Every object that carries numbers has `source`: `"chain"` when every contributing event came from a NEAR block, `"fixture"` when any contributing event came from the offline fixture generator. UI must label fixture numbers as fixture data.
     - Every response carries `as_of` (the last indexed final block) so freshness is visible.
     - Errors are `{ "error": { "code": string, "message": string } }` with HTTP 400, 404 or 503.
+    - Phase and tab (1.1.0, APP-SPEC 2.4): every launch has one `phase` and the `tab` that phase belongs to.
+      `SCHEDULED` (opens_at in the future), `OPEN` (stage new or open), `WALK_WINDOW` (stage closing and now before walk_end),
+      `AWAITING_SETTLE` (open and now at or after walk_end), `PASS` (verdict PASS, no pool yet), `TRADING` (PASS and pool open),
+      `FAIL` (verdict FAIL or creation failed), `DISSOLVED`. Tabs: `live` = SCHEDULED, OPEN; `walk` = WALK_WINDOW, AWAITING_SETTLE;
+      `trading` = TRADING; `passed` = PASS; `failed` = FAIL, DISSOLVED. Tabs are exclusive and cover every launch; `all` is every launch.
+    - Names (1.1.0): `name` comes from the `name` field of `charter_created`; it is `null` until the core emits it (REQ in docs/interfaces/EVENTS.md). Nothing is invented.
     - Stage definitions (exclusive, evaluated at request time against `now`):
       `closing` = status open and (commit window ended, or fewer than 6 h to `walk_end`);
       `new` = open, not closing, opened less than 6 h ago;
@@ -54,9 +60,13 @@ paths:
         - name: stage
           in: query
           schema: { type: string, enum: [all, new, open, closing, passed, failed], default: all }
+        - name: tab
+          in: query
+          description: lifecycle tab (see Phase and tab above); combines with `stage` by intersection
+          schema: { type: string, enum: [all, live, walk, trading, passed, failed], default: all }
         - name: q
           in: query
-          description: case-insensitive substring over symbol, creator account and numeric launch id
+          description: case-insensitive substring over name, symbol, creator account, payout recipient account and numeric launch id
           schema: { type: string, maxLength: 64 }
         - name: creator
           in: query
@@ -254,6 +264,39 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/VerifyData' }
         '404': { $ref: '#/components/responses/Error' }
+  /api/stats:
+    get:
+      tags: [ops]
+      summary: Honest aggregates from indexed data only
+      description: Every figure is a fold of indexed events and says so in `basis`. No figure is a projection. `pass_rate` is null until a launch has settled.
+      responses:
+        '200':
+          description: aggregates
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Stats' }
+  /api/ops-log:
+    get:
+      tags: [ops]
+      summary: Pause, freeze, cap and config-change events, newest first
+      description: From indexed core and market events only (core `paused`, `frozen`, `unpaused`, `global_cap_*`, `launch_cap_*`; market `market_paused`, `platform_withdrawn`). It is a record of what the contracts logged, not a moderation list.
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+        - name: before
+          in: query
+          description: opaque `next_cursor` from the previous page
+          schema: { type: string }
+        - name: scope
+          in: query
+          schema: { type: string, enum: [core, market] }
+      responses:
+        '200':
+          description: log entries
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OpsLog' }
   /api/export/launches.csv:
     get:
       tags: [feed]
@@ -364,7 +407,10 @@ components:
         creator: { type: string }
         payout_recipient: { type: string, description: 'Charter stream_recipient, defaults to the creator' }
         status: { type: string, enum: [creating, open, passed, failed, creation_failed, dissolved] }
+        name: { type: string, nullable: true, description: 'token name from charter_created, null until emitted' }
         stage: { type: string, enum: [new, open, closing, passed, failed] }
+        phase: { type: string, enum: [SCHEDULED, OPEN, WALK_WINDOW, AWAITING_SETTLE, PASS, TRADING, FAIL, DISSOLVED] }
+        tab: { type: string, enum: [live, walk, trading, passed, failed] }
         created_at: { type: integer, nullable: true }
         opens_at: { type: integer, nullable: true }
         commit_end: { type: integer, nullable: true }
@@ -418,6 +464,7 @@ components:
           required: [charter_hash, verdict_inputs]
           properties:
             charter_hash: { type: string }
+            genesis: { $ref: '#/components/schemas/Genesis' }
             verdict_inputs: { $ref: '#/components/schemas/VerdictInputs' }
             verdict_reasons: { type: array, items: { type: string }, description: 'FAIL reasons as logged' }
             allocation: { allOf: [ { $ref: '#/components/schemas/Allocation' } ], nullable: true }
@@ -452,6 +499,10 @@ components:
       type: object
       required: [open, paused]
       properties:
+        token: { type: string, nullable: true, description: 'launch token account (from pool_opened)' }
+        market: { type: string, nullable: true, description: 'market contract account that logged the pool' }
+        total_supply: { allOf: [ { $ref: '#/components/schemas/Amount' } ], nullable: true, description: 'base units, null until an event carries it' }
+        fee_terms: { allOf: [ { $ref: '#/components/schemas/FeeTerms' } ], nullable: true, description: 'FeeTerms exactly as logged by pool_opened' }
         open: { type: boolean }
         paused: { type: boolean }
         opened_at: { type: integer, nullable: true }
@@ -460,10 +511,144 @@ components:
         fee_bps: { type: integer, nullable: true }
         price: { type: number, nullable: true, description: 'reserve ratio, quote per whole token' }
         tvl_quote: { type: number, nullable: true, description: 'twice the quote reserve, whole USDC' }
+    FeeTerms:
+      type: object
+      description: kruxa_logic::FeeTerms as logged (MARKET-ABI)
+      additionalProperties: true
+      properties:
+        total_fee_bps: { type: integer }
+        creator_bps: { type: integer }
+        platform_bps: { type: integer }
+        holders_bps: { type: integer }
+        lp_bps: { type: integer }
+        referral_bps: { type: integer }
+        opening_fee_start_bps: { type: integer }
+        opening_decay_minutes: { type: integer }
+        fee_vest_bps: { type: integer }
+        fee_vest_days: { type: integer }
+    ExternalPool:
+      type: object
+      required: [venue, pool, url]
+      properties:
+        venue: { type: string, example: meteora }
+        pool: { type: string }
+        url: { type: string }
+    WindowStats:
+      type: object
+      required: [buys, sells, volume, unique_traders]
+      properties:
+        change_pct: { type: number, nullable: true, description: 'last price in the window against the price at the window start; null with no trades' }
+        high: { type: number, nullable: true }
+        low: { type: number, nullable: true }
+        buys: { type: integer }
+        sells: { type: integer }
+        buy_volume: { type: number, description: 'whole USDC' }
+        sell_volume: { type: number, description: 'whole USDC' }
+        volume: { type: number, description: 'whole USDC' }
+        unique_traders: { type: integer }
+    Genesis:
+      type: object
+      description: |
+        Solana genesis progress for a launch, folded from core events `genesis_committed` and `genesis_confirmed` (proposed, see EVENTS.md).
+        `stage`: `none` (verdict FAIL, creation failed, dissolved, or no verdict yet; no Solana mint exists), `pending` (verdict PASS, no genesis event yet),
+        `committed` (spec hash logged), `confirmed` (mint logged). Any fact no event carries is `null` or `unknown`, never guessed.
+      required: [stage, network, path, verdict_inputs, mint_authority, freeze_authority, verified_checks, source]
+      properties:
+        stage: { type: string, enum: [none, pending, committed, confirmed] }
+        network: { type: string, nullable: true, example: solana-devnet }
+        path: { type: string, nullable: true, enum: [F0, F1, null] }
+        spec_hash: { type: string, nullable: true }
+        mint: { type: string, nullable: true, description: 'Solana mint address' }
+        tx_create: { type: string, nullable: true }
+        tx_authority: { type: string, nullable: true }
+        distributor: { type: string, nullable: true }
+        root: { type: string, nullable: true, description: 'distribution merkle root' }
+        mint_authority: { type: string, enum: ['null', set, unknown], description: '`null` means revoked' }
+        freeze_authority: { type: string, enum: ['null', set, unknown] }
+        verified_checks: { type: array, items: { type: string } }
+        verdict_inputs:
+          type: object
+          description: the NEAR verdict inputs the genesis rests on
+          properties:
+            total_active: { $ref: '#/components/schemas/Amount' }
+            funders: { type: integer }
+            soft_cap: { allOf: [ { $ref: '#/components/schemas/Amount' } ], nullable: true }
+            min_funders: { type: integer, nullable: true }
+            inputs_hash: { type: string, nullable: true }
+            verdict: { type: string, enum: [PASS, FAIL], nullable: true }
+        updated_at: { type: integer, nullable: true }
+        source: { $ref: '#/components/schemas/Source' }
+    Stats:
+      type: object
+      required: [launches, volume, basis, as_of, source]
+      properties:
+        launches:
+          type: object
+          properties:
+            total: { type: integer }
+            by_phase: { type: object, additionalProperties: { type: integer } }
+            by_tab: { type: object, additionalProperties: { type: integer } }
+            passed: { type: integer }
+            failed: { type: integer }
+            pass_rate_bps: { type: integer, nullable: true, description: 'passed over (passed + failed), null until one has settled' }
+        committed:
+          type: object
+          properties:
+            total_committed: { $ref: '#/components/schemas/Amount' }
+            total_walked: { $ref: '#/components/schemas/Amount' }
+            active_in_open_trials: { $ref: '#/components/schemas/Amount' }
+            refunds_paid: { $ref: '#/components/schemas/Amount' }
+            refund_attempts_failed: { $ref: '#/components/schemas/Amount', description: 'sum of refund payouts logged with ok=false (retryable); not an outstanding balance' }
+        volume:
+          type: object
+          properties:
+            trades: { type: integer }
+            quote_volume: { type: number, description: 'whole USDC, gross' }
+            unique_traders: { type: integer }
+            fees_total: { $ref: '#/components/schemas/Amount' }
+            fee_slices:
+              type: object
+              properties:
+                creator: { $ref: '#/components/schemas/Amount' }
+                platform: { $ref: '#/components/schemas/Amount' }
+                holders: { $ref: '#/components/schemas/Amount' }
+                lp: { $ref: '#/components/schemas/Amount' }
+                referral: { $ref: '#/components/schemas/Amount' }
+        since_block: { type: integer, nullable: true, description: 'first block that carried an indexed event; nothing earlier is counted' }
+        basis: { type: string }
+        as_of: { $ref: '#/components/schemas/AsOf' }
+        source: { $ref: '#/components/schemas/Source' }
+    OpsLog:
+      type: object
+      required: [items, next_cursor, as_of, source]
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            required: [event, scope, contract, summary, data, block_height, receipt_id, time, source]
+            properties:
+              event: { type: string, example: paused }
+              scope: { type: string, enum: [core, market] }
+              contract: { type: string }
+              summary: { type: string }
+              data: { type: object, additionalProperties: true }
+              block_height: { type: integer }
+              receipt_id: { type: string }
+              time: { type: integer }
+              source: { $ref: '#/components/schemas/Source' }
+        next_cursor: { type: string, nullable: true }
+        as_of: { $ref: '#/components/schemas/AsOf' }
+        source: { $ref: '#/components/schemas/Source' }
     TokenPage:
       type: object
-      required: [launch, pool, safety, stats, as_of, source]
+      required: [launch, pool, safety, stats, genesis, external_pools, as_of, source]
       properties:
+        genesis: { $ref: '#/components/schemas/Genesis' }
+        external_pools:
+          type: array
+          description: venues where the token also trades, only when an indexed `external_pool` event names one; empty otherwise
+          items: { $ref: '#/components/schemas/ExternalPool' }
         launch: { $ref: '#/components/schemas/LaunchSummary' }
         pool: { $ref: '#/components/schemas/PoolInfo' }
         stats:
@@ -475,6 +660,10 @@ components:
             low_24h: { type: number, nullable: true }
             volume_24h: { type: number }
             trades_24h: { type: integer }
+            windows:
+              type: object
+              description: 5m, 1h, 6h and 24h price stats with buy-vs-sell counts and volume
+              additionalProperties: { $ref: '#/components/schemas/WindowStats' }
             fees_total: { $ref: '#/components/schemas/Amount' }
         creator:
           type: object
@@ -533,6 +722,9 @@ components:
             holders: { $ref: '#/components/schemas/Amount' }
             lp: { $ref: '#/components/schemas/Amount' }
             referral: { $ref: '#/components/schemas/Amount' }
+            surcharge: { $ref: '#/components/schemas/Amount' }
+            red_holders: { $ref: '#/components/schemas/Amount', description: 'part of lp: the holders slice redirected to liquidity in this release' }
+            red_referral: { $ref: '#/components/schemas/Amount', description: 'part of lp: the referral slice redirected to liquidity in this release' }
         quote_reserve_after: { $ref: '#/components/schemas/Amount' }
         token_reserve_after: { $ref: '#/components/schemas/Amount' }
         block_height: { type: integer }

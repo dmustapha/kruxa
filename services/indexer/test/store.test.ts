@@ -7,7 +7,7 @@ import { fixtureStore, rows } from "./helpers.ts";
 test("fixture fold: launches, verdicts, pool, balances", () => {
   const s = fixtureStore();
   const l = rows(s, "SELECT * FROM launches ORDER BY launch_id");
-  assert.deepEqual(l.map((r) => [r.symbol, r.status, r.verdict]), [["ALPHA", "passed", "PASS"], ["BRAVO", "failed", "FAIL"], ["CHARLIE", "open", null]]);
+  assert.deepEqual(l.map((r) => [r.symbol, r.status, r.verdict]), [["ALPHA", "passed", "PASS"], ["BRAVO", "dissolved", "FAIL"], ["CHARLIE", "open", null], ["DELTA", "passed", "PASS"]]);
   assert.equal(l[2]?.payout_recipient, "carol-treasury.testnet");
   assert.equal(l[0]?.payout_recipient, "alice.testnet");
   assert.ok(l.every((r) => r.source === "fixture"));
@@ -83,6 +83,65 @@ test("file-backed store uses WAL and survives reopen with the same hash", async 
   for (const b of generateFixtureBlocks(2, 30)) s.ingestBlock(b, "fixture");
   const h = s.stateHash();
   assert.equal((rows(s, "PRAGMA journal_mode")[0] as { journal_mode: string }).journal_mode, "wal");
+  s.close();
+  const r = new Store(path, { contracts: FIXTURE_CONTRACTS, network: "fixture" });
+  assert.equal(r.stateHash(), h);
+  r.close();
+});
+
+test("name and total supply come from charter_created; nothing is invented when absent", () => {
+  const s = fixtureStore();
+  const l = rows(s, "SELECT symbol, name, total_supply FROM launches ORDER BY launch_id");
+  assert.deepEqual(l.map((r) => r.name), ["Alpha Coin", "Bravo Cat", "Charlie Dog", "Delta Fox"]);
+  assert.equal(l[0]?.total_supply, "2000000000000");
+});
+
+test("swaps follow MARKET-ABI M-A: holders and referral are 0, red_* ride inside lp, slices sum to the fee", () => {
+  const s = fixtureStore();
+  const ts = rows(s, "SELECT fee_total, fee_slices FROM trades");
+  assert.ok(ts.length > 100);
+  for (const t of ts) {
+    const f = JSON.parse(String(t.fee_slices)) as Record<string, string>;
+    assert.equal(f.holders, "0");
+    assert.equal(f.referral, "0");
+    assert.equal(BigInt(f.creator!) + BigInt(f.platform!) + BigInt(f.lp!), BigInt(String(t.fee_total)));
+    assert.ok(BigInt(f.red_holders!) + BigInt(f.red_referral!) <= BigInt(f.lp!));
+  }
+  const pool = rows(s, "SELECT * FROM pools")[0]!;
+  assert.equal(pool.fees_holders, "0");
+  assert.equal(pool.fees_referral, "0");
+  assert.equal(pool.token, "alpha.token.fixture.testnet");
+  assert.equal(pool.market, "market.fixture.testnet");
+  assert.equal((JSON.parse(String(pool.terms)) as Record<string, number>).total_fee_bps, 100);
+});
+
+test("failed launch fixture: every backer refunded, one payout retried, launch dissolved", () => {
+  const s = fixtureStore();
+  const pos = rows(s, "SELECT CAST(contributed AS INTEGER) AS c FROM positions WHERE launch_id = 2");
+  const paid = rows(s, "SELECT COALESCE(SUM(CAST(amount AS INTEGER)), 0) AS s FROM payouts WHERE launch_id = 2 AND kind = 'RefundNative' AND ok = 1")[0]!;
+  assert.equal(paid.s, pos.reduce((a, p) => a + Number(p.c), 0));
+  assert.equal(rows(s, "SELECT COUNT(*) AS n FROM payouts WHERE launch_id = 2 AND ok = 0")[0]?.n, 1);
+  assert.equal(rows(s, "SELECT status, verdict FROM launches WHERE launch_id = 2")[0]?.status, "dissolved");
+});
+
+test("genesis events fold; later committed never downgrades confirmed", () => {
+  const s = fixtureStore();
+  const g = rows(s, "SELECT * FROM genesis")[0]!;
+  assert.equal(g.stage, "confirmed");
+  assert.equal(g.mint_authority, "null");
+  assert.equal(g.freeze_authority, "null");
+  assert.equal(rows(s, "SELECT COUNT(*) AS n FROM genesis")[0]?.n, 1);
+});
+
+test("a database from an older schema is refolded from its events on open", async () => {
+  const { mkdtempSync } = await import("node:fs");
+  const { tmpdir } = await import("node:os");
+  const { join } = await import("node:path");
+  const path = join(mkdtempSync(join(tmpdir(), "kruxa-mig-")), "i.db");
+  const s = new Store(path, { contracts: FIXTURE_CONTRACTS, network: "fixture" });
+  for (const b of generateFixtureBlocks(2, 30)) s.ingestBlock(b, "fixture");
+  const h = s.stateHash();
+  s.db.exec("UPDATE meta SET v = '1' WHERE k = 'schema_version'; DROP TABLE launches; DROP TABLE pools; DROP TABLE genesis");
   s.close();
   const r = new Store(path, { contracts: FIXTURE_CONTRACTS, network: "fixture" });
   assert.equal(r.stateHash(), h);

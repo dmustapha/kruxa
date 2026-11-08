@@ -4,6 +4,7 @@ import { ApiError, WINDOW_24H, all, asOf, candleJson, decodeCursor, encodeCursor
 import type { Ctx, Json, Row } from "./common.ts";
 
 const STAGES = new Set(["all", "new", "open", "closing", "passed", "failed"]);
+const TABS = new Set(["all", "live", "walk", "trading", "passed", "failed"]);
 const SORTS = new Set(["newest", "raised", "funders", "ending_soon", "volume_24h"]);
 
 type Q = URLSearchParams;
@@ -41,6 +42,8 @@ export function launches(ctx: Ctx, q: Q): Json {
   const sort = q.get("sort") ?? "newest";
   if (!STAGES.has(stage)) throw new ApiError(400, "bad_stage", "stage must be all, new, open, closing, passed or failed");
   if (!SORTS.has(sort)) throw new ApiError(400, "bad_sort", "unknown sort");
+  const tab = q.get("tab") ?? "all";
+  if (!TABS.has(tab)) throw new ApiError(400, "bad_tab", "tab must be all, live, walk, trading, passed or failed");
   const limit = intParam(q.get("limit"), "limit", 1, 200, 50);
   const minRaised = q.get("min_raised");
   if (minRaised !== null && !/^[0-9]+$/.test(minRaised)) throw new ApiError(400, "bad_param", "min_raised must be an integer string");
@@ -48,7 +51,8 @@ export function launches(ctx: Ctx, q: Q): Json {
   const rows = all(ctx.store, "SELECT * FROM launches");
   let items = rows.map((r) => launchSummary(ctx, r));
   if (stage !== "all") items = items.filter((j) => j.stage === stage);
-  if (needle) items = items.filter((j) => `${j.symbol} ${j.creator} ${j.launch_id}`.toLowerCase().includes(needle));
+  if (tab !== "all") items = items.filter((j) => j.tab === tab);
+  if (needle) items = items.filter((j) => `${j.name ?? ""} ${j.symbol} ${j.creator} ${j.payout_recipient} ${j.launch_id}`.toLowerCase().includes(needle));
   if (q.get("creator")) items = items.filter((j) => j.creator === q.get("creator"));
   if (q.get("has_market") === "true") items = items.filter((j) => j.has_market === true);
   if (minRaised !== null) items = items.filter((j) => BigInt(String(j.total_active)) >= BigInt(minRaised));
@@ -72,7 +76,7 @@ export function launchDetail(ctx: Ctx, rawId: string): Json {
   const total = BigInt(String(l.total_active));
   const events = all(ctx.store, "SELECT event, block_height, receipt_id, log_index, time, source FROM events WHERE json_extract(data, '$.launch_id') = ? ORDER BY block_height, ord, log_index LIMIT 500", String(id));
   return {
-    ...launchSummary(ctx, l), charter_hash: l.charter_hash,
+    ...launchSummary(ctx, l), charter_hash: l.charter_hash, genesis: genesisOf(ctx, l),
     verdict_inputs: {
       total_active: l.total_active, funders: l.funders, soft_cap: l.soft_cap, min_funders: l.min_funders,
       margin_to_soft_cap: soft === null ? null : (total - soft).toString(), margin_funders: l.min_funders === null ? null : Number(l.funders) - Number(l.min_funders),
@@ -89,12 +93,13 @@ export function eventRef(r: Row): Json {
 
 function poolInfo(ctx: Ctx, id: number): Json {
   const p = one(ctx.store, "SELECT * FROM pools WHERE launch_id = ?", id);
-  if (!p) return { open: false, paused: false, opened_at: null, quote_reserve: null, token_reserve: null, fee_bps: null, price: null, tvl_quote: null };
+  if (!p) return { open: false, paused: false, token: null, market: null, total_supply: one(ctx.store, "SELECT total_supply FROM launches WHERE launch_id = ?", id)?.total_supply ?? null, fee_terms: null, opened_at: null, quote_reserve: null, token_reserve: null, fee_bps: null, price: null, tvl_quote: null };
   const qr = p.quote_reserve === null ? null : BigInt(String(p.quote_reserve));
   const tr = p.token_reserve === null ? null : BigInt(String(p.token_reserve));
   const spot = qr !== null && tr !== null ? priceE12(qr, tr, Number(p.token_decimals)) : null;
   return {
-    open: true, paused: Number(p.paused) === 1, opened_at: p.opened_at, quote_reserve: p.quote_reserve, token_reserve: p.token_reserve, fee_bps: p.fee_bps,
+    open: true, paused: Number(p.paused) === 1, opened_at: p.opened_at, token: p.token, market: p.market,
+    total_supply: one(ctx.store, "SELECT total_supply FROM launches WHERE launch_id = ?", id)?.total_supply ?? null, fee_terms: p.terms ? (JSON.parse(String(p.terms)) as unknown) : null, quote_reserve: p.quote_reserve, token_reserve: p.token_reserve, fee_bps: p.fee_bps,
     price: spot === null ? null : e12ToNumber(spot), tvl_quote: qr === null ? null : quoteToNumber(qr * 2n),
   };
 }
@@ -149,8 +154,9 @@ export function tokenPage(ctx: Ctx, rawId: string): Json {
     stats: {
       last_price: lastPrice(ctx.store, id), change_24h_pct: change,
       high_24h: prices.length ? e12ToNumber(prices.reduce((a, b) => (b > a ? b : a))) : null, low_24h: prices.length ? e12ToNumber(prices.reduce((a, b) => (b < a ? b : a))) : null,
-      volume_24h: vol.quote, trades_24h: vol.trades, fees_total: pool?.fees_total ?? "0",
+      volume_24h: vol.quote, trades_24h: vol.trades, fees_total: pool?.fees_total ?? "0", windows: windowStats(ctx, id, now),
     },
+    genesis: genesisOf(ctx, l), external_pools: externalPools(ctx, id),
     creator: { account: l.creator, payout_recipient: l.payout_recipient, creator_claimed: pool?.creator_claimed ?? "0" },
     safety: safety(ctx, l), as_of: asOf(ctx.store), source: sourceOf(ctx.store, [l, ...sum]),
   };
@@ -244,4 +250,126 @@ function rung(side: string, amountIn: bigint, amountOut: bigint, avg: bigint | n
   const diff = avg === null ? 0n : (avg - spot) * BigInt(sign);
   const impact = spot > 0n && diff > 0n ? Number((diff * 10_000n) / spot) : 0;
   return { side, amount_in: amountIn.toString(), amount_out: amountOut.toString(), avg_price: avg === null ? null : e12ToNumber(avg), price_impact_bps: impact };
+}
+
+export function genesisOf(ctx: Ctx, l: Row): Json {
+  const g = one(ctx.store, "SELECT * FROM genesis WHERE launch_id = ?", Number(l.launch_id));
+  const verdictInputs = {
+    total_active: l.total_active, funders: l.funders, soft_cap: l.soft_cap, min_funders: l.min_funders, inputs_hash: l.inputs_hash, verdict: l.verdict,
+  };
+  const failed = l.verdict === "FAIL" || l.status === "creation_failed" || l.status === "dissolved";
+  const stage = failed || l.verdict === null ? "none" : g ? String(g.stage) : "pending";
+  const val = (k: string): unknown => (g && !failed ? g[k] : null);
+  return {
+    stage, network: val("network"), path: val("path"), spec_hash: val("spec_hash"), mint: val("mint"), tx_create: val("tx_create"), tx_authority: val("tx_authority"),
+    distributor: val("distributor"), root: val("root"), mint_authority: g && !failed ? g.mint_authority : "unknown", freeze_authority: g && !failed ? g.freeze_authority : "unknown",
+    verified_checks: g && !failed ? (JSON.parse(String(g.checks)) as unknown) : [], verdict_inputs: verdictInputs, updated_at: val("updated_at"),
+    source: g ? sourceOf(ctx.store, [g, l]) : sourceOf(ctx.store, [l]),
+  };
+}
+
+const WINDOWS: Array<[string, number]> = [["5m", 300], ["1h", 3600], ["6h", 21_600], ["24h", 86_400]];
+
+/** Price stats per window from indexed swaps. Change compares the last price in the window with the last price before it. */
+export function windowStats(ctx: Ctx, id: number, now: number): Json {
+  const rows = all(ctx.store, "SELECT time, side, trader, price_e12, quote_amount FROM trades WHERE launch_id = ? AND time >= ? ORDER BY block_height, ord, log_index", id, now - 86_400);
+  const prior = one(ctx.store, "SELECT price_e12 FROM trades WHERE launch_id = ? AND time < ? ORDER BY block_height DESC, ord DESC, log_index DESC LIMIT 1", id, now - 86_400);
+  const out: Json = {};
+  for (const [name, secs] of WINDOWS) {
+    const start = now - secs;
+    const inWin = rows.filter((r) => Number(r.time) >= start);
+    const before = rows.filter((r) => Number(r.time) < start);
+    const beforeP = before.length ? before[before.length - 1] : name === "24h" ? prior : undefined;
+    const prices = inWin.map((r) => BigInt(String(r.price_e12)));
+    const base = beforeP ? BigInt(String(beforeP.price_e12)) : prices[0];
+    const last = prices[prices.length - 1];
+    const vol = (side: string): number => quoteToNumber(inWin.filter((r) => r.side === side).reduce((a, r) => a + BigInt(String(r.quote_amount)), 0n));
+    const buyV = vol("buy");
+    const sellV = vol("sell");
+    out[name] = {
+      change_pct: base && last && base > 0n ? Number(((last - base) * 1_000_000n) / base) / 10_000 : null,
+      high: prices.length ? e12ToNumber(prices.reduce((a, b) => (b > a ? b : a))) : null,
+      low: prices.length ? e12ToNumber(prices.reduce((a, b) => (b < a ? b : a))) : null,
+      buys: inWin.filter((r) => r.side === "buy").length, sells: inWin.filter((r) => r.side === "sell").length,
+      buy_volume: buyV, sell_volume: sellV, volume: buyV + sellV, unique_traders: new Set(inWin.map((r) => String(r.trader))).size,
+    };
+  }
+  return out;
+}
+
+export function externalPools(ctx: Ctx, id: number): Json[] {
+  return all(ctx.store, "SELECT venue, pool, url FROM external_pools WHERE launch_id = ? ORDER BY venue, pool", id).map((r) => ({ venue: r.venue, pool: r.pool, url: r.url }));
+}
+
+export function stats(ctx: Ctx): Json {
+  const store = ctx.store;
+  const sums = (sql: string): bigint => BigInt(String(one(store, sql)?.s ?? "0"));
+  const summaries = all(store, "SELECT * FROM launches").map((l) => launchSummary(ctx, l));
+  const count = (key: "phase" | "tab"): Json => {
+    const out: Json = {};
+    for (const s of summaries) out[String(s[key])] = Number(out[String(s[key])] ?? 0) + 1;
+    return out;
+  };
+  const passed = summaries.filter((s) => s.verdict === "PASS").length;
+  const failed = summaries.filter((s) => s.verdict === "FAIL").length;
+  const col = (c: string): bigint => sums(`SELECT COALESCE(SUM(CAST(${c} AS INTEGER)), 0) AS s FROM pools`);
+  const trade = one(store, "SELECT COUNT(*) AS n, COUNT(DISTINCT trader) AS u, COALESCE(SUM(CAST(quote_amount AS INTEGER)), 0) AS v FROM trades");
+  const first = one(store, "SELECT MIN(block_height) AS h FROM events");
+  const rows = [...all(store, "SELECT source FROM launches"), ...all(store, "SELECT source FROM trades LIMIT 1")];
+  return {
+    launches: { total: summaries.length, by_phase: count("phase"), by_tab: count("tab"), passed, failed, pass_rate_bps: passed + failed > 0 ? Math.floor((passed * 10_000) / (passed + failed)) : null },
+    committed: {
+      total_committed: sums("SELECT COALESCE(SUM(CAST(contributed_total AS INTEGER)), 0) AS s FROM launches").toString(),
+      total_walked: sums("SELECT COALESCE(SUM(CAST(walked_total AS INTEGER)), 0) AS s FROM launches").toString(),
+      active_in_open_trials: sums("SELECT COALESCE(SUM(CAST(total_active AS INTEGER)), 0) AS s FROM launches WHERE status = 'open'").toString(),
+      refunds_paid: sums("SELECT COALESCE(SUM(CAST(amount AS INTEGER)), 0) AS s FROM payouts WHERE kind LIKE 'Refund%' AND ok = 1").toString(),
+      refund_attempts_failed: sums("SELECT COALESCE(SUM(CAST(amount AS INTEGER)), 0) AS s FROM payouts WHERE kind LIKE 'Refund%' AND ok = 0").toString(),
+    },
+    volume: {
+      trades: Number(trade?.n ?? 0), quote_volume: quoteToNumber(BigInt(Number(trade?.v ?? 0))), unique_traders: Number(trade?.u ?? 0), fees_total: col("fees_total").toString(),
+      fee_slices: { creator: col("creator_fees").toString(), platform: col("fees_platform").toString(), holders: col("fees_holders").toString(), lp: col("fees_lp").toString(), referral: col("fees_referral").toString() },
+    },
+    since_block: first?.h === null || first?.h === undefined ? null : Number(first.h),
+    basis: "folds of indexed events only; events before since_block were never seen and are not counted; no projections",
+    as_of: asOf(store), source: sourceOf(store, rows),
+  };
+}
+
+const OPS_EVENTS = ["paused", "frozen", "unpaused", "global_cap_lowered", "global_cap_queued", "global_cap_applied", "launch_cap_queued", "launch_cap_applied", "market_paused", "platform_withdrawn"];
+
+function opsSummary(event: string, d: Record<string, unknown>): string {
+  const by = typeof d.by === "string" ? ` by ${d.by}` : "";
+  const when = (v: unknown): string => (typeof v === "string" && /^[0-9]+$/.test(v) ? new Date(Number(BigInt(v) / 1_000_000n)).toISOString() : "unknown time");
+  switch (event) {
+    case "paused": return `core paused${by}`;
+    case "frozen": return `core frozen${by} until ${when(d.until)}`;
+    case "unpaused": return "core unpaused";
+    case "global_cap_lowered": return `global cap lowered to ${String(d.value)}`;
+    case "global_cap_queued": return `global cap raise to ${String(d.value)} queued, effective ${when(d.effective_at)}`;
+    case "global_cap_applied": return `global cap set to ${String(d.value)}`;
+    case "launch_cap_queued": return `per-launch cap raise to ${String(d.value)} queued, effective ${when(d.effective_at)}`;
+    case "launch_cap_applied": return `per-launch cap set to ${String(d.value)}`;
+    case "market_paused": return `market ${d.paused === false ? "unpaused" : "paused"}${by}`;
+    default: return `platform withdrew ${String(d.amount)} to ${String(d.to)}`;
+  }
+}
+
+export function opsLog(ctx: Ctx, q: Q): Json {
+  const limit = intParam(q.get("limit"), "limit", 1, 200, 50);
+  const scope = q.get("scope");
+  if (scope !== null && scope !== "core" && scope !== "market") throw new ApiError(400, "bad_scope", "scope must be core or market");
+  const cur = decodeCursor<{ h: number; o: number; l: number }>(q.get("before"));
+  const marks = OPS_EVENTS.map(() => "?").join(",");
+  const rows = all(ctx.store,
+    `SELECT * FROM events WHERE event IN (${marks}) AND (? IS NULL OR kind = ?) AND (? IS NULL OR (block_height, ord, log_index) < (?, ?, ?))
+     ORDER BY block_height DESC, ord DESC, log_index DESC LIMIT ?`,
+    ...OPS_EVENTS, scope, scope, cur ? 1 : null, cur?.h ?? 0, cur?.o ?? 0, cur?.l ?? 0, limit + 1);
+  const page = rows.slice(0, limit);
+  const last = page[page.length - 1];
+  const items = page.map((r) => {
+    const data = JSON.parse(String(r.data)) as Record<string, unknown>;
+    return { event: r.event, scope: r.kind, contract: r.contract, summary: opsSummary(String(r.event), data), data, block_height: Number(r.block_height), receipt_id: r.receipt_id, time: Number(r.time), source: r.source };
+  });
+  const next = rows.length > limit && last ? encodeCursor({ h: Number(last.block_height), o: Number(last.ord), l: Number(last.log_index) }) : null;
+  return { items, next_cursor: next, as_of: asOf(ctx.store), source: sourceOf(ctx.store, page) };
 }

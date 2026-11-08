@@ -122,17 +122,41 @@ export function stageOf(l: Row, now: number): "new" | "open" | "closing" | "pass
   return "open";
 }
 
+export type Phase = "SCHEDULED" | "OPEN" | "WALK_WINDOW" | "AWAITING_SETTLE" | "PASS" | "TRADING" | "FAIL" | "DISSOLVED";
+export type Tab = "live" | "walk" | "trading" | "passed" | "failed";
+
+/** APP-SPEC 2.4 lifecycle vocabulary, computed once on the server so every page derives the same badge. */
+export function phaseOf(l: Row, now: number, hasMarket: boolean): Phase {
+  const status = String(l.status);
+  if (status === "passed") return hasMarket ? "TRADING" : "PASS";
+  if (status === "failed" || status === "creation_failed") return "FAIL";
+  if (status === "dissolved") return "DISSOLVED";
+  if (status === "creating" || (l.opens_at !== null && Number(l.opens_at) > now)) return "SCHEDULED";
+  if (l.walk_end !== null && now >= Number(l.walk_end)) return "AWAITING_SETTLE";
+  return stageOf(l, now) === "closing" ? "WALK_WINDOW" : "OPEN";
+}
+
+const TAB_OF: Record<Phase, Tab> = {
+  SCHEDULED: "live", OPEN: "live", WALK_WINDOW: "walk", AWAITING_SETTLE: "walk", PASS: "passed", TRADING: "trading", FAIL: "failed", DISSOLVED: "failed",
+};
+
+export function tabOf(phase: Phase): Tab {
+  return TAB_OF[phase];
+}
+
 export function launchSummary(ctx: Ctx, l: Row): Json {
   const id = Number(l.launch_id);
   const now = ctx.now();
   const soft = l.soft_cap === null ? null : BigInt(String(l.soft_cap));
   const raw = soft && soft > 0n ? (BigInt(String(l.total_active)) * 10_000n) / soft : null;
   const progress = raw === null ? null : Number(raw > 20_000n ? 20_000n : raw);
+  const hasMarket = one(ctx.store, "SELECT 1 AS x FROM pools WHERE launch_id = ?", id) !== undefined;
+  const phase = phaseOf(l, now, hasMarket);
   return {
-    launch_id: String(id), symbol: l.symbol, creator: l.creator, payout_recipient: l.payout_recipient, status: l.status, stage: stageOf(l, now),
+    launch_id: String(id), symbol: l.symbol, name: l.name, creator: l.creator, payout_recipient: l.payout_recipient, status: l.status, stage: stageOf(l, now), phase, tab: tabOf(phase),
     created_at: l.created_at, opens_at: l.opens_at, commit_end: l.commit_end, walk_end: l.walk_end,
     total_active: l.total_active, funders: l.funders, soft_cap: l.soft_cap, min_funders: l.min_funders, progress_bps: progress,
-    verdict: l.verdict, has_market: one(ctx.store, "SELECT 1 AS x FROM pools WHERE launch_id = ?", id) !== undefined,
+    verdict: l.verdict, has_market: hasMarket,
     last_price: lastPrice(ctx.store, id), volume_24h: volume(ctx.store, id, now - WINDOW_24H).quote, last_block: l.last_block, source: l.source,
   };
 }
