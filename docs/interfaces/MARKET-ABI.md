@@ -1,6 +1,6 @@
 # Market ABI (owner: workstream M; readers: A core, I indexer, U2 market UI)
 
-Status: 1.1.0 (additive over the FROZEN 1.0.0; see section "1.1.0 instant launch delta" at the end; every 1.1.0 feature is OFF until the owner calls `set_launcher`, so 1.0.0 behaviour is unchanged). Source: ARCHITECTURE 5.1, 5.8, 5.9; PRD 4b.2, C5. Contract: `contracts/market`, account `market.kruxa.near`.
+Status: 1.1.2 (additive over the FROZEN 1.0.0; 1.1.2 adds the instant seed cap setter, section "1.1.2" at the end; see section "1.1.0 instant launch delta" at the end; every 1.1.0 feature is OFF until the owner calls `set_launcher`, so 1.0.0 behaviour is unchanged). Source: ARCHITECTURE 5.1, 5.8, 5.9; PRD 4b.2, C5. Contract: `contracts/market`, account `market.kruxa.near`.
 All u128 and u64 values are decimal strings in JSON. USDC is 6 decimals (micro-USDC). All `ft_on_transfer` messages are JSON objects with `"v":1` and an `"op"`.
 Unknown fields are ignored. States are `AwaitToken` (seed landed, token leg not yet) and `Open`. Any bad message, wrong token, pause (for buys and opens), cap breach or unmet `min_out` REFUSES: `ft_on_transfer` returns the full amount (the token contract refunds the sender) and logs a rule code. `ft_on_transfer` never panics.
 
@@ -81,3 +81,15 @@ Inert by default: with no launcher set the market behaves exactly as 1.0.0, exce
 - M-04: payout callbacks decide success from the promise status only (`is_promise_success`), not from the length of the returned bytes. A token whose `ft_transfer` returns a value (`true`, `null`, an object) is paid once; a failed transfer still becomes an `owed` balance.
 - L-10: an `owed` entry is removed from storage when its balance reaches zero.
 - Honest limits to disclose (L-04, L-06), no code change possible in the market: (a) the self-buy block stops only the declared `sender`/`receiver`; a second wallet, a buy through a router contract whose `sender_id` is the contract, or a fresh receiver later forwarded to the creator are not blocked; (b) the market trusts the launch token to be an honest NEP-141: a token whose code can be replaced by its publisher (the factory global contract) could call `ft_on_transfer` with fake `sell` messages and drain USDC held for ANY pool, trial or instant, so the blast radius of a factory publisher key is the market's whole USDC custody.
+
+## 1.1.2 instant seed cap setter (re-review N-02; additive, off by default)
+`max_instant_q` limits the LIFETIME sum of instant seeds (`instant_seeded_q` only grows), so a cap that fills up closes instant seeding for good. 1.1.2 adds a way to move it, with the same 7-day timelock as the other cap raises.
+
+| Item | Rule |
+|---|---|
+| `set_max_instant_reserve(value)` | OWNER or GUARDIAN. A value BELOW the current cap applies at once (any value, zero included: that switches instant seeding off) and CANCELS a queued raise (event `max_instant_cancelled`). A value at or above the current cap is OWNER only (`R_NOT_AUTHORIZED` for the guardian) and is queued for 7 days (event `max_instant_queued`, `value`, `effective_at`); a later queue replaces the earlier one. Anyone else: `R_NOT_AUTHORIZED` |
+| `apply_max_instant_reserve()` | ANY. Applies the queued value once the 7 days passed (`R_NOT_YET` before, `R_NOTHING` when nothing is queued or the queued value is no longer above the current cap). Event `max_instant_applied` |
+| Events | `max_instant_lowered {value, by}`, `max_instant_queued {value, effective_at}`, `max_instant_applied {value}`, `max_instant_cancelled {by}` |
+| Views | `get_config` gains `pending_max_instant_reserve` (`null` or `{value, effective_at}`) |
+| Off by default | nothing is queued and `max_instant_reserve_q` keeps the value given to `new`; no existing behaviour changes. No new rule codes |
+| State layout | one new `Option` field in the contract state: like 1.1.0 this is a fresh deploy (no deployed market keeps state across it) |

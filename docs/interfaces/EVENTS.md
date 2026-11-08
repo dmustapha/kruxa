@@ -57,6 +57,7 @@ Written by workstream I from `contracts/core/src/*.rs` on main (the section was 
 | `creator_claimed` | `launch_id, recipient, amount, paid_creator` | claim debited (before the transfer lands) |
 | `platform_withdrawn` | `to, amount` | platform withdraw debited |
 | `market_paused` | `paused (bool), by` | pause and unpause |
+| `max_instant_lowered` / `max_instant_queued` / `max_instant_applied` / `max_instant_cancelled` | `value, by` / `value, effective_at` / `value` / `by` | the instant seed cap setter (ABI 1.1.2) |
 | `owed_credited` | `account, token, amount, reason ("buy_payout"/"sell_payout"/"creator"/"platform"/"owed_claim")` | an outbound swap payout failed; the amount is claimable with `claim_owed` |
 | `owed_claimed` | `account, token, amount` | `claim_owed` debited |
 

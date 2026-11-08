@@ -9,6 +9,8 @@ mod events;
 mod ext;
 mod model;
 mod swap;
+#[cfg(test)]
+mod tests;
 mod views;
 
 use kruxa_market::{MAX_GLOBAL_RESERVE_Q, MAX_INSTANT_RESERVE_Q, MAX_POOL_RESERVE_Q};
@@ -45,6 +47,8 @@ pub struct Market {
     max_global_q: u128,
     /// Instant pools only: cap on the SUM OF SEEDS, inside the global cap (CO-7 D-4). Trading growth is not counted (M-01).
     max_instant_q: u128,
+    /// A raise of `max_instant_q` queued by the owner: (value, effective_at). Applies after the 7-day timelock (ABI 1.1.2).
+    pending_max_instant_q: Option<(u128, u64)>,
     /// Account of the instant launcher, the second allowed handoff sender. None = instant mode off.
     launcher: Option<AccountId>,
     launcher_pools: u32,
@@ -95,6 +99,7 @@ impl Market {
             max_pool_q: max_pool_reserve_q.map_or(MAX_POOL_RESERVE_Q, |v| v.0),
             max_global_q: max_global_reserve_q.map_or(MAX_GLOBAL_RESERVE_Q, |v| v.0),
             max_instant_q: max_instant_reserve_q.map_or(MAX_INSTANT_RESERVE_Q, |v| v.0),
+            pending_max_instant_q: None,
             launcher: None,
             launcher_pools: 0,
             instant_q: 0,
@@ -125,6 +130,46 @@ impl Market {
         }
         self.launcher = Some(account.clone());
         events::emit("launcher_set", near_sdk::serde_json::json!({ "launcher": account }));
+    }
+
+    /// Owner or guardian (ABI 1.1.2). Sets the cap on the lifetime sum of instant seeds. A value below the current cap applies at
+    /// once and cancels a queued raise (the brake must not be undone by a timer); a value at or above it is owner only and
+    /// queued for 7 days, then `apply_max_instant_reserve` (anyone) applies it. `instant_seeded_q` never goes down, so without
+    /// this setter the cap could not follow the market's growth.
+    pub fn set_max_instant_reserve(&mut self, value: U128) {
+        let who = env::predecessor_account_id();
+        if who != self.owner && who != self.guardian {
+            fail("R_NOT_AUTHORIZED", "owner or guardian only");
+        }
+        if value.0 < self.max_instant_q {
+            self.max_instant_q = value.0;
+            let cancelled = self.pending_max_instant_q.take().is_some();
+            events::emit("max_instant_lowered", near_sdk::serde_json::json!({ "value": value.0.to_string(), "by": who }));
+            if cancelled {
+                events::emit("max_instant_cancelled", near_sdk::serde_json::json!({ "by": who }));
+            }
+            return;
+        }
+        if who != self.owner {
+            fail("R_NOT_AUTHORIZED", "raising the cap is owner only");
+        }
+        let at = kruxa_logic::timelock_effective_at(env::block_timestamp());
+        self.pending_max_instant_q = Some((value.0, at));
+        events::emit("max_instant_queued", near_sdk::serde_json::json!({ "value": value.0.to_string(), "effective_at": at.to_string() }));
+    }
+
+    /// Anyone, once the timelock elapsed. Refused if the queued value is no longer a raise.
+    pub fn apply_max_instant_reserve(&mut self) {
+        let Some((value, at)) = self.pending_max_instant_q else { fail("R_NOTHING", "nothing queued") };
+        if !kruxa_logic::timelock_elapsed(at, env::block_timestamp()) {
+            fail("R_NOT_YET", "timelock has not elapsed");
+        }
+        if value <= self.max_instant_q {
+            fail("R_NOTHING", "the queued value is no longer a raise; lower it again or queue a new one");
+        }
+        self.max_instant_q = value;
+        self.pending_max_instant_q = None;
+        events::emit("max_instant_applied", near_sdk::serde_json::json!({ "value": value.to_string() }));
     }
 
     /// Guardian or owner. Blocks buys and handoff legs; never blocks sells, claims or owed withdrawals.

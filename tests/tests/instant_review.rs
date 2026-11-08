@@ -62,16 +62,17 @@ async fn strand(ix: &Ix, id: &str, both: bool) -> anyhow::Result<()> {
     key.extend_from_slice(&id.parse::<u64>()?.to_le_bytes());
     let mut v = state.get(&key).expect("record").clone();
     let l = v.len();
+    const TAIL: usize = 25; // leg_nonce (8) + unconfirmed (1) + unconfirmed_amount (16), appended after market_prepared (1)
     let put = |v: &mut Vec<u8>, from_end: usize, x: u128| v[l - from_end..l - from_end + 16].copy_from_slice(&x.to_le_bytes());
     let (seed_total, pool) = (n(&ix.inst(id).await["seed_q"]), n(&ix.inst(id).await["n_pool"]));
-    put(&mut v, 17, 0); // deposit_refundable untouched value 0
-    put(&mut v, 65, if both { pool } else { 0 }); // tokens_inflight
-    put(&mut v, 81, 0); // tokens_sent
-    put(&mut v, 113, 0); // seed_sent
-    put(&mut v, 129, seed_total); // seed_inflight
-    put(&mut v, 145, 0); // seed_due
-    v[l - 169..l - 161].copy_from_slice(&1u64.to_le_bytes()); // inflight_since: long ago
-    v[l - 194] = 3; // Handoff
+    put(&mut v, TAIL + 17, 0); // deposit_refundable untouched value 0
+    put(&mut v, TAIL + 65, if both { pool } else { 0 }); // tokens_inflight
+    put(&mut v, TAIL + 81, 0); // tokens_sent
+    put(&mut v, TAIL + 113, 0); // seed_sent
+    put(&mut v, TAIL + 129, seed_total); // seed_inflight
+    put(&mut v, TAIL + 145, 0); // seed_due
+    v[l - TAIL - 169..l - TAIL - 161].copy_from_slice(&1u64.to_le_bytes()); // inflight_since: long ago
+    v[l - TAIL - 194] = 3; // Handoff
     ix.worker.patch_state(ix.launcher.id(), &key, &v).await?;
     Ok(())
 }
@@ -111,6 +112,55 @@ async fn reconcile_recredits_a_seed_the_market_never_saw_so_abort_and_open_work_
     assert_eq!(ix.status(&id).await, "Open");
     let none = ix.call(&ix.creator, "reconcile", lid(&id)).await?;
     assert!(has_code(&none, "R_INSTANT_STATE"), "nothing in flight");
+    Ok(())
+}
+
+// ---- N-05 -------------------------------------------------------------------------------------------------------------
+
+#[tokio::test]
+async fn n05_a_failed_seed_leg_is_marked_blocks_abort_and_reconcile_clears_it() -> anyhow::Result<()> {
+    let ix = Ix::new("demo", false).await?;
+    let id = ix.create_ready(&ix.creator, params("N5FL"), None).await?;
+    ix.mint_usdc(ix.creator.id(), 250 * USDC).await?;
+    ix.seed(&ix.creator, &id, 250 * USDC).await?.into_result()?;
+    // the market is not registered on USDC: the leg's ft_transfer_call itself FAILS (a failed promise, not a refusal)
+    ix.usdc.call("unregister").args_json(json!({ "account_id": ix.market.id() })).transact().await?.into_result()?;
+    ix.open(&ix.creator, &id).await?.into_result()?;
+    let i = ix.inst(&id).await;
+    assert_eq!((n(&i["seed_due"]), n(&i["seed_inflight"]), n(&i["seed_sent"])), (250 * USDC, 0, 0), "booked as nothing moved");
+    assert_eq!(i["unconfirmed"], "Seed", "...but flagged: the market might have consumed it");
+    // the creator cannot pull the seed back until the market has been asked
+    let abort = ix.call(&ix.creator, "abort_instant", lid(&id)).await?;
+    assert!(has_code(&abort, "R_INSTANT_STATE"), "{:?}", abort.failures());
+    // anyone can ask at once (no five-minute wait): the market holds no pool, so the mark goes
+    let stranger = ix.user("stranger", 0).await?;
+    ix.call(&stranger, "reconcile", lid(&id)).await?.into_result()?;
+    let i = ix.inst(&id).await;
+    assert_eq!((i["unconfirmed"].clone(), n(&i["seed_due"])), (json!("No"), 250 * USDC));
+    let abort = ix.call(&ix.creator, "abort_instant", lid(&id)).await?;
+    assert!(has_code(&abort, "R_TOO_EARLY"), "the block is lifted, only the 72 hour wait remains: {:?}", abort.failures());
+    let nothing = ix.call(&stranger, "reconcile", lid(&id)).await?;
+    assert!(has_code(&nothing, "R_INSTANT_STATE"), "nothing in flight or unconfirmed any more");
+    // fix the registration and the launch completes
+    ix.register(&ix.usdc, ix.market.id()).await?;
+    ix.open(&ix.creator, &id).await?.into_result()?;
+    assert_eq!(ix.status(&id).await, "Open");
+    ix.assert_solvent(&[&id]).await;
+    Ok(())
+}
+
+// ---- L-05 (names) -----------------------------------------------------------------------------------------------------
+
+#[tokio::test]
+async fn l05_token_names_containing_the_brand_are_refused_in_any_case() -> anyhow::Result<()> {
+    let ix = Ix::new("demo", true).await?;
+    for name in ["Kruxa Coin", "kruxa", "Not KRUXA token", "MyKrUxA"] {
+        let r = ix.create_raw(&ix.creator, json!({ "name": name, "symbol": "NAMEOK" }), None).await?;
+        assert!(has_code(&r, "R_SYMBOL_RESERVED"), "{name}: {:?}", r.failures());
+    }
+    let v = ix.view("preview_instant", json!({ "params": { "name": "Kruxa Coin", "symbol": "NAMEOK" } })).await;
+    assert!(v.to_string().contains("R_SYMBOL_RESERVED"), "the preview shows it too: {v}");
+    ix.create_ready(&ix.creator, json!({ "name": "Kruxo Coin", "symbol": "NAMEOK" }), None).await?;
     Ok(())
 }
 

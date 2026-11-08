@@ -125,11 +125,30 @@ impl Status {
     }
 }
 
-#[near(serializers = [json])]
+#[near(serializers = [borsh, json])]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Leg {
     Seed,
     Token,
+}
+
+/// A leg that was booked as "nothing moved" only because its NEP-141 answer was a failure or unreadable. The market may
+/// still have consumed it, so `reconcile` can look (and `abort_instant` waits for it).
+#[near(serializers = [borsh])]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Unconfirmed {
+    No,
+    Seed,
+    Token,
+}
+
+impl Unconfirmed {
+    pub fn of(leg: Leg) -> Self {
+        match leg {
+            Leg::Seed => Unconfirmed::Seed,
+            Leg::Token => Unconfirmed::Token,
+        }
+    }
 }
 
 #[near(serializers = [borsh])]
@@ -205,6 +224,12 @@ pub struct Instant {
     pub deposit_refundable: u128,
     /// Registration of the market on the token and the market's storage top-up were sent.
     pub market_prepared: bool,
+    /// Counts the legs sent for this launch. The leg in flight carries its number; a callback or a `reconcile` view that
+    /// finds a different number is stale and changes nothing (review N-01). Fixed-size fields stay at the END of the record.
+    pub leg_nonce: u64,
+    pub unconfirmed: Unconfirmed,
+    /// Amount of the unconfirmed leg (0 when `unconfirmed` is `No`).
+    pub unconfirmed_amount: u128,
 }
 
 impl Instant {

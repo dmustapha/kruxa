@@ -148,6 +148,8 @@ fn check_text(p: &InstantParams, out: &mut Vec<Violation>) {
     }
     if p.name.is_empty() || p.name.len() > 32 || !p.name.bytes().all(|b| (0x20..0x7f).contains(&b)) {
         out.push(Violation::new(code::SYMBOL, "name", &p.name, "1..=32 printable ASCII"));
+    } else if p.name.to_ascii_uppercase().contains("KRUXA") {
+        out.push(Violation::new(code::SYMBOL_RESERVED, "name", &p.name, "a name without the reserved word KRUXA"));
     }
 }
 
@@ -282,6 +284,9 @@ mod tests {
             (code::SYMBOL_RESERVED, InstantParams { symbol: "KRUXA".into(), ..base.clone() }),
             (code::SYMBOL_RESERVED, InstantParams { symbol: "WKRUXA".into(), ..base.clone() }),
             (code::SYMBOL_RESERVED, InstantParams { symbol: "KRUXAV2".into(), ..base.clone() }),
+            (code::SYMBOL_RESERVED, InstantParams { name: "Kruxa Coin".into(), ..base.clone() }),
+            (code::SYMBOL_RESERVED, InstantParams { name: "NotKRUXAtoken".into(), ..base.clone() }),
+            (code::SYMBOL_RESERVED, InstantParams { name: "kruxa".into(), ..base.clone() }),
             (code::ALLOC, InstantParams { creator_alloc_bps: 1_001, ..base.clone() }),
             (code::VEST, InstantParams { vest_days: 29, ..base.clone() }),
             (code::VEST, InstantParams { vest_days: 366, ..base.clone() }),

@@ -32,7 +32,8 @@ impl Market {
     pub fn get_config(&self) -> Value {
         json!({ "owner": self.owner, "guardian": self.guardian, "treasury": self.treasury, "usdc": self.usdc, "core": self.core, "paused": self.paused,
                 "max_pool_reserve_q": s(self.max_pool_q), "max_global_reserve_q": s(self.max_global_q), "global_q": s(self.global_q),
-                "launcher": self.launcher, "max_instant_reserve_q": s(self.max_instant_q), "instant_q": s(self.instant_q), "instant_seeded_q": s(self.instant_seeded_q) })
+                "launcher": self.launcher, "max_instant_reserve_q": s(self.max_instant_q), "instant_q": s(self.instant_q), "instant_seeded_q": s(self.instant_seeded_q),
+                "pending_max_instant_reserve": self.pending_max_instant_q.map(|(v, at)| json!({ "value": s(v), "effective_at": s(at as u128) })) })
     }
 
     pub fn get_pool(&self, launch_id: U64) -> Value {

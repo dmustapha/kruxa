@@ -246,3 +246,52 @@ async fn attack_equivalents_for_the_new_paths() -> anyhow::Result<()> {
     mk.assert_solvent(&[]).await; // two pools share one mock token here
     Ok(())
 }
+
+// ---- N-02: the lifetime instant seed cap needs a setter (ABI 1.1.2) ---------------------------------------------------
+
+async fn set_cap(mk: &Mk, who: &near_workspaces::Account, value: u128) -> anyhow::Result<near_workspaces::result::ExecutionFinalResult> {
+    Ok(who.call(mk.market.id(), "set_max_instant_reserve").args_json(json!({ "value": value.to_string() })).transact().await?)
+}
+
+#[tokio::test]
+async fn the_instant_seed_cap_is_lifetime_and_only_the_timelocked_setter_moves_it_up() -> anyhow::Result<()> {
+    let mk = Mk::new_with(None, Some(1_500 * USDC)).await?;
+    mk.set_launcher().await?;
+    let (c, r) = (mk.creator.id().clone(), mk.creator.id().clone());
+    mk.mint(&mk.usdc, mk.launcher.id(), 3_000 * USDC).await?;
+    assert!(seed(&mk, IID, 1_000 * USDC, &c, &r).await?.is_success());
+    assert!(
+        has_code(&seed(&mk, IID + 1, 600 * USDC, &c, &r).await?, "R_MARKET_CAP"),
+        "lifetime sum: 1,000 + 600 > 1,500, and it never goes down"
+    );
+    // off by default: nothing queued, the cap is the one set in `new`
+    let cfg = mk.view("get_config", json!({})).await;
+    assert!(cfg["pending_max_instant_reserve"].is_null(), "{cfg}");
+    assert_eq!(cfg["max_instant_reserve_q"], (1_500 * USDC).to_string());
+    // who may call
+    let stranger = mk.user("stranger", 0).await?;
+    assert!(has_code(&set_cap(&mk, &stranger, 4_000 * USDC).await?, "R_NOT_AUTHORIZED"));
+    assert!(has_code(&set_cap(&mk, &mk.guardian, 4_000 * USDC).await?, "R_NOT_AUTHORIZED"), "the guardian can only lower");
+    // an owner raise is queued, not applied
+    let q = set_cap(&mk, &mk.owner, 4_000 * USDC).await?;
+    q.clone().into_result()?;
+    assert_eq!(events(&q, "max_instant_queued").len(), 1);
+    let cfg = mk.view("get_config", json!({})).await;
+    assert_eq!(cfg["max_instant_reserve_q"], (1_500 * USDC).to_string(), "still the old cap");
+    assert_eq!(cfg["pending_max_instant_reserve"]["value"], (4_000 * USDC).to_string());
+    let apply = stranger.call(mk.market.id(), "apply_max_instant_reserve").transact().await?;
+    assert!(has_code(&apply, "R_NOT_YET"), "{:?}", apply.failures());
+    assert!(has_code(&seed(&mk, IID + 1, 600 * USDC, &c, &r).await?, "R_MARKET_CAP"), "queued is not applied");
+    // a guardian lowering applies at once and cancels the queued raise
+    let low = set_cap(&mk, &mk.guardian, 1_000 * USDC).await?;
+    low.clone().into_result()?;
+    assert_eq!((events(&low, "max_instant_lowered").len(), events(&low, "max_instant_cancelled").len()), (1, 1));
+    let cfg = mk.view("get_config", json!({})).await;
+    assert_eq!(cfg["max_instant_reserve_q"], (1_000 * USDC).to_string());
+    assert!(cfg["pending_max_instant_reserve"].is_null(), "{cfg}");
+    let none = stranger.call(mk.market.id(), "apply_max_instant_reserve").transact().await?;
+    assert!(has_code(&none, "R_NOTHING"), "{:?}", none.failures());
+    assert!(has_code(&seed(&mk, IID + 1, 100 * USDC, &c, &r).await?, "R_MARKET_CAP"), "1,000 + 100 > 1,000 after the lowering");
+    mk.assert_solvent(&[]).await;
+    Ok(())
+}

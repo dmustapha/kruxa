@@ -149,6 +149,9 @@ impl Launcher {
             deposit_paid: need,
             deposit_refundable: 0,
             market_prepared: false,
+            leg_nonce: 0,
+            unconfirmed: Unconfirmed::No,
+            unconfirmed_amount: 0,
         };
         r.charter_hash = self.charter_hash(&r);
         self.symbols.insert(params.symbol.clone(), 1);

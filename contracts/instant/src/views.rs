@@ -52,6 +52,9 @@ impl Launcher {
             .s("alloc_claimed", r.claimed)
             .s("deposit_paid", r.deposit_paid)
             .s("deposit_refundable", r.deposit_refundable)
+            .s("leg_nonce", r.leg_nonce)
+            .s("unconfirmed", format!("{:?}", r.unconfirmed))
+            .s("unconfirmed_amount", r.unconfirmed_amount)
             .raw()
     }
 

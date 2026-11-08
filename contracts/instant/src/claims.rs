@@ -7,7 +7,7 @@ use crate::{fail, Launcher, LauncherExt};
 use crate::{ABORT_UNITS, GAS_CB, GAS_OUT, ONE_YOCTO};
 use kruxa_instant::{alloc_unlocked, claimable, Schedule};
 use near_sdk::json_types::{U128, U64};
-use near_sdk::{env, near, AccountId, NearToken, Promise};
+use near_sdk::{env, is_promise_success, near, AccountId, NearToken, Promise};
 
 impl Launcher {
     pub(crate) fn schedule(&self, r: &Instant) -> Schedule {
@@ -50,7 +50,8 @@ impl Launcher {
     /// Callback of every token payout. Never panics: a failed `ft_transfer` becomes an owed balance.
     #[private]
     pub fn resolve_payout(&mut self, token: AccountId, account: AccountId, amount: U128, reason: String) -> U128 {
-        if env::promise_result_checked(0, 1024).is_err() {
+        // Success is the promise status, never the length of what a token returned (review N-05).
+        if !is_promise_success() {
             self.owed_credit(&account, &token, amount.0);
             emit("owed_credited", Obj::new().s("account", &account).s("token", &token).s("amount", amount.0).s("reason", &reason));
         }
@@ -101,6 +102,9 @@ impl Launcher {
         }
         if !matches!(r.status, Status::Seeded | Status::Handoff) || r.seed_sent > 0 || r.seed_inflight > 0 {
             fail("R_INSTANT_STATE", "the seed is refundable only while the market consumed none of it");
+        }
+        if r.unconfirmed != Unconfirmed::No {
+            fail("R_INSTANT_STATE", "a leg ended unreadable: call reconcile first, the market may hold the seed");
         }
         if env::block_timestamp() < r.seeded_at + ABORT_UNITS * self.cfg.unit_ns {
             fail("R_TOO_EARLY", "abort is open 72 hours after the seed");

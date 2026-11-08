@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Builds the instant launcher wasm plus what its sandbox suites deploy: the real market, mock-ft (USDC and the launch token),
 # mock-factory and the stub market (failure modes). Output: target/near/<crate>/<crate>.wasm
-# The end-to-end suite needs a market at ABI 1.1.0. Until ws/market2 is merged, point MARKET_DIR at a checkout of it:
+# MARKET_DIR (optional) builds the market from another checkout instead of this one:
 #   MARKET_DIR=../kruxa-wt-market2 ./scripts/instant-build.sh
 set -euo pipefail
 cd "$(dirname "$0")/.."
