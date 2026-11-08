@@ -5,6 +5,7 @@
 // So every screen that uses this says "unproven" and nothing here is presented as a result the real path produced.
 import { b58decode, b58encode } from './base58';
 import { CONFIG } from './config';
+import type { WalletAdapter } from './wallet/index';
 
 export const OV3_NOTE = 'Phantom signMessage byte-exactness for this payload is unproven (PD-2). The leg is labelled UNPROVEN until a real Phantom signs it and the verifier recomputes the intent hash.';
 
@@ -77,4 +78,35 @@ export async function relaySubmit(kind: 'commit' | 'walk', body: unknown, fetchF
   } catch {
     return { ok: false, message: 'The relayer could not be reached. Submit the bundle yourself.' };
   }
+}
+
+// ---- flows over a WalletAdapter (kept here so they are testable with a mock adapter) ----
+
+export interface CommitIntentArgs {
+  adapter: Pick<WalletAdapter, 'signMessage'>;
+  address: string;
+  launchId: string;
+  amountMicro: bigint;
+  relayFeeMicro: bigint;
+  nowMs?: number;
+}
+
+/** Builds the strict payload, asks the wallet to sign its UTF-8 bytes, and returns the bundle the core contract's `contribute_via_intents` takes. */
+export async function signCommitIntent(a: CommitIntentArgs): Promise<{ payload: string; bundle: SignedBundle }> {
+  const now = a.nowMs ?? Date.now();
+  const signerHex = Array.from(b58decode(a.address), (x) => x.toString(16).padStart(2, '0')).join('');
+  const payload = buildIntentPayload({
+    signerHex, launchId: a.launchId, amountMicro: a.amountMicro, relayFeeMicro: a.relayFeeMicro, solanaAddress: a.address,
+    deadlineIso: new Date(now + 10 * 60_000).toISOString(), nonceB64: randomNonceB64(),
+  });
+  const signed = await a.adapter.signMessage({ message: new TextEncoder().encode(payload) });
+  if (signed.chain !== 'solana') throw new Error('Expected a Solana signature.');
+  return { payload, bundle: bundleFromSignature(payload, a.address, signed.signature) };
+}
+
+export async function signWalkIntent(a: { adapter: Pick<WalletAdapter, 'signMessage'>; address: string; launchId: string; nowMs?: number }) {
+  const msg = buildWalkMessage(a.launchId, a.address, a.nowMs ?? Date.now());
+  const signed = await a.adapter.signMessage({ message: new TextEncoder().encode(msg.text) });
+  if (signed.chain !== 'solana') throw new Error('Expected a Solana signature.');
+  return { message: msg, args: walkSignedArgs(a.launchId, msg, signed.signature) };
 }
