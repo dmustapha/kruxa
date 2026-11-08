@@ -588,7 +588,10 @@ async fn phase_config_and_recovery_views() -> anyhow::Result<()> {
     ix.mint_usdc(ix.creator.id(), 250 * USDC).await?;
     ix.seed(&ix.creator, &id, 250 * USDC).await?.into_result()?;
     let p = ix.view("get_phase", lid(&id)).await;
-    assert_eq!((p["step"].clone(), p["next_action"].clone(), p["can_cancel"].clone()), (json!("open"), json!("open_instant"), json!(false)));
+    assert_eq!(
+        (p["step"].clone(), p["next_action"].clone(), p["can_cancel"].clone()),
+        (json!("open"), json!("open_instant"), json!(false))
+    );
     let rec = ix.call(&ix.creator, "finalize_creation", lid(&id)).await?;
     assert!(has_code(&rec, "R_INSTANT_STATE"), "only a launch stuck in Creating can be finalized: {:?}", rec.failures());
     let v = ix.view("get_vesting", lid(&id)).await;

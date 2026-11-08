@@ -64,6 +64,14 @@ pub async fn deploy_ft(root: &Account, name: &str) -> anyhow::Result<Contract> {
     Ok(c)
 }
 
+/// A token whose `ft_transfer` returns `true` (M-04 regression double).
+pub async fn deploy_ft_ret(root: &Account, name: &str) -> anyhow::Result<Contract> {
+    let a = sub(root, name).await?;
+    let c = a.deploy(&wasm("mock_ft_ret")).await?.into_result()?;
+    c.call("new").args_json(json!({ "owner_id": a.id(), "total_supply": "0" })).transact().await?.into_result()?;
+    Ok(c)
+}
+
 impl Mk {
     /// `caps`: (per pool, global) in micro-USDC, or None for the DN-17 defaults.
     pub async fn new(caps: Option<(u128, u128)>) -> anyhow::Result<Mk> {

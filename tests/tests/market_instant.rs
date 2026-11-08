@@ -118,12 +118,12 @@ async fn seed_caps_apply_to_instant_seeds_pool_global_and_aggregate() -> anyhow:
     assert!(seed(&mk, IID, 1_000 * USDC, &c, &r).await?.is_success());
     assert!(has_code(&seed(&mk, IID + 1, 600 * USDC, &c, &r).await?, "R_MARKET_CAP"), "instant aggregate 1,000 + 600 > 1,500");
     assert_eq!(mk.view("get_config", json!({})).await["instant_q"], (1_000 * USDC).to_string());
-    // global: a trial pool of 1,000 plus instant 1,000 leaves 500; 600 would pass the aggregate check only if global allowed
+    // seeds are not checked against the global reserve (trading must not grief seeding, M-01); the aggregate still binds
     mk.open_pool(1).await?; // global_q = 2,000
-    assert!(has_code(&seed(&mk, IID + 1, 501 * USDC, &c, &r).await?, "R_MARKET_CAP"), "global 2,000 + 501 > 2,500");
-    assert!(seed(&mk, IID + 1, 500 * USDC, &c, &r).await?.is_success());
+    assert!(seed(&mk, IID + 1, 500 * USDC, &c, &r).await?.is_success(), "instant_seeded 1,000 + 500 <= 1,500");
     assert_eq!(mk.bal(&mk.usdc, mk.launcher.id()).await, 1_500 * USDC, "refused seeds returned in full, accepted ones consumed");
     // the refused seed left no pool behind
+    assert!(has_code(&seed(&mk, IID + 2, 500 * USDC, &c, &r).await?, "R_MARKET_CAP"), "1,500 + 500 > 1,500");
     assert!(pool(&mk, IID + 2).await.is_null());
     // trial seeds are not cap-checked (core's raise caps bound them): a 1,000 trial seed passes a 1,200 cap anyway, and so would a larger one
     mk.assert_solvent(&[]).await;
@@ -131,24 +131,52 @@ async fn seed_caps_apply_to_instant_seeds_pool_global_and_aggregate() -> anyhow:
 }
 
 #[tokio::test]
-async fn instant_sub_cap_limits_buys_but_not_trial_pools_or_sells() -> anyhow::Result<()> {
-    let mk = Mk::new_with(None, Some(1_200 * USDC)).await?;
+async fn trading_growth_does_not_count_against_the_instant_seed_cap() -> anyhow::Result<()> {
+    // M-01 regression: a whale buy used to fill the instant sub-cap and block every other buy and every new seed.
+    let mk = Mk::new(None).await?;
     mk.set_launcher().await?;
-    mk.open_pool(1).await?; // trial, 1,000
     let c = mk.creator.id().clone();
     mk.open_instant(IID, 1_000 * USDC, &c, &c).await?;
-    let alice = mk.user("alice", 2_000 * USDC).await?;
-    let r = mk.buy(&alice, IID, 300 * USDC, 1).await?;
-    assert!(has_code(&r, "R_MARKET_CAP"));
-    assert_eq!(mk.bal(&mk.usdc, alice.id()).await, 2_000 * USDC);
-    assert_eq!(events(&mk.buy(&alice, 1, 300 * USDC, 1).await?, "swap").len(), 1, "trial pool unaffected by the instant sub-cap");
-    assert_eq!(events(&mk.buy(&alice, IID, 150 * USDC, 1).await?, "swap").len(), 1, "under the sub-cap still trades");
-    let held = mk.bal(&mk.token, alice.id()).await;
-    assert_eq!(events(&mk.sell(&alice, IID, held / 4, 1).await?, "swap").len(), 1, "sells always work");
+    let whale = mk.user("whale", 5_000 * USDC).await?;
+    let r = mk.buy(&whale, IID, 3_900 * USDC, 1).await?;
+    assert_eq!(events(&r, "swap").len(), 1, "{:?}", r.logs());
     let cfg = mk.view("get_config", json!({})).await;
+    assert!(n(&cfg["instant_q"]) > 4_800 * USDC, "reserve grew through trading: {cfg}");
+    assert_eq!(n(&cfg["instant_seeded_q"]), 1_000 * USDC, "only seeds count against the sub-cap");
+    // another instant launch still seeds, and its buyers still buy
+    let (c2, tok2) = (mk.user("maker2", 0).await?, deploy_ft(&mk.worker.root_account()?, "tok2").await?);
+    mk.mint(&tok2, mk.market.id(), 0).await?;
+    mk.mint(&tok2, mk.launcher.id(), SEED_T).await?;
+    mk.mint(&mk.usdc, mk.launcher.id(), 1_000 * USDC).await?;
+    mk.send(&mk.launcher, &mk.usdc, 1_000 * USDC, mk.instant_seed_msg(IID + 1, tok2.id(), c2.id(), c2.id())).await?.into_result()?;
+    mk.send(&mk.launcher, &tok2, SEED_T, Mk::leg_msg(IID + 1)).await?.into_result()?;
+    let other = mk.user("other", 100 * USDC).await?;
+    let r = mk.send(&other, &mk.usdc, 50 * USDC, Mk::buy_msg(IID + 1, 1)).await?;
+    assert_eq!(events(&r, "swap").len(), 1, "a buy in a second instant pool is not blocked by the first pool's growth");
+    // the per-pool reserve cap still binds the whale's own pool
+    let r = mk.buy(&whale, IID, 500 * USDC, 1).await?;
+    assert!(has_code(&r, "R_MARKET_CAP"));
     let inv = mk.view("get_invariants", json!({})).await;
-    assert!(n(&cfg["instant_q"]) <= 1_200 * USDC && inv["instant_q_matches"] == true);
-    mk.assert_solvent(&[]).await; // two pools share one mock token here, so only the USDC identity is exact
+    assert!(inv["instant_q_matches"] == true);
+    mk.assert_solvent(&[]).await;
+    Ok(())
+}
+
+#[tokio::test]
+async fn global_cap_filled_by_trading_does_not_block_a_small_seed() -> anyhow::Result<()> {
+    // M-01 regression, global half: trading fills the global cap, a new instant seed still opens (seeds are bounded by the seeded aggregate)
+    let mk = Mk::new_with(Some((5_000 * USDC, 2_500 * USDC)), None).await?;
+    mk.set_launcher().await?;
+    let c = mk.creator.id().clone();
+    mk.open_instant(IID, 1_000 * USDC, &c, &c).await?;
+    let whale = mk.user("whale", 2_000 * USDC).await?;
+    mk.buy(&whale, IID, 1_400 * USDC, 1).await?.into_result()?;
+    let blocked = mk.buy(&whale, IID, 200 * USDC, 1).await?;
+    assert!(has_code(&blocked, "R_MARKET_CAP"), "global cap still binds buys");
+    mk.mint(&mk.usdc, mk.launcher.id(), 500 * USDC).await?;
+    let r = mk.send(&mk.launcher, &mk.usdc, 500 * USDC, mk.instant_seed_msg(IID + 1, mk.token.id(), &c, &c)).await?;
+    assert!(r.is_success() && !has_code(&r, "R_MARKET_CAP"), "{:?}", r.logs());
+    assert_eq!(pool(&mk, IID + 1).await["state"], "AwaitToken");
     Ok(())
 }
 
