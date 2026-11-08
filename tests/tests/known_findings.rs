@@ -15,7 +15,8 @@ const MS: u64 = 1_000_000;
 const U: u128 = ic::USDC;
 
 fn record(id: &str, review: &str, title: &str, result: &str, summary: &str, data: Value) {
-    let rec = json!({ "id": id, "review_id": review, "title": title, "result": result, "summary": summary, "network": "SANDBOX", "data": data });
+    let rec =
+        json!({ "id": id, "review_id": review, "title": title, "result": result, "summary": summary, "network": "SANDBOX", "data": data });
     let dir = std::env::var("KRUXA_FINDINGS_OUT")
         .unwrap_or_else(|_| format!("{}/../evidence/attack-gallery/known-findings/records", env!("CARGO_MANIFEST_DIR")));
     std::fs::create_dir_all(&dir).unwrap();
@@ -49,7 +50,12 @@ async fn k_c01_open_instant_gas_sweep() -> anyhow::Result<()> {
         let r = open_with_gas(&ix, &stranger, &id, g).await?;
         let inst = ix.inst(&id).await;
         let pool: Value = ix.market.view("get_pool").args_json(ic::lid(&id)).await?.json()?;
-        let outcome = match (inst["status"].as_str().unwrap(), ic::n(&inst["seed_inflight"]) > 0, ic::n(&inst["seed_due"]) > 0, pool["state"].as_str()) {
+        let outcome = match (
+            inst["status"].as_str().unwrap(),
+            ic::n(&inst["seed_inflight"]) > 0,
+            ic::n(&inst["seed_due"]) > 0,
+            pool["state"].as_str(),
+        ) {
             ("Open", _, _, _) => "OPEN",
             ("Handoff", true, _, Some("AwaitToken")) => "STRANDED",
             ("Seeded", _, _, None) => "NOTHING_HAPPENED",
@@ -170,8 +176,13 @@ async fn k_m01_sub_cap_grief() -> anyhow::Result<()> {
     // the attacker's way out: sell back (costs about two trading fees)
     let held = ix.bal(&ix.token_id("WHAL"), whale.id()).await;
     let msg = json!({ "v": 1, "op": "sell", "launch_id": a, "min_out": "1" }).to_string();
-    whale.call(&ix.token_id("WHAL"), "ft_transfer_call").args_json(json!({ "receiver_id": ix.market.id(), "amount": held.to_string(), "msg": msg }))
-        .deposit(NearToken::from_yoctonear(1)).gas(ic::GAS).transact().await?;
+    whale
+        .call(&ix.token_id("WHAL"), "ft_transfer_call")
+        .args_json(json!({ "receiver_id": ix.market.id(), "amount": held.to_string(), "msg": msg }))
+        .deposit(NearToken::from_yoctonear(1))
+        .gas(ic::GAS)
+        .transact()
+        .await?;
     let back = ix.usdc_bal(whale.id()).await;
     let exploitable = buy_refused && refused == 3 && aggregate_blocked;
     record(
@@ -191,7 +202,8 @@ async fn k_m02_profile_typo_and_demo_on_a_mainnet_suffix() -> anyhow::Result<()>
     let mut findings = vec![];
     for profile in ["Mainnet", "prod", "testnet", "demo"] {
         match ic::Ix::new(profile, true).await {
-            Err(e) => findings.push(json!({ "profile": profile, "accepted": false, "error": e.to_string().chars().take(160).collect::<String>() })),
+            Err(e) => findings
+                .push(json!({ "profile": profile, "accepted": false, "error": e.to_string().chars().take(160).collect::<String>() })),
             Ok(ix) => {
                 let cfg = ix.view("get_config", json!({})).await;
                 let stranger = ix.user("stranger", 0).await?;
@@ -203,10 +215,14 @@ async fn k_m02_profile_typo_and_demo_on_a_mainnet_suffix() -> anyhow::Result<()>
             }
         }
     }
-    let typo_open = findings.iter().any(|f| (f["profile"] == "Mainnet" || f["profile"] == "prod") && f["accepted"] == true && f["creator_gate"] == false);
+    let typo_open = findings
+        .iter()
+        .any(|f| (f["profile"] == "Mainnet" || f["profile"] == "prod") && f["accepted"] == true && f["creator_gate"] == false);
     let sandbox_acct = |f: &Value| f["launcher_account"].as_str().map(|a| a.ends_with(".test.near")).unwrap_or(false);
-    let demo_on_near = findings.iter().any(|f| f["profile"] == "demo" && f["accepted"] == true && f["account_suffix_near"] == true && !sandbox_acct(f));
-    let testnet_on_near = findings.iter().any(|f| f["profile"] == "testnet" && f["accepted"] == true && f["account_suffix_near"] == true && !sandbox_acct(f));
+    let demo_on_near =
+        findings.iter().any(|f| f["profile"] == "demo" && f["accepted"] == true && f["account_suffix_near"] == true && !sandbox_acct(f));
+    let testnet_on_near =
+        findings.iter().any(|f| f["profile"] == "testnet" && f["accepted"] == true && f["account_suffix_near"] == true && !sandbox_acct(f));
     record(
         "K-M02",
         "M-02",
