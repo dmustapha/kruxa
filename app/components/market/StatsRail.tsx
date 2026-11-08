@@ -51,7 +51,7 @@ export function StatsRail({ rows, partial }: { rows: WindowRow[]; partial: boole
             <p className={`mkt-winchg ${up ? 'mkt-up' : down ? 'mkt-down' : 'mkt-muted'}`}><span aria-hidden="true">{up ? '▲ ' : down ? '▼ ' : ''}</span>{fmtPct(row.change_pct)}<span className="mkt-sr"> price change over {LABEL[key]}</span></p>
             <Split label="Transactions" buys={row.buys} sells={row.sells} fmt={(n) => String(Math.round(n))} />
             <Split label="Volume" buys={row.buyVolume} sells={row.sellVolume} fmt={(n) => fmtUsd(n)} />
-            {row.traders !== undefined && <p className="mkt-note">{row.traders} distinct traders in this window.</p>}
+            {row.unique_traders !== undefined && <p className="mkt-note">{row.unique_traders} distinct traders in this window.</p>}
           </>
         )}
       </div>

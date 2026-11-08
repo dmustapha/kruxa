@@ -25,6 +25,8 @@ export interface LaunchSummary {
   name?: string | null;
   /** IR-A10: computed phase string; the UI derives one (phase.ts) when absent. */
   phase?: string | null;
+  /** CO-7 / OpenAPI 1.2.0: `trial` or `instant`. Absent on older APIs; mode.ts derives it. */
+  mode?: LaunchMode | null;
   opens_at?: number | null;
   commit_end?: number | null;
   walk_end?: number | null;
@@ -61,22 +63,38 @@ export interface PoolInfo {
   fee_terms?: FeeTerms | null;
   /** REQ-UI-1: total supply in base units (market cap needs it). */
   total_supply?: string | null;
+  /** MARKET-ABI 1.1.0 `get_pool` / `pool_opened` */
+  mode?: LaunchMode | null;
+  creator?: string | null;
 }
 
 export type SafetyStatus = 'pass' | 'warn' | 'fail' | 'unknown';
 export interface SafetyIndicator { id: string; label: string; status: SafetyStatus; basis: 'event' | 'derived' | 'not_indexed'; detail?: string }
 
 /** IR-A5: per-window stats. Optional until the API ships them; windows.ts derives them from swaps otherwise. */
-export interface WindowStats { change_pct: number | null; buys: number; sells: number; buy_volume?: number; sell_volume?: number; volume?: number; traders?: number }
+export interface WindowStats { change_pct?: number | null; high?: number | null; low?: number | null; buys: number; sells: number; buy_volume?: number; sell_volume?: number; volume?: number; unique_traders?: number }
 export type WindowKey = '5m' | '1h' | '6h' | '24h';
 export const WINDOWS: readonly WindowKey[] = ['5m', '1h', '6h', '24h'];
 export const WINDOW_SECONDS: Record<WindowKey, number> = { '5m': 300, '1h': 3600, '6h': 21600, '24h': 86400 };
 
-/** IR-A4: genesis on Solana. Every field optional; absent means the indexer does not know. */
+/** OpenAPI 1.1.0 `Genesis`: stage none (no mint exists), pending (PASS, no genesis event), committed (spec hash logged), confirmed (mint logged). */
 export interface GenesisInfo {
-  network?: string; path?: 'F0' | 'F1' | string; stage?: 'none' | 'spec_committed' | 'mint_created' | 'authorities_set' | 'distributor_set' | 'claims_open' | string;
+  stage: 'none' | 'pending' | 'committed' | 'confirmed';
+  network?: string | null; path?: 'F0' | 'F1' | null;
   spec_hash?: string | null; mint?: string | null; tx_create?: string | null; tx_authority?: string | null; distributor?: string | null; root?: string | null;
+  mint_authority?: 'null' | 'set' | 'unknown'; freeze_authority?: 'null' | 'set' | 'unknown';
   verified_checks?: string[]; updated_at?: number | null;
+}
+
+export type LaunchMode = 'trial' | 'instant';
+
+/** Instant launch record (INSTANT-ABI `get_instant` plus `get_vesting`). The API may fold it into TokenPage as `instant`; otherwise the UI reads the launcher on chain. */
+export interface VestingView { recipient: string; total: string; unlocked: string; claimed: string; claimable: string; cliff_end_ns: string | number; vest_end_ns: string | number }
+export interface InstantInfo {
+  status?: string; symbol?: string; name?: string; token?: string | null; total_supply?: string; n_alloc?: string; n_pool?: string;
+  creator_alloc_bps?: number; cliff_days?: number; vest_days?: number; seed_q?: string; launch_fee?: string; pool_seed_q?: string;
+  created_at_ns?: string | number | null; seeded_at_ns?: string | number | null; opened_at_ns?: string | number | null; alloc_claimed?: string;
+  declared_wallets?: string[]; vesting?: VestingView | null;
 }
 
 export interface TokenStats {
@@ -100,8 +118,9 @@ export interface TokenPageData {
   safety: SafetyIndicator[];
   /** REQ-UI-1: external venues (the Meteora pool) when one exists. */
   external_pools?: ExternalPool[] | null;
-  /** IR-A4 */
   genesis?: GenesisInfo | null;
+  /** Instant launches only (REQ-ui-market-3). */
+  instant?: InstantInfo | null;
   as_of: AsOf;
   source: DataSource;
 }

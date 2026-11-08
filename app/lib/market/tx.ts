@@ -39,6 +39,16 @@ export function buildTradeTx(p: TradeParams): SignAndSendInput {
   };
 }
 
+/** Launcher `claim_vested(launch_id, amount?)`: payout recipient only. Omit `amount` to claim everything unlocked. */
+export function buildClaimVestedTx(launcher: string, launchId: string, amount?: bigint): SignAndSendInput {
+  const args: Record<string, unknown> = { launch_id: launchId };
+  if (amount !== undefined) {
+    if (amount <= 0n) throw new Error('amount must be greater than zero');
+    args.amount = amount.toString();
+  }
+  return { receiverId: launcher, actions: [{ type: 'FunctionCall', params: { methodName: 'claim_vested', args, gas: GAS_CLAIM, deposit: '0' } }] };
+}
+
 export function buildClaimTx(market: string, launchId: string): SignAndSendInput {
   return { receiverId: market, actions: [{ type: 'FunctionCall', params: { methodName: 'claim', args: { launch_id: launchId }, gas: GAS_CLAIM, deposit: '0' } }] };
 }
