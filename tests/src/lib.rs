@@ -403,11 +403,13 @@ impl Env {
 
     /// Fast-forwards the sandbox until the launch reaches `phase` (Open | Closing | Ready).
     pub async fn advance_to(&self, id: u64, phase: &str) {
-        for _ in 0..400 {
+        // The Closing window is only the walk tail wide; a 100-block step can jump over it when the machine is loaded.
+        let step = if phase == "Closing" { 10 } else { 100 };
+        for _ in 0..1_000 {
             if self.state(id).await["phase"] == phase {
                 return;
             }
-            self.worker.fast_forward(100).await.unwrap();
+            self.worker.fast_forward(step).await.unwrap();
         }
         panic!("launch {id} never reached {phase}");
     }
