@@ -13,3 +13,5 @@ anyhow = "1"
 ed25519-dalek = "2"
 bs58 = "0.5"
 kruxa-logic = { path = "../crates/kruxa-logic" }
+borsh = "1"
+base64 = "0.22"
