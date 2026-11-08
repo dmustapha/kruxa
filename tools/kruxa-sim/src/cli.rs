@@ -7,7 +7,8 @@
 //! | 3 | pending: launch not settled yet |
 //! | 4 | infrastructure: RPC unreachable, non-200, RPCs disagree, unparsable or missing view |
 //! | 64 | usage: bad or missing arguments |
-//! | 1 | self-test failure: a tamper run was NOT detected |
+//! | 1 | self-test failure: a tamper run was NOT detected, or `fuzz` found a broken identity |
+//! | 65 | `validate` ran and the params break at least one rule (a report, not an error) |
 use std::collections::HashMap;
 
 pub const EXIT_MATCH: i32 = 0;
@@ -16,6 +17,7 @@ pub const EXIT_MISMATCH: i32 = 2;
 pub const EXIT_PENDING: i32 = 3;
 pub const EXIT_INFRA: i32 = 4;
 pub const EXIT_USAGE: i32 = 64;
+pub const EXIT_RULE_VIOLATION: i32 = 65;
 
 pub type Flags = HashMap<String, String>;
 

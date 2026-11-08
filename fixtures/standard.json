@@ -1,0 +1,18 @@
+{
+  "symbol": "ABCD",
+  "name": "ABCD Test Token",
+  "total_supply_whole": 1000000000,
+  "sale_bps": 6000,
+  "lp_bps": 2500,
+  "creator_bps": 1000,
+  "backer_bps": 500,
+  "hard_cap": "1000000000",
+  "soft_cap": "350000000",
+  "min_buy": "20000000",
+  "wallet_bps": 200,
+  "min_funders": 10,
+  "open_delay_secs": 0,
+  "commit_secs": 86400,
+  "tail_secs": 21600,
+  "stream_days": 30
+}

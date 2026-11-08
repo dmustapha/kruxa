@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import vectors from '../../fixtures/vectors/verdict.json';
 import { allocate, inputsHash, settlePosition, verdict, type VerdictInputs } from './verdict';
 
 const zero = Array<number>(32).fill(0);
@@ -10,9 +11,11 @@ describe('verdict mirrors kruxa-logic', () => {
     expect(verdict({ ...base, total_active: '349999999' })).toEqual({ pass: false, reasons: 1 });
   });
 
-  it('pins the hashes printed by `kruxa-sim verdict` (Rust)', () => {
-    expect(inputsHash(base)).toBe('c2bd1b3b11872b7f56eda70d71c367d068038a24688f5fe18a5ef2c86d600d29');
-    expect(inputsHash({ ...base, total_active: '349999999' })).toBe('b43f5ec3bf27dd8c017f68db97a30adda6aab06224a6e74818cd90042f100dd6');
+  // The same file the Rust golden test (`u_verdict_hash_golden`) reads. A hash written by kruxa-sim must come out of this mirror too.
+  it.each(vectors.cases)('matches the shared vector $name (outcome and inputs_hash)', (c) => {
+    const inputs: VerdictInputs = c.inputs;
+    expect(verdict(inputs)).toEqual(c.outcome === 'PASS' ? { pass: true } : { pass: false, reasons: c.reasons });
+    expect(inputsHash(inputs)).toBe(c.inputs_hash);
   });
 
   it('reproduces S1-B example 1 to the unit', () => {

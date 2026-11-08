@@ -1707,6 +1707,7 @@ dependencies = [
  "base64 0.22.1",
  "kruxa-logic",
  "kruxa-math",
+ "serde",
  "serde_json",
  "ureq 2.12.1",
 ]
