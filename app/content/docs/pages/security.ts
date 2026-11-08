@@ -65,6 +65,6 @@ export const security: Page = {
     note('info', 'The attack gallery is being built. No results are published yet, so this page shows no counts, no pass rates and no rows. The repository\'s `evidence/` folder holds no gallery file today.', 'Status'),
     p('When it exists, this section will render only from a committed evidence file, with one row per attack: the attack, the expected rule code, the result and the transaction. The attacks are our own red team on a sandbox and testnet. They are not independent. Sybil splitting and walk-to-flip are expected to show as bounded, not blocked. An attack that unexpectedly succeeds is a bug to fix and publish, not a row to hide.'),
     h2('Report a problem'),
-    p('Contact details for security reports have not been published yet. [CONTACT EMAIL] is a placeholder the owner must fill in before launch.'),
+    p('Report security problems to damilolamustaphaa@gmail.com. Please include what you found and how to reproduce it. There is no bounty program yet, and we will not publish details of an unfixed problem.'),
   ],
 };

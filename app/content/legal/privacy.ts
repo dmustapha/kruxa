@@ -7,9 +7,9 @@ export const privacy: Page = {
   group: 'Reference',
   summary: 'Draft privacy notice: what the app stores, what hosting may log, which third parties are contacted.',
   blocks: [
-    note('draft', 'The hosting provider, its logging defaults and the retention period have not been confirmed. Items marked as unconfirmed must be checked before this notice is published.', 'Draft status'),
+    note('draft', 'The hosting provider and its logging defaults have not been confirmed. Items marked as unconfirmed must be checked before this notice is published.', 'Draft status'),
     h2('Who is responsible'),
-    p('[PROJECT/ENTITY NAME], [CONTACT EMAIL]. No entity is confirmed in this draft.'),
+    p('The Kruxa project, damilolamustaphaa@gmail.com. No legal entity is named in this draft.'),
     h2('What the app stores on your device'),
     ul(
       'Preferences only, in your browser\'s local storage: slippage, preset amounts, RPC overrides, time display and similar settings. You can clear them in Settings.',
@@ -17,7 +17,7 @@ export const privacy: Page = {
       'If your browser blocks storage, the app still works without remembering settings.',
     ),
     h2('What the server may log'),
-    p('Web hosts normally log IP addresses and request details, and the API may do the same. This is the default for most hosting and is **unconfirmed** for this project. Hosting provider: [HOSTING PROVIDER]. Retention period: [LOG RETENTION PERIOD]. We do not run analytics or advertising trackers in the code reviewed for this draft. Confirm before publishing.'),
+    p('Web hosts normally log IP addresses and request details, and the API may do the same. This is the default for most hosting and is **unconfirmed** for this project. Hosting provider: a third-party cloud host, which we will name on this page when the app is deployed. Retention: we intend to keep server logs for no longer than 30 days. We do not run analytics or advertising trackers in the code reviewed for this draft. Confirm before publishing.'),
     h2('Third parties your browser or the app contacts'),
     table(
       ['Party', 'Why', 'What they can see'],
@@ -35,6 +35,6 @@ export const privacy: Page = {
       'Use a fresh wallet if you do not want activity linked to an existing one.',
     ),
     h2('Requests and contact'),
-    p('For access or deletion questions about anything we hold, contact [CONTACT EMAIL]. Rights under specific laws (for example in your region) have not been assessed. [RESTRICTED REGIONS] and applicable privacy law are for counsel to complete.'),
+    p('For access or deletion questions about anything we hold, contact damilolamustaphaa@gmail.com. Rights under specific laws (for example in your region) have not been assessed. Applicable privacy law is for counsel to review.'),
   ],
 };

@@ -55,6 +55,6 @@ export const risk: Page = {
       ['Every fee', '[Fees](/docs/fees)'],
       ['Checking a verdict yourself', '[Verify a launch](/docs/verify)'],
     ),
-    p('Contact: [PROJECT/ENTITY NAME], [CONTACT EMAIL]. Restricted regions: [RESTRICTED REGIONS].'),
+    p('Contact: Kruxa project, damilolamustaphaa@gmail.com. Restricted regions: none at this time. You are responsible for checking that use is lawful where you are.'),
   ],
 };

@@ -90,13 +90,17 @@ describe('legal pages are drafts with placeholders', () => {
       const t = textOf(pg);
       expect(pg.title.toLowerCase()).toContain('draft');
       expect(pg.blocks.some((b) => b.t === 'note' && b.kind === 'draft'), pg.slug).toBe(true);
-      expect(t, pg.slug).toContain('[PROJECT/ENTITY NAME]');
-      expect(t, pg.slug).toContain('[CONTACT EMAIL]');
-      expect(t, pg.slug).toContain('[RESTRICTED REGIONS]');
+      expect(t, pg.slug).toContain('Kruxa project');
+      expect(t, pg.slug).toContain('damilolamustaphaa@gmail.com');
+      expect(/\[[A-Z][A-Z /]+\]/.test(t), pg.slug + ' has an unfilled placeholder').toBe(false);
     }
   });
-  it('contains no invented email address, domain or street address', () => {
-    for (const pg of LEGAL_PAGES) expect(/[\w.+-]+@[\w-]+\.[a-z]{2,}/i.test(textOf(pg)), pg.slug).toBe(false);
+  it('contains only the owner-supplied contact email, and no other address, domain or street address', () => {
+    const OWNER = 'damilolamustaphaa@gmail.com';
+    for (const pg of LEGAL_PAGES) {
+      const emails = textOf(pg).match(/[\w.+-]+@[\w-]+\.[a-z]{2,}/gi) ?? [];
+      for (const e of emails) expect(e.toLowerCase(), pg.slug).toBe(OWNER);
+    }
   });
   it('risk page covers every required disclosure', () => {
     const t = textOf(LEGAL_PAGES.find((p) => p.slug === 'risk')!).toLowerCase();
