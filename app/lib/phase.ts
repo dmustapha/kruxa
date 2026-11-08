@@ -17,10 +17,13 @@ export const isInstant = (l: { mode?: LaunchSummary['mode'] }): boolean => l.mod
 
 /** Prefers the indexer's own `phase` (IR-A10) when it is one we know; otherwise derives it from status, stage and times. */
 export function phaseOf(l: PhaseInput, now: number): PhaseId {
-  const given = l.phase?.toUpperCase().replace(/ /g, '_');
+  const raw = l.phase ?? '';
+  const INSTANT_PHASE: Record<string, PhaseId> = { instant_creating: 'LAUNCHING', instant_pending_seed: 'LAUNCHING', instant_pending_open: 'LAUNCHING', instant_open: 'TRADING', instant_failed: 'LAUNCH_FAILED' };
+  if (INSTANT_PHASE[raw]) return INSTANT_PHASE[raw]!;
+  const given = raw.toUpperCase().replace(/ /g, '_');
   if (given && given in PHASE_LABEL) return given as PhaseId;
   if (isInstant(l)) {
-    if (l.status === 'dissolved' || l.status === 'creation_failed' || l.status === 'failed') return 'LAUNCH_FAILED';
+    if (l.status === 'dissolved' || l.status === 'creation_failed' || l.status === 'failed' || l.status === 'abandoned' || l.status === 'aborted') return 'LAUNCH_FAILED';
     return l.has_market || l.status === 'trading' ? 'TRADING' : 'LAUNCHING';
   }
   if (l.status === 'dissolved') return 'DISSOLVED';

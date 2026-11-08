@@ -13,7 +13,7 @@ export function SourceBadge({ source }: { source: Source | undefined }) {
     : <Badge tone="chain" title="Every contributing event came from a NEAR block.">Chain data</Badge>;
 }
 
-const STAGE_TONE: Record<Stage, string> = { new: 'new', open: 'open', closing: 'closing', passed: 'pass', failed: 'fail' };
+const STAGE_TONE: Record<Stage, string> = { new: 'new', open: 'open', closing: 'closing', passed: 'pass', failed: 'fail', launching: 'closing', trading: 'pass' };
 export function StageBadge({ stage }: { stage: Stage }) {
   return <Badge tone={STAGE_TONE[stage]}>{stage === 'failed' ? 'Failed' : stage}</Badge>;
 }

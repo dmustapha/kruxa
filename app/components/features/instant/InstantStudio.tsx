@@ -101,7 +101,7 @@ export function InstantStudio() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key, signer]);
 
-  const mine = useApi(signer ? () => api.launches({ creator: signer, mode: 'instant', limit: 20 }) : null, `instant-mine-${signer}`);
+  const mine = useApi(signer ? () => api.launches({ creator: signer, launch_type: 'instant', include_failed: true, limit: 20 }) : null, `instant-mine-${signer}`);
   const recent = mine.status === 'ok' ? mine.data.items.filter((l) => (l.mode ?? 'trial') === 'instant').map((l) => l.created_at ?? 0) : [];
   const limited = rateLimited(recent, Math.floor(Date.now() / 1000));
 

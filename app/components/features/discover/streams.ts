@@ -2,30 +2,28 @@
 // the streams are merged client-side with the literal sort the user chose.
 import type { LaunchSummary } from '@/lib/api/types';
 
-export const TABS = ['live', 'walk', 'trading', 'pending', 'failed', 'all'] as const;
+export const TABS = ['live', 'walk', 'launching', 'trading', 'pending', 'failed', 'all'] as const;
 export type Tab = (typeof TABS)[number];
-export const TAB_LABEL: Record<Tab, string> = { live: 'Live trials', walk: 'Walk window', trading: 'Trading', pending: 'Passed, market pending', failed: 'Failed and refunded', all: 'All' };
+export const TAB_LABEL: Record<Tab, string> = { live: 'Live trials', walk: 'Walk window', launching: 'Launching', trading: 'Trading', pending: 'Passed, market pending', failed: 'Failed and refunded', all: 'All' };
 export const TAB_EMPTY: Record<Tab, string> = {
   live: 'No trial is open right now. Trials appear here a few blocks after a creator opens one.',
   walk: 'No launch is in its Walk window. Commits have closed on none of them.',
+  launching: 'No instant launch is between token creation and an open pool.',
   trading: 'No token is trading on a Kruxa pool yet.',
   pending: 'No passed launch is waiting for its pool.',
   failed: 'No launch has failed yet.',
   all: 'The indexer has not read any launch yet.',
 };
 
-export interface StreamQuery { stage?: string; has_market?: boolean }
-
-export const STREAMS: Record<Tab, StreamQuery[]> = {
-  live: [{ stage: 'new' }, { stage: 'open' }], walk: [{ stage: 'closing' }], trading: [{ stage: 'passed', has_market: true }],
-  pending: [{ stage: 'passed' }], failed: [{ stage: 'failed' }], all: [{}],
-};
+/** One indexer query per tab (OpenAPI 1.2.0 `tab`). The API tabs are exclusive: every launch is in exactly one. `pending` is the API's `passed` tab. */
+export interface StreamQuery { tab?: string; has_market?: boolean }
+const API_TAB: Record<Tab, string | undefined> = { live: 'live', walk: 'walk', launching: 'launching', trading: 'trading', pending: 'passed', failed: 'failed', all: undefined };
+export const STREAMS: Record<Tab, StreamQuery[]> = Object.fromEntries(TABS.map((t) => [t, [{ tab: API_TAB[t] }]])) as Record<Tab, StreamQuery[]>;
 
 export const SORTS = [
   { v: 'newest', l: 'Newest' }, { v: 'ending_soon', l: 'Ending soon' }, { v: 'raised', l: 'Most committed' }, { v: 'funders', l: 'Most backers' }, { v: 'volume_24h', l: 'Volume 24 h' },
 ] as const;
 
-export const keepForTab = (tab: Tab) => (l: LaunchSummary): boolean => (tab === 'pending' ? !l.has_market : true);
 
 const big = (s: string): bigint => BigInt(s);
 const deadline = (l: LaunchSummary): number => l.walk_end ?? l.commit_end ?? Number.MAX_SAFE_INTEGER;

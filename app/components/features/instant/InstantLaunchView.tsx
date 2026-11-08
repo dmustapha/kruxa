@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { api } from '@/lib/api/client';
+import type { LaunchDetail } from '@/lib/api/types';
 import { useApi } from '@/lib/api/useApi';
 import { Badge, SourceBadge } from '@/components/ui/Badges';
 import { LaunchSigil } from '@/components/ui/LaunchSigil';
@@ -13,6 +14,20 @@ import { InstantNotice, RiskPanel } from './InstantParts';
 import { InstantProgress } from './InstantProgress';
 import { VestPanel } from './VestPanel';
 import { useInstantLaunch } from './useInstant';
+
+const STEP_LABEL = { created: 'Create the token', seeded: 'Seed the pool with your USDC', trading: 'Open the pool' } as const;
+
+/** Read-only steps from the indexer, shown when the launcher cannot be read. No action buttons: the launcher decides what is allowed. */
+function IndexedSteps({ l }: { l: LaunchDetail }) {
+  const steps = l.instant?.steps ?? [];
+  return (
+    <section className="card" aria-labelledby="ixs-h">
+      <div className="row between"><h2 id="ixs-h" style={{ margin: 0, fontSize: '1.15rem' }}>Launch steps</h2><Badge tone="source">Indexer view</Badge></div>
+      <p className="hint">The launcher could not be read, so these steps come from the indexer and no action is offered. Status: {l.instant?.status ?? 'unknown'}{l.instant?.failure ? ` (${l.instant.failure})` : ''}.</p>
+      <ol className="tl">{steps.map((s, i) => <li key={s.step}><b>Step {i + 1} of 3: {STEP_LABEL[s.step]}</b> {s.done ? <Badge tone="pass">Done</Badge> : <Badge tone="muted">Not yet</Badge>}{s.receipt_id && <span className="when">receipt {s.receipt_id}</span>}</li>)}</ol>
+    </section>
+  );
+}
 
 /** /launch/[id] for an instant launch (id at or above 1,000,000,000): no verdict, no Walk, no stepper of a trial. The launcher's views are the authority. */
 export function InstantLaunchView() {
@@ -39,7 +54,9 @@ export function InstantLaunchView() {
       <InstantNotice />
       <div className="grid grid-aside">
         <div className="stack">
-          <InstantProgress launchId={id} onChanged={() => idx.reload()} />
+          {chain.status === 'error' && l?.instant
+            ? <IndexedSteps l={l} />
+            : <InstantProgress launchId={id} onChanged={() => idx.reload()} />}
           {rec && (
             <section className="card" aria-labelledby="it-h">
               <h2 id="it-h" style={{ marginTop: 0 }}>Terms</h2>

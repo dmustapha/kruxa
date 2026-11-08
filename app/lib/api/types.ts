@@ -1,7 +1,7 @@
 // Hand-written mirror of docs/interfaces/api.openapi.yaml (indexer read API 1.0.0). Amounts are base-unit decimal strings.
 export type Source = 'chain' | 'fixture';
-export type Stage = 'new' | 'open' | 'closing' | 'passed' | 'failed';
-export type LaunchStatus = 'creating' | 'open' | 'passed' | 'failed' | 'creation_failed' | 'dissolved' | 'launching' | 'trading';
+export type Stage = 'new' | 'open' | 'closing' | 'passed' | 'failed' | 'launching' | 'trading';
+export type LaunchStatus = 'creating' | 'open' | 'passed' | 'failed' | 'creation_failed' | 'dissolved' | 'launching' | 'trading' | 'token_ready' | 'seeded' | 'handoff' | 'abandoned' | 'aborted';
 /** OpenAPI 1.2.0 (pending): how a launch started. Missing means trial. */
 export type LaunchMode = 'trial' | 'instant';
 
@@ -77,11 +77,24 @@ export interface GenesisView {
   tx_create?: string | null; tx_authority?: string | null; distributor?: string | null; root?: string | null; verified_checks?: string[]; updated_at?: number | null;
 }
 
-/** Allocation vesting of an instant launch (CHANGE-ORDER-7 2.12). Optional: the launcher's `get_vesting` view is the authority. */
-export interface AllocView { total?: string; unlocked?: string; claimed?: string; claimable?: string; cliff_end?: number | null; vest_end?: number | null; alloc_bps?: number; cliff_days?: number; vest_days?: number; seed_q?: string }
+/** OpenAPI 1.2.0 `Vesting`: creator allocation folded from launcher events. The launcher's `get_vesting` view is the authority. */
+export interface VestingView {
+  recipient?: string; total: string; cliff_days?: number; vest_days?: number; creator_alloc_bps?: number; cliff_end?: number | null; vest_end?: number | null;
+  unlocked: string; claimed: string; claimable: string; next_unlock_at?: number | null; day_seconds?: number;
+}
+
+/** OpenAPI 1.2.0 `InstantInfo`, present on LaunchDetail for instant launches only. */
+export interface InstantInfo {
+  status: string; token?: string | null; supply_model?: string; solana_mint?: 'none'; total_supply?: string | null; creator_alloc?: string; pool_tokens?: string;
+  seed?: { seed_q?: string; launch_fee?: string; pool_seed_q?: string; note?: string };
+  vesting?: VestingView;
+  steps?: { step: 'created' | 'seeded' | 'trading'; done: boolean; block_height?: number | null; receipt_id?: string | null; time?: number | null }[];
+  failure?: string | null; source?: Source;
+}
 
 export interface LaunchDetail extends LaunchSummary {
-  alloc?: AllocView | null;
+  /** Present for instant launches only. */
+  instant?: InstantInfo | null;
   genesis?: GenesisView | null;
   charter_hash: string;
   verdict_inputs: VerdictInputsView;

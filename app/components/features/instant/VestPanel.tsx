@@ -3,6 +3,7 @@ import { useWallet } from '@/components/wallet';
 import { ChainActionButton } from '../trial/ChainActionButton';
 import { Badge } from '@/components/ui/Badges';
 import { TxStatus } from '@/components/ui/TxStatus';
+import { api } from '@/lib/api/client';
 import { useApi } from '@/lib/api/useApi';
 import { claimVestedNear } from '@/lib/actions';
 import { fmtDate } from '@/lib/format';
@@ -17,10 +18,17 @@ export function VestPanel({ launchId, symbol, seedLabel }: { launchId: string; s
   const { sessions, adapters } = useWallet();
   const tx = useTx();
   const v = useApi<VestingView | null>(() => getVesting(launchId), `vest-${launchId}`, 20000);
+  const idx = useApi(v.status === 'error' ? () => api.launch(launchId) : null, `vest-idx-${launchId}-${v.status}`);
   if (v.status === 'loading' || v.status === 'idle') return <p className="hint">Reading the vesting schedule.</p>;
-  if (v.status === 'error') return <p className="warn">The vesting schedule could not be read ({v.error.message}). Nothing is guessed.</p>;
-  if (!v.data) return <p className="hint">No allocation is recorded for this launch.</p>;
-  const d = v.data;
+  let d: VestingView | null = v.status === 'ok' ? v.data : null;
+  let from: 'chain' | 'indexer' = 'chain';
+  if (v.status === 'error') {
+    const iv = idx.status === 'ok' ? idx.data.instant?.vesting : undefined;
+    if (!iv) return <p className="warn">{idx.status === 'loading' ? 'Reading the indexer.' : `The vesting schedule could not be read from the launcher (${v.error.message}) or the indexer. Nothing is guessed.`}</p>;
+    d = { recipient: iv.recipient ?? '', total: iv.total, unlocked: iv.unlocked, claimed: iv.claimed, claimable: iv.claimable, cliff_end_ns: iv.cliff_end ? String(BigInt(iv.cliff_end) * 1_000_000_000n) : '0', vest_end_ns: iv.vest_end ? String(BigInt(iv.vest_end) * 1_000_000_000n) : '0' } as VestingView;
+    from = 'indexer';
+  }
+  if (!d) return <p className="hint">No allocation is recorded for this launch.</p>;
   const total = BigInt(d.total);
   const pct = total === 0n ? 0 : Number((BigInt(d.unlocked) * 10_000n) / total) / 100;
   const cliff = secs(d.cliff_end_ns);
@@ -29,7 +37,7 @@ export function VestPanel({ launchId, symbol, seedLabel }: { launchId: string; s
   const claimable = BigInt(d.claimable);
   return (
     <div className="stack">
-      <div className="row between"><h4 style={{ margin: 0 }}>Allocation vesting{symbol ? ` for $${symbol}` : ''}</h4><Badge tone="chain">Chain read: get_vesting</Badge></div>
+      <div className="row between"><h4 style={{ margin: 0 }}>Allocation vesting{symbol ? ` for $${symbol}` : ''}</h4><Badge tone={from === 'chain' ? 'chain' : 'source'}>{from === 'chain' ? 'Chain read: get_vesting' : 'Indexer estimate (the launcher did not answer)'}</Badge></div>
       <div className="meter" role="img" aria-label={`${pct} percent of the allocation has unlocked`}><div className="meter-fill clears" style={{ width: `${Math.min(100, pct)}%` }} /></div>
       <dl className="kv">
         <div><dt>Allocation</dt><dd>{tokens(d.total)} tokens</dd></div>

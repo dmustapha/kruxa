@@ -2,18 +2,17 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api, ApiError } from '@/lib/api/client';
 import type { AsOf, LaunchSummary, Source } from '@/lib/api/types';
-import { STREAMS, TABS, compare, keepForTab, type Tab } from './streams';
+import { STREAMS, TABS, compare, type Tab } from './streams';
 
-export interface Counts { live?: number; walk?: number; trading?: number; pending?: number; failed?: number; all?: number }
+export type Counts = Partial<Record<Tab, number>>;
 
-/** Tab counts from `total` on limit=1 queries. Pending is passed minus trading (the API has no has_market=false filter). */
+/** Tab counts from `total` on limit=1 queries, one per API tab. */
 export function useTabCounts(q: string, mode: string | null): Counts {
   const [c, setC] = useState<Counts>({});
   useEffect(() => {
     let live = true;
-    const total = (query: { stage?: string; has_market?: boolean }) => api.launches({ ...query, q: q || undefined, mode: mode || undefined, limit: 1 }).then((r) => r.total ?? 0);
-    void Promise.all([total({ stage: 'new' }), total({ stage: 'open' }), total({ stage: 'closing' }), total({ stage: 'passed', has_market: true }), total({ stage: 'passed' }), total({ stage: 'failed' }), total({})])
-      .then(([n, o, w, t, p, f, a]) => { if (live) setC({ live: n + o, walk: w, trading: t, pending: Math.max(0, p - t), failed: f, all: a }); }, () => { if (live) setC({}); });
+    const total = (t: Tab) => api.launches({ ...STREAMS[t][0], q: q || undefined, launch_type: mode || undefined, limit: 1 }).then((r) => r.total ?? 0);
+    void Promise.all(TABS.map(async (t) => [t, await total(t)] as const)).then((rows) => { if (live) setC(Object.fromEntries(rows) as Counts); }, () => { if (live) setC({}); });
     return () => { live = false; };
   }, [q, mode]);
   return c;
@@ -35,9 +34,9 @@ export function useFeed(tab: Tab, q: string, sort: string, hasMarket: boolean, m
   const publish = useCallback(() => {
     const seen = new Set<string>();
     const wantMode = (l: LaunchSummary): boolean => !mode || (l.mode ?? 'trial') === mode;
-    const merged = streams.current.flatMap((s) => s.items).filter((l) => !seen.has(l.launch_id) && !!seen.add(l.launch_id)).filter(keepForTab(tab)).filter(wantMode).sort(compare(sort));
+    const merged = streams.current.flatMap((s) => s.items).filter((l) => !seen.has(l.launch_id) && !!seen.add(l.launch_id)).filter(wantMode).sort(compare(sort));
     setState({ status: 'ok', items: merged, more: streams.current.some((s) => s.cursor !== null), ...meta.current });
-  }, [tab, sort, mode]);
+  }, [sort, mode]);
 
   const fetchStreams = useCallback(async (append: boolean) => {
     const mine = ++seq.current;
@@ -47,7 +46,7 @@ export function useFeed(tab: Tab, q: string, sort: string, hasMarket: boolean, m
       const out = await Promise.all(defs.map(async (d, i) => {
         const p = prev[i]!;
         if (append && p.cursor === null) return p;
-        const r = await api.launches({ ...d, has_market: hasMarket ? true : d.has_market, q: q || undefined, mode: mode || undefined, sort: sort === 'newest' ? undefined : sort, limit: 24, cursor: append ? p.cursor ?? undefined : undefined });
+        const r = await api.launches({ ...d, has_market: hasMarket ? true : d.has_market, q: q || undefined, launch_type: mode || undefined, sort: sort === 'newest' ? undefined : sort, limit: 24, cursor: append ? p.cursor ?? undefined : undefined });
         meta.current = { source: r.source, asOf: r.as_of };
         return { items: append ? [...p.items, ...r.items] : r.items, cursor: r.next_cursor };
       }));
