@@ -35,11 +35,12 @@ No edge leaves `Open`. No edge returns a seed once the market consumed it. `Open
 
 | Method | Caller | Effect |
 |---|---|---|
-| `new(owner, guardian, treasury, usdc, factory, profile)` | init | `profile` in `mainnet` / `testnet` / `demo`. `creator_gate` is true only on `mainnet`. Launch fee is 10 USDC on `mainnet`, 0 otherwise. Defaults: seed range 100..1000 USDC, aggregate unconsumed-seed cap 3000 USDC |
-| `create_instant(params, payout_recipient?) -> Promise` (payable) | any (gate permitting) | checks in order: not paused/frozen (`R_PAUSED`/`R_FROZEN`), creator gate (`R_CREATOR_GATE`, refuses EVERY account including the owner until `open_beta`), rate limit (`R_RATE_LIMIT`: one instant launch per account per 24 u), symbol (`R_SYMBOL`, `R_SYMBOL_RESERVED`), `validate_instant` first violation, deposit (`R_DEPOSIT`: attached >= `required_deposit()`, the excess is sent back at once). Creates the record (status `Creating`), calls the factory `create_token` (whole supply minted to the launcher), verifies `ft_total_supply == n_total` AND `ft_balance_of(launcher) == n_total` |
+| `new(owner, guardian, treasury, usdc, factory, profile)` | init | `profile` is exactly `mainnet`, `testnet` or `demo`; anything else panics `R_PROFILE` (no silent fallback that could open the gate or drop the fee). The profile is tied to the account: `mainnet` needs a `.near` account, `testnet` and `demo` need `.testnet`, `.localnet` or the sandbox's `.test.near` (`R_PROFILE` otherwise), so the 10-second-day `demo` profile cannot be initialised on `instant.kruxa.near`. `creator_gate` is true only on `mainnet`. Launch fee is 10 USDC on `mainnet`, 0 otherwise. Defaults: seed range 100..1000 USDC, aggregate unconsumed-seed cap 3000 USDC. `get_config` returns `profile` and `unit_ns` (one "day" in ns: 86400e9, or 10e9 on demo): the UI must convert `cliff_days`/`vest_days` with it and label any deployment whose `unit_ns` is not 86400e9 as DEMO |
+| `create_instant(params, payout_recipient?) -> Promise` (payable) | any (gate permitting) | checks in order: not paused/frozen (`R_PAUSED`/`R_FROZEN`), creator gate (`R_CREATOR_GATE`, refuses EVERY account including the owner until `open_beta`), rate limit (`R_RATE_LIMIT`: one instant launch per account per 24 u; a failed creation does NOT reset it), symbol (`R_SYMBOL`, `R_SYMBOL_RESERVED`: the built-in list, any symbol containing `KRUXA`, and the owner's list), `validate_instant` first violation, deposit (`R_DEPOSIT`: attached >= `required_deposit()`, the excess is sent back at once). Creates the record (status `Creating`), calls the factory `create_token` (whole supply minted to the launcher), verifies `ft_total_supply == n_total` AND `ft_balance_of(launcher) == n_total` |
 | `finalize_creation(launch_id) -> Promise` | any | recovery: re-run the verification when still `Creating` 10 minutes after create (`R_TOO_EARLY` before) |
 | `ft_on_transfer(sender_id, amount, msg)` | the USDC contract | op `seed_instant` (section 4). Never panics |
-| `open_instant(launch_id) -> u8` | ANY | needs `Seeded` or `Handoff`, not paused, market set (`R_NO_MARKET`). Locks `market` on first use. Debit first, then sends ONE leg (seed, or the token leg once the seed was consumed). Returns 1. Nothing to send or a leg in flight: `R_INSTANT_STATE` |
+| `open_instant(launch_id) -> u8` | ANY | needs `Seeded` or `Handoff`, market set (`R_NO_MARKET`). Prepaid gas below 255 Tgas is refused before any state change (`R_GAS`; attach 300). New risk (the seed leg) needs the launcher not paused; once the market consumed the seed, the token leg may be retried while PAUSED (only FROZEN stops it). Debit first, then sends ONE leg (seed, or the token leg once the seed was consumed). Returns 1. Nothing to send or a leg in flight: `R_INSTANT_STATE`. The seed callback sends the token leg only if at least 145 Tgas are left; otherwise it skips it and the next `open_instant` sends it |
+| `reconcile(launch_id) -> Promise` | ANY | recovery for a leg whose callback never landed. Needs a leg in flight for 5 minutes (`R_INSTANT_STATE`, `R_TOO_EARLY`). Reads the market's `get_pool(launch_id)`: a pool whose `token` is this launch's token means the seed was consumed (the market refuses a duplicate id and only this launcher can use ids >= 1e9), `state` `Open` means the token leg was too. Books the legs accordingly (or re-credits them when the market saw nothing). A later real callback for an already reconciled leg is ignored |
 | `abandon_instant(launch_id)` | creator any time; anyone else 24 u after creation (`R_TOO_EARLY`) | status `TokenReady` only (`R_INSTANT_STATE`). Becomes `Abandoned`; deposit refundable minus the factory deposit and record storage. The token stays in the launcher and is never listed |
 | `abort_instant(launch_id) -> Promise` | creator | status `Seeded` or `Handoff`, 72 u after the seed (`R_TOO_EARLY`), `seed_sent == 0` and `seed_inflight == 0` (`R_INSTANT_STATE`: IL-8). Becomes `Aborted`; pays the whole seed (including the launch fee) back to the creator (owed on failure); the token is dead and its allocation never vests |
 | `reclaim_deposit(launch_id) -> Promise` | creator | pays `deposit_refundable` after `CreationFailed`, `Abandoned` or `Aborted` as a plain NEAR transfer (debit first). `R_NOTHING_TO_CLAIM` when zero. LIMIT: a NEAR transfer that fails (the creator account no longer exists) bounces back to the launcher and is not tracked as owed |
@@ -47,13 +48,13 @@ No edge leaves `Open`. No edge returns a seed once the market consumed it. `Open
 | `claim_owed(token_id) -> Promise` | the owed account | pays tokens or USDC an outbound transfer failed to deliver |
 | `withdraw_platform() -> Promise` | treasury or owner | pays accrued launch fees (USDC) to the treasury (owed on failure) |
 | `pause()` | owner or guardian | blocks `create_instant`, seed acceptance, `open_instant`. Exits stay open |
-| `freeze()` | owner or guardian | also blocks exits; auto-expires to paused after 7 days |
+| `freeze()` | owner or guardian | also blocks exits; auto-expires to paused after 7 days. The guardian cannot freeze again within 7 days after a freeze ended (`R_NOT_YET`); the owner can |
 | `unpause()` | owner | resumes |
 | `open_beta()` | owner | one-way; opens the creator gate (`R_NOTHING` if already open). Procedural precondition: $KRUXA genesis done and BLK-1 closed |
-| `set_market(account)` | owner | before the first `open_instant`; locked afterwards (`R_NOTHING`) |
-| `reserve_symbol(symbol)` | owner | adds a symbol to the reserved list (event `symbol_reserved`); `KRUXA` and the core reserved list are built in |
-| `set_seed_cap(kind, value)` | owner or guardian | `kind` = `aggregate` (unconsumed seeds) or `per_launch` (max seed). A value BELOW the current cap applies at once (not below the minimum seed, `R_CAP_GLOBAL`). A value at or above it is owner only and queued for 7 days (event `cap_queued`) |
-| `apply_seed_cap(kind)` | any | applies the queued raise after the timelock (`R_NOT_YET`, `R_NOTHING`) |
+| `set_market(account)` | owner | before the first SEED; locked by the first accepted seed (`R_NOTHING` afterwards). A seed with no market set is refused (`R_NO_MARKET`) |
+| `reserve_symbol(symbol)` | owner | adds a symbol to the reserved list, stored upper-case, must be 2..=12 of `[A-Z0-9]` after upper-casing (`R_SYMBOL`); event `symbol_reserved`. Built in: the core list and any symbol containing `KRUXA` |
+| `set_seed_cap(kind, value)` | owner or guardian | `kind` = `aggregate` (unconsumed seeds) or `per_launch` (max seed). A value BELOW the current cap applies at once (not below the minimum seed, `R_CAP_GLOBAL`). A value at or above it is owner only and queued for 7 days (event `cap_queued`). Any lowering of a kind also CANCELS a queued raise of that kind (event `cap_cancelled`) |
+| `apply_seed_cap(kind)` | any | applies the queued raise after the timelock (`R_NOT_YET`, `R_NOTHING`); refused `R_NOTHING` if the queued value is no longer above the current cap |
 
 Exits that stay open while PAUSED: `claim_vested`, `claim_owed`, `reclaim_deposit`, `abort_instant`, `abandon_instant`, `withdraw_platform`. Only FROZEN closes them. Gas: attach 300 Tgas to `open_instant` (it reserves 90 Tgas for the seed leg and 150 Tgas for the callback that sends the token leg).
 
@@ -86,11 +87,11 @@ Token leg (`token.ft_transfer_call(market, n_pool, msg)`): `{"v":1,"op":"open_po
 | `fees` | the trial rules (`kruxa_logic` fee checks) plus `validate_market_terms`; default = standard 50/15/15/10/10, total 100 bps, opening 500 bps decaying over 60 minutes, creator fee vest 50% over 90 days | see left | `R_FEE_TOTAL`, `R_CREATOR_SHARE`, `R_CREATOR_TAKE`, `R_PLATFORM_FLOOR`, `R_PLATFORM_FIXED`, `R_HOLDER_RANGE`, `R_LP_RANGE`, `R_HOLDER_LP_FLOOR`, `R_REFERRAL`, `R_SPLIT_SUM`, `R_FEE_VEST`, `R_OPENING`, `R_FEE_TERMS` |
 
 Derived: `n_total = 1_000_000_000 * 10^6` base units (the trial default supply; a test pins it to `TrialParams::example`), `n_alloc = floor(n_total * creator_alloc_bps / 10000)`, `n_pool = n_total - n_alloc` (exact). `pool_seed_q = seed_q - launch_fee`. Opening price per whole token = `pool_seed_q * 10^6 / n_pool` micro-USDC.
-Deposit (`required_deposit()`): factory deposit 0.06 NEAR + record storage 0.02 + token registration of the market 0.00125 + market pool storage 0.05 = 0.13125 NEAR. Refunds always keep record storage; a verification failure or any later refund also keeps the factory deposit (the factory keeps it on the token account).
+Deposit (`required_deposit()`): factory deposit 0.06 NEAR + record storage 0.02 + token registration of the market 0.00125 + market pool storage 0.05 = 0.13125 NEAR. Every refund keeps record storage AND the factory deposit: the launcher never refunds the 0.06 NEAR, including when the factory call fails, because a failed factory batch (for example the token account already exists) refunds the factory and not the launcher, and the launcher cannot tell the cases apart (review H-01). A failed creation also leaves the 24 h rate limit in place.
 
 ## 6. Vesting (IL-5)
 
-`opened_at` is the time `Open` was recorded. `unlocked(t) = 0` if `t < opened_at + cliff`; else `linear_unlocked(n_alloc, opened_at, vest, t)` from `kruxa_math` (floor, `n_alloc` at or after `opened_at + vest`). `claimable = unlocked - claimed`. The allocation is held by the launcher; it is never in the pool and never sent anywhere except to the payout recipient by `claim_vested` (or the owed path). Nothing vests for `Abandoned`, `Aborted` or `CreationFailed`.
+`opened_at` is the time `Open` was recorded. `unlocked(t) = 0` if `t < opened_at + cliff`; else `linear_unlocked(n_alloc, opened_at, vest, t)` from `kruxa_math` (floor, `n_alloc` at or after `opened_at + vest`). `claimable = unlocked - claimed`. The curve is linear from `opened_at`, NOT from the cliff: at the cliff the already-elapsed share unlocks in one step (`floor(n_alloc * cliff / vest)`, 7/30 days = 23%; cliff = vest unlocks everything at once). The UI must say "X% unlocks at the cliff". The allocation is held by the launcher; it is never in the pool and never sent anywhere except to the payout recipient by `claim_vested` (or the owed path). Nothing vests for `Abandoned`, `Aborted` or `CreationFailed`.
 
 ## 7. Views (JSON)
 
@@ -107,7 +108,7 @@ Deposit (`required_deposit()`): factory deposit 0.06 NEAR + record storage 0.02 
 
 ## 8. Rule codes
 
-`R_PAUSED`, `R_FROZEN`, `R_CREATOR_GATE`, `R_RATE_LIMIT`, `R_SYMBOL`, `R_SYMBOL_RESERVED`, `R_ALLOC`, `R_VEST`, `R_SEED_RANGE`, `R_SEED_AMOUNT`, `R_CAP_GLOBAL`, `R_FEE_*` (as listed in section 5), `R_DEPOSIT`, `R_NOT_CREATOR`, `R_NOT_AUTHORIZED`, `R_UNEXPECTED_TOKEN`, `R_BAD_MSG`, `R_INSTANT_STATE`, `R_TOO_EARLY`, `R_NOTHING_TO_CLAIM`, `R_NOTHING`, `R_NOT_YET`, `R_NO_MARKET`, `R_NO_LAUNCH`, `R_MATH`, and the string `STREAM_CAP` (claim above the claimable amount).
+`R_PROFILE`, `R_GAS`, `R_PAUSED`, `R_FROZEN`, `R_CREATOR_GATE`, `R_RATE_LIMIT`, `R_SYMBOL`, `R_SYMBOL_RESERVED`, `R_ALLOC`, `R_VEST`, `R_SEED_RANGE`, `R_SEED_AMOUNT`, `R_CAP_GLOBAL`, `R_FEE_*` (as listed in section 5), `R_DEPOSIT`, `R_NOT_CREATOR`, `R_NOT_AUTHORIZED`, `R_UNEXPECTED_TOKEN`, `R_BAD_MSG`, `R_INSTANT_STATE`, `R_TOO_EARLY`, `R_NOTHING_TO_CLAIM`, `R_NOTHING`, `R_NOT_YET`, `R_NO_MARKET`, `R_NO_LAUNCH`, `R_MATH`, and the string `STREAM_CAP` (claim above the claimable amount).
 
 ## 9. Events (NEP-297, standard `kruxa`, version `1.0.0`, emitted by the launcher account)
 
@@ -131,7 +132,7 @@ Deposit (`required_deposit()`): factory deposit 0.06 NEAR + record storage 0.02 
 | `beta_opened` | `by` |
 | `market_set` | `market` |
 | `symbol_reserved` | `symbol` |
-| `cap_lowered` / `cap_queued` / `cap_applied` | `kind, value` / `kind, value, effective_at` / `kind, value` |
+| `cap_lowered` / `cap_queued` / `cap_applied` / `cap_cancelled` | `kind, value` / `kind, value, effective_at` / `kind, value` / `kind` |
 
 Indexer notes: `instant_created` inserts the launch (status `launching`), `instant_opened` sets `trading`, the market's `pool_opened` (mode `instant`) attaches by `launch_id >= 1e9`. `declared` trades: creator and payout recipient.
 
@@ -142,3 +143,13 @@ IL-1 supply conservation at `TokenReady` (both views checked); IL-2 no mint meth
 ## 11. What this file depends on in the market (ABI 1.1.0, workstream M)
 
 `set_launcher(launcher)` called by the market owner; `seed_quote` from the launcher accepted for ids >= 1e9 with `creator` in the message; seed-time cap check `R_MARKET_CAP`; `R_SELF_BUY` for creator and payout recipient on buys; `R_ID_NAMESPACE` on the wrong id range; `pool_opened` and `get_pool` carry `mode` and `creator`. `trade_from_ns` (announced open) is not in market 1.1.0 and not used.
+
+## 12. Gas, measured (sandbox, review C-01)
+
+`tests/tests/instant_gas.rs` sweeps the prepaid gas of the permissionless `open_instant`. Old code (before the review): every value up to 242 Tgas failed atomically with nothing changed; from 244 Tgas the single call reached `Open`. No band left a seed in flight, so the review's estimated stranding band (245 to 260) did not reproduce; the static gas of the seed leg (90) plus its callback (150) is what the call reserves. Burnt gas of each launcher receipt is 2 to 3 Tgas. Now: below 255 Tgas `open_instant` panics `R_GAS` before touching state; 255, 256, 258, 260, 270, 300 Tgas all reach `Open` in one call. The callback additionally checks it has 145 Tgas left before it creates the token leg and otherwise leaves it to the next `open_instant`; `reconcile` recovers any leg whose callback is lost anyway.
+
+## 13. Limits to disclose (review L-04, L-06)
+
+- The market's self-buy block covers `sender_id` and `receiver` equal to the creator or payout recipient. It does not stop a second wallet, a buy routed through a contract, or a fresh receiver account. It is not insider protection.
+- Factory trust: metadata and decimals of the created token are not verified on chain (the mock token has no `ft_metadata`); the factory deposit (0.06 NEAR) and the registration amount (0.00125 NEAR) are constants. A factory that needs more makes every launch fail until the launcher is redeployed. A publisher update of the factory's global contract affects every factory token, trial and instant.
+- NEAR deposit refunds are plain transfers; one to an account that no longer exists is lost.

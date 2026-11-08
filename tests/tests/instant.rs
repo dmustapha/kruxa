@@ -288,7 +288,11 @@ async fn a_failed_factory_call_frees_the_symbol_and_refunds_the_deposit() -> any
     assert_eq!(ix.status(&id).await, "CreationFailed");
     let r = ix.inst(&id).await;
     let need = n(&r["deposit_paid"]);
-    assert_eq!(n(&r["deposit_refundable"]), need - 20_000_000_000_000_000_000_000, "everything but the record storage");
+    assert_eq!(
+        n(&r["deposit_refundable"]),
+        need - 80_000_000_000_000_000_000_000,
+        "minus record storage and the factory deposit (review H-01)"
+    );
     let stranger = ix.user("stranger", 0).await?;
     assert!(has_code(&ix.call(&stranger, "reclaim_deposit", lid(&id)).await?, "R_NOT_AUTHORIZED"));
     let before = ix.creator.view_account().await?.balance.as_yoctonear();
@@ -303,9 +307,10 @@ async fn a_failed_factory_call_frees_the_symbol_and_refunds_the_deposit() -> any
     let gained = after - before;
     assert!(gained > n(&r["deposit_refundable"]) - NearToken::from_millinear(50).as_yoctonear(), "gained {gained}");
     assert!(has_code(&ix.call(&ix.creator, "reclaim_deposit", lid(&id)).await?, "R_NOTHING_TO_CLAIM"));
-    // the symbol and the rate limit are free again
+    // the symbol is free again for anyone; the creator's own rate limit is not reset by a failure
     ix.factory.call("set_fail").args_json(json!({ "fail": false })).transact().await?.into_result()?;
-    ix.create_ready(&ix.creator, params("FAIL"), None).await?;
+    let other = ix.user("other", 0).await?;
+    ix.create_ready(&other, params("FAIL"), None).await?;
     Ok(())
 }
 
@@ -588,7 +593,10 @@ async fn phase_config_and_recovery_views() -> anyhow::Result<()> {
     ix.mint_usdc(ix.creator.id(), 250 * USDC).await?;
     ix.seed(&ix.creator, &id, 250 * USDC).await?.into_result()?;
     let p = ix.view("get_phase", lid(&id)).await;
-    assert_eq!((p["step"].clone(), p["next_action"].clone(), p["can_cancel"].clone()), (json!("open"), json!("open_instant"), json!(false)));
+    assert_eq!(
+        (p["step"].clone(), p["next_action"].clone(), p["can_cancel"].clone()),
+        (json!("open"), json!("open_instant"), json!(false))
+    );
     let rec = ix.call(&ix.creator, "finalize_creation", lid(&id)).await?;
     assert!(has_code(&rec, "R_INSTANT_STATE"), "only a launch stuck in Creating can be finalized: {:?}", rec.failures());
     let v = ix.view("get_vesting", lid(&id)).await;

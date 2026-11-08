@@ -1,6 +1,47 @@
 use kruxa_instant::{Derived, InstantParams};
 use near_sdk::{near, AccountId};
 
+/// Deployment profile. A typo cannot silently weaken the gate or the fee: `new` accepts exactly these names, and each
+/// profile is tied to the kind of account it may live on.
+#[near(serializers = [borsh])]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Profile {
+    Mainnet,
+    Testnet,
+    /// One "day" lasts 10 s. Sandbox and labelled demo accounts only.
+    Demo,
+}
+
+impl Profile {
+    pub fn parse(s: &str) -> Option<Profile> {
+        match s {
+            "mainnet" => Some(Profile::Mainnet),
+            "testnet" => Some(Profile::Testnet),
+            "demo" => Some(Profile::Demo),
+            _ => None,
+        }
+    }
+
+    pub fn name(&self) -> &'static str {
+        match self {
+            Profile::Mainnet => "mainnet",
+            Profile::Testnet => "testnet",
+            Profile::Demo => "demo",
+        }
+    }
+
+    /// `mainnet` needs a `.near` account; `testnet` and `demo` need a `.testnet` or `.localnet` one, or the sandbox's
+    /// `.test.near` (nobody can create an account under the real `test.near` without its key). The 10-second-day `demo`
+    /// profile therefore cannot be initialised on `instant.kruxa.near`.
+    pub fn fits_account(&self, account: &str) -> bool {
+        let test_like = account.ends_with(".testnet") || account.ends_with(".localnet") || account.ends_with(".test.near");
+        match self {
+            Profile::Mainnet => account.ends_with(".near") && !account.ends_with(".testnet") && !account.ends_with(".localnet"),
+            _ => test_like,
+        }
+    }
+}
+
 #[near(serializers = [borsh, json])]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum PauseLevel {
@@ -101,7 +142,9 @@ pub struct Config {
     pub factory: AccountId,
     pub market: Option<AccountId>,
     pub market_locked: bool,
-    pub profile: String,
+    pub profile: Profile,
+    /// The guardian cannot freeze again before this time (the owner can). Set when a freeze starts.
+    pub freeze_barrier: u64,
     /// While true NOBODY can `create_instant`, the owner included, until the one-way `open_beta`.
     pub creator_gate: bool,
     pub pause: PauseLevel,
@@ -145,6 +188,8 @@ pub struct Instant {
     pub created_at: u64,
     pub seeded_at: u64,
     pub opened_at: u64,
+    /// When the leg now in flight was sent (0 = none). `reconcile` waits five minutes after it.
+    pub inflight_since: u64,
     /// The creator's whole seed, launch fee included.
     pub seed_total: u128,
     pub seed_due: u128,
@@ -165,5 +210,33 @@ pub struct Instant {
 impl Instant {
     pub fn tokens_unsent(&self) -> u128 {
         self.derived.n_pool.saturating_sub(self.tokens_sent + self.tokens_inflight)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn only_three_profile_names_parse() {
+        for ok in ["mainnet", "testnet", "demo"] {
+            assert!(Profile::parse(ok).is_some());
+        }
+        for bad in ["Mainnet", "prod", "main", "", "testnet ", "DEMO", "production"] {
+            assert!(Profile::parse(bad).is_none(), "{bad}");
+        }
+    }
+
+    #[test]
+    fn demo_and_testnet_cannot_live_on_a_mainnet_account() {
+        for p in [Profile::Demo, Profile::Testnet] {
+            assert!(!p.fits_account("instant.kruxa.near"));
+            assert!(!p.fits_account("kruxa.near"));
+            assert!(p.fits_account("instant.kruxa.testnet"));
+            assert!(p.fits_account("instant.localnet"));
+        }
+        assert!(Profile::Mainnet.fits_account("instant.kruxa.near"));
+        assert!(!Profile::Mainnet.fits_account("instant.kruxa.testnet"));
+        assert!(!Profile::Mainnet.fits_account("instant.localnet"));
     }
 }

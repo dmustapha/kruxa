@@ -127,7 +127,12 @@ const RESERVED_SYMBOLS: [&str; 9] = ["KRUXA", "USDC", "USDT", "NEAR", "WNEAR", "
 
 /// The built-in reserved list (the same nine symbols core refuses). The contract adds the owner's list.
 pub fn is_reserved_symbol(symbol: &str) -> bool {
-    RESERVED_SYMBOLS.contains(&symbol)
+    RESERVED_SYMBOLS.contains(&symbol) || symbol.contains("KRUXA")
+}
+
+/// 2..=12 of `[A-Z0-9]`.
+pub fn symbol_format_ok(symbol: &str) -> bool {
+    (2..=12).contains(&symbol.len()) && symbol.bytes().all(|b| b.is_ascii_uppercase() || b.is_ascii_digit())
 }
 
 pub fn total_supply_base() -> u128 {
@@ -135,7 +140,7 @@ pub fn total_supply_base() -> u128 {
 }
 
 fn check_text(p: &InstantParams, out: &mut Vec<Violation>) {
-    let sym_ok = (2..=12).contains(&p.symbol.len()) && p.symbol.bytes().all(|b| b.is_ascii_uppercase() || b.is_ascii_digit());
+    let sym_ok = symbol_format_ok(&p.symbol);
     if !sym_ok {
         out.push(Violation::new(code::SYMBOL, "symbol", &p.symbol, "2..=12 of [A-Z0-9]"));
     } else if is_reserved_symbol(&p.symbol) {
@@ -275,6 +280,8 @@ mod tests {
             (code::SYMBOL, InstantParams { symbol: "lower".into(), ..base.clone() }),
             (code::SYMBOL, InstantParams { name: String::new(), ..base.clone() }),
             (code::SYMBOL_RESERVED, InstantParams { symbol: "KRUXA".into(), ..base.clone() }),
+            (code::SYMBOL_RESERVED, InstantParams { symbol: "WKRUXA".into(), ..base.clone() }),
+            (code::SYMBOL_RESERVED, InstantParams { symbol: "KRUXAV2".into(), ..base.clone() }),
             (code::ALLOC, InstantParams { creator_alloc_bps: 1_001, ..base.clone() }),
             (code::VEST, InstantParams { vest_days: 29, ..base.clone() }),
             (code::VEST, InstantParams { vest_days: 366, ..base.clone() }),
