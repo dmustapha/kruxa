@@ -1,0 +1,20 @@
+factory=token.primitives.testnet code_hash=GKvn7KmWjnqu5pv5yKwgdAz835BX4nkdqEEcLDdwY7Vb
+factory_method_create_token=present
+factory_method_get_required_deposit=absent
+tx=DRATZQkGzGHtGxBywei3aSyGxjSDeqA1YVmbZNWuX5pM attached_near=3
+balance_delta_near=3.007672 gas_burnt_near=0.007672 spent_near=3.000000
+refund_of_excess=no
+token_account=prb121320.token.primitives.testnet exists=yes
+tx_status={"SuccessValue":"dHJ1ZQ=="}
+token_balance_of_owner="1000000000000"
+token_method_ft_burn=absent
+token_method_burn=absent
+token_method_ft_metadata=present
+token_method_ft_total_supply=present
+
+# Runs 2 to 4 (same script, KRUXA_PROBE_DEPOSIT set; key lines copied from the console, 2026-11-08 testnet)
+deposit 0.06  tx=HmrQbhtNF9YM7c5gpnJvKazc9vH65ucd7ffmQByQhcBT balance_delta_near=0.067673 gas_burnt_near=0.007673 spent_near=0.060000 refund_of_excess=no token_account=prb121430.token.primitives.testnet exists=yes
+deposit 0.02  balance_delta_near=0.027674 gas_burnt_near=0.007674 spent_near=0.020000 token_account=prb121538.token.primitives.testnet exists=yes
+deposit 0.005 balance_delta_near=0.012674 gas_burnt_near=0.007674 spent_near=0.005000 token_account=prb121638.token.primitives.testnet exists=yes
+# Where the deposit went (view_account of the first token, run 1 with a 3 NEAR deposit): the token account itself holds it.
+token_account_balance_near=3 storage_usage=387 code_hash=11111111111111111111111111111111 (global contract, no local code) access_keys=0
