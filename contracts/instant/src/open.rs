@@ -3,7 +3,7 @@
 use crate::ext::ext_ft;
 use crate::model::*;
 use crate::{events::emit, fail, Launcher, LauncherExt};
-use crate::{GAS_LEG, GAS_SEED_CB, GAS_TOKEN_CB, MARKET_STORAGE_YOCTO, ONE_YOCTO, SEC_NS, TOKEN_REG_YOCTO};
+use crate::{GAS_LEG, GAS_SEED_CB, GAS_STORAGE, GAS_TOKEN_CB, MARKET_STORAGE_YOCTO, ONE_YOCTO, SEC_NS, TOKEN_REG_YOCTO};
 use kruxa_logic::hex;
 use near_sdk::json_types::{U128, U64};
 use near_sdk::serde_json::json;
@@ -47,7 +47,7 @@ impl Launcher {
             let _ = Promise::new(market.clone()).transfer(NearToken::from_yoctonear(MARKET_STORAGE_YOCTO));
             let _ = ext_ft::ext(r.token.clone())
                 .with_attached_deposit(NearToken::from_yoctonear(TOKEN_REG_YOCTO))
-                .with_static_gas(GAS_LEG)
+                .with_static_gas(GAS_STORAGE)
                 .storage_deposit(Some(market.clone()), Some(true));
         }
         let _ = ext_ft::ext(r.token.clone())

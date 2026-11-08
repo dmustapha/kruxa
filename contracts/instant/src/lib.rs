@@ -23,9 +23,10 @@ pub const GAS_OUT: Gas = Gas::from_tgas(15);
 pub const GAS_CB: Gas = Gas::from_tgas(20);
 pub const GAS_VIEW: Gas = Gas::from_tgas(10);
 pub const GAS_FACTORY: Gas = Gas::from_tgas(80);
-pub const GAS_LEG: Gas = Gas::from_tgas(70);
+pub const GAS_LEG: Gas = Gas::from_tgas(90);
+pub const GAS_STORAGE: Gas = Gas::from_tgas(15);
 /// Callback of the seed leg: its own work plus sending the token leg and that leg's callback.
-pub const GAS_SEED_CB: Gas = Gas::from_tgas(130);
+pub const GAS_SEED_CB: Gas = Gas::from_tgas(150);
 pub const GAS_TOKEN_CB: Gas = Gas::from_tgas(30);
 /// The first launch id. The market gives ids at or above this to the launcher and below it to core.
 pub const INSTANT_ID_BASE: u64 = 1_000_000_000;
