@@ -582,6 +582,25 @@ mod tests {
     }
 
     #[test]
+    fn u_alloc_sum_10000() {
+        // Every accepted bucket split sums to exactly 10_000 bps, and the derived token buckets sum to the supply to the unit.
+        let base = TrialParams::example("ABCD");
+        let d = ok(&base).unwrap();
+        assert_eq!(base.sale_bps + base.lp_bps + base.creator_bps + base.backer_bps, 10_000);
+        assert_eq!(d.n_sale + d.n_lp + d.n_creator + d.n_backer, d.n_total);
+        for (sale, lp, creator, backer) in
+            [(8_000u16, 1_500u16, 500u16, 0u16), (5_000, 4_000, 1_000, 0), (5_500, 2_500, 1_500, 500), (8_000, 2_000, 0, 0)]
+        {
+            let p = TrialParams { sale_bps: sale, lp_bps: lp, creator_bps: creator, backer_bps: backer, ..base.clone() };
+            assert_eq!(sale + lp + creator + backer, 10_000);
+            let d = ok(&p).unwrap();
+            assert_eq!(d.n_sale + d.n_lp + d.n_creator + d.n_backer, d.n_total, "{p:?}");
+        }
+        let off = TrialParams { sale_bps: 5_999, ..base };
+        assert_eq!(ok(&off).unwrap_err().code, RuleCode::RBuckets, "9_999 bps is refused");
+    }
+
+    #[test]
     fn one_failing_case_per_code() {
         let base = TrialParams::example("ABCD");
         let cases: Vec<(RuleCode, TrialParams)> = vec![

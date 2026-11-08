@@ -123,4 +123,44 @@ mod tests {
         assert_ne!(ab, ba);
         assert_eq!(hex(&[0, 255]), "00ff");
     }
+
+    // ---- W1-DC-2 named tests (S1-B 11.2) ----
+
+    #[test]
+    fn u_verdict_boundary_eq() {
+        let mut i = inputs(350_000_000, 10, false);
+        assert_eq!(verdict(&i), Outcome::Pass, "equality on both thresholds passes");
+        i.min_funders = 11;
+        assert_eq!(verdict(&i), Outcome::Fail(BELOW_MIN_FUNDERS), "raising only the funder threshold by one flips it");
+    }
+
+    #[test]
+    fn u_verdict_one_below() {
+        assert_eq!(verdict(&inputs(349_999_999, 10, false)), Outcome::Fail(BELOW_SOFT_CAP));
+        assert_eq!(verdict(&inputs(350_000_000, 9, false)), Outcome::Fail(BELOW_MIN_FUNDERS));
+        assert_eq!(verdict(&inputs(349_999_999, 9, false)), Outcome::Fail(BELOW_SOFT_CAP | BELOW_MIN_FUNDERS));
+    }
+
+    #[test]
+    fn u_verdict_zero() {
+        assert_eq!(verdict(&inputs(0, 0, false)), Outcome::Fail(BELOW_SOFT_CAP | BELOW_MIN_FUNDERS));
+        assert_eq!(verdict(&inputs(0, 0, true)), Outcome::Fail(BELOW_SOFT_CAP | BELOW_MIN_FUNDERS | CANCELLED));
+    }
+
+    /// Reads fixtures/vectors/verdict.json, the same file app/lib/verdict.test.ts reads, so Rust and the TypeScript mirror cannot drift.
+    #[test]
+    fn u_verdict_hash_golden() {
+        let v: serde_json::Value = serde_json::from_str(include_str!("../../../fixtures/vectors/verdict.json")).unwrap();
+        let cases = v["cases"].as_array().unwrap();
+        assert!(cases.len() >= 5);
+        for c in cases {
+            let i: VerdictInputs = serde_json::from_value(c["inputs"].clone()).unwrap();
+            let want = match c["outcome"].as_str().unwrap() {
+                "PASS" => Outcome::Pass,
+                _ => Outcome::Fail(c["reasons"].as_u64().unwrap() as u8),
+            };
+            assert_eq!(verdict(&i), want, "{}", c["name"]);
+            assert_eq!(hex(&inputs_hash(&i)), c["inputs_hash"].as_str().unwrap(), "{}", c["name"]);
+        }
+    }
 }

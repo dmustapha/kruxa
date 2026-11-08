@@ -119,6 +119,74 @@ mod tests {
         assert_eq!(phase_at(30, 10, 20, 30), Phase::Ready);
     }
 
+    #[test]
+    fn golden_example_three_rounding_to_the_unit() {
+        // S1-B 2.6 example 3: H = $100, three buyers of 50,000,001 micro, N_sale = 1000 base units.
+        let (commit, total, hard) = (50_000_001u128, 150_000_003u128, 100_000_000u128);
+        let a = allocate(total, hard, 6_000, 2_500, &Rules::ladder()).unwrap();
+        let s = settle_position(commit, total, a.accepted, 1_000, 0).unwrap();
+        assert_eq!((s.spend, s.refund, s.tokens), (33_333_334, 16_666_667, 333));
+        assert_eq!(3 * s.spend - a.accepted, 2, "residue 2 micro goes to LP");
+        assert_eq!(3 * s.spend + 3 * s.refund, total);
+        assert_eq!(1_000 - 3 * s.tokens, 1, "token dust of 1 base unit goes to LP");
+    }
+
+    // ---- W1-DC-2 named tests (S1-B 2.6, 11.2): three equal buyers make every division inexact ----
+
+    const N_SALE: u128 = 600_000_000_000_000;
+    const N_BACKER: u128 = 50_000_000_000_000;
+
+    fn three_buyers() -> (Allocation, u128, [u128; 3]) {
+        // 3 x 350.000001 USDC against a 1,000 USDC cap: 1,050.000003 is oversubscribed and no ratio divides evenly.
+        let commit = 350_000_001u128;
+        let total = 3 * commit;
+        let a = allocate(total, 1_000 * U, 6_000, 2_500, &Rules::ladder()).unwrap();
+        (a, total, [commit; 3])
+    }
+
+    #[test]
+    fn u_rounding_tokens_floor() {
+        let (a, total, commits) = three_buyers();
+        let tokens: Vec<u128> = commits.iter().map(|c| settle_position(*c, total, a.accepted, N_SALE, N_BACKER).unwrap().tokens).collect();
+        assert!(tokens.iter().all(|t| *t == N_SALE / 3), "each buyer gets floor(N_sale / 3)");
+        let paid: u128 = tokens.iter().sum();
+        assert_eq!(
+            N_SALE - paid,
+            N_SALE % 3,
+            "the undivided remainder (dust) is less than one unit per buyer and stays with the LP bucket"
+        );
+        assert!(N_SALE - paid < 3);
+    }
+
+    #[test]
+    fn u_rounding_spend_ceil() {
+        let (a, total, commits) = three_buyers();
+        let spends: Vec<u128> = commits.iter().map(|c| settle_position(*c, total, a.accepted, N_SALE, N_BACKER).unwrap().spend).collect();
+        let exact_floor = commits[0] * a.accepted / total;
+        assert_eq!(a.accepted, 1_000 * U);
+        assert!(spends.iter().all(|s| *s == exact_floor + 1), "inexact division rounds the charge UP by exactly one unit");
+        let spent: u128 = spends.iter().sum();
+        assert!(
+            spent >= a.accepted && spent - a.accepted < 3,
+            "buyers collectively never pay less than the accepted amount, over by under one unit each"
+        );
+    }
+
+    #[test]
+    fn u_conservation() {
+        let (a, total, commits) = three_buyers();
+        assert_eq!(a.launch_fee + a.lp_quote + a.stream + a.excess_pool, total, "the four buckets sum to everything credited");
+        let (mut spend, mut refund) = (0, 0);
+        for c in commits {
+            let s = settle_position(c, total, a.accepted, N_SALE, N_BACKER).unwrap();
+            assert_eq!(s.spend + s.refund, c, "per buyer: spend + refund == committed");
+            spend += s.spend;
+            refund += s.refund;
+        }
+        assert_eq!(spend + refund, total);
+        assert!(refund <= a.excess_pool, "refunds never exceed the excess pool; the rounding residue stays in the LP bucket");
+    }
+
     proptest! {
         #[test]
         fn conservation_across_random_books(commits in proptest::collection::vec(20u128 * U..=100 * U, 10..60), hard in 500u128 * U..=1_000 * U) {
