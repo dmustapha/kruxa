@@ -574,3 +574,24 @@ async fn a_separate_payout_recipient_gets_the_allocation_not_the_creator() -> an
     assert_eq!(ix.bal(&tok, recipient.id()).await, N_TOTAL / 20);
     Ok(())
 }
+
+#[tokio::test]
+async fn phase_config_and_recovery_views() -> anyhow::Result<()> {
+    let ix = Ix::new("demo", true).await?;
+    let c = ix.view("get_config", json!({})).await;
+    assert_eq!((c["profile"].clone(), c["market"].clone(), c["paused"].clone()), (json!("demo"), json!(ix.market.id()), json!("None")));
+    assert_eq!((n(&c["seed_min"]), n(&c["seed_max"]), n(&c["seed_cap_aggregate"])), (100 * USDC, 1_000 * USDC, 3_000 * USDC));
+    assert!(ix.view("get_instant", lid("1000000000")).await.is_null());
+    let id = ix.create_ready(&ix.creator, params("PHAS"), None).await?;
+    let p = ix.view("get_phase", lid(&id)).await;
+    assert_eq!((p["step"].clone(), p["next_action"].clone(), p["can_cancel"].clone()), (json!("seed"), json!("seed"), json!(true)));
+    ix.mint_usdc(ix.creator.id(), 250 * USDC).await?;
+    ix.seed(&ix.creator, &id, 250 * USDC).await?.into_result()?;
+    let p = ix.view("get_phase", lid(&id)).await;
+    assert_eq!((p["step"].clone(), p["next_action"].clone(), p["can_cancel"].clone()), (json!("open"), json!("open_instant"), json!(false)));
+    let rec = ix.call(&ix.creator, "finalize_creation", lid(&id)).await?;
+    assert!(has_code(&rec, "R_INSTANT_STATE"), "only a launch stuck in Creating can be finalized: {:?}", rec.failures());
+    let v = ix.view("get_vesting", lid(&id)).await;
+    assert_eq!((n(&v["unlocked"]), n(&v["claimable"])), (0, 0), "nothing vests before the pool is open");
+    Ok(())
+}
