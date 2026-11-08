@@ -55,6 +55,7 @@ row G1-03 "pure tests ($pure in kruxa-math + kruxa-logic, $passed with kruxa-sim
 # Sandbox suite once; G1-05 to G1-09 read it.
 # the real_verifier_* tests need the real intents.near wasm (gitignored): fetch it read-only from a mainnet RPC and check the pinned code hash
 [ -f fixtures/intents_near.wasm ] || ./scripts/fetch-intents-wasm.sh > "$LOG/fetch-intents.log" 2>&1 || echo "     WARNING: fetch-intents-wasm.sh failed (see $LOG/fetch-intents.log); real_verifier_* tests will fail"
+./scripts/market-build.sh > "$LOG/market-build.log" 2>&1 && ./scripts/instant-build.sh > "$LOG/instant-build.log" 2>&1 || echo "     WARNING: market or instant wasm build failed (see $LOG/*-build.log)"
 cargo test -p kruxa-tests -- --test-threads=3 --include-ignored --nocapture > "$LOG/sandbox.log" 2>&1; sb=$?
 sbpassed=$(grep -E '^test result: ok\.' "$LOG/sandbox.log" | sed -E 's/.* ([0-9]+) passed.*/\1/' | awk '{s+=$1} END {print s+0}')
 echo "     sandbox suite: exit $sb, $sbpassed passed"
