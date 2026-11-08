@@ -66,10 +66,11 @@ export function generateFixtureBlocks(seed = 7, trades = 240): NearBlock[] {
   b.push(t + 10, mkLaunch(2, "bob.testnet", "BRAVO", t));
   b.push(t + 3 * day, mkLaunch(3, "carol.testnet", "CHARLIE", t + 3 * day, { payout_recipient: "carol-treasury.testnet" }));
   const funded = contribute(b, rnd, 1, ["dan", "erin", "fay", "gus", "hal"], t + 100, 20_000_000, 1);
-  b.push(t + 200, [{ contract: core, event: "walked", data: { launch_id: "1", holder: "near:hal.testnet", amount: "20000000", total_active: String(funded - 20_000_000), funders: 4, book_hash: "bk1w".padEnd(64, "0") } }]);
+  const halNet = lastNet;
+  b.push(t + 200, [{ contract: core, event: "walked", data: { launch_id: "1", holder: "near:hal.testnet", amount: String(halNet), total_active: String(funded - halNet), funders: 4, book_hash: "bk1w".padEnd(64, "0") } }]);
   contribute(b, rnd, 2, ["ivy", "jon"], t + 300, 5_000_000, 2);
   const settle = t + 3 * day + 60;
-  b.push(settle, passLogs(1, funded - 20_000_000, 4));
+  b.push(settle, passLogs(1, funded - halNet, 4));
   b.push(settle + 5, failLogs(2, 10_000_000, 2));
   b.push(settle + 20, [
     { contract: core, event: "tokens_claimed", data: { launch_id: "1", holder: "near:dan.testnet", amount: "4000000000" } },
@@ -89,11 +90,14 @@ function contribLog(id: number, who: string, net: number, total: number, funders
   return { contract: core, event: "contributed", data: { launch_id: String(id), holder: `near:${who}.testnet`, net: String(net), relay_fee: "0", custody: "Native", total_active: String(total), funders, book_hash: `bk${id}-${funders}`.padEnd(64, "0") } };
 }
 
+let lastNet = 0;
+
 function contribute(b: Builder, rnd: () => number, id: number, who: string[], at: number, unit: number, _salt: number): number {
   let total = 0;
   who.forEach((w, i) => {
     const net = unit + Math.floor(rnd() * 5) * 1_000_000;
     total += net;
+    lastNet = net;
     b.push(at + i * 20, [contribLog(id, w, net, total, i + 1)]);
   });
   return total;

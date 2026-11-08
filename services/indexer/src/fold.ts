@@ -179,7 +179,7 @@ export class Folder {
        ON CONFLICT (launch_id, holder) DO UPDATE SET tokens_claimed = ?, source = excluded.source`,
       id, holder, amount.toString(), mixSource(pos?.source, e.source), (BigInt(String(pos?.tokens_claimed ?? ZERO)) + amount).toString(),
     );
-    this.addBalance(id, holder, amount);
+    this.addBalance(id, holder.startsWith("near:") ? holder.slice(5) : holder, amount);
   }
 
   private setStatus(e: StoredEvent, status: string, emit: Emit): void {

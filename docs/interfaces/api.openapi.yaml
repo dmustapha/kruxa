@@ -206,11 +206,10 @@ paths:
           schema: { type: string, minLength: 2, maxLength: 128 }
       responses:
         '200':
-          description: creator desk
+          description: creator desk (empty `launches` when the account created or receives nothing)
           content:
             application/json:
               schema: { $ref: '#/components/schemas/CreatorDesk' }
-        '404': { $ref: '#/components/responses/Error' }
   /api/export/creator/{account}/claims.csv:
     get:
       tags: [creator]
@@ -246,7 +245,7 @@ paths:
     get:
       tags: [verify]
       summary: Verify data (hashes, folded book check, event references)
-      description: Lets a reader recompute the fold. `fold_ok` is true when the folded book hash equals the one the contract logged on its latest `contributed` or `walked` event. The independent check remains `verify.sh`.
+      description: Lets a reader recompute the fold. `ledger_consistent` checks the indexed book against itself. `fold_ok` stays null because the indexer takes `book_hash` from the contract's own events and does not recompute it; the independent check is `verify.sh`.
       parameters: [ { $ref: '#/components/parameters/LaunchId' } ]
       responses:
         '200':
@@ -596,11 +595,11 @@ components:
         recipient: { type: string }
         total: { $ref: '#/components/schemas/Amount' }
         drawn: { $ref: '#/components/schemas/Amount' }
-        unlocked: { $ref: '#/components/schemas/Amount' }
-        drawable_estimate: { $ref: '#/components/schemas/Amount' }
+        unlocked: { allOf: [ { $ref: '#/components/schemas/Amount' } ], nullable: true, description: 'null when the charter stream length was not logged' }
+        drawable_estimate: { allOf: [ { $ref: '#/components/schemas/Amount' } ], nullable: true }
         starts_at: { type: integer }
-        ends_at: { type: integer }
-        progress_bps: { type: integer }
+        ends_at: { type: integer, nullable: true }
+        progress_bps: { type: integer, nullable: true }
     CreatorLaunch:
       type: object
       required: [launch, role, earnings]
@@ -655,7 +654,7 @@ components:
         tokens_claimed: { $ref: '#/components/schemas/Amount' }
         status:
           type: string
-          enum: [active, walked, awaiting_settle, refundable, claimable, claimed]
+          enum: [active, walked, awaiting_settle, refundable, claimable, claimed, market_only]
         market_balance: { $ref: '#/components/schemas/Amount' }
         market_value_quote: { type: number, nullable: true }
     Portfolio:
@@ -681,14 +680,17 @@ components:
         source: { $ref: '#/components/schemas/Source' }
     VerifyData:
       type: object
-      required: [launch_id, charter_hash, book_hash_folded, fold_ok, events, as_of, source]
+      required: [launch_id, charter_hash, book_hash_folded, fold_ok, ledger_consistent, events, as_of, source]
       properties:
         launch_id: { type: string }
         charter_hash: { type: string }
         inputs_hash: { type: string, nullable: true }
         book_hash_folded: { type: string }
-        book_hash_stored: { type: string, nullable: true, description: 'hash the contract logged on the latest book event' }
-        fold_ok: { type: boolean }
+        book_hash_stored: { type: string, nullable: true, description: 'hash from a chain get_state view, null until such a comparison runs' }
+        fold_ok: { type: boolean, nullable: true, description: 'null until a chain view comparison runs; the indexer does not recompute the book hash' }
+        fold_note: { type: string }
+        ledger_consistent: { type: boolean, description: 'indexed positions sum to total_active and the active holder count equals funders' }
+        book_events: { type: integer }
         verdict: { type: string, enum: [PASS, FAIL], nullable: true }
         event_count: { type: integer }
         events:
