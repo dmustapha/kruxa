@@ -1,6 +1,6 @@
 // Plain-language "Summary:" sentence under each Studio control (meme.cooking pattern, APP-SPEC 4.3). Pure; copy follows APP-SPEC section 9.
 import { fmtUsdc } from '../config';
-import type { TrialParams } from './rules';
+import type { FeeTerms, TrialParams } from './rules';
 
 const hours = (secs: number): string => (secs % 86400 === 0 && secs >= 172800 ? `${secs / 86400} days` : secs < 3600 ? `${secs} seconds` : `${Number((secs / 3600).toFixed(2))} h`);
 const pct = (bps: number): string => `${Number((bps / 100).toFixed(2))}%`;
@@ -23,12 +23,12 @@ export function summarizeStream(p: TrialParams): string {
 }
 
 /** Creator-maximum wording with its qualifier (INVARIANTS MUST NOT CLAIM). Never the bare "at most 1%". */
-export function summarizeFees(p: TrialParams): string {
+export function summarizeFees(p: { fees: FeeTerms }): string {
   const take = (p.fees.total_fee_bps * p.fees.creator_bps) / 10_000 / 100;
   return `Your declared fee slice is ${take.toFixed(2)}% of trade volume; the contract caps it at 1.00% of volume. Wallets you control could capture up to 80% of the fee in the worst legal setup (75% at the default split).`;
 }
 
-export function summarizeOpening(p: TrialParams): string {
+export function summarizeOpening(p: { fees: FeeTerms }): string {
   const f = p.fees;
   return f.opening_fee_start_bps === 0
     ? 'No opening surcharge: the trading fee is flat from the first trade.'

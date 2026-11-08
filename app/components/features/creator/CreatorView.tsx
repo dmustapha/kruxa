@@ -15,6 +15,8 @@ import { fmtDate, titleCase } from '@/lib/format';
 import { creatorStatus, usdcRegistered } from '@/lib/near';
 import { useTx } from '@/lib/useTx';
 import { StreamPanel } from './StreamPanel';
+import { VestPanel } from '../instant/VestPanel';
+import { ModeBadge } from '@/components/ui/PhaseBadge';
 
 function Registration({ account }: { account: string }) {
   const s = useApi(() => usdcRegistered(account), `reg-${account}`);
@@ -53,7 +55,7 @@ function LaunchDesk({ c, account }: { c: CreatorLaunch; account: string }) {
     <article className="card" aria-label={`Creator desk for ${c.launch.symbol}`}>
       <div className="row between">
         <h2 style={{ margin: 0 }}><Link href={`/launch/${c.launch.launch_id}`}>{c.launch.symbol} #{c.launch.launch_id}</Link></h2>
-        <span className="row"><StageBadge stage={c.launch.stage} /><Badge tone="muted">{titleCase(c.role)}</Badge><SourceBadge source={c.launch.source} /></span>
+        <span className="row"><StageBadge stage={c.launch.stage} /><ModeBadge mode={c.launch.mode} /><Badge tone="muted">{titleCase(c.role)}</Badge><SourceBadge source={c.launch.source} /></span>
       </div>
       <dl className="kv">
         <div><dt>Creator</dt><dd>{c.launch.creator}</dd></div>
@@ -61,8 +63,17 @@ function LaunchDesk({ c, account }: { c: CreatorLaunch; account: string }) {
         <div><dt>Recipient status</dt><dd style={{ fontFamily: 'var(--sans)' }}><Registration account={recipient} /></dd></div>
       </dl>
       <p className="hint">Fixed once the trial opens. {account !== recipient && account === c.launch.creator ? 'You are the creator; draws go to the recipient above, and only the recipient can sign them.' : ''}</p>
-      <h3>1. Proceeds stream</h3>
-      <StreamPanel c={c} canAct={canAct} />
+      {c.launch.mode === 'instant' ? (
+        <>
+          <h3>1. Allocation vesting</h3>
+          <VestPanel launchId={c.launch.launch_id} symbol={c.launch.symbol} seedLabel="Your USDC seed is locked in the pool and cannot be withdrawn." />
+        </>
+      ) : (
+        <>
+          <h3>1. Proceeds stream</h3>
+          <StreamPanel c={c} canAct={canAct} />
+        </>
+      )}
       <h3>2. Trading-fee share</h3>
       <FeesPanel c={c} canAct={canAct} />
     </article>

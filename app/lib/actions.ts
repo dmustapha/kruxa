@@ -36,3 +36,18 @@ export const nearCliCommand = (receiver: string, method: string, args: Record<st
 
 /** Creator trading-fee claim on the market contract (payout recipient only; pull based; minimum 1 USDC). */
 export const claimMarketFees = (launchId: string): SignAndSendInput => fc(CONFIG.market, 'claim', { launch_id: launchId }, 100, '0');
+
+// ---- instant launcher (docs/interfaces/INSTANT-ABI.md) ----
+export const createInstantNear = (params: Record<string, unknown>, payoutRecipient: string | null, depositYocto: string): SignAndSendInput =>
+  fc(CONFIG.instant, 'create_instant', { params, payout_recipient: payoutRecipient }, 300, depositYocto);
+/** Step 2: the creator's exact USDC seed, sent to the launcher with the seed_instant message. */
+export const seedInstantNear = (launchId: string, seedMicro: bigint): SignAndSendInput =>
+  fc(CONFIG.usdc, 'ft_transfer_call', { receiver_id: CONFIG.instant, amount: seedMicro.toString(), msg: JSON.stringify({ v: 1, op: 'seed_instant', launch_id: launchId }) }, 100, '1');
+/** Step 3 (any caller): hands the seed, then the pool bucket, to the market. A retry sends only what is missing. */
+export const openInstantNear = (launchId: string): SignAndSendInput => fc(CONFIG.instant, 'open_instant', { launch_id: launchId }, 300, '0');
+export const cancelInstantNear = (launchId: string): SignAndSendInput => fc(CONFIG.instant, 'cancel_instant', { launch_id: launchId }, 100, '0');
+export const abortInstantNear = (launchId: string): SignAndSendInput => fc(CONFIG.instant, 'abort_instant', { launch_id: launchId }, 100, '0');
+export const reclaimDepositNear = (launchId: string): SignAndSendInput => fc(CONFIG.instant, 'reclaim_deposit', { launch_id: launchId }, 100, '0');
+/** Allocation claim. `amount` null asks for everything claimable; above the cap the launcher panics with STREAM_CAP. */
+export const claimVestedNear = (launchId: string, amount: bigint | null): SignAndSendInput =>
+  fc(CONFIG.instant, 'claim_vested', { launch_id: launchId, amount: amount === null ? null : amount.toString() }, 100, '0');

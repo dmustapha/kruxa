@@ -41,7 +41,7 @@ export function paramsFromForm(f: FormState): { ok: true; params: TrialParams } 
 }
 
 /** Fee preview at the committed standard terms: each slice as a share of trade VOLUME, in percent with 2 decimals. Not an income claim. */
-export function feePreview(p: TrialParams): { label: string; pct: string }[] {
+export function feePreview(p: { fees: TrialParams['fees'] }): { label: string; pct: string }[] {
   const f = p.fees;
   const of = (slice: number): string => `${((f.total_fee_bps * slice) / 10_000 / 100).toFixed(2)}%`;
   return [

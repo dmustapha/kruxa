@@ -1,22 +1,31 @@
 // The one lifecycle vocabulary (APP-SPEC 2.4). Every card and page derives its badge here so nothing is derived twice.
 import type { LaunchSummary } from './api/types';
 
-export type PhaseId = 'SCHEDULED' | 'OPEN' | 'WALK_WINDOW' | 'AWAITING_SETTLE' | 'PASS' | 'TRADING' | 'FAIL' | 'DISSOLVED';
+export type PhaseId = 'SCHEDULED' | 'OPEN' | 'WALK_WINDOW' | 'AWAITING_SETTLE' | 'PASS' | 'TRADING' | 'FAIL' | 'DISSOLVED' | 'LAUNCHING' | 'LAUNCH_FAILED';
 export type PhaseTone = 'muted' | 'open' | 'warn' | 'pass' | 'fail';
 
 export const PHASE_LABEL: Record<PhaseId, string> = {
-  SCHEDULED: 'Scheduled', OPEN: 'Open', WALK_WINDOW: 'Walk window', AWAITING_SETTLE: 'Awaiting settle', PASS: 'Pass', TRADING: 'Trading', FAIL: 'Fail, refunds open', DISSOLVED: 'Dissolved',
+  SCHEDULED: 'Scheduled', OPEN: 'Open', WALK_WINDOW: 'Walk window', AWAITING_SETTLE: 'Awaiting settle', PASS: 'Pass', TRADING: 'Trading', FAIL: 'Fail, refunds open', DISSOLVED: 'Dissolved', LAUNCHING: 'Launching', LAUNCH_FAILED: 'Launch failed',
 };
 export const PHASE_TONE: Record<PhaseId, PhaseTone> = {
-  SCHEDULED: 'muted', OPEN: 'open', WALK_WINDOW: 'warn', AWAITING_SETTLE: 'muted', PASS: 'pass', TRADING: 'pass', FAIL: 'fail', DISSOLVED: 'muted',
+  SCHEDULED: 'muted', OPEN: 'open', WALK_WINDOW: 'warn', AWAITING_SETTLE: 'muted', PASS: 'pass', TRADING: 'pass', FAIL: 'fail', DISSOLVED: 'muted', LAUNCHING: 'warn', LAUNCH_FAILED: 'fail',
 };
 
-type PhaseInput = Pick<LaunchSummary, 'status' | 'stage' | 'verdict' | 'has_market' | 'opens_at' | 'walk_end' | 'phase'>;
+type PhaseInput = Pick<LaunchSummary, 'status' | 'stage' | 'verdict' | 'has_market' | 'opens_at' | 'walk_end' | 'phase'> & { mode?: LaunchSummary['mode'] };
+
+export const isInstant = (l: { mode?: LaunchSummary['mode'] }): boolean => l.mode === 'instant';
 
 /** Prefers the indexer's own `phase` (IR-A10) when it is one we know; otherwise derives it from status, stage and times. */
 export function phaseOf(l: PhaseInput, now: number): PhaseId {
-  const given = l.phase?.toUpperCase().replace(/ /g, '_');
+  const raw = l.phase ?? '';
+  const INSTANT_PHASE: Record<string, PhaseId> = { instant_creating: 'LAUNCHING', instant_pending_seed: 'LAUNCHING', instant_pending_open: 'LAUNCHING', instant_open: 'TRADING', instant_failed: 'LAUNCH_FAILED' };
+  if (INSTANT_PHASE[raw]) return INSTANT_PHASE[raw]!;
+  const given = raw.toUpperCase().replace(/ /g, '_');
   if (given && given in PHASE_LABEL) return given as PhaseId;
+  if (isInstant(l)) {
+    if (l.status === 'dissolved' || l.status === 'creation_failed' || l.status === 'failed' || l.status === 'abandoned' || l.status === 'aborted') return 'LAUNCH_FAILED';
+    return l.has_market || l.status === 'trading' ? 'TRADING' : 'LAUNCHING';
+  }
   if (l.status === 'dissolved') return 'DISSOLVED';
   if (l.verdict === 'FAIL' || l.status === 'failed' || l.status === 'creation_failed') return 'FAIL';
   if (l.verdict === 'PASS' || l.status === 'passed') return l.has_market ? 'TRADING' : 'PASS';

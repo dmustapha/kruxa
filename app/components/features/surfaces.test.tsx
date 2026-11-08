@@ -37,7 +37,7 @@ describe('LaunchCard v2', () => {
     expect(screen.getByText('Open')).toBeTruthy();
     expect(screen.getByText('Passing by $87 and 1 backer.')).toBeTruthy();
     expect(screen.getByText('Fixture data')).toBeTruthy();
-    const link = screen.getByRole('link', { name: /CHARLIE, launch 3, Open, Passing by \$87 and 1 backer\./ });
+    const link = screen.getByRole('link', { name: /CHARLIE, trial-verified, launch 3, Open, Passing by \$87 and 1 backer\./ });
     expect(link.getAttribute('href')).toBe('/launch/3');
     expect(screen.getByRole('link', { name: 'Verify' }).getAttribute('href')).toBe('/launch/3/verify');
   });
@@ -82,7 +82,7 @@ describe('Discover', () => {
     expect(await screen.findByText('Passing by $87 and 1 backer.')).toBeTruthy();
     expect(screen.getByText(/Fixture data\./)).toBeTruthy();
     const tabs = screen.getAllByRole('tab');
-    expect(tabs.map((t) => t.textContent?.replace(/[0-9-]+$/, ''))).toEqual(['Live trials', 'Walk window', 'Trading', 'Passed, market pending', 'Failed and refunded', 'All']);
+    expect(tabs.map((t) => t.textContent?.replace(/[0-9-]+$/, ''))).toEqual(['Live trials', 'Walk window', 'Launching', 'Trading', 'Passed, market pending', 'Failed and refunded', 'All']);
     expect(tabs[0]!.getAttribute('aria-selected')).toBe('true');
   });
   it('empty state per tab', async () => {
@@ -104,13 +104,13 @@ describe('Discover', () => {
     fireEvent.keyDown(screen.getAllByRole('tab')[0]!, { key: 'ArrowRight' });
     await waitFor(() => expect(nav.replace).toHaveBeenCalledWith('/?tab=walk', { scroll: false }));
   });
-  it('the Passed, market pending tab hides launches that already have a pool', async () => {
+  it('each tab asks the indexer for its own API tab, including Launching for instant launches', async () => {
     nav.params = new URLSearchParams('tab=pending');
-    const passed = (id: string, m: boolean) => launch({ launch_id: id, symbol: `S${id}`, status: 'passed', stage: 'passed', verdict: 'PASS', has_market: m });
-    vi.spyOn(globalThis, 'fetch').mockImplementation(async () => page([passed('1', true), passed('2', false)], 2));
+    const spy = vi.spyOn(globalThis, 'fetch').mockImplementation(async () => page([], 0));
     render(<Wallets><Discover /></Wallets>);
-    expect(await screen.findByRole('link', { name: /S2, launch 2/ })).toBeTruthy();
-    expect(screen.queryByRole('link', { name: /S1, launch 1/ })).toBeNull();
+    await waitFor(() => expect(spy.mock.calls.some(([u]) => String(u).includes('tab=passed') && String(u).includes('limit=24'))).toBe(true));
+    expect(screen.getAllByRole('tab').map((t) => t.textContent?.replace(/[0-9-]+$/, ''))).toContain('Launching');
+    await waitFor(() => expect(spy.mock.calls.some(([u]) => String(u).includes('tab=launching') && String(u).includes('limit=1'))).toBe(true));
   });
 });
 

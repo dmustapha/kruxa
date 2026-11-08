@@ -8,11 +8,11 @@ const base: TrialParams = {
   symbol: '', name: '', total_supply_whole: 1_000_000_000,
   sale_bps: 6000, lp_bps: 2500, creator_bps: 1000, backer_bps: 500,
   hard_cap: 1000n * USDC, soft_cap: 350n * USDC, min_buy: 20n * USDC, wallet_bps: 200, min_funders: 10,
-  open_delay_secs: 0, commit_secs: 72 * 3600, tail_secs: 6 * 3600, stream_days: 90, fees: STANDARD_FEES,
+  open_delay_secs: 0, commit_secs: 72 * 3600, tail_secs: 6 * 3600, stream_days: 30, fees: STANDARD_FEES,
 };
 
 export const PRESETS: Preset[] = [
-  { id: 'standard', label: 'Standard trial', blurb: 'The defaults: $1,000 hard cap, 72 h to commit, 6 h Walk tail, 90 day stream.', expectRefusal: false, params: base },
+  { id: 'standard', label: 'Standard trial', blurb: 'The defaults: $1,000 hard cap, 72 h to commit, 6 h Walk tail, 30 day stream.', expectRefusal: false, params: base },
   {
     id: 'quick', label: 'Small and quick', blurb: '$500 hard cap, the shortest legal commit window (24 h) and a 30 day stream.', expectRefusal: false,
     params: { ...base, hard_cap: 500n * USDC, soft_cap: 350n * USDC, commit_secs: 24 * 3600, stream_days: 30 },

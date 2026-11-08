@@ -36,3 +36,19 @@ describe('marginSentence', () => {
   it('settled', () => { expect(marginSentence(l('437000000', 11, 'PASS'))).toBe('Passed by $87 and 1 backer.'); expect(marginSentence(l('100000000', 2, 'FAIL'))).toBe('Failed: short by $250 and 8 backers.'); });
   it('unknown terms are said, not guessed', () => expect(marginSentence({ total_active: '1', soft_cap: null, funders: 1, min_funders: null, verdict: null })).toMatch(/not indexed/));
 });
+
+describe('instant phases (OpenAPI 1.2.0)', () => {
+  const i = { status: 'open' as const, stage: 'launching' as const, verdict: null, has_market: false, opens_at: null, walk_end: null, mode: 'instant' as const };
+  it('maps the indexer phase strings', () => {
+    expect(phaseOf({ ...i, phase: 'instant_pending_seed' }, 1)).toBe('LAUNCHING');
+    expect(phaseOf({ ...i, phase: 'instant_open' }, 1)).toBe('TRADING');
+    expect(phaseOf({ ...i, phase: 'instant_failed' }, 1)).toBe('LAUNCH_FAILED');
+  });
+  it('derives from status when no phase is sent', () => {
+    expect(phaseOf({ ...i, status: 'token_ready' }, 1)).toBe('LAUNCHING');
+    expect(phaseOf({ ...i, status: 'trading', has_market: true }, 1)).toBe('TRADING');
+    expect(phaseOf({ ...i, status: 'aborted' }, 1)).toBe('LAUNCH_FAILED');
+    expect(phaseOf({ ...i, status: 'abandoned' }, 1)).toBe('LAUNCH_FAILED');
+  });
+  it('an instant launch never shows a trial verdict phase', () => expect(phaseOf({ ...i, status: 'trading', has_market: false, stage: 'trading' }, 1)).toBe('TRADING'));
+});
