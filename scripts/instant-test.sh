@@ -10,17 +10,17 @@ cargo test -p kruxa-instant -p kruxa-instant-contract -p kruxa-market-contract
 ./scripts/instant-build.sh
 
 stale=0
-check_fresh() { # <crate dir> <wasm name>
-  local wasm="target/near/$2/$2.wasm" newer
+check_fresh() { # <crate dir> <wasm name> [shared sources]
+  local wasm="target/near/$2/$2.wasm" newer shared="${3:-}"
   [ -f "$wasm" ] || { echo "FAIL: $wasm was not built"; stale=1; return; }
-  newer=$(find "contracts/$1/src" "contracts/$1/Cargo.toml" crates/*/src Cargo.lock -type f -newer "$wasm" 2>/dev/null | head -3)
+  newer=$(find "contracts/$1/src" "contracts/$1/Cargo.toml" $shared -type f -newer "$wasm" 2>/dev/null | head -3)
   [ -z "$newer" ] || { echo "FAIL: $wasm is older than: $newer"; stale=1; }
 }
-check_fresh instant kruxa_instant_contract
+check_fresh instant kruxa_instant_contract "crates/*/src Cargo.lock"
 check_fresh mock-ft mock_ft
 check_fresh mock-factory mock_factory
 check_fresh mock-market mock_market
-[ -n "${MARKET_DIR:-}" ] || check_fresh market kruxa_market_contract
+[ -n "${MARKET_DIR:-}" ] || check_fresh market kruxa_market_contract "crates/*/src Cargo.lock"
 [ "$stale" -eq 0 ] || exit 1
 
 size=$(wc -c < target/near/kruxa_instant_contract/kruxa_instant_contract.wasm)
