@@ -665,6 +665,23 @@ mod tests {
         assert!(validate_params(&p, &Rules::demo_clock(), 3_000 * USDC, false).is_ok());
     }
 
+    /// Task 1.1: every ruling-bound constant in one place, so a silent edit to `Rules::ladder()` or `FeeTerms::standard()` fails here.
+    #[test]
+    fn ruled_constants_match_the_rulings() {
+        let r = Rules::ladder();
+        assert_eq!(r.max_hard_cap, 1_000 * USDC, "RULING 2026-11-07: $1,000 per launch");
+        assert_eq!(r.backer_vest_days, 30, "RULING 2026-11-07: backer bonus 30-day vest");
+        assert_eq!(r.platform_bps, 1_500, "DN-15 / CO-5 D-4: platform 15%");
+        let f = FeeTerms::standard();
+        assert_eq!(
+            [f.creator_bps, f.platform_bps, f.holders_bps, f.lp_bps, f.referral_bps],
+            [5_000, 1_500, 1_500, 1_000, 1_000],
+            "DN-15 RULED 50/15/15/10/10"
+        );
+        assert_eq!((r.max_oversub_bps, r.max_relay_fee_abs, r.max_relay_fee_bps), (20_000, USDC / 2, 500), "open: DN-2, DN-1 as built");
+        assert_eq!(Rules::demo_clock().max_hard_cap, r.max_hard_cap, "the demo clock never loosens the cap");
+    }
+
     #[test]
     fn storage_constant_is_1e5_near_per_byte() {
         assert_eq!(STORAGE_BYTE_COST_YOCTO, 10u128.pow(19));
