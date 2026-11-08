@@ -96,6 +96,8 @@ export interface Trade {
   token_amount?: string;
   fee_total: string;
   fee_slices?: FeeSlices;
+  quote_reserve_after?: string;
+  token_reserve_after?: string;
   block_height: number;
   receipt_id: string;
   time: number;

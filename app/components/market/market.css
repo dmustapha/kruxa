@@ -23,10 +23,13 @@ main:has(.mkt-root) { max-width: 1240px; padding-top: 20px; }
 
 /* page grid: single column at 375, two columns from 1024 */
 .mkt-grid { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr); margin-top: 16px; }
-.mkt-col { display: grid; gap: 16px; align-content: start; min-width: 0; }
+.mkt-col { display: contents; }
+.mkt-o1{order:1}.mkt-o2{order:2}.mkt-o3{order:3}.mkt-o4{order:4}.mkt-o5{order:5}.mkt-o6{order:6}.mkt-o7{order:7}.mkt-o8{order:8}.mkt-o9{order:9}.mkt-o10{order:10}
+.mkt-grid > *, .mkt-col > * { min-width: 0; }
 @media (min-width: 1024px) {
+  .mkt-col { display: grid; gap: 16px; align-content: start; min-width: 0; }
   .mkt-grid { grid-template-columns: minmax(0, 1fr) 380px; gap: 20px; }
-  .mkt-side { position: sticky; top: 16px; align-self: start; }
+  
 }
 /* On phones the trade panel sits right under the chart; on desktop it moves to the sidebar. */
 .mkt-order-trade { order: 0; }
