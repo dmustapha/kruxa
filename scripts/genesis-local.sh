@@ -13,8 +13,11 @@ shift
 mkdir -p "$CACHE"
 dump() { [ -s "$CACHE/$1.so" ] || solana program dump "$1" "$CACHE/$1.so" -u "$2" >/dev/null; }
 dump "$JITO" mainnet-beta; dump "$META" devnet; dump "$SQDS" devnet
+# Squads ProgramConfig PDA (read-only copy from devnet; multisig creation reads its treasury)
+SQDS_CFG=BSTq9w3kZwNwpBXJEvTZz2G9ZTNyKBvoSeXMvwb4cNZr
+[ -s "$CACHE/$SQDS_CFG.json" ] || solana account "$SQDS_CFG" -u devnet --output json -o "$CACHE/$SQDS_CFG.json" >/dev/null
 solana-test-validator --reset --quiet --ledger "$LEDGER" --rpc-port 28899 --faucet-port 29900 --gossip-port 28001 --dynamic-port-range 28010-28040 \
-  --bpf-program "$JITO" "$CACHE/$JITO.so" --bpf-program "$META" "$CACHE/$META.so" --bpf-program "$SQDS" "$CACHE/$SQDS.so" \
+  --bpf-program "$JITO" "$CACHE/$JITO.so" --bpf-program "$META" "$CACHE/$META.so" --bpf-program "$SQDS" "$CACHE/$SQDS.so" --account "$SQDS_CFG" "$CACHE/$SQDS_CFG.json" \
   >"$LEDGER/validator.log" 2>&1 &
 VPID=$!
 trap 'kill "$VPID" 2>/dev/null || true; wait "$VPID" 2>/dev/null || true; rm -rf "$LEDGER"' EXIT

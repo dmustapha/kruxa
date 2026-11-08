@@ -1,0 +1,15 @@
+{
+  "name": "kruxa-squads-tools",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@solana/web3.js": "1.98.4",
+    "@sqds/multisig": "2.1.4"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.5",
+    "tsx": "4.19.2",
+    "typescript": "5.7.2"
+  }
+}
