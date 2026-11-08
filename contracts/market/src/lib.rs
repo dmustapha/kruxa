@@ -11,7 +11,7 @@ mod model;
 mod swap;
 mod views;
 
-use kruxa_market::{MAX_GLOBAL_RESERVE_Q, MAX_POOL_RESERVE_Q};
+use kruxa_market::{MAX_GLOBAL_RESERVE_Q, MAX_INSTANT_RESERVE_Q, MAX_POOL_RESERVE_Q};
 use model::*;
 use near_sdk::json_types::U128;
 use near_sdk::store::LookupMap;
@@ -43,6 +43,12 @@ pub struct Market {
     paused: bool,
     max_pool_q: u128,
     max_global_q: u128,
+    /// Instant pools only: aggregate quote reserve cap, inside the global cap (CO-7 D-4).
+    max_instant_q: u128,
+    /// Account of the instant launcher, the second allowed handoff sender. None = instant mode off.
+    launcher: Option<AccountId>,
+    launcher_pools: u32,
+    instant_q: u128,
     /// Sum of every pool's quote reserve.
     global_q: u128,
     /// Creator slices accrued and not yet paid or debited, all pools.
@@ -75,6 +81,7 @@ impl Market {
         core: AccountId,
         max_pool_reserve_q: Option<U128>,
         max_global_reserve_q: Option<U128>,
+        max_instant_reserve_q: Option<U128>,
     ) -> Self {
         Self {
             owner,
@@ -85,6 +92,10 @@ impl Market {
             paused: false,
             max_pool_q: max_pool_reserve_q.map_or(MAX_POOL_RESERVE_Q, |v| v.0),
             max_global_q: max_global_reserve_q.map_or(MAX_GLOBAL_RESERVE_Q, |v| v.0),
+            max_instant_q: max_instant_reserve_q.map_or(MAX_INSTANT_RESERVE_Q, |v| v.0),
+            launcher: None,
+            launcher_pools: 0,
+            instant_q: 0,
             global_q: 0,
             creator_unpaid: 0,
             platform_unpaid: 0,
@@ -95,6 +106,22 @@ impl Market {
             owed_total: LookupMap::new(Key::OwedTotal),
             custody: LookupMap::new(Key::Custody),
         }
+    }
+
+    /// Owner only: names the instant launcher as the second allowed handoff sender (ABI 1.1.0). Locked for good once a
+    /// launcher pool exists. Core, USDC and the treasury can never be the launcher.
+    pub fn set_launcher(&mut self, account: AccountId) {
+        if env::predecessor_account_id() != self.owner {
+            fail("R_NOT_AUTHORIZED", "owner only");
+        }
+        if self.launcher_pools > 0 {
+            fail("R_LAUNCHER_LOCKED", "a launcher pool exists");
+        }
+        if account == self.core || account == self.usdc || account == self.treasury {
+            fail("R_NOT_AUTHORIZED", "launcher must be its own account");
+        }
+        self.launcher = Some(account.clone());
+        events::emit("launcher_set", near_sdk::serde_json::json!({ "launcher": account }));
     }
 
     /// Guardian or owner. Blocks buys and handoff legs; never blocks sells, claims or owed withdrawals.

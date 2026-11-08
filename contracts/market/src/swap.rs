@@ -67,13 +67,11 @@ impl Market {
         if *token != self.usdc {
             return Err("R_UNEXPECTED_TOKEN");
         }
-        if *sender != self.core {
-            return Err("R_NOT_AUTHORIZED");
-        }
+        let id = m.launch_id.0;
+        let mode = self.issuer_mode(sender, id)?;
         if self.paused {
             return Err("R_PAUSED");
         }
-        let id = m.launch_id.0;
         if self.pools.contains_key(&id) {
             return Err("R_DUP_LAUNCH");
         }
@@ -82,8 +80,15 @@ impl Market {
             return Err("R_UNEXPECTED_TOKEN");
         }
         validate_market_terms(&terms).map_err(market_code)?;
+        if mode == Mode::Instant {
+            self.check_instant_seed(amount)?;
+            self.launcher_pools += 1;
+            self.instant_q += amount;
+        }
         let pool = Pool {
             launch_id: id,
+            mode,
+            creator: m.creator,
             token: tok.clone(),
             payout_recipient: recipient,
             total_supply: m.total_supply.map_or(0, |v| v.0),
@@ -114,14 +119,13 @@ impl Market {
         if *token == self.usdc {
             return Err("R_UNEXPECTED_TOKEN");
         }
-        if *sender != self.core {
-            return Err("R_NOT_AUTHORIZED");
-        }
+        let id = m.launch_id.0;
+        let mode = self.issuer_mode(sender, id)?;
         if self.paused {
             return Err("R_PAUSED");
         }
-        let id = m.launch_id.0;
         match self.pools.get(&id).cloned() {
+            Some(pool) if pool.mode != mode => return Err("R_NOT_AUTHORIZED"),
             Some(pool) if pool.open => return Err("R_POOL_STATE"),
             Some(pool) if pool.token != *token => return Err("R_UNEXPECTED_TOKEN"),
             Some(pool) => {
@@ -151,11 +155,35 @@ impl Market {
         pool.opened_ns = env::block_timestamp();
         emit(
             "pool_opened",
-            json!({ "launch_id": pool.launch_id.to_string(), "token": pool.token, "quote": self.usdc, "q": pool.q.to_string(), "t": t.to_string(),
+            json!({ "launch_id": pool.launch_id.to_string(), "mode": pool.mode.as_str(), "creator": pool.creator, "token": pool.token, "quote": self.usdc, "q": pool.q.to_string(), "t": t.to_string(),
                     "payout_recipient": pool.payout_recipient, "opened_ns": pool.opened_ns.to_string(), "fee_bps": pool.terms.total_fee_bps,
                     "creator_bps": pool.terms.creator_bps, "mint_authority": pool.mint_authority, "freeze_authority": pool.freeze_authority, "terms": pool.terms }),
         );
         self.pools.insert(pool.launch_id, pool);
+    }
+
+    /// The authenticated issuer of a handoff leg and its id range: core owns ids below `INSTANT_ID_BASE`, the launcher the rest.
+    fn issuer_mode(&self, sender: &AccountId, id: u64) -> Result<Mode, Refusal> {
+        let (mode, in_range) = if *sender == self.core {
+            (Mode::Trial, id < INSTANT_ID_BASE)
+        } else if self.launcher.as_ref() == Some(sender) {
+            (Mode::Instant, id >= INSTANT_ID_BASE)
+        } else {
+            return Err("R_NOT_AUTHORIZED");
+        };
+        if in_range {
+            Ok(mode)
+        } else {
+            Err("R_ID_NAMESPACE")
+        }
+    }
+
+    /// Seed-time caps for instant pools (trial seeds are bounded by core's raise caps; refusing one could strand a passed launch).
+    fn check_instant_seed(&self, amount: u128) -> Result<(), Refusal> {
+        if amount > self.max_pool_q || self.global_q + amount > self.max_global_q || self.instant_q + amount > self.max_instant_q {
+            return Err("R_MARKET_CAP");
+        }
+        Ok(())
     }
 
     fn open_pool(&self, id: u64) -> Result<Pool, Refusal> {
@@ -174,6 +202,12 @@ impl Market {
             return Err("R_PAUSED");
         }
         let mut pool = self.open_pool(m.launch_id.0)?;
+        let receiver = m.receiver.clone().unwrap_or_else(|| sender.clone());
+        if pool.mode == Mode::Instant
+            && [&sender, &receiver].iter().any(|a| pool.creator.as_ref() == Some(*a) || **a == pool.payout_recipient)
+        {
+            return Err("R_SELF_BUY");
+        }
         let min_out = m.min_out.map_or(0, |v| v.0);
         let now = env::block_timestamp();
         let s = quote_buy(pool.reserves(), amount, min_out, &pool.terms, now.saturating_sub(pool.opened_ns), Routing::M_A)
@@ -181,7 +215,9 @@ impl Market {
         if s.after.q > self.max_pool_q || self.global_q - pool.q + s.after.q > self.max_global_q {
             return Err("R_MARKET_CAP");
         }
-        let receiver = m.receiver.unwrap_or_else(|| sender.clone());
+        if pool.mode == Mode::Instant && self.instant_q - pool.q + s.after.q > self.max_instant_q {
+            return Err("R_MARKET_CAP");
+        }
         self.custody_add(token, amount);
         self.apply_swap(&mut pool, &s, now);
         self.custody_sub(&pool.token, s.amount_out);
@@ -213,6 +249,9 @@ impl Market {
     /// Update reserves and the fee ledger. The creator and platform slices leave the reserve for their counters.
     fn apply_swap(&mut self, pool: &mut Pool, s: &Swap, now: u64) {
         self.global_q = self.global_q - pool.q + s.after.q;
+        if pool.mode == Mode::Instant {
+            self.instant_q = self.instant_q - pool.q + s.after.q;
+        }
         pool.q = s.after.q;
         pool.t = s.after.t;
         let f = &s.fee;
