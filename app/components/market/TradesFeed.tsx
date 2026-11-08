@@ -28,7 +28,7 @@ function Row({ t, nowSec }: { t: Trade; nowSec: number }) {
   const buy = t.side === 'buy';
   return (
     <tr>
-      <td className={buy ? 'mkt-up' : 'mkt-down'}><span aria-hidden="true">{buy ? '▲' : '▼'} </span>{buy ? 'Buy' : 'Sell'}</td>
+      <td className={buy ? 'mkt-up' : 'mkt-down'} style={{ whiteSpace: 'nowrap' }}><span aria-hidden="true">{buy ? '▲' : '▼'} </span>{buy ? 'Buy' : 'Sell'}</td>
       <td className="num">{fmtPrice(t.price)}</td>
       <td className="num">{fmtTokensCompact(t.token_amount ?? (buy ? t.amount_out : t.amount_in))}</td>
       <td className="num">{fmtUsdcMicro(t.quote_amount ?? (buy ? t.amount_in : t.amount_out))}</td>

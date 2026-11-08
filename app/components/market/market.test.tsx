@@ -19,9 +19,9 @@ const { SourceBadge } = await import('./shared');
 
 const terms: FeeTerms = { total_fee_bps: 100, creator_bps: 5000, platform_bps: 1500, holders_bps: 1500, lp_bps: 1000, referral_bps: 1000, opening_fee_start_bps: 500, opening_decay_minutes: 60, fee_vest_bps: 5000, fee_vest_days: 90 };
 const page = (over: Partial<TokenPageData> = {}): TokenPageData => ({
-  launch: { launch_id: '1', symbol: 'ALPHA', creator: 'alice.testnet', payout_recipient: 'alice.testnet', status: 'passed', stage: 'passed', source: 'fixture' },
+  launch: { launch_id: '1', symbol: 'ALPHA', creator: 'alice.testnet', payout_recipient: 'alice.testnet', status: 'passed', stage: 'passed', source: 'chain' },
   pool: { open: true, paused: false, opened_at: 1000, quote_reserve: '26571793', token_reserve: '794353574700', price: 3e-5 },
-  stats: {}, safety: [], as_of: { block_height: 5, block_time: 5 }, source: 'fixture', ...over,
+  stats: {}, safety: [], as_of: { block_height: 5, block_time: 5 }, source: 'chain', ...over,
 });
 const facts = (over: Partial<MarketFacts> = {}): MarketFacts => ({ market: 'market.kruxa.testnet', token: 'tok.testnet', terms, totalSupply: null, openedAtSec: 1000, basis: 'chain', ...over });
 const setWallet = (near: { address: string } | null, signingEnabled = true) => {
@@ -126,7 +126,7 @@ describe('WhereToTrade', () => {
 });
 
 describe('CreatorPanel', () => {
-  const ready = (b: object) => ({ status: 'ready' as const, data: { status: null, earnings: null, stream: null, basis: 'none' as const, ...b } });
+  const ready = (b: object) => ({ status: 'ready' as const, data: { status: null, earnings: null, stream: null, claims: [], basis: 'none' as const, ...b } });
   it('only lets the payout recipient claim', () => {
     setWallet({ address: 'mallory.testnet' });
     render(<CreatorPanel page={page()} facts={facts()} earnings={ready({ earnings: { claimable_estimate: '5000000', market_fees_creator_slice: '5000000', claimed: '0' }, basis: 'indexer' })} onClaimed={() => {}} onRetry={() => {}} />);
@@ -141,8 +141,18 @@ describe('CreatorPanel', () => {
     expect((signAndSend.mock.calls[0]![0] as { actions: { params: { methodName: string } }[] }).actions[0]!.params.methodName).toBe('claim');
   });
   it('claimableOf prefers the chain view', () => {
-    expect(claimableOf({ status: { recipient: 'a', accrued: '1', unlocked: '1', paid: '0', claimable: '7' }, earnings: { claimable_estimate: '9' }, stream: null, basis: 'chain' })).toBe(7n);
-    expect(claimableOf({ status: null, earnings: null, stream: null, basis: 'none' })).toBeNull();
+    expect(claimableOf({ status: { recipient: 'a', accrued: '1', unlocked: '1', paid: '0', claimable: '7' }, earnings: { claimable_estimate: '9' }, stream: null, claims: [], basis: 'chain' })).toBe(7n);
+    expect(claimableOf({ status: null, earnings: null, stream: null, claims: [], basis: 'none' })).toBeNull();
+  });
+});
+
+describe('fixture data', () => {
+  it('turns the order panel off with a reason', () => {
+    setWallet({ address: 'bob.testnet' });
+    const p = page(); p.source = 'fixture';
+    renderTrade(facts(), p); type('5');
+    expect(screen.getByText(/Fixture data: nothing here is on a chain/)).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Buy ALPHA' })).toHaveProperty('disabled', true);
   });
 });
 
