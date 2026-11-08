@@ -1,0 +1,77 @@
+{
+  "attempt": "A refunded buyer claims again, and so does a third party acting as keeper, to be paid twice.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "both repeat claims returned false"
+    },
+    {
+      "ok": true,
+      "what": "holder holds exactly the original 1,000 USDC"
+    },
+    {
+      "ok": true,
+      "what": "ledger refunded exactly one commit"
+    }
+  ],
+  "co4": "",
+  "expected_result": "NO_EFFECT",
+  "expected_rule_code": "",
+  "id": "A12",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true
+      },
+      "launch_id": 1
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "NO_EFFECT",
+  "target": "core",
+  "title": "Double claim of a refund (holder and keeper)",
+  "transactions": [
+    {
+      "expected_rule_code": null,
+      "label": "first claim_refund (legitimate)",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "9AYXkoS8sWh7eaE7hvVikpyHXNwpngkoWnhn8b9Argt9"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "second claim_refund by the holder",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "7VUozs1gJyFyrQV6s3CrrSM2PiyKJMGwnD8HAEaf5yhW"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "third claim_refund by a keeper",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "5H1hhJS2pTcG7XkvtBgm9eeeRXcLCHs3Pg5aaZwPJrj9"
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "attempt": "An attacker calls claim_refund naming a victim's position, hoping the refund lands in the attacker's account.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "attacker received nothing"
+    },
+    {
+      "ok": true,
+      "what": "victim paid to their own account, exactly the commit"
+    }
+  ],
+  "co4": "A11",
+  "expected_result": "NO_EFFECT",
+  "expected_rule_code": "",
+  "id": "A14",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true
+      },
+      "launch_id": 1
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "NO_EFFECT",
+  "target": "core",
+  "title": "Claim another holder's refund to redirect the money",
+  "transactions": [
+    {
+      "expected_rule_code": null,
+      "label": "claim_refund(victim) called by the attacker",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "4Yt6gds68ZYwJjBCu5SPy8PQPJNpN7tQpc9CjZVxiJoM"
+    }
+  ]
+}

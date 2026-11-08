@@ -1,0 +1,63 @@
+{
+  "attempt": "Right after PASS the creator asks draw() for the whole stream at once (withdraw-all).",
+  "checks": [
+    {
+      "ok": true,
+      "what": "precondition: the unlocked cap is below the requested amount"
+    },
+    {
+      "ok": true,
+      "what": "creator USDC balance unchanged"
+    },
+    {
+      "ok": true,
+      "what": "core USDC balance unchanged"
+    },
+    {
+      "ok": true,
+      "what": "stream drawn and inflight both zero"
+    }
+  ],
+  "co4": "A4",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "STREAM_CAP",
+  "id": "A02",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true
+      },
+      "launch_id": 1
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "core",
+  "title": "Creator draws the whole stream right after PASS",
+  "transactions": [
+    {
+      "expected_rule_code": "STREAM_CAP",
+      "label": "draw(stream_total)",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "STREAM_CAP",
+      "status": "failed",
+      "tx": "6kUHFGi5M1KaFg3GDryRsMb2FrSRbjrhzPHF6F2aq2jA"
+    }
+  ]
+}

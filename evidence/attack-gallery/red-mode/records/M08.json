@@ -1,0 +1,60 @@
+{
+  "attempt": "The guardian pauses the market; the holder tries to sell back out.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "new buys are refused while paused (R_PAUSED)"
+    },
+    {
+      "ok": true,
+      "what": "the sell executed and returned USDC"
+    }
+  ],
+  "co4": "",
+  "expected_result": "NO_EFFECT",
+  "expected_rule_code": "",
+  "id": "M08",
+  "invariants_after": {
+    "market": {
+      "global_q": "1008116223",
+      "parked_count": 0,
+      "usdc_custody": "1009386186",
+      "usdc_custody_identity": true,
+      "usdc_expected": "1009386186"
+    },
+    "pools": [
+      {
+        "launch_id": 1,
+        "pool_invariants": {
+          "k_ge_k0": true,
+          "token_custody_identity": true
+        }
+      }
+    ]
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "NO_EFFECT",
+  "target": "market",
+  "title": "Pause used to trap holders in the market",
+  "transactions": [
+    {
+      "expected_rule_code": null,
+      "label": "guardian pause",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "8yht4LuBjT95hgXF5scRbDWwd51rVAPEqXU27RjMktWe"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "holder sells everything while PAUSED",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "499QhU6TX26ST6yJnNyV43QJWbxSMUTu2EENnCZ55BUa"
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "attempt": "A whale sends 2,000 USDC straight to core (no commit message) before the deadline so held funds exceed the soft cap.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "the donation really arrived at core"
+    },
+    {
+      "ok": true,
+      "what": "verdict inputs unchanged"
+    },
+    {
+      "ok": true,
+      "what": "ledger credited and open counters unchanged"
+    },
+    {
+      "ok": true,
+      "what": "verdict is still FAIL"
+    },
+    {
+      "ok": true,
+      "what": "refund equals the commit exactly"
+    }
+  ],
+  "co4": "",
+  "expected_result": "NO_EFFECT",
+  "expected_rule_code": "",
+  "id": "A08",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true
+      },
+      "launch_id": 1
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "NO_EFFECT",
+  "target": "core",
+  "title": "Manipulated book: donate USDC to core to push a failing launch over the soft cap",
+  "transactions": [
+    {
+      "expected_rule_code": null,
+      "label": "ft_transfer 2,000 USDC to core with no message",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "7boMhu9mLZ4dcVB5NN6JNPzhkZvLx6GsXU2AyWUc8GVf"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "settle",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "99LvQ3A5AYDbXfcNnVnqtuMo1PB24V7P5Udnb4tokdQ2"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "buyer claims refund",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "84u4hbL9Bxrnig8GZUawYfRtMupHNXrfYhCkMHvC8PXV"
+    }
+  ]
+}

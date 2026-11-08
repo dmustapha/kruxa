@@ -1,0 +1,87 @@
+{
+  "attempt": "An attacker calls claim (creator slice), withdraw_platform, pause and (as the guardian) unpause.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "attacker received nothing"
+    },
+    {
+      "ok": true,
+      "what": "creator slice untouched"
+    }
+  ],
+  "co4": "A12",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_NOT_AUTHORIZED",
+  "id": "M04",
+  "invariants_after": {
+    "market": {
+      "global_q": "1496750000",
+      "parked_count": 0,
+      "usdc_custody": "1500000000",
+      "usdc_custody_identity": true,
+      "usdc_expected": "1500000000"
+    },
+    "pools": [
+      {
+        "launch_id": 1,
+        "pool_invariants": {
+          "k_ge_k0": true,
+          "token_custody_identity": true
+        }
+      }
+    ]
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "market",
+  "title": "Non-recipient and non-owner calls on the market (claim, platform withdraw, pause)",
+  "transactions": [
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "claim by a non-recipient",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "EkTsoboV5SHFrZTBJBFmD3riMNfuZxexhHQnjWxRbqKe"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "withdraw_platform by a stranger",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "BtDivbgGoptMMAsvcKN6UF8EsgnHSBso72K4XbsdJGie"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "pause by a stranger",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "3Go83JTdmTwLqwbJeo9aRidC3yxtXohEyz4wJcsXHBmE"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "guardian pause",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "2vNMkDXLDfAydkxbuNfpH7Casj3W2LJpbCTSTFzmanJU"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "unpause by the guardian (owner only)",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "HEoyk3KpKXXDmLgCY4tPAc5njarybPxckc6J7zJdeU9e"
+    }
+  ]
+}

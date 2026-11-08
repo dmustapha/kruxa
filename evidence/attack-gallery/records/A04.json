@@ -1,0 +1,55 @@
+{
+  "attempt": "An unrelated account calls draw on a PASSed launch, hoping to pull the stream to itself; the stream recipient must stay the creator.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "attacker received nothing"
+    },
+    {
+      "ok": true,
+      "what": "stream recipient is still the creator"
+    }
+  ],
+  "co4": "A6",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_NOT_AUTHORIZED",
+  "id": "A04",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true
+      },
+      "launch_id": 1
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "core",
+  "title": "Non-recipient draws the creator stream (redirect of the payout)",
+  "transactions": [
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "draw by an unrelated account",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "F85RdAsmLiHbZDZzEK7gquq5Kj3NVW8WVMRdZSZFsSv4"
+    }
+  ]
+}

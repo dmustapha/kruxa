@@ -1,0 +1,55 @@
+{
+  "attempt": "A holder who sees the book heading to PASS calls walk after the Walk tail ended, to shrink the book and grief the verdict.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "position kept, book unchanged (12 funders, 480 USDC)"
+    },
+    {
+      "ok": true,
+      "what": "no funds moved"
+    }
+  ],
+  "co4": "",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_WALK_CLOSED",
+  "id": "A20",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true
+      },
+      "launch_id": 1
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "core",
+  "title": "Late Walk after the Walk window closed",
+  "transactions": [
+    {
+      "expected_rule_code": "R_WALK_CLOSED",
+      "label": "walk after walk_end",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_WALK_CLOSED",
+      "status": "failed",
+      "tx": "cHWMZv7z1oJaT6nSPSM6T8H2rQJe8fWZLsdPDGrsLQh"
+    }
+  ]
+}

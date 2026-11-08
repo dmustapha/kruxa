@@ -1,0 +1,55 @@
+{
+  "attempt": "A look-alike FT contract the attacker controls sends 50 'USDC' to core with a valid commit message.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "no position credited (total_active zero)"
+    },
+    {
+      "ok": true,
+      "what": "fake tokens handed back to the attacker"
+    }
+  ],
+  "co4": "A8",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_UNEXPECTED_TOKEN",
+  "id": "A09",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true
+      },
+      "launch_id": 1
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "core",
+  "title": "Fake token pays into core intake",
+  "transactions": [
+    {
+      "expected_rule_code": "R_UNEXPECTED_TOKEN",
+      "label": "fake.ft_transfer_call(core, 50, commit)",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_UNEXPECTED_TOKEN",
+      "status": "succeeded",
+      "tx": "BFaxZWki5Tbfn2JjnPPHkxsaqy381gTEpsBkrtBZDHjC"
+    }
+  ]
+}

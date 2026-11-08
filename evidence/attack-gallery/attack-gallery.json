@@ -1,0 +1,2430 @@
+{
+  "schema": "kruxa.attack-gallery/1",
+  "network": "SANDBOX",
+  "network_note": "Hashes are near-workspaces sandbox hashes. They cannot be looked up on a public explorer. A testnet re-run is planned (scripts/attack-gallery.sh --network testnet, not implemented).",
+  "generated_at": "2026-11-08T13:16:41Z",
+  "git_head": "648f89c5fe058836d15a87768305cd219f8be429",
+  "red_mode_sabotage": null,
+  "wasm_sha256": {
+    "kruxa_core": "4b661a56541ccdd65c8ade6bd4189bebdf070da78172e0400bac95d5e48192ac",
+    "kruxa_market_contract": "1ae522ab632ccbc346ff149f9381d86a1549a0f77972b1550fbfc651da169d91"
+  },
+  "counts": {
+    "total": 34,
+    "tests_listed": 34,
+    "refused": 23,
+    "no_effect": 9,
+    "bounded": 2,
+    "failed": 0,
+    "succeeded_unexpectedly": 0,
+    "invariants_held": 34,
+    "with_rule_code": 26,
+    "attack_transactions": 72
+  },
+  "ok": true,
+  "not_done": [
+    {
+      "id": "CO4-A1-A2",
+      "what": "commit_genesis on an open launch, second commit_genesis",
+      "why": "No genesis entrypoint exists in the core or market contracts on this tree (genesis is a separate workstream). Not invented."
+    },
+    {
+      "id": "CO4-A3",
+      "what": "Solana devnet mintTo on the genesis mint",
+      "why": "Needs a Solana devnet program; the gallery is NEAR sandbox only."
+    },
+    {
+      "id": "CO4-A10",
+      "what": "tampered evidence file against verify.sh",
+      "why": "Offline verify.sh tamper is a separate deliverable (scripts/verify.sh --tamper-all), not a contract attack."
+    },
+    {
+      "id": "CO4-A13",
+      "what": "hijacked agent against the vault",
+      "why": "Cut with the vault (CHANGE-ORDER-6 E-2)."
+    },
+    {
+      "id": "REDIRECT-VIA-SETTER",
+      "what": "call a method that changes the stream or payout recipient after open",
+      "why": "No such method exists in core or market: the recipient is fixed at create_trial / pool open. A04 and M02 attack the only reachable paths and assert the recipient is unchanged."
+    },
+    {
+      "id": "CORE-PLATFORM-WITHDRAW",
+      "what": "non-owner platform withdraw on core",
+      "why": "Core has no platform-withdraw method (launch fee goes to a fixed treasury via permissionless pay_launch_fee). The market has withdraw_platform and M04 attacks it."
+    },
+    {
+      "id": "CORE-SANDWICH",
+      "what": "sandwich on core",
+      "why": "Core has no AMM. Sandwich and min_out are market attacks (M06)."
+    },
+    {
+      "id": "CREATOR-GATE",
+      "what": "launch created by a non-allowed creator",
+      "why": "PENDING: R_CREATOR_GATE does not exist on this tree yet (D-1 creator gate is another workstream). Add the attack when it lands."
+    }
+  ],
+  "attacks": [
+    {
+      "attempt": "The stream recipient calls draw while the launch is still Open (no verdict), once with an amount and once for everything.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "core USDC balance unchanged"
+        },
+        {
+          "ok": true,
+          "what": "creator USDC balance unchanged"
+        },
+        {
+          "ok": true,
+          "what": "ledger shows nothing drawn"
+        }
+      ],
+      "co4": "A5",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_NOT_CLEAR",
+      "id": "A01",
+      "invariants_after": [
+        {
+          "get_invariants": {
+            "all_ok": true,
+            "i2_err": null,
+            "i2_ok": true,
+            "i3_err": null,
+            "i3_ok": true,
+            "i4_err": null,
+            "i4_ok": true,
+            "i5_err": null,
+            "i5_ok": true,
+            "l1_err": null,
+            "l1_ok": true,
+            "l3_err": null,
+            "l3_ok": true,
+            "l4_err": null,
+            "l4_ok": true
+          },
+          "launch_id": 1
+        }
+      ],
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "core",
+      "title": "Creator draws before PASS",
+      "transactions": [
+        {
+          "expected_rule_code": "R_NOT_CLEAR",
+          "label": "draw(1 USDC) on an Open launch",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOT_CLEAR",
+          "status": "failed",
+          "tx": "5CwtuLh1kdYyQM8thDNn75BRtx6fiPSmE2dUbK7rTUU7"
+        },
+        {
+          "expected_rule_code": "R_NOT_CLEAR",
+          "label": "draw(all) on an Open launch",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOT_CLEAR",
+          "status": "failed",
+          "tx": "97A5Qs7uPUK34XQnHospt42yJxw6xwk9GZEQjfrScjmX"
+        }
+      ]
+    },
+    {
+      "attempt": "Right after PASS the creator asks draw() for the whole stream at once (withdraw-all).",
+      "checks": [
+        {
+          "ok": true,
+          "what": "precondition: the unlocked cap is below the requested amount"
+        },
+        {
+          "ok": true,
+          "what": "creator USDC balance unchanged"
+        },
+        {
+          "ok": true,
+          "what": "core USDC balance unchanged"
+        },
+        {
+          "ok": true,
+          "what": "stream drawn and inflight both zero"
+        }
+      ],
+      "co4": "A4",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "STREAM_CAP",
+      "id": "A02",
+      "invariants_after": [
+        {
+          "get_invariants": {
+            "all_ok": true,
+            "i2_err": null,
+            "i2_ok": true,
+            "i3_err": null,
+            "i3_ok": true,
+            "i4_err": null,
+            "i4_ok": true,
+            "i5_err": null,
+            "i5_ok": true,
+            "l1_err": null,
+            "l1_ok": true,
+            "l3_err": null,
+            "l3_ok": true,
+            "l4_err": null,
+            "l4_ok": true
+          },
+          "launch_id": 1
+        }
+      ],
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "core",
+      "title": "Creator draws the whole stream right after PASS",
+      "transactions": [
+        {
+          "expected_rule_code": "STREAM_CAP",
+          "label": "draw(stream_total)",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "STREAM_CAP",
+          "status": "failed",
+          "tx": "2CReJVfqYuV8qao4i3HTJz7segYadiw5UYkeTZVWhNvA"
+        }
+      ]
+    },
+    {
+      "attempt": "Right after PASS the creator asks draw() for half of the whole stream, far above the linearly unlocked amount.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "precondition: the unlocked cap is below the requested amount"
+        },
+        {
+          "ok": true,
+          "what": "creator USDC balance unchanged"
+        },
+        {
+          "ok": true,
+          "what": "core USDC balance unchanged"
+        },
+        {
+          "ok": true,
+          "what": "stream drawn and inflight both zero"
+        }
+      ],
+      "co4": "A4",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "STREAM_CAP",
+      "id": "A03",
+      "invariants_after": [
+        {
+          "get_invariants": {
+            "all_ok": true,
+            "i2_err": null,
+            "i2_ok": true,
+            "i3_err": null,
+            "i3_ok": true,
+            "i4_err": null,
+            "i4_ok": true,
+            "i5_err": null,
+            "i5_ok": true,
+            "l1_err": null,
+            "l1_ok": true,
+            "l3_err": null,
+            "l3_ok": true,
+            "l4_err": null,
+            "l4_ok": true
+          },
+          "launch_id": 1
+        }
+      ],
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "core",
+      "title": "Creator draws half the stream right after PASS",
+      "transactions": [
+        {
+          "expected_rule_code": "STREAM_CAP",
+          "label": "draw(half of stream_total)",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "STREAM_CAP",
+          "status": "failed",
+          "tx": "3tQFFtu4G1X7jJLfb4wRyNi4rySLrK5QrhB5HGPimjZ2"
+        }
+      ]
+    },
+    {
+      "attempt": "An unrelated account calls draw on a PASSed launch, hoping to pull the stream to itself; the stream recipient must stay the creator.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "attacker received nothing"
+        },
+        {
+          "ok": true,
+          "what": "stream recipient is still the creator"
+        }
+      ],
+      "co4": "A6",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "id": "A04",
+      "invariants_after": [
+        {
+          "get_invariants": {
+            "all_ok": true,
+            "i2_err": null,
+            "i2_ok": true,
+            "i3_err": null,
+            "i3_ok": true,
+            "i4_err": null,
+            "i4_ok": true,
+            "i5_err": null,
+            "i5_ok": true,
+            "l1_err": null,
+            "l1_ok": true,
+            "l3_err": null,
+            "l3_ok": true,
+            "l4_err": null,
+            "l4_ok": true
+          },
+          "launch_id": 1
+        }
+      ],
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "core",
+      "title": "Non-recipient draws the creator stream (redirect of the payout)",
+      "transactions": [
+        {
+          "expected_rule_code": "R_NOT_AUTHORIZED",
+          "label": "draw by an unrelated account",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOT_AUTHORIZED",
+          "status": "failed",
+          "tx": "F85RdAsmLiHbZDZzEK7gquq5Kj3NVW8WVMRdZSZFsSv4"
+        }
+      ]
+    },
+    {
+      "attempt": "settle() is called while the commit window is open and again during the Walk tail, to fix the verdict early.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "launch is still Open with no settlement"
+        }
+      ],
+      "co4": "A7",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_TOO_EARLY",
+      "id": "A05",
+      "invariants_after": [
+        {
+          "get_invariants": {
+            "all_ok": true,
+            "i2_err": null,
+            "i2_ok": true,
+            "i3_err": null,
+            "i3_ok": true,
+            "i4_err": null,
+            "i4_ok": true,
+            "i5_err": null,
+            "i5_ok": true,
+            "l1_err": null,
+            "l1_ok": true,
+            "l3_err": null,
+            "l3_ok": true,
+            "l4_err": null,
+            "l4_ok": true
+          },
+          "launch_id": 1
+        }
+      ],
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "core",
+      "title": "Forged verdict: settle before the deadline",
+      "transactions": [
+        {
+          "expected_rule_code": "R_TOO_EARLY",
+          "label": "settle during the commit window",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_TOO_EARLY",
+          "status": "failed",
+          "tx": "BiutxS5Mp22NANE3EAHJWd2S3585hggpBJa7pCmABBPR"
+        },
+        {
+          "expected_rule_code": "R_TOO_EARLY",
+          "label": "settle during the Walk tail",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_TOO_EARLY",
+          "status": "failed",
+          "tx": "D9xwNSDgaRXsz66wDPEHa2jsiXtJtozFjYZhx6xSVoK2"
+        }
+      ]
+    },
+    {
+      "attempt": "After the verdict is fixed a second account calls settle again, hoping to re-run allocation or flip the outcome.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "no second verdict event emitted"
+        },
+        {
+          "ok": true,
+          "what": "returns the same PASS"
+        },
+        {
+          "ok": true,
+          "what": "settlement, ledger and verdict inputs byte-identical"
+        }
+      ],
+      "co4": "",
+      "expected_result": "NO_EFFECT",
+      "expected_rule_code": "",
+      "id": "A06",
+      "invariants_after": [
+        {
+          "get_invariants": {
+            "all_ok": true,
+            "i2_err": null,
+            "i2_ok": true,
+            "i3_err": null,
+            "i3_ok": true,
+            "i4_err": null,
+            "i4_ok": true,
+            "i5_err": null,
+            "i5_ok": true,
+            "l1_err": null,
+            "l1_ok": true,
+            "l3_err": null,
+            "l3_ok": true,
+            "l4_err": null,
+            "l4_ok": true
+          },
+          "launch_id": 1
+        }
+      ],
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "NO_EFFECT",
+      "target": "core",
+      "title": "Replayed verdict: settle called twice",
+      "transactions": [
+        {
+          "expected_rule_code": null,
+          "label": "first settle (PASS)",
+          "network": "SANDBOX",
+          "role": "support",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "DexUCggyEYc1VB2gaDJSj3vbNBpGLScHRdiatc86QDfR"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "second settle by another account",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "4tgpodHnuQSbKZjokzkj5D3kuYtMvC7xerGuV6P2tFoT"
+        }
+      ]
+    },
+    {
+      "attempt": "sweep_residue is called a second time to move the rounding residue twice; settle_positions_page is replayed over the same range.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "ledger and settlement unchanged"
+        }
+      ],
+      "co4": "",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_NOT_CLEAR",
+      "id": "A07",
+      "invariants_after": [
+        {
+          "get_invariants": {
+            "all_ok": true,
+            "i2_err": null,
+            "i2_ok": true,
+            "i3_err": null,
+            "i3_ok": true,
+            "i4_err": null,
+            "i4_ok": true,
+            "i5_err": null,
+            "i5_ok": true,
+            "l1_err": null,
+            "l1_ok": true,
+            "l3_err": null,
+            "l3_ok": true,
+            "l4_err": null,
+            "l4_ok": true
+          },
+          "launch_id": 1
+        }
+      ],
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "core",
+      "title": "Replayed settlement steps after the sweep",
+      "transactions": [
+        {
+          "expected_rule_code": "R_NOT_CLEAR",
+          "label": "second sweep_residue",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOT_CLEAR",
+          "status": "failed",
+          "tx": "7Zv6pvp82M6xevbFbgWyjcLT3WLjADcHsGJrR4yyhn9B"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "replayed settle_positions_page (runs, settles nothing)",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "FujNqy9MGTMMT5hbeeSMvTYCT68yhoe9QZFgv2AGoL8m"
+        }
+      ]
+    },
+    {
+      "attempt": "A whale sends 2,000 USDC straight to core (no commit message) before the deadline so held funds exceed the soft cap.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "the donation really arrived at core"
+        },
+        {
+          "ok": true,
+          "what": "verdict inputs unchanged"
+        },
+        {
+          "ok": true,
+          "what": "ledger credited and open counters unchanged"
+        },
+        {
+          "ok": true,
+          "what": "verdict is still FAIL"
+        },
+        {
+          "ok": true,
+          "what": "refund equals the commit exactly"
+        }
+      ],
+      "co4": "",
+      "expected_result": "NO_EFFECT",
+      "expected_rule_code": "",
+      "id": "A08",
+      "invariants_after": [
+        {
+          "get_invariants": {
+            "all_ok": true,
+            "i2_err": null,
+            "i2_ok": true,
+            "i3_err": null,
+            "i3_ok": true,
+            "i4_err": null,
+            "i4_ok": true,
+            "i5_err": null,
+            "i5_ok": true,
+            "l1_err": null,
+            "l1_ok": true,
+            "l3_err": null,
+            "l3_ok": true,
+            "l4_err": null,
+            "l4_ok": true
+          },
+          "launch_id": 1
+        }
+      ],
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "NO_EFFECT",
+      "target": "core",
+      "title": "Manipulated book: donate USDC to core to push a failing launch over the soft cap",
+      "transactions": [
+        {
+          "expected_rule_code": null,
+          "label": "ft_transfer 2,000 USDC to core with no message",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "8hM5gyLEvUU52AXz17YKiJNShU7pKwRaX5hsZMRf57nT"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "settle",
+          "network": "SANDBOX",
+          "role": "support",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "5VVd3tZRpG73TcU6Ekz8VCdNSu7t5FRVKPzBBNPosVyf"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "buyer claims refund",
+          "network": "SANDBOX",
+          "role": "support",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "9FR73Bu3CGjVJ9dr588gziCw5ULBbwHwGUMFsQmu5yzk"
+        }
+      ]
+    },
+    {
+      "attempt": "A look-alike FT contract the attacker controls sends 50 'USDC' to core with a valid commit message.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "no position credited (total_active zero)"
+        },
+        {
+          "ok": true,
+          "what": "fake tokens handed back to the attacker"
+        }
+      ],
+      "co4": "A8",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_UNEXPECTED_TOKEN",
+      "id": "A09",
+      "invariants_after": [
+        {
+          "get_invariants": {
+            "all_ok": true,
+            "i2_err": null,
+            "i2_ok": true,
+            "i3_err": null,
+            "i3_ok": true,
+            "i4_err": null,
+            "i4_ok": true,
+            "i5_err": null,
+            "i5_ok": true,
+            "l1_err": null,
+            "l1_ok": true,
+            "l3_err": null,
+            "l3_ok": true,
+            "l4_err": null,
+            "l4_ok": true
+          },
+          "launch_id": 1
+        }
+      ],
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "core",
+      "title": "Fake token pays into core intake",
+      "transactions": [
+        {
+          "expected_rule_code": "R_UNEXPECTED_TOKEN",
+          "label": "fake.ft_transfer_call(core, 50, commit)",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_UNEXPECTED_TOKEN",
+          "status": "succeeded",
+          "tx": "BFaxZWki5Tbfn2JjnPPHkxsaqy381gTEpsBkrtBZDHjC"
+        }
+      ]
+    },
+    {
+      "attempt": "An attacker calls mt_on_transfer directly (pretending to be intents.near), on_payout directly (to settle a fake payout), and ft_on_transfer directly (pretending to be USDC).",
+      "checks": [
+        {
+          "ok": true,
+          "what": "nothing credited"
+        }
+      ],
+      "co4": "A9",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "id": "A10",
+      "invariants_after": [
+        {
+          "get_invariants": {
+            "all_ok": true,
+            "i2_err": null,
+            "i2_ok": true,
+            "i3_err": null,
+            "i3_ok": true,
+            "i4_err": null,
+            "i4_ok": true,
+            "i5_err": null,
+            "i5_ok": true,
+            "l1_err": null,
+            "l1_ok": true,
+            "l3_err": null,
+            "l3_ok": true,
+            "l4_err": null,
+            "l4_ok": true
+          },
+          "launch_id": 1
+        }
+      ],
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "core",
+      "title": "Direct calls to the Intents hook and to the payout callback",
+      "transactions": [
+        {
+          "expected_rule_code": "R_NOT_AUTHORIZED",
+          "label": "direct mt_on_transfer",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOT_AUTHORIZED",
+          "status": "failed",
+          "tx": "6C1TY6qm1kFYD2QhDEyMsv6eXjGroEUdsr816rt9Qj3U"
+        },
+        {
+          "expected_rule_code": "PRIVATE_METHOD",
+          "label": "direct on_payout",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "PRIVATE_METHOD",
+          "status": "failed",
+          "tx": "ZEcDWECZ2sxoXAKUtpCwLEd5BVaKn4RDAHAgZPWCPG8"
+        },
+        {
+          "expected_rule_code": "R_UNEXPECTED_TOKEN",
+          "label": "direct ft_on_transfer from a plain account",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_UNEXPECTED_TOKEN",
+          "status": "succeeded",
+          "tx": "EANVubMBNg2LvhsDfPCQ8kF3QRRN9HJH5C5ZyD4PhX5u"
+        }
+      ]
+    },
+    {
+      "attempt": "The creator and the guardian call methods that need the owner (or owner or guardian): pause, freeze, unpause, queue_global_cap, queue_launch_cap, lower_global_cap.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "config unchanged: not paused, global cap and pending cap as before"
+        }
+      ],
+      "co4": "",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "id": "A11",
+      "invariants_after": [
+        {
+          "get_invariants": {
+            "all_ok": true,
+            "i2_err": null,
+            "i2_ok": true,
+            "i3_err": null,
+            "i3_ok": true,
+            "i4_err": null,
+            "i4_ok": true,
+            "i5_err": null,
+            "i5_ok": true,
+            "l1_err": null,
+            "l1_ok": true,
+            "l3_err": null,
+            "l3_ok": true,
+            "l4_err": null,
+            "l4_ok": true
+          },
+          "launch_id": 1
+        }
+      ],
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "core",
+      "title": "Non-owner calls the owner-only admin methods (pause, caps, unpause)",
+      "transactions": [
+        {
+          "expected_rule_code": "R_NOT_AUTHORIZED",
+          "label": "pause by creator.test.near",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOT_AUTHORIZED",
+          "status": "failed",
+          "tx": "7D5kt3wSuMckjuE3ukxgUrGVFD43Cih9jU4dnACxnpVi"
+        },
+        {
+          "expected_rule_code": "R_NOT_AUTHORIZED",
+          "label": "freeze by creator.test.near",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOT_AUTHORIZED",
+          "status": "failed",
+          "tx": "HvUYYPz9he3burai97UtrLkJm1ygb7yV43inQsrrPceo"
+        },
+        {
+          "expected_rule_code": "R_NOT_AUTHORIZED",
+          "label": "unpause by guardian.test.near",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOT_AUTHORIZED",
+          "status": "failed",
+          "tx": "C6eqrCLdqBSXuXnN3y9Wgerrk9wBce2Xg5b8NePbCvUi"
+        },
+        {
+          "expected_rule_code": "R_NOT_AUTHORIZED",
+          "label": "queue_global_cap by creator.test.near",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOT_AUTHORIZED",
+          "status": "failed",
+          "tx": "3bqtssmfgKeMhY8DrT1TXbwA52qSQLYXAA5KFbsX5wA7"
+        },
+        {
+          "expected_rule_code": "R_NOT_AUTHORIZED",
+          "label": "queue_launch_cap by guardian.test.near",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOT_AUTHORIZED",
+          "status": "failed",
+          "tx": "8xfEcfKp4vJDepdUEsh3oDe3hFB3MY2EgEZpteSKEp93"
+        },
+        {
+          "expected_rule_code": "R_NOT_AUTHORIZED",
+          "label": "lower_global_cap by creator.test.near",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOT_AUTHORIZED",
+          "status": "failed",
+          "tx": "Tund89APNZrSBConSRDN1NNsvaAQT37uU2B2cMp9gEt"
+        }
+      ]
+    },
+    {
+      "attempt": "A refunded buyer claims again, and so does a third party acting as keeper, to be paid twice.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "both repeat claims returned false"
+        },
+        {
+          "ok": true,
+          "what": "holder holds exactly the original 1,000 USDC"
+        },
+        {
+          "ok": true,
+          "what": "ledger refunded exactly one commit"
+        }
+      ],
+      "co4": "",
+      "expected_result": "NO_EFFECT",
+      "expected_rule_code": "",
+      "id": "A12",
+      "invariants_after": [
+        {
+          "get_invariants": {
+            "all_ok": true,
+            "i2_err": null,
+            "i2_ok": true,
+            "i3_err": null,
+            "i3_ok": true,
+            "i4_err": null,
+            "i4_ok": true,
+            "i5_err": null,
+            "i5_ok": true,
+            "l1_err": null,
+            "l1_ok": true,
+            "l3_err": null,
+            "l3_ok": true,
+            "l4_err": null,
+            "l4_ok": true
+          },
+          "launch_id": 1
+        }
+      ],
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "NO_EFFECT",
+      "target": "core",
+      "title": "Double claim of a refund (holder and keeper)",
+      "transactions": [
+        {
+          "expected_rule_code": null,
+          "label": "first claim_refund (legitimate)",
+          "network": "SANDBOX",
+          "role": "support",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "9AYXkoS8sWh7eaE7hvVikpyHXNwpngkoWnhn8b9Argt9"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "second claim_refund by the holder",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "7VUozs1gJyFyrQV6s3CrrSM2PiyKJMGwnD8HAEaf5yhW"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "third claim_refund by a keeper",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "5H1hhJS2pTcG7XkvtBgm9eeeRXcLCHs3Pg5aaZwPJrj9"
+        }
+      ]
+    },
+    {
+      "attempt": "The USDC contract (made hostile for this test) calls claim_refund again from inside ft_transfer, before core's payout callback has run.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "the reentrant call paid nothing (refunded once, 30 USDC)"
+        },
+        {
+          "ok": true,
+          "what": "holder refunded exactly once"
+        },
+        {
+          "ok": true,
+          "what": "position record deleted after the single payment"
+        }
+      ],
+      "co4": "",
+      "expected_result": "NO_EFFECT",
+      "expected_rule_code": "",
+      "id": "A13",
+      "invariants_after": [
+        {
+          "get_invariants": {
+            "all_ok": true,
+            "i2_err": null,
+            "i2_ok": true,
+            "i3_err": null,
+            "i3_ok": true,
+            "i4_err": null,
+            "i4_ok": true,
+            "i5_err": null,
+            "i5_ok": true,
+            "l1_err": null,
+            "l1_ok": true,
+            "l3_err": null,
+            "l3_ok": true,
+            "l4_err": null,
+            "l4_ok": true
+          },
+          "launch_id": 1
+        }
+      ],
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "NO_EFFECT",
+      "target": "core",
+      "title": "Reentrant refund claim from inside the token transfer",
+      "transactions": [
+        {
+          "expected_rule_code": null,
+          "label": "claim_refund with a reentering token",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "DrrqyUi5MEUJ914cKQMDdZXczPZ7ypi2d41S9Qm4j5RE"
+        }
+      ]
+    },
+    {
+      "attempt": "An attacker calls claim_refund naming a victim's position, hoping the refund lands in the attacker's account.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "attacker received nothing"
+        },
+        {
+          "ok": true,
+          "what": "victim paid to their own account, exactly the commit"
+        }
+      ],
+      "co4": "A11",
+      "expected_result": "NO_EFFECT",
+      "expected_rule_code": "",
+      "id": "A14",
+      "invariants_after": [
+        {
+          "get_invariants": {
+            "all_ok": true,
+            "i2_err": null,
+            "i2_ok": true,
+            "i3_err": null,
+            "i3_ok": true,
+            "i4_err": null,
+            "i4_ok": true,
+            "i5_err": null,
+            "i5_ok": true,
+            "l1_err": null,
+            "l1_ok": true,
+            "l3_err": null,
+            "l3_ok": true,
+            "l4_err": null,
+            "l4_ok": true
+          },
+          "launch_id": 1
+        }
+      ],
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "NO_EFFECT",
+      "target": "core",
+      "title": "Claim another holder's refund to redirect the money",
+      "transactions": [
+        {
+          "expected_rule_code": null,
+          "label": "claim_refund(victim) called by the attacker",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "4Yt6gds68ZYwJjBCu5SPy8PQPJNpN7tQpc9CjZVxiJoM"
+        }
+      ]
+    },
+    {
+      "attempt": "The guardian pauses the protocol while a holder is inside; the holder tries to Walk out.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "Walk succeeded and returned the whole commit"
+        }
+      ],
+      "co4": "",
+      "expected_result": "NO_EFFECT",
+      "expected_rule_code": "",
+      "id": "A15",
+      "invariants_after": [
+        {
+          "get_invariants": {
+            "all_ok": true,
+            "i2_err": null,
+            "i2_ok": true,
+            "i3_err": null,
+            "i3_ok": true,
+            "i4_err": null,
+            "i4_ok": true,
+            "i5_err": null,
+            "i5_ok": true,
+            "l1_err": null,
+            "l1_ok": true,
+            "l3_err": null,
+            "l3_ok": true,
+            "l4_err": null,
+            "l4_ok": true
+          },
+          "launch_id": 1
+        }
+      ],
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "NO_EFFECT",
+      "target": "core",
+      "title": "Pause used to trap holder funds",
+      "transactions": [
+        {
+          "expected_rule_code": null,
+          "label": "guardian pause",
+          "network": "SANDBOX",
+          "role": "support",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "9bmhf2tV4GDQYrPdxhYmRRnQws52oCjF1rU2iPz73guF"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "new commit while paused is refused (R_PAUSED)",
+          "network": "SANDBOX",
+          "role": "support",
+          "rule_code": "R_PAUSED",
+          "status": "succeeded",
+          "tx": "GW97z2WvgAasSKBZncLTZjtVa27g9kTV6LVrxCwZceQX"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "holder Walk while PAUSED",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "XXBBK5PNe82bD1j372BdEUpbMbJ1DDLHC4JyEkSdRY2"
+        }
+      ]
+    },
+    {
+      "attempt": "The guardian freezes the protocol and the holder tries to Walk. This is NOT blocked by design; it is bounded by auto-expiry and an owner unpause.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "config reports Frozen"
+        },
+        {
+          "ok": true,
+          "what": "bound (pure-logic check, not a sandbox wait): freeze ends 7 days after it starts"
+        },
+        {
+          "ok": true,
+          "what": "bound (pure-logic check): effective level at the end of the freeze is Paused, not Frozen"
+        },
+        {
+          "ok": true,
+          "what": "after the owner lifts it the holder exits with the full commit"
+        }
+      ],
+      "co4": "",
+      "expected_result": "BOUNDED",
+      "expected_rule_code": "R_FROZEN",
+      "id": "A16",
+      "invariants_after": [
+        {
+          "get_invariants": {
+            "all_ok": true,
+            "i2_err": null,
+            "i2_ok": true,
+            "i3_err": null,
+            "i3_ok": true,
+            "i4_err": null,
+            "i4_ok": true,
+            "i5_err": null,
+            "i5_ok": true,
+            "l1_err": null,
+            "l1_ok": true,
+            "l3_err": null,
+            "l3_ok": true,
+            "l4_err": null,
+            "l4_ok": true
+          },
+          "launch_id": 1
+        }
+      ],
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "BOUNDED",
+      "target": "core",
+      "title": "Freeze blocks exits (disclosed limit: bounded to 7 days)",
+      "transactions": [
+        {
+          "expected_rule_code": null,
+          "label": "guardian freeze",
+          "network": "SANDBOX",
+          "role": "support",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "FzAgTPh9e63vjMMjHPgyom1VuMJVPejjUuYEiUk2LnPB"
+        },
+        {
+          "expected_rule_code": "R_FROZEN",
+          "label": "holder Walk while FROZEN",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_FROZEN",
+          "status": "failed",
+          "tx": "HTSDkv8xDUGdZhhrgmNEz8MaUabv18LDZRLVVNDFJqT1"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "owner unpause",
+          "network": "SANDBOX",
+          "role": "support",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "Fejezh8mxoASAAZamH6arvjkB3GxXna3fixvUjbwpwab"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "holder Walk after unpause",
+          "network": "SANDBOX",
+          "role": "support",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "4qcB7aXAwNXYiGsFExuRTvVFRBGBk3BZ1CZChdXKGG9Y"
+        }
+      ]
+    },
+    {
+      "attempt": "Ten wallets fill the 1,000 USDC ceiling (twice the 500 hard cap); an eleventh tries to add 100 USDC more.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "total_active stays at the 1,000 USDC ceiling"
+        },
+        {
+          "ok": true,
+          "what": "the refused amount is back on the attacker's Intents balance"
+        }
+      ],
+      "co4": "",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_CAP_LAUNCH",
+      "id": "A17",
+      "invariants_after": [
+        {
+          "get_invariants": {
+            "all_ok": true,
+            "i2_err": null,
+            "i2_ok": true,
+            "i3_err": null,
+            "i3_ok": true,
+            "i4_err": null,
+            "i4_ok": true,
+            "i5_err": null,
+            "i5_ok": true,
+            "l1_err": null,
+            "l1_ok": true,
+            "l3_err": null,
+            "l3_ok": true,
+            "l4_err": null,
+            "l4_ok": true
+          },
+          "launch_id": 1
+        }
+      ],
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "core",
+      "title": "Oversubscription beyond twice the hard cap",
+      "transactions": [
+        {
+          "expected_rule_code": "R_CAP_LAUNCH",
+          "label": "eleventh commit over the ceiling",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_CAP_LAUNCH",
+          "status": "succeeded",
+          "tx": "FsbswHcwqpTmCgnAfCFcNHohUoHqrVqjGqqyPecUUxMM"
+        }
+      ]
+    },
+    {
+      "attempt": "One wallet commits 101 USDC at once, then 60 + 50 USDC across two commits, to exceed the 100 USDC per-wallet cap.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "wallet holds exactly the 60 USDC that was accepted"
+        },
+        {
+          "ok": true,
+          "what": "the refused amounts came back"
+        }
+      ],
+      "co4": "",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_CAP_ACCOUNT",
+      "id": "A18",
+      "invariants_after": [
+        {
+          "get_invariants": {
+            "all_ok": true,
+            "i2_err": null,
+            "i2_ok": true,
+            "i3_err": null,
+            "i3_ok": true,
+            "i4_err": null,
+            "i4_ok": true,
+            "i5_err": null,
+            "i5_ok": true,
+            "l1_err": null,
+            "l1_ok": true,
+            "l3_err": null,
+            "l3_ok": true,
+            "l4_err": null,
+            "l4_ok": true
+          },
+          "launch_id": 1
+        }
+      ],
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "core",
+      "title": "One wallet exceeds the per-wallet cap (single and cumulative)",
+      "transactions": [
+        {
+          "expected_rule_code": "R_CAP_ACCOUNT",
+          "label": "single commit of 101 USDC",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_CAP_ACCOUNT",
+          "status": "succeeded",
+          "tx": "GqgHLZwh1cTCitjNUB7tdWZLirTHT1s5gQgXwrtoTfaf"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "commit 60 USDC (inside the cap)",
+          "network": "SANDBOX",
+          "role": "support",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "9YC3FbpcSfiscN6KvErQaiV16kSDprAUGNPWFEkWv8Rz"
+        },
+        {
+          "expected_rule_code": "R_CAP_ACCOUNT",
+          "label": "second commit pushes the wallet to 110 USDC",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_CAP_ACCOUNT",
+          "status": "succeeded",
+          "tx": "GBSELzx2kkqtHkSkKvY4nuYDaw2zS93ABnpZDdAveTzg"
+        }
+      ]
+    },
+    {
+      "attempt": "One actor tries 360 USDC from a single wallet (refused), then splits it into 12 wallets of 30 USDC to reach the soft cap and the funder minimum. The contract cannot see identity, so the split is NOT blocked.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "DISCLOSED LIMIT: the split reaches PASS (the contract cannot tell the 12 wallets are one actor)"
+        },
+        {
+          "ok": true,
+          "what": "bound: total accepted is exactly the capital the actor put at risk (360 USDC), under the per-launch ceiling"
+        }
+      ],
+      "co4": "",
+      "expected_result": "BOUNDED",
+      "expected_rule_code": "R_CAP_ACCOUNT",
+      "id": "A19",
+      "invariants_after": [
+        {
+          "get_invariants": {
+            "all_ok": true,
+            "i2_err": null,
+            "i2_ok": true,
+            "i3_err": null,
+            "i3_ok": true,
+            "i4_err": null,
+            "i4_ok": true,
+            "i5_err": null,
+            "i5_ok": true,
+            "l1_err": null,
+            "l1_ok": true,
+            "l3_err": null,
+            "l3_ok": true,
+            "l4_err": null,
+            "l4_ok": true
+          },
+          "launch_id": 1
+        }
+      ],
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "BOUNDED",
+      "target": "core",
+      "title": "Sybil: one actor splits capital over 12 wallets",
+      "transactions": [
+        {
+          "expected_rule_code": "R_CAP_ACCOUNT",
+          "label": "single wallet, 360 USDC",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_CAP_ACCOUNT",
+          "status": "succeeded",
+          "tx": "GLzmAMNufL9TpififP2fZ5zqzM3iAHaUE6mdDecbkgSc"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "split commit 0 of 30 USDC",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "EcDs7UPwWS3p15TcXehScxJ3m5M4jzkGQhJV7Y7myUKb"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "split commit 1 of 30 USDC",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "9wVzaFodWp9VGZLutr9jTkqWcYtnXG2W7LFM7a42T3nX"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "split commit 2 of 30 USDC",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "6hpj7iq5dgC6o6YZRT4bJ4rfER5VSXjmryA9N58fdx7A"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "split commit 3 of 30 USDC",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "B3rwv7yjyK2oSSVihvokUXmZF7VtDgXMhMRs6j1i9h9J"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "split commit 4 of 30 USDC",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "7aC1kA8atYdZi3qhKrz464AyrkxRoGCKjaH1zzUwnA1X"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "split commit 5 of 30 USDC",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "PmZYiLmq2ynSuhwMkXL5LosKDtixZFnViGEhFUVM5gv"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "split commit 6 of 30 USDC",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "BJKzbb7nbQThj1P9FGd7NfxYFd1yitoiAwAqwwiERcqR"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "split commit 7 of 30 USDC",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "Bi7EakHrYxmxb7K6oCA9Li7dp7zqL3s14XTzrRA5zydg"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "split commit 8 of 30 USDC",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "9fZtcFcsQzrr8QsEiLHt7vpmsbEzoJzVxgQEhK46eBa"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "split commit 9 of 30 USDC",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "C9PUfLb1JB47KhRR9aVP5yaM6AsMgTRxztfWzpgzyepb"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "split commit 10 of 30 USDC",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "M6RF7b3kjpCz4xMr4MopvoMWoV3tL2BT6Ds85P9fEqu"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "split commit 11 of 30 USDC",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "8FzQeshKiHpLWZ2SRndzzZ9RQvQ55L9k1HwUAYHGThK9"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "settle",
+          "network": "SANDBOX",
+          "role": "support",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "DgbkAHsPo4HkgKkkefA6BAi3EUuw3XsWSDEyAXPDDw1P"
+        }
+      ]
+    },
+    {
+      "attempt": "A holder who sees the book heading to PASS calls walk after the Walk tail ended, to shrink the book and grief the verdict.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "position kept, book unchanged (12 funders, 480 USDC)"
+        },
+        {
+          "ok": true,
+          "what": "no funds moved"
+        }
+      ],
+      "co4": "",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_WALK_CLOSED",
+      "id": "A20",
+      "invariants_after": [
+        {
+          "get_invariants": {
+            "all_ok": true,
+            "i2_err": null,
+            "i2_ok": true,
+            "i3_err": null,
+            "i3_ok": true,
+            "i4_err": null,
+            "i4_ok": true,
+            "i5_err": null,
+            "i5_ok": true,
+            "l1_err": null,
+            "l1_ok": true,
+            "l3_err": null,
+            "l3_ok": true,
+            "l4_err": null,
+            "l4_ok": true
+          },
+          "launch_id": 1
+        }
+      ],
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "core",
+      "title": "Late Walk after the Walk window closed",
+      "transactions": [
+        {
+          "expected_rule_code": "R_WALK_CLOSED",
+          "label": "walk after walk_end",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_WALK_CLOSED",
+          "status": "failed",
+          "tx": "ATyjdTZzxMCxFdF8cT9473cVZ6Ztix1AYmS9PZ1XPM2m"
+        }
+      ]
+    },
+    {
+      "attempt": "A buyer sends a commit after commit_end to tip the book after seeing the Walk tail.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "late buyer refunded in full"
+        },
+        {
+          "ok": true,
+          "what": "book unchanged"
+        }
+      ],
+      "co4": "",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_WRONG_PHASE",
+      "id": "A21",
+      "invariants_after": [
+        {
+          "get_invariants": {
+            "all_ok": true,
+            "i2_err": null,
+            "i2_ok": true,
+            "i3_err": null,
+            "i3_ok": true,
+            "i4_err": null,
+            "i4_ok": true,
+            "i5_err": null,
+            "i5_ok": true,
+            "l1_err": null,
+            "l1_ok": true,
+            "l3_err": null,
+            "l3_ok": true,
+            "l4_err": null,
+            "l4_ok": true
+          },
+          "launch_id": 1
+        }
+      ],
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "core",
+      "title": "Late commit after the commit window",
+      "transactions": [
+        {
+          "expected_rule_code": "R_WRONG_PHASE",
+          "label": "commit during the Walk tail",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_WRONG_PHASE",
+          "status": "succeeded",
+          "tx": "9ZPKYzxuy32uAVFFJu42LEiLdKYopGuFeordpFMJaYs3"
+        }
+      ]
+    },
+    {
+      "attempt": "A holder calls claim_tokens while the launch is still Open, then again after it FAILED, to extract tokens without a verdict.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "no launch tokens moved to the attacker"
+        }
+      ],
+      "co4": "",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_WRONG_PHASE",
+      "id": "A22",
+      "invariants_after": [
+        {
+          "get_invariants": {
+            "all_ok": true,
+            "i2_err": null,
+            "i2_ok": true,
+            "i3_err": null,
+            "i3_ok": true,
+            "i4_err": null,
+            "i4_ok": true,
+            "i5_err": null,
+            "i5_ok": true,
+            "l1_err": null,
+            "l1_ok": true,
+            "l3_err": null,
+            "l3_ok": true,
+            "l4_err": null,
+            "l4_ok": true
+          },
+          "launch_id": 1
+        }
+      ],
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "core",
+      "title": "Claim launch tokens before PASS (open and failed launches)",
+      "transactions": [
+        {
+          "expected_rule_code": "R_WRONG_PHASE",
+          "label": "claim_tokens while Open",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_WRONG_PHASE",
+          "status": "failed",
+          "tx": "2PtKLV8ce4tjRaivN8y8SG97cruEa8R5jxkYWhkMeDAB"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "settle (FAIL: 3 funders)",
+          "network": "SANDBOX",
+          "role": "support",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "6MunyaGYhextgMjtj4J4uN7tYowJUVuYXm9MBUPeLRjF"
+        },
+        {
+          "expected_rule_code": "R_WRONG_PHASE",
+          "label": "claim_tokens after FAIL",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_WRONG_PHASE",
+          "status": "failed",
+          "tx": "6hpdhrRL4bozBmhrwKdQZsZLNtRYJZEJZNZdMCT833qy"
+        }
+      ]
+    },
+    {
+      "attempt": "The creator commits 30 USDC to their own launch to fake demand.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "book empty and creator refunded"
+        }
+      ],
+      "co4": "",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_SELF_BUY",
+      "id": "A23",
+      "invariants_after": [
+        {
+          "get_invariants": {
+            "all_ok": true,
+            "i2_err": null,
+            "i2_ok": true,
+            "i3_err": null,
+            "i3_ok": true,
+            "i4_err": null,
+            "i4_ok": true,
+            "i5_err": null,
+            "i5_ok": true,
+            "l1_err": null,
+            "l1_ok": true,
+            "l3_err": null,
+            "l3_ok": true,
+            "l4_err": null,
+            "l4_ok": true
+          },
+          "launch_id": 1
+        }
+      ],
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "core",
+      "title": "Creator wash-buys their own launch",
+      "transactions": [
+        {
+          "expected_rule_code": "R_SELF_BUY",
+          "label": "creator commit",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_SELF_BUY",
+          "status": "succeeded",
+          "tx": "9RorpF774aaWtGqLAg12qL9jPk4tExRcg1fFtVUpUcFy"
+        }
+      ]
+    },
+    {
+      "attempt": "An attacker submits walk_signed for a Solana holder with (1) a signature from the attacker's own key, (2) an expired deadline, then replays the victim's valid signed walk.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "position untouched by the forged attempts"
+        },
+        {
+          "ok": true,
+          "what": "refunded exactly once to the holder's Intents balance"
+        }
+      ],
+      "co4": "",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_SIG",
+      "id": "A24",
+      "invariants_after": [
+        {
+          "get_invariants": {
+            "all_ok": true,
+            "i2_err": null,
+            "i2_ok": true,
+            "i3_err": null,
+            "i3_ok": true,
+            "i4_err": null,
+            "i4_ok": true,
+            "i5_err": null,
+            "i5_ok": true,
+            "l1_err": null,
+            "l1_ok": true,
+            "l3_err": null,
+            "l3_ok": true,
+            "l4_err": null,
+            "l4_ok": true
+          },
+          "launch_id": 1
+        }
+      ],
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "core",
+      "title": "Forged, expired and replayed signed Walk",
+      "transactions": [
+        {
+          "expected_rule_code": "R_SIG",
+          "label": "signature made by the attacker's key",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_SIG",
+          "status": "failed",
+          "tx": "8qBFoha5Q2V1WbGy1RejMT7qf8DZycUd24MQuruMPwaF"
+        },
+        {
+          "expected_rule_code": "R_DEADLINE",
+          "label": "expired deadline",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_DEADLINE",
+          "status": "failed",
+          "tx": "9pUm63GomuaLqeKZDLkM6s1WUKiwfZJu9h6px8sTaChK"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "victim's own valid signed Walk",
+          "network": "SANDBOX",
+          "role": "support",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "FufsmDK6Bi28ovwJAAPhuUFefsvR1XjNkLp6tVaqhKa6"
+        },
+        {
+          "expected_rule_code": "R_NONCE",
+          "label": "replay of the victim's signed Walk (same nonce)",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NONCE",
+          "status": "failed",
+          "tx": "DN1dJcriTNW4QeQoP5tjro7f7NsyiAmZo2fwFqWD5EPC"
+        }
+      ]
+    },
+    {
+      "attempt": "The same creator calls create_trial again with a new symbol to hold more than one slot against the global cap.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "only launch 1 exists"
+        }
+      ],
+      "co4": "",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_ACTIVE_TRIAL",
+      "id": "A25",
+      "invariants_after": [
+        {
+          "get_invariants": {
+            "all_ok": true,
+            "i2_err": null,
+            "i2_ok": true,
+            "i3_err": null,
+            "i3_ok": true,
+            "i4_err": null,
+            "i4_ok": true,
+            "i5_err": null,
+            "i5_ok": true,
+            "l1_err": null,
+            "l1_ok": true,
+            "l3_err": null,
+            "l3_ok": true,
+            "l4_err": null,
+            "l4_ok": true
+          },
+          "launch_id": 1
+        }
+      ],
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "core",
+      "title": "Creator opens a second trial while one is active",
+      "transactions": [
+        {
+          "expected_rule_code": "R_ACTIVE_TRIAL",
+          "label": "second create_trial by the same creator",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_ACTIVE_TRIAL",
+          "status": "failed",
+          "tx": "AuMzo2CtsfjnTMsBSYc8DFFUyKKpiD3nWiVMngmKLff9"
+        }
+      ]
+    },
+    {
+      "attempt": "A look-alike token is used as 'USDC' for a buy, as the launch token for a sell, and as the seed quote leg for a new pool.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "attacker's fake tokens refunded"
+        },
+        {
+          "ok": true,
+          "what": "pool 1 unchanged and no pool 2"
+        }
+      ],
+      "co4": "A8",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_UNEXPECTED_TOKEN",
+      "id": "M01",
+      "invariants_after": {
+        "market": {
+          "global_q": "1000000000",
+          "parked_count": 0,
+          "usdc_custody": "1000000000",
+          "usdc_custody_identity": true,
+          "usdc_expected": "1000000000"
+        },
+        "pools": [
+          {
+            "launch_id": 1,
+            "pool_invariants": {
+              "k_ge_k0": true,
+              "token_custody_identity": true
+            }
+          }
+        ]
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "market",
+      "title": "Fake token buys, sells and seeds on the market",
+      "transactions": [
+        {
+          "expected_rule_code": "R_UNEXPECTED_TOKEN",
+          "label": "fake-USDC buy",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_UNEXPECTED_TOKEN",
+          "status": "succeeded",
+          "tx": "2Hf9TFQHjek1Dd76MjX3D18hPQxXXbEKMMEiqTnz6EPA"
+        },
+        {
+          "expected_rule_code": "R_UNEXPECTED_TOKEN",
+          "label": "fake-token sell",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_UNEXPECTED_TOKEN",
+          "status": "succeeded",
+          "tx": "3A6oiPiNhnCefNJAa2h6vwTBbtu5L1qLS5haDufx6YZi"
+        },
+        {
+          "expected_rule_code": "R_UNEXPECTED_TOKEN",
+          "label": "fake seed leg for launch 2",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_UNEXPECTED_TOKEN",
+          "status": "succeeded",
+          "tx": "2uPm75Fh5g3XzXnAEE26BZ3z1b6AHdSCqtQVQnkjxBXP"
+        }
+      ]
+    },
+    {
+      "attempt": "An attacker seeds a pool for launch 1 naming themselves as payout recipient; after the real handoff they try to seed again over the open pool.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "no pool was created and the attacker keeps their USDC"
+        },
+        {
+          "ok": true,
+          "what": "payout recipient is still the creator"
+        }
+      ],
+      "co4": "A12",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "id": "M02",
+      "invariants_after": {
+        "market": {
+          "global_q": "1000000000",
+          "parked_count": 0,
+          "usdc_custody": "1000000000",
+          "usdc_custody_identity": true,
+          "usdc_expected": "1000000000"
+        },
+        "pools": [
+          {
+            "launch_id": 1,
+            "pool_invariants": {
+              "k_ge_k0": true,
+              "token_custody_identity": true
+            }
+          }
+        ]
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "market",
+      "title": "Redirect the market payout recipient at pool opening",
+      "transactions": [
+        {
+          "expected_rule_code": "R_NOT_AUTHORIZED",
+          "label": "seed_quote from a non-core sender naming the attacker as recipient",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOT_AUTHORIZED",
+          "status": "succeeded",
+          "tx": "GSq8UTHow3criNGPmrd2teuqpPVEVn2498uW8yEwdCrX"
+        },
+        {
+          "expected_rule_code": "R_DUP_LAUNCH",
+          "label": "second seed over the open pool",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_DUP_LAUNCH",
+          "status": "succeeded",
+          "tx": "ATZbPRaEq3fRPTct14JXgAY6WMafC4VGdxwre16W5Qvh"
+        }
+      ]
+    },
+    {
+      "attempt": "An attacker calls resolve_payout directly (to forge a re-credit), calls ft_on_transfer as a plain account, and sends malformed messages.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "pool unchanged and attacker's USDC intact"
+        }
+      ],
+      "co4": "A9",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "PRIVATE_METHOD",
+      "id": "M03",
+      "invariants_after": {
+        "market": {
+          "global_q": "1000000000",
+          "parked_count": 0,
+          "usdc_custody": "1000000000",
+          "usdc_custody_identity": true,
+          "usdc_expected": "1000000000"
+        },
+        "pools": [
+          {
+            "launch_id": 1,
+            "pool_invariants": {
+              "k_ge_k0": true,
+              "token_custody_identity": true
+            }
+          }
+        ]
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "market",
+      "title": "Direct calls to the market callback and intake",
+      "transactions": [
+        {
+          "expected_rule_code": "PRIVATE_METHOD",
+          "label": "direct resolve_payout",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "PRIVATE_METHOD",
+          "status": "failed",
+          "tx": "HmvSV2jwDq7UBMLzCsWSVkPrg6U9A4NZQRUwWGaii1U5"
+        },
+        {
+          "expected_rule_code": "R_UNEXPECTED_TOKEN",
+          "label": "direct ft_on_transfer from a plain account",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_UNEXPECTED_TOKEN",
+          "status": "succeeded",
+          "tx": "ChQGxz5z38ahPpzsYi8emnXFDLczp9jTijf1FVnMBLq1"
+        },
+        {
+          "expected_rule_code": "R_BAD_MSG",
+          "label": "malformed message",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_BAD_MSG",
+          "status": "succeeded",
+          "tx": "FcBCpSmeAowj3Rkx1yHmhf2ZBYmMxStowgSmuDuigNrS"
+        }
+      ]
+    },
+    {
+      "attempt": "An attacker calls claim (creator slice), withdraw_platform, pause and (as the guardian) unpause.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "attacker received nothing"
+        },
+        {
+          "ok": true,
+          "what": "creator slice untouched"
+        }
+      ],
+      "co4": "A12",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "id": "M04",
+      "invariants_after": {
+        "market": {
+          "global_q": "1496750000",
+          "parked_count": 0,
+          "usdc_custody": "1500000000",
+          "usdc_custody_identity": true,
+          "usdc_expected": "1500000000"
+        },
+        "pools": [
+          {
+            "launch_id": 1,
+            "pool_invariants": {
+              "k_ge_k0": true,
+              "token_custody_identity": true
+            }
+          }
+        ]
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "market",
+      "title": "Non-recipient and non-owner calls on the market (claim, platform withdraw, pause)",
+      "transactions": [
+        {
+          "expected_rule_code": "R_NOT_AUTHORIZED",
+          "label": "claim by a non-recipient",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOT_AUTHORIZED",
+          "status": "failed",
+          "tx": "EkTsoboV5SHFrZTBJBFmD3riMNfuZxexhHQnjWxRbqKe"
+        },
+        {
+          "expected_rule_code": "R_NOT_AUTHORIZED",
+          "label": "withdraw_platform by a stranger",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOT_AUTHORIZED",
+          "status": "failed",
+          "tx": "BtDivbgGoptMMAsvcKN6UF8EsgnHSBso72K4XbsdJGie"
+        },
+        {
+          "expected_rule_code": "R_NOT_AUTHORIZED",
+          "label": "pause by a stranger",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOT_AUTHORIZED",
+          "status": "failed",
+          "tx": "3Go83JTdmTwLqwbJeo9aRidC3yxtXohEyz4wJcsXHBmE"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "guardian pause",
+          "network": "SANDBOX",
+          "role": "support",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "2vNMkDXLDfAydkxbuNfpH7Casj3W2LJpbCTSTFzmanJU"
+        },
+        {
+          "expected_rule_code": "R_NOT_AUTHORIZED",
+          "label": "unpause by the guardian (owner only)",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOT_AUTHORIZED",
+          "status": "failed",
+          "tx": "HEoyk3KpKXXDmLgCY4tPAc5njarybPxckc6J7zJdeU9e"
+        }
+      ]
+    },
+    {
+      "attempt": "The launch token is made hostile: during every transfer it calls claim on the market. The creator then claims twice in a row.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "swap completed once"
+        },
+        {
+          "ok": true,
+          "what": "the token contract, not being the recipient, was paid nothing"
+        },
+        {
+          "ok": true,
+          "what": "creator paid once, never above what has unlocked"
+        }
+      ],
+      "co4": "",
+      "expected_result": "NO_EFFECT",
+      "expected_rule_code": "",
+      "id": "M05",
+      "invariants_after": {
+        "market": {
+          "global_q": "1596100000",
+          "parked_count": 0,
+          "usdc_custody": "1598500000",
+          "usdc_custody_identity": true,
+          "usdc_expected": "1598500000"
+        },
+        "pools": [
+          {
+            "launch_id": 1,
+            "pool_invariants": {
+              "k_ge_k0": true,
+              "token_custody_identity": true
+            }
+          }
+        ]
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "NO_EFFECT",
+      "target": "market",
+      "title": "Reentrant claim from the token contract and a double creator claim",
+      "transactions": [
+        {
+          "expected_rule_code": null,
+          "label": "buy with a reentering token",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOT_AUTHORIZED",
+          "status": "succeeded",
+          "tx": "CvNezX4W5b6J3cpPonUq6DJ8GJyHLtbrRxFmvCpbpRbD"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "first creator claim (legitimate)",
+          "network": "SANDBOX",
+          "role": "support",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "EBER8M73HCuxwehj4ug1eFEBcMRrEK68uDMtVkLLMJfp"
+        },
+        {
+          "expected_rule_code": "R_NOTHING_TO_CLAIM",
+          "label": "second creator claim",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_NOTHING_TO_CLAIM",
+          "status": "failed",
+          "tx": "6tudQGG3aFPmdjYuAzyTDCcx2bRioNnXgr6ToVAeTNt4"
+        }
+      ]
+    },
+    {
+      "attempt": "The attacker pushes the price up before the victim's buy (which carries a 0.5% slippage bound), and the victim-style buys with no or zero min_out are refused outright.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "victim refunded in full, holds no tokens"
+        },
+        {
+          "ok": true,
+          "what": "victim balance still 500 USDC"
+        }
+      ],
+      "co4": "",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_MIN_OUT",
+      "id": "M06",
+      "invariants_after": {
+        "market": {
+          "global_q": "1794800000",
+          "parked_count": 0,
+          "usdc_custody": "1800000000",
+          "usdc_custody_identity": true,
+          "usdc_expected": "1800000000"
+        },
+        "pools": [
+          {
+            "launch_id": 1,
+            "pool_invariants": {
+              "k_ge_k0": true,
+              "token_custody_identity": true
+            }
+          }
+        ]
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "market",
+      "title": "Sandwich: front-run a buy, and trades without min_out",
+      "transactions": [
+        {
+          "expected_rule_code": null,
+          "label": "attacker front-run buy (800 USDC)",
+          "network": "SANDBOX",
+          "role": "support",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "7xS646RqK6srYGSTc8egCypaSPsQLHX5GK1WyRYYCt7b"
+        },
+        {
+          "expected_rule_code": "R_MIN_OUT",
+          "label": "victim buy after the front-run (min_out breached)",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_MIN_OUT",
+          "status": "succeeded",
+          "tx": "5rtAXkvAtGKcCLWwKivdQA8mSE2LRKUu4YEQjLi6EYTB"
+        },
+        {
+          "expected_rule_code": "R_MIN_OUT",
+          "label": "buy with min_out missing",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_MIN_OUT",
+          "status": "succeeded",
+          "tx": "EePSuYq2VHPkJwqt6J3WqeCZF6KFKRZQcNfCk81uXgYt"
+        },
+        {
+          "expected_rule_code": "R_MIN_OUT",
+          "label": "buy with min_out zero",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_MIN_OUT",
+          "status": "succeeded",
+          "tx": "EvthU7iSAoR35gZmUdXS5yZDzSyCUMfzTLvsNoJGLQ4d"
+        }
+      ]
+    },
+    {
+      "attempt": "An attacker transfers 900 USDC straight to the market (not through a swap) to skew the reserve ratio and the price.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "quote identical before and after (a transfer is not a deposit)"
+        },
+        {
+          "ok": true,
+          "what": "reserves unchanged"
+        }
+      ],
+      "co4": "",
+      "expected_result": "NO_EFFECT",
+      "expected_rule_code": "",
+      "id": "M07",
+      "invariants_after": {
+        "market": {
+          "global_q": "1000000000",
+          "parked_count": 0,
+          "usdc_custody": "1000000000",
+          "usdc_custody_identity": true,
+          "usdc_expected": "1000000000"
+        },
+        "pools": [
+          {
+            "launch_id": 1,
+            "pool_invariants": {
+              "k_ge_k0": true,
+              "token_custody_identity": true
+            }
+          }
+        ]
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "NO_EFFECT",
+      "target": "market",
+      "title": "Donation attack on pool reserves",
+      "transactions": [
+        {
+          "expected_rule_code": null,
+          "label": "ft_transfer 900 USDC to the market",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "H3fTCeXG85LrF7soKoEeyFrazxRCUuwpMeM4KEckd6LF"
+        }
+      ]
+    },
+    {
+      "attempt": "The guardian pauses the market; the holder tries to sell back out.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "new buys are refused while paused (R_PAUSED)"
+        },
+        {
+          "ok": true,
+          "what": "the sell executed and returned USDC"
+        }
+      ],
+      "co4": "",
+      "expected_result": "NO_EFFECT",
+      "expected_rule_code": "",
+      "id": "M08",
+      "invariants_after": {
+        "market": {
+          "global_q": "1008116310",
+          "parked_count": 0,
+          "usdc_custody": "1009386273",
+          "usdc_custody_identity": true,
+          "usdc_expected": "1009386273"
+        },
+        "pools": [
+          {
+            "launch_id": 1,
+            "pool_invariants": {
+              "k_ge_k0": true,
+              "token_custody_identity": true
+            }
+          }
+        ]
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "NO_EFFECT",
+      "target": "market",
+      "title": "Pause used to trap holders in the market",
+      "transactions": [
+        {
+          "expected_rule_code": null,
+          "label": "guardian pause",
+          "network": "SANDBOX",
+          "role": "support",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "4CWyXyMyvxiDhLDAE1nn5oTCmNAkCtUWUH3du4BBUMDi"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "holder sells everything while PAUSED",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "4xd3uVcYdzBu2wkaNGxFXUW9TDkGQ17PxJgarstjnYoa"
+        }
+      ]
+    },
+    {
+      "attempt": "With two pools holding 2,000 USDC against a 2,100 USDC global cap, a buyer sends 150 USDC to one pool.",
+      "checks": [
+        {
+          "ok": true,
+          "what": "buyer refunded in full"
+        }
+      ],
+      "co4": "",
+      "expected_result": "REFUSED",
+      "expected_rule_code": "R_MARKET_CAP",
+      "id": "M09",
+      "invariants_after": {
+        "market": {
+          "global_q": "2049675000",
+          "parked_count": 0,
+          "usdc_custody": "2050000000",
+          "usdc_custody_identity": true,
+          "usdc_expected": "2050000000"
+        },
+        "pools": [
+          {
+            "launch_id": 1,
+            "pool_invariants": {
+              "k_ge_k0": true,
+              "token_custody_identity": true
+            }
+          },
+          {
+            "launch_id": 2,
+            "pool_invariants": {
+              "k_ge_k0": true,
+              "token_custody_identity": true
+            }
+          }
+        ]
+      },
+      "invariants_ok": true,
+      "network": "SANDBOX",
+      "result": "REFUSED",
+      "target": "market",
+      "title": "Oversubscription: buy past the global reserve cap",
+      "transactions": [
+        {
+          "expected_rule_code": "R_MARKET_CAP",
+          "label": "buy of 150 USDC past the cap",
+          "network": "SANDBOX",
+          "role": "attack",
+          "rule_code": "R_MARKET_CAP",
+          "status": "succeeded",
+          "tx": "B5qxN2TsGPZvzzWTTLcUsouRzKcr8EN7RrZHy5cj1CbQ"
+        },
+        {
+          "expected_rule_code": null,
+          "label": "a 50 USDC buy inside the cap still works",
+          "network": "SANDBOX",
+          "role": "support",
+          "rule_code": null,
+          "status": "succeeded",
+          "tx": "52LaozyUpTjnWhfrzqdzbERH6N831sbB9usvoYgBi1yh"
+        }
+      ]
+    }
+  ]
+}

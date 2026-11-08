@@ -1,0 +1,78 @@
+{
+  "attempt": "The attacker pushes the price up before the victim's buy (which carries a 0.5% slippage bound), and the victim-style buys with no or zero min_out are refused outright.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "victim refunded in full, holds no tokens"
+    },
+    {
+      "ok": true,
+      "what": "victim balance still 500 USDC"
+    }
+  ],
+  "co4": "",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_MIN_OUT",
+  "id": "M06",
+  "invariants_after": {
+    "market": {
+      "global_q": "1794800000",
+      "parked_count": 0,
+      "usdc_custody": "1800000000",
+      "usdc_custody_identity": true,
+      "usdc_expected": "1800000000"
+    },
+    "pools": [
+      {
+        "launch_id": 1,
+        "pool_invariants": {
+          "k_ge_k0": true,
+          "token_custody_identity": true
+        }
+      }
+    ]
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "market",
+  "title": "Sandwich: front-run a buy, and trades without min_out",
+  "transactions": [
+    {
+      "expected_rule_code": null,
+      "label": "attacker front-run buy (800 USDC)",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "3VQtwzzPj7vvSPmfUmDbuyWtv8gxADkshDUo1NirLfk1"
+    },
+    {
+      "expected_rule_code": "R_MIN_OUT",
+      "label": "victim buy after the front-run (min_out breached)",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_MIN_OUT",
+      "status": "succeeded",
+      "tx": "8hmKBd4DaBJnDVcbmkNcoT3qnQNCgFhjMhtpz46dfawk"
+    },
+    {
+      "expected_rule_code": "R_MIN_OUT",
+      "label": "buy with min_out missing",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_MIN_OUT",
+      "status": "succeeded",
+      "tx": "BZXGsoPKYpCW6xKZVLS4shzSSsWjreEXmbyfpDF5tAwr"
+    },
+    {
+      "expected_rule_code": "R_MIN_OUT",
+      "label": "buy with min_out zero",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_MIN_OUT",
+      "status": "succeeded",
+      "tx": "2m476WHXuDdVmm5aEiaVhLsxXnBtQMr3E6qkshqFJXCT"
+    }
+  ]
+}

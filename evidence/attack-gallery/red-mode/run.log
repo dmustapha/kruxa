@@ -1,0 +1,151 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.11s
+     Running tests/attack_gallery.rs (target/debug/deps/attack_gallery-5836e44976898c78)
+
+running 34 tests
+test a01_draw_before_pass ... ok
+test a03_draw_half_after_pass ... ok
+test a02_draw_all_after_pass ... ok
+test a04_draw_by_non_recipient_and_recipient_stays_fixed ... ok
+test a05_settle_before_the_deadline ... ok
+test a09_fake_token_calls_the_core_intake ... ok
+test a08_donation_cannot_flip_the_verdict ... ok
+test a10_direct_callbacks_on_core ... ok
+test a06_settle_twice_replays_the_same_verdict ... ok
+test a11_non_owner_calls_owner_only_methods ... FAILED
+test a07_replayed_settlement_steps ... ok
+test a15_pause_cannot_trap_exits ... ok
+test a16_freeze_blocks_exits_but_only_for_seven_days ... ok
+test a12_double_refund_claim ... ok
+test a13_reentrant_refund_claim ... ok
+test a14_claim_another_holders_refund ... ok
+test a17_oversubscription_beyond_the_ceiling ... ok
+test a18_one_wallet_over_the_per_wallet_cap ... ok
+test a22_token_claim_before_pass ... ok
+test a19_sybil_split_across_wallets_is_bounded_not_blocked ... ok
+test a20_late_walk_after_the_deadline ... ok
+test a23_creator_buys_their_own_launch ... ok
+test a21_commit_after_the_window ... ok
+test a25_second_trial_and_symbol_squat ... ok
+test a24_forged_and_replayed_signed_walk ... ok
+test m02_redirect_the_market_payout_recipient ... ok
+test m01_fake_token_calls_the_market ... ok
+test m03_direct_callbacks_on_the_market ... ok
+test m05_reentrant_and_double_creator_claim ... ok
+test m04_non_owner_calls_market_admin_and_claims ... ok
+test m06_sandwich_without_min_out ... ok
+test m07_donation_to_the_pool_reserves ... ok
+test m08_pause_cannot_trap_market_sells ... ok
+test m09_global_reserve_cap_across_pools ... ok
+
+failures:
+
+---- a11_non_owner_calls_owner_only_methods stdout ----
+
+thread 'a11_non_owner_calls_owner_only_methods' (91781582) panicked at tests/tests/attack_gallery.rs:139:9:
+assertion `left == right` failed: A11 Non-owner calls the owner-only admin methods (pause, caps, unpause): {
+  "attempt": "The creator and the guardian call methods that need the owner (or owner or guardian): pause, freeze, unpause, queue_global_cap, queue_launch_cap, lower_global_cap.",
+  "checks": [
+    {
+      "ok": false,
+      "what": "config unchanged: not paused, global cap and pending cap as before"
+    }
+  ],
+  "co4": "",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_NOT_AUTHORIZED",
+  "id": "A11",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true
+      },
+      "launch_id": 1
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "SUCCEEDED_UNEXPECTEDLY",
+  "target": "core",
+  "title": "Non-owner calls the owner-only admin methods (pause, caps, unpause)",
+  "transactions": [
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "pause by owner.test.near",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "GPv7H7USjuYgzw8s5HQc19mhgbkBqRszEAckFZxaJjq4"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "freeze by creator.test.near",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "EqaGbTQ1M255JHmCYwFDbSi58US6dkSC3Z8UsWkJ5tMV"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "unpause by guardian.test.near",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "D3KLBwnWBBi9GSRR2rLTP91XvL8jqzeKDvWfhGQPP99n"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "queue_global_cap by creator.test.near",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "3mP6iXEFri1fJeC6kuhEiBbxczWutoi1Yq1SnApndZmr"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "queue_launch_cap by guardian.test.near",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "3RQN3e2xTaEPA3cVMnVDaZwQrF9DBQ9NGSQBvYVSMH2n"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "lower_global_cap by creator.test.near",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "2jezowgqeqLiBYy9A87KgC27MUVjxSbzWhHY2MLvQc6E"
+    }
+  ]
+}
+  left: "SUCCEEDED_UNEXPECTEDLY"
+ right: "REFUSED"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    a11_non_owner_calls_owner_only_methods
+
+test result: FAILED. 33 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 255.84s
+
+error: test failed, to rerun pass `-p kruxa-tests --test attack_gallery`

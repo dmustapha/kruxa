@@ -1,0 +1,60 @@
+{
+  "attempt": "settle() is called while the commit window is open and again during the Walk tail, to fix the verdict early.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "launch is still Open with no settlement"
+    }
+  ],
+  "co4": "A7",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_TOO_EARLY",
+  "id": "A05",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true
+      },
+      "launch_id": 1
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "core",
+  "title": "Forged verdict: settle before the deadline",
+  "transactions": [
+    {
+      "expected_rule_code": "R_TOO_EARLY",
+      "label": "settle during the commit window",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_TOO_EARLY",
+      "status": "failed",
+      "tx": "9oxNbGcMwv5qvunVbU3V5n93UoE8QgSJCbeap6ss4g4A"
+    },
+    {
+      "expected_rule_code": "R_TOO_EARLY",
+      "label": "settle during the Walk tail",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_TOO_EARLY",
+      "status": "failed",
+      "tx": "EwNo6MPyWAfNg3WBzG26wSq9kVvmXwpukyVEnS8dQ6qu"
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "attempt": "After the verdict is fixed a second account calls settle again, hoping to re-run allocation or flip the outcome.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "no second verdict event emitted"
+    },
+    {
+      "ok": true,
+      "what": "returns the same PASS"
+    },
+    {
+      "ok": true,
+      "what": "settlement, ledger and verdict inputs byte-identical"
+    }
+  ],
+  "co4": "",
+  "expected_result": "NO_EFFECT",
+  "expected_rule_code": "",
+  "id": "A06",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true
+      },
+      "launch_id": 1
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "NO_EFFECT",
+  "target": "core",
+  "title": "Replayed verdict: settle called twice",
+  "transactions": [
+    {
+      "expected_rule_code": null,
+      "label": "first settle (PASS)",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "86Q38PUo1n8sV86QPzzEYhKtcKS4KToAGtfp3KLid3Yt"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "second settle by another account",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "DPVpVDHbnooz1HQ87Q1uYXFqNoH34f2uoqjjD4kHqQFd"
+    }
+  ]
+}

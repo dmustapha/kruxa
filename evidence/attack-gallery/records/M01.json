@@ -1,0 +1,69 @@
+{
+  "attempt": "A look-alike token is used as 'USDC' for a buy, as the launch token for a sell, and as the seed quote leg for a new pool.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "attacker's fake tokens refunded"
+    },
+    {
+      "ok": true,
+      "what": "pool 1 unchanged and no pool 2"
+    }
+  ],
+  "co4": "A8",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_UNEXPECTED_TOKEN",
+  "id": "M01",
+  "invariants_after": {
+    "market": {
+      "global_q": "1000000000",
+      "parked_count": 0,
+      "usdc_custody": "1000000000",
+      "usdc_custody_identity": true,
+      "usdc_expected": "1000000000"
+    },
+    "pools": [
+      {
+        "launch_id": 1,
+        "pool_invariants": {
+          "k_ge_k0": true,
+          "token_custody_identity": true
+        }
+      }
+    ]
+  },
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "market",
+  "title": "Fake token buys, sells and seeds on the market",
+  "transactions": [
+    {
+      "expected_rule_code": "R_UNEXPECTED_TOKEN",
+      "label": "fake-USDC buy",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_UNEXPECTED_TOKEN",
+      "status": "succeeded",
+      "tx": "2Hf9TFQHjek1Dd76MjX3D18hPQxXXbEKMMEiqTnz6EPA"
+    },
+    {
+      "expected_rule_code": "R_UNEXPECTED_TOKEN",
+      "label": "fake-token sell",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_UNEXPECTED_TOKEN",
+      "status": "succeeded",
+      "tx": "3A6oiPiNhnCefNJAa2h6vwTBbtu5L1qLS5haDufx6YZi"
+    },
+    {
+      "expected_rule_code": "R_UNEXPECTED_TOKEN",
+      "label": "fake seed leg for launch 2",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_UNEXPECTED_TOKEN",
+      "status": "succeeded",
+      "tx": "2uPm75Fh5g3XzXnAEE26BZ3z1b6AHdSCqtQVQnkjxBXP"
+    }
+  ]
+}

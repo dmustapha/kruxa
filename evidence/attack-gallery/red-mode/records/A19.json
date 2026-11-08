@@ -1,0 +1,172 @@
+{
+  "attempt": "One actor tries 360 USDC from a single wallet (refused), then splits it into 12 wallets of 30 USDC to reach the soft cap and the funder minimum. The contract cannot see identity, so the split is NOT blocked.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "DISCLOSED LIMIT: the split reaches PASS (the contract cannot tell the 12 wallets are one actor)"
+    },
+    {
+      "ok": true,
+      "what": "bound: total accepted is exactly the capital the actor put at risk (360 USDC), under the per-launch ceiling"
+    }
+  ],
+  "co4": "",
+  "expected_result": "BOUNDED",
+  "expected_rule_code": "R_CAP_ACCOUNT",
+  "id": "A19",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true
+      },
+      "launch_id": 1
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "BOUNDED",
+  "target": "core",
+  "title": "Sybil: one actor splits capital over 12 wallets",
+  "transactions": [
+    {
+      "expected_rule_code": "R_CAP_ACCOUNT",
+      "label": "single wallet, 360 USDC",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_CAP_ACCOUNT",
+      "status": "succeeded",
+      "tx": "4HDNxHsGwRXHimhEixAxbsHDCy7EvP1bBkiuJs4pNJ11"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "split commit 0 of 30 USDC",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "7a4sdn2UgwAugwCoPj5ajofVPvYdRApuxjwa2ayL6keF"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "split commit 1 of 30 USDC",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "F1m6kXBjzGhiwpdNRt7XiuoFpJsDpqwvXxkH3coWYxxm"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "split commit 2 of 30 USDC",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "8kVqNFLKkPicnFRJgcDGmGWuRvHGTDMzveW3xBQisKEF"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "split commit 3 of 30 USDC",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "H8x9AASR8whFHEJiLVcgHeEq5DWKDdNndXMgBYDadWMM"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "split commit 4 of 30 USDC",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "2cyFAoeF1em1C3zLj3HrnSbaKBYGasu6uJQkkMsuciCH"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "split commit 5 of 30 USDC",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "7A4bpMcks99oJqLqcMUjAXfJKZJW2vBd8LhGnWXo4WB"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "split commit 6 of 30 USDC",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "CymkHBArQpeRU8fpERoAgmZB1opvUKyYGKjrZszVam51"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "split commit 7 of 30 USDC",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "5fWT1T2AHppX5tSe4tF3WWnLcvVqCyfeH9SnU8vRN6n"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "split commit 8 of 30 USDC",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "HFX1ss6M7KzvVWrecxfUywgCn6zVufthixphwEBmaws5"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "split commit 9 of 30 USDC",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "7HiqC29KVgshApnHZEyoVFkLtGPHamqpYGaVKMoT8eza"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "split commit 10 of 30 USDC",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "7dNuv5XmWeahf2Syf6sYPpYRk7J4U7xaXSqnuWU74oPQ"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "split commit 11 of 30 USDC",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "8fGgHMuLBsUfNSnPzMpk7y2jLoVbJYABqFbyiHVmRJAS"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "settle",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "CSPmL8vZKU1uq5doQYGb3MrUMp9ShW6HGKgdEacYUpYw"
+    }
+  ]
+}

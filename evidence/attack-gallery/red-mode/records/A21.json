@@ -1,0 +1,55 @@
+{
+  "attempt": "A buyer sends a commit after commit_end to tip the book after seeing the Walk tail.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "late buyer refunded in full"
+    },
+    {
+      "ok": true,
+      "what": "book unchanged"
+    }
+  ],
+  "co4": "",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_WRONG_PHASE",
+  "id": "A21",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true
+      },
+      "launch_id": 1
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "core",
+  "title": "Late commit after the commit window",
+  "transactions": [
+    {
+      "expected_rule_code": "R_WRONG_PHASE",
+      "label": "commit during the Walk tail",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_WRONG_PHASE",
+      "status": "succeeded",
+      "tx": "ByhwwxFEjjV3iivG3RM8wYmyXY52y3iqa9C25VDPvY8q"
+    }
+  ]
+}
