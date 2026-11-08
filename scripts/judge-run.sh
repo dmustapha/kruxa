@@ -155,10 +155,10 @@ if is_green N2; then
   EXPECT=("MISMATCH log"); step T2 2 "tamper: one micro-USDC changed in the record is detected, exit 2" \
     cargo run -q --locked --offline -p kruxa-sim -- fold --events fixtures/events/lifecycle.jsonl --book-hash "$BOOK" --tamper
   EXPECT=("RECORDED, not live" "PASS C7 mint_authority=None freeze_authority=None" "PASS C20"); FORBID=("MISMATCH")
-  step T3 0 "verify: recorded Solana devnet genesis (F0, Chain Signatures) re-checks clean" \
-    ./scripts/verify.sh --evidence evidence/genesis/f0-run3-devnet-launch5-evidence.json
+  step T3 0 "verify: recorded Solana devnet genesis (F0, signed through NEAR Chain Signatures, real testnet core) re-checks clean" \
+    ./scripts/verify.sh --evidence evidence/genesis/core2-f0-devnet-launch6-evidence.json
   EXPECT=("MISMATCH"); step T4 2 "tamper-all: every recorded Solana input flipped, each run detected, exit 2" \
-    ./scripts/verify.sh --evidence evidence/genesis/f0-run3-devnet-launch5-evidence.json --tamper-all
+    ./scripts/verify.sh --evidence evidence/genesis/core2-f0-devnet-launch6-evidence.json --tamper-all
   EXPECT=(); FORBID=("MISMATCH"); step T5 4 "dead RPC exits 4 and never prints MISMATCH" \
     cargo run -q --locked --offline -p kruxa-sim -- verify --rpc http://127.0.0.1:1 --contract core.kruxa.testnet --launch 1
 else for i in T1 T2 T3 T4 T5; do skip $i "verify tamper checks" "N2 red"; done; fi
