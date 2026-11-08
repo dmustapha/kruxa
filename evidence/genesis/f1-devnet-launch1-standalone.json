@@ -1,0 +1,41 @@
+{
+  "format": "kruxa-genesis-record/2",
+  "cluster": "devnet",
+  "mode": "F1",
+  "launch_id": "1",
+  "core": "STANDALONE core stand-in (spec NOT committed on NEAR)",
+  "mint": "CW9AH5Su5K2kZahvMu934WXqpP8FJT1uv3bbrtHgPcYj",
+  "g_pub": "4YvqU7GVBV52TMRbX3tYbKAKKsVSLAo3zDjyJ1fB8RSp",
+  "spec_hex": "011100000067732d636f6d70696c65722f312e302e300d000000736f6c616e612d6465766e6574ce59db5080fc2c6d3bcf7ca90712d3c2e5e6c28f27f0dfbb9953bdb0894c03ab01000000310a0000007374616e64616c6f6e6500000000000000000034c0f021ed056373632f9c2c42dff59feea0fd16f857e1bc31b6b42ffcee97310100000031aae7a04aaec1da99432f84057b725e33aa26bf63da8f34b74f6678386997b13c06ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a90600743ba40b000000110000004b727578612052656865617273616c2031040000004b52583151d0fd87e628f6b579440997116b92d1eeca5d71bfb41f3ee31bb678d8e5c30e2bcd3e14dca8fdb18ca3d4e958bb1c4df002598ae6e5d80fc9d9824a6b5dc450010100020000000000743ba40b000000010000000000000000af221d91d65dcf810a4002d662a9285c75d1bd84e31369d24efccfaf5d6c2fac000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005a00",
+  "spec_hash": "b3d667f80b398847fbddceb8adb74f76861af9e56f9b5cdaaff6ba31b6ca281c",
+  "params": {
+    "jito_program": "mERKcfxMC5SqJn4Ld4BUris3WKZZ1ojjWJ3A3J5CKxv",
+    "metadata_uri": "https://kruxa.example/rehearsal/1.json",
+    "clock_ts": "1794147760"
+  },
+  "blockhash": "448exxNbgZwKo3Gp7qLcgcFUmVCUxMqQdTrbAHJVNjF3",
+  "price": 1000,
+  "sigs": [
+    "56Lp7n8B6neJ48BWxNz1LR6GKJX6Jci54y7Tmr6HmXGSXnFAaTPnhp4X1sTok28r9DEKmiE9sDSWMFx9b4qaMkEX",
+    "5fkDBfz5fiPt7ib3poXQq5AnSnPaiPxU3WAwLvSwW83kUp4UkUVkzPThXhWFXYgTE43QjSTLhQsdyPUfQumyPTie"
+  ],
+  "slot": 520049565,
+  "ceremony_hash": "b1d5a0cfa9d2cbe50d1eabd71f2981dfc52cba3fdb052165c2adcc3a7b0f4791",
+  "sign_ms": [
+    5,
+    5
+  ],
+  "leaves": [],
+  "squads": {
+    "multisig": "CneX72zHFJsd71BBZ39xAuBH8zBySsWo6RedYr6j6A1Z",
+    "members": [
+      "3foiPWxXqjY7wjLs66JnQpojKrEKXHPu66Gv3wTrxq4k",
+      "4aTU5yBGipNZogGWM17nGyGxZJoFC6bsPUY39mebd6Uk",
+      "5WwpmFpgqfYS7N6eGW1Q6REqrppaUaJwXxfvrRUjgrWS"
+    ],
+    "threshold": 2,
+    "time_lock": 172800
+  },
+  "f0": null,
+  "spec_source": "STANDALONE core stand-in (spec NOT committed on NEAR)"
+}

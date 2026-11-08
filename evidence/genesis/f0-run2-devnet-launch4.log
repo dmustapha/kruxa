@@ -1,0 +1,24 @@
+cluster: devnet (devnet) mode: F0 launch: 4
+commit_genesis ok (STANDALONE core stand-in (spec NOT committed on NEAR))
+fund G Bphf5Y8WChnJFF7KmetZsFeMBq6qH3jES1FYrfNcFVW4: 4LQqs4nrJ5tbACivEmvbVfd5JwtbYpJ2y4JWtYFkda4yrbJfxb9wXZQKpakkQKDxykvsAz8L4UL1BSDeUHytdRBK
+Receipts: 4pKSaV8hainhPrHRhND7XE31bNEQY3KVp9L1zs12Cuwf, BFaFKZonUpbRAK3FJcAgBupx88mnS6eajwSsDvXxkgNQ
+tx1 create: 2gchDSPHuVVkbsajz4wmUfLwiNfTeiauy92a5sDF14pfkFQ4LxE1UfPAupiZEgrvdBAHwEcP1vLdFibyCi2ZXzqQ
+Retrying transaction v1.signer-prod.testnet:BV66jxbER7vMyjUCVZ2KfPobnpXPe32htR6Dy9GMSqpi with new nonce.
+Receipts: 9BvK6qdhwqW7X3CvGr3C9tyE844G4SwgU7wE7kBswcu6, 5Cfgqev2fTnXest8zt5oQYPk5rXhY5VKJQ3ZkV2BzZBu
+tx2 seal: 3xuEhUFCVeCoPduWqopdgZNKzohBwXZqq7pqYrgwX1dkB23ftAX5rDTqkuwhR6WttPdfEW1X6GNyL2snArmV9Wxx
+mint: 9NM5NNYYKfd77wwYxkLytAwo5nE2smeJ1gYX6QVRuxyU
+mint_authority: null
+freeze_authority: null
+extensions: none
+g_lamports_after: 890880
+space: 82
+owner: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
+supply: 50000000000 (sum of buckets: 50000000000)
+latency_ms: 42423
+sign_ms: 15398,21190
+signed by derived key Bphf5Y8WChnJFF7KmetZsFeMBq6qH3jES1FYrfNcFVW4
+F0_SIGN {"tx":"CnEuxMKFqptd2LgPx7Hm56ESTqai5LPUKC45YkBR1cZ8","ms":15390,"response":"{\"scheme\":\"Ed25519\",\"signature\":[84,46,8,138,247,115,164,31,232,129,237,126,132,10,69,37,174,114,254,28,36,91,191,152,75,103,105,50,87,116,43,166,101,150,155,151,225,209,57,109,84,229,96,41,112,87,50,25,241,195,93,199,188,97,97,27,98,133,73,111,69,113,212,11]}","gas_burnt_tgas":17.214925377882,"near_burnt":"0.000969"}
+F0_SIGN {"tx":"HzPfzixgCA42ZEtkndCSaWuzvXJJ3WAdqX5uPgeEaoxk","ms":21179,"response":"{\"scheme\":\"Ed25519\",\"signature\":[148,61,150,42,226,61,65,168,126,123,128,209,135,15,233,110,85,100,177,199,234,202,94,61,85,212,219,70,146,55,110,125,0,10,129,85,69,155,201,126,163,58,95,173,60,196,139,187,241,64,151,109,145,44,167,103,37,31,20,43,227,224,110,1]}","gas_burnt_tgas":16.140013976679,"near_burnt":"0.000862"}
+signature verified against the derived key (offline, before broadcast)
+confirm_genesis ok
+record: evidence/genesis/f0-run2-devnet-launch4.json

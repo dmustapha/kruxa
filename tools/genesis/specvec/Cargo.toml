@@ -1,0 +1,12 @@
+[package]
+name = "kruxa-specvec"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+# Standalone (own workspace) so it does not touch the root workspace. It uses the SAME GenesisSpec code the contract runs.
+[workspace]
+
+[dependencies]
+kruxa-logic = { path = "../../../crates/kruxa-logic" }
+serde_json = "1"

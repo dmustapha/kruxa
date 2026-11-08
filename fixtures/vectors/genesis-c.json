@@ -1,0 +1,73 @@
+{
+  "spec_fields": {
+    "spec_version": 1,
+    "compiler_version": "gs-compiler/1.0.0",
+    "chain": "solana-devnet",
+    "cluster_genesis_hash": "ce59db5080fc2c6d3bcf7ca90712d3c2e5e6c28f27f0dfbb9953bdb0894c03ab",
+    "launch_id": "3",
+    "near_contract": "core2.kxa1-owner-1203.testnet",
+    "near_block_height": "12345",
+    "mode": "F1",
+    "genesis_key_pubkey": "03bddb96f2f43c1bc645c3fa350f0458401a641988c1ee47a02141e8e1b03b74",
+    "mint_seed": "3",
+    "mint_address": "ad987b81cf9f3441f70bdca468e1196cf9ff99a346201d0a68db9f5922bf838e",
+    "token_program": "06ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9",
+    "decimals": 6,
+    "supply_total": "50000000000",
+    "name": "Kruxa NoSolana",
+    "symbol": "KRXC",
+    "metadata_uri_sha256": "9561b3135cc1fef04c20565ba35c5d03340fef0e8babfe3d517748e4685e8dc9",
+    "metadata_hash": "c7dc6fd1f8389d4fd15cccec06d264701b03b7e9b6faf09acb98ac702c28ecfb",
+    "mint_authority_none": true,
+    "freeze_authority_none": true,
+    "extensions_allowed": false,
+    "buckets": [
+      [
+        0,
+        "50000000000"
+      ],
+      [
+        1,
+        "0"
+      ]
+    ],
+    "reserve_squads_multisig_hash": "817077ae78e4141fc8c79fe8af4f0cfb92d4939f0fcfcef7e7e4568e02be4a25",
+    "reserve_vault_index": 0,
+    "reserve_disclosure": "SinglePartyDemo",
+    "merkle_root": "0000000000000000000000000000000000000000000000000000000000000000",
+    "max_total_claim": "0",
+    "max_num_nodes": 0,
+    "clawback_days": 90
+  },
+  "spec_hex": "011100000067732d636f6d70696c65722f312e302e300d000000736f6c616e612d6465766e6574ce59db5080fc2c6d3bcf7ca90712d3c2e5e6c28f27f0dfbb9953bdb0894c03ab01000000331d000000636f7265322e6b7861312d6f776e65722d313230332e746573746e657439300000000000000003bddb96f2f43c1bc645c3fa350f0458401a641988c1ee47a02141e8e1b03b740100000033ad987b81cf9f3441f70bdca468e1196cf9ff99a346201d0a68db9f5922bf838e06ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a90600743ba40b0000000e0000004b72757861204e6f536f6c616e61040000004b5258439561b3135cc1fef04c20565ba35c5d03340fef0e8babfe3d517748e4685e8dc9c7dc6fd1f8389d4fd15cccec06d264701b03b7e9b6faf09acb98ac702c28ecfb010100020000000000743ba40b000000010000000000000000817077ae78e4141fc8c79fe8af4f0cfb92d4939f0fcfcef7e7e4568e02be4a25000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005a00",
+  "spec_hash": "9d17feda1f7cb4963865ddfff7c41c35b534e01c5fb25ae36ad9afbdf2017098",
+  "params": {
+    "jito_program": "mERKcfxMC5SqJn4Ld4BUris3WKZZ1ojjWJ3A3J5CKxv",
+    "metadata_uri": "https://kruxa.example/meta/3.json",
+    "clock_ts": "1762560000"
+  },
+  "blockhash": "DtSHvHb69mR5dMqNiVGXmtNCqUPm4MmCJtvtkWCymVxW",
+  "price": 0,
+  "comment": "Golden genesis vector. spec_hex/spec_hash come from kruxa-logic (the contract's code); expected from tools/genesis/ref/compile.py.",
+  "expected": {
+    "mint": "CgePW7SRvJJVtp6eVYUzsWQtdPTCdTD8kcSG8uLfDbKK",
+    "supply": "50000000000",
+    "spec_hash": "9d17feda1f7cb4963865ddfff7c41c35b534e01c5fb25ae36ad9afbdf2017098",
+    "timestamps": [
+      1762560300,
+      1762560360,
+      1770336300
+    ],
+    "tx1_message": "0100060a03bddb96f2f43c1bc645c3fa350f0458401a641988c1ee47a02141e8e1b03b74ad987b81cf9f3441f70bdca468e1196cf9ff99a346201d0a68db9f5922bf838e37e412e7b65fcf0ba3503d3864dc2fecdaac08a9021140c69e7a502d3c0695a4b8c3dd004c5bf7e2f5c62a97faaf7d694e6e136587dabed437c3ee00e38e813b0306466fe5211732ffecadba72c39be7bc8ce5bbc5f7126b2c439b3a40000000000000000000000000000000000000000000000000000000000000000000000006ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a90b7065b1e3d17c45389d527f6b04c3cd58b86c731aa0fdb549b6d1bc03f8294650f2167420b615b73a9b9b529b6219938e96a443e284f611b503e19e1cbae8f48c97258f4e2489f1bb3d1029148e0d830b5a1399daff1084048e7bd8dbe9f859bf797638620339ae4a66fa1a655492f2c01685025b7b6de2a348d38c6430f6830604000502f0490200040009030000000000000000050200015d0300000003bddb96f2f43c1bc645c3fa350f0458401a641988c1ee47a02141e8e1b03b74010000000000000033604d160000000000520000000000000006ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a906010123140603bddb96f2f43c1bc645c3fa350f0458401a641988c1ee47a02141e8e1b03b7400070602010000000547210e0000004b72757861204e6f536f6c616e61040000004b5258432100000068747470733a2f2f6b727578612e6578616d706c652f6d6574612f332e6a736f6e0000000000000009060003080105060101",
+    "tx2_message": "0100020503bddb96f2f43c1bc645c3fa350f0458401a641988c1ee47a02141e8e1b03b74ad987b81cf9f3441f70bdca468e1196cf9ff99a346201d0a68db9f5922bf838eb8c3dd004c5bf7e2f5c62a97faaf7d694e6e136587dabed437c3ee00e38e813b0306466fe5211732ffecadba72c39be7bc8ce5bbc5f7126b2c439b3a4000000006ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a9bf797638620339ae4a66fa1a655492f2c01685025b7b6de2a348d38c6430f683040300050290d003000300090300000000000000000403010200090700743ba40b0000000402010003060000",
+    "tx1_size": 669,
+    "tx2_size": 305,
+    "accounts": {
+      "metadata": "4mB8iZZ36at8k6Ce9EKAL9kxowEcAjFPoyvuaKnTgDmd",
+      "reserve_ata": "DSFErZb1huPn71sr86XMVueKQigbwzvXLX38NtqTcRoQ",
+      "reserve_owner": "6Syij8AKgAZx48fb9AsFeAt6kQ9VSLW6GpsVzP3j7UQb",
+      "distributor": "EGpnm2wGEmSuQsJXWvDarU7M9hAf7FBfyJo1CRXBwJQd",
+      "vault": "4sRjfAhB8p2uMthhKz1yriob1zkUiJGwFnK12f1BPjCH"
+    }
+  }
+}

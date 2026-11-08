@@ -1,0 +1,29 @@
+PASS C5 mint == createWithSeed(g_pub, seed 4, Tokenkeg): no private key exists
+PASS C3 spec re-hash 3f5371021328b173 (sha256 of the committed borsh GenesisSpec)
+PASS C4 mint 9NM5NNYYKfd77wwYxkLytAwo5nE2smeJ1gYX6QVRuxyU owner Tokenkeg space 82 (no extensions: C8)
+PASS C7 mint_authority=None freeze_authority=None
+PASS C6 decimals 6 supply 50000000000 == sum of buckets
+PASS C9 metadata is_mutable=false, name/symbol/uri == spec, fee 0, no creators
+PASS C11 reserve bucket 50000000000, no distributor (no Solana buyers)
+PASS C13 no distributor: zero Solana buyers, zero claim total
+PASS C12 squads 2-of-3 time_lock 172800 == charter, config_authority None, reserve owner is vault 8955vW2w
+PASS C14 G holds no token accounts
+PASS C15 G history is the ceremony only (3 signatures)
+PASS C16 G lamports 890880 <= 895880 (rent-exempt floor 890,880 + 5,000; a system account cannot be left lower without a sweep)
+PASS C17 on-chain tx1 and tx2 message bytes == compile(spec, blockhash, price)
+PASS C18 program allowlist holds
+PASS C19 SetAuthority(MintTokens, None) is the last token instruction, after every MintTo
+PASS C20 rebuilt merkle root == spec == on-chain; sum 0, leaves 0
+PASS C21 all 0 proofs verify against the root
+PASS C27 g_pub == derive(7218da57019c05386280b3a4196e7654279e32c66e129889e17a653fc229cc85, kruxa:genesis:4)
+SKIP C28 (single RPC; pass --rpc2)
+SKIP C1 (needs core genesis views (Task 4.4))
+SKIP C2 (needs core ledger views (Task 4.4))
+SKIP C10 (needs the hosted metadata JSON)
+SKIP C22 (no creator allocation in this record)
+SKIP C23 (needs core genesis events)
+SKIP C24 (needs core PASS block time)
+SKIP C25 (no Verdict Rail attestation in this record)
+SKIP C26 (needs core ceremony hash view)
+SKIP C30 (PASS launch (FAIL path is a core check))
+ALL CHECKS OK (18 passed, 10 skipped)

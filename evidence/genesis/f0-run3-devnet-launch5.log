@@ -1,0 +1,24 @@
+cluster: devnet (devnet) mode: F0 launch: 5
+commit_genesis ok (STANDALONE core stand-in (spec NOT committed on NEAR))
+fund G aGeSpy7ZUUVapVD215gPr3vGKD2xcHAZisD1dFuq3dy: 2tEnkhFa5r9zahQyi7g9nMpUUQHtoK1kwBXd3hQ1VH1nbNvWFmnw4T6ARQVPCTDttEXHViP3t3HDCfqmPNNnof6t
+Receipts: HCchXhqDFdompXGc53f7MD45DfARvroZZmpod2qNtHMj, 7GK4KbsnH5WKNnEP3RAU68JTGBVdAEL5u31j1RjnPPQh
+tx1 create: yvTvTSZHR3NkJWq9egw6h16PrnySePMGRNiiJdL7G9kXsQYkmH5XvMCmjgHvM9g3f1st7fuYxtcuNdyUvAVdQA2
+Retrying transaction v1.signer-prod.testnet:AwMSpKB1E1Btu1vSeiDwGPFCUHM33Fc8XBQiW5Z1zfkV with new nonce.
+Receipts: HFW7ANFxd2ePrC19yzBWNbVPLp4Zfc9HJSZSQP5khioK, DVGbSWfZu91RXqD9UsQsRuZ1zNRXzz2wh4yDNPb2KAUe
+tx2 seal: 489iRhnf58jap2WP5BxU7s7ysZNXxLtBJ4fC3rj6FkSXGbtVBe7FNY7FvovTD6dnrtF2YJ1aA1HKF8x8Fx9ZbPkh
+mint: 6bbdV5ofgYMwNwcJtkXgLM6RXbjkTVL3FkWainsxmR7Z
+mint_authority: null
+freeze_authority: null
+extensions: none
+g_lamports_after: 890880
+space: 82
+owner: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
+supply: 50000000000 (sum of buckets: 50000000000)
+latency_ms: 41416
+sign_ms: 14164,21005
+signed by derived key aGeSpy7ZUUVapVD215gPr3vGKD2xcHAZisD1dFuq3dy
+F0_SIGN {"tx":"AZat9dmLMpPwwSKgyjtV79jUyivRyGTFGCafs7tnVPGQ","ms":14157,"response":"{\"scheme\":\"Ed25519\",\"signature\":[49,22,82,124,199,204,58,96,121,72,208,97,70,252,87,221,218,237,139,155,178,152,175,56,240,92,180,70,5,49,215,247,26,200,244,42,178,77,34,83,158,65,33,147,97,152,13,245,44,203,46,253,179,37,85,229,192,124,156,162,243,36,89,7]}","gas_burnt_tgas":17.164941588974,"near_burnt":"0.000964"}
+F0_SIGN {"tx":"7WwEXofyg365Thn2v6RHHLopJjU4pnzXU7bLDH97akfB","ms":20995,"response":"{\"scheme\":\"Ed25519\",\"signature\":[156,55,147,145,147,214,12,149,47,166,43,58,53,134,45,84,139,142,221,17,175,247,177,9,155,189,138,63,86,35,97,26,15,231,169,65,100,233,197,182,64,131,124,37,205,249,205,52,155,192,51,188,247,199,24,22,110,101,7,95,66,16,39,14]}","gas_burnt_tgas":16.185114527651,"near_burnt":"0.000866"}
+signature verified against the derived key (offline, before broadcast)
+confirm_genesis ok
+record: evidence/genesis/f0-run3-devnet-launch5.json

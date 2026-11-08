@@ -129,7 +129,9 @@ def parse_message(msg: bytes):
     ns, nro_s, nro_u = msg[0], msg[1], msg[2]
     n, i = rd_cu16(msg, 3)
     keys = [b58e(msg[i + 32 * j:i + 32 * j + 32]) for j in range(n)]
-    i += 32 * n + 32
+    i += 32 * n
+    blockhash = b58e(msg[i:i + 32])
+    i += 32
     ni, i = rd_cu16(msg, i)
     ixs = []
     for _ in range(ni):
@@ -142,4 +144,4 @@ def parse_message(msg: bytes):
         ixs.append({"program": prog, "accounts": accts, "data": msg[i:i + nd]})
         i += nd
     assert i == len(msg), "trailing bytes"
-    return {"header": (ns, nro_s, nro_u), "keys": keys, "instructions": ixs}
+    return {"header": (ns, nro_s, nro_u), "keys": keys, "instructions": ixs, "blockhash": blockhash}

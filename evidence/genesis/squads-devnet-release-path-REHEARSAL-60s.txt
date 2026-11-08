@@ -1,0 +1,3 @@
+multisig PDA: 8ZSE7jPC8CFFsGiTFNUEpt9JJPSixDoj3MdwsyEymQdE threshold 2 time_lock 60 (REHEARSAL, production 172800)
+early execute refused after approval (t+0s): TimeLockNotReleased
+execute after delay ok: destination received 1000000 lamports
