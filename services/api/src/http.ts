@@ -10,6 +10,8 @@ type Handler = (ctx: Ctx, m: string[], query: URLSearchParams) => Json | { csv: 
 
 const ROUTES: Array<[RegExp, Handler]> = [
   [/^\/api\/health$/, (c) => q.health(c)],
+  [/^\/api\/stats$/, (c) => q.stats(c)],
+  [/^\/api\/ops-log$/, (c, _m, s) => q.opsLog(c, s)],
   [/^\/api\/launches$/, (c, _m, s) => q.launches(c, s)],
   [/^\/api\/launch\/([^/]+)$/, (c, m) => q.launchDetail(c, m[1] as string)],
   [/^\/api\/token\/([^/]+)$/, (c, m) => q.tokenPage(c, m[1] as string)],

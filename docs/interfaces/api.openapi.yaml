@@ -598,7 +598,7 @@ components:
             total_walked: { $ref: '#/components/schemas/Amount' }
             active_in_open_trials: { $ref: '#/components/schemas/Amount' }
             refunds_paid: { $ref: '#/components/schemas/Amount' }
-            refunds_failed_or_pending: { $ref: '#/components/schemas/Amount' }
+            refund_attempts_failed: { $ref: '#/components/schemas/Amount', description: 'sum of refund payouts logged with ok=false (retryable); not an outstanding balance' }
         volume:
           type: object
           properties:
@@ -614,6 +614,7 @@ components:
                 holders: { $ref: '#/components/schemas/Amount' }
                 lp: { $ref: '#/components/schemas/Amount' }
                 referral: { $ref: '#/components/schemas/Amount' }
+        since_block: { type: integer, nullable: true, description: 'first block that carried an indexed event; nothing earlier is counted' }
         basis: { type: string }
         as_of: { $ref: '#/components/schemas/AsOf' }
         source: { $ref: '#/components/schemas/Source' }
@@ -721,6 +722,9 @@ components:
             holders: { $ref: '#/components/schemas/Amount' }
             lp: { $ref: '#/components/schemas/Amount' }
             referral: { $ref: '#/components/schemas/Amount' }
+            surcharge: { $ref: '#/components/schemas/Amount' }
+            red_holders: { $ref: '#/components/schemas/Amount', description: 'part of lp: the holders slice redirected to liquidity in this release' }
+            red_referral: { $ref: '#/components/schemas/Amount', description: 'part of lp: the referral slice redirected to liquidity in this release' }
         quote_reserve_after: { $ref: '#/components/schemas/Amount' }
         token_reserve_after: { $ref: '#/components/schemas/Amount' }
         block_height: { type: integer }

@@ -68,6 +68,9 @@ export class Folder {
       case "tokens_claimed": return this.tokensClaimed(e);
       case "token_creation_failed": return this.setStatus(e, "creation_failed", emit);
       case "dissolved": return this.setStatus(e, "dissolved", emit);
+      case "genesis_committed": return this.genesis(e, "committed", emit);
+      case "genesis_confirmed": return this.genesis(e, "confirmed", emit);
+      case "external_pool": return this.externalPool(e);
       case "pool_opened": return this.poolOpened(e, emit);
       case "swap": return this.swap(e, emit);
       case "creator_claimed": return this.creatorClaimed(e);
@@ -90,10 +93,10 @@ export class Folder {
     const recipient = str(d.payout_recipient) || str(d.stream_recipient) || creator;
     const tokenDecimals = intOrNull(d.token_decimals) ?? DEFAULT_TOKEN_DECIMALS;
     this.run(
-      `INSERT OR IGNORE INTO launches (launch_id, creator, payout_recipient, symbol, charter_hash, status, created_at, total_active, funders,
+      `INSERT OR IGNORE INTO launches (launch_id, creator, payout_recipient, symbol, name, total_supply, charter_hash, status, created_at, total_active, funders,
         soft_cap, min_funders, stream_days, token_decimals, book_hash, reasons, contributed_total, walked_total, stream_total, stream_drawn, last_block, source)
-       VALUES (?, ?, ?, ?, ?, 'creating', ?, '0', 0, ?, ?, ?, ?, '', '[]', '0', '0', '0', '0', ?, ?)`,
-      id, creator, recipient, str(d.symbol), str(d.charter_hash), e.time,
+       VALUES (?, ?, ?, ?, ?, ?, ?, 'creating', ?, '0', 0, ?, ?, ?, ?, '', '[]', '0', '0', '0', '0', ?, ?)`,
+      id, creator, recipient, str(d.symbol), str(d.name) || null, optBig(d.total_supply)?.toString() ?? null, str(d.charter_hash), e.time,
       optBig(d.soft_cap)?.toString() ?? null, intOrNull(d.min_funders), intOrNull(d.stream_days), tokenDecimals, e.blockHeight, e.source,
     );
     emit({ type: "launch", launchId: id });
@@ -200,14 +203,19 @@ export class Folder {
     const id = launchId(d);
     const l = this.touchLaunch(id, e);
     const authNull = (k: string): number | null => (k in d ? (d[k] === null ? 1 : 0) : null);
+    const terms = typeof d.terms === "object" && d.terms !== null ? (d.terms as Row) : null;
+    const nsOpen = nsToSec(d.opened_ns);
     this.run(
       `INSERT OR IGNORE INTO pools (launch_id, opened_at, quote_reserve, token_reserve, fee_bps, paused, payout_recipient, token_decimals,
-         mint_authority_null, freeze_authority_null, creator_bps, creator_claimed, creator_fees, fees_total, source)
-       VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, '0', '0', '0', ?)`,
-      id, e.time, optBig(d.quote_reserve)?.toString() ?? null, optBig(d.token_reserve)?.toString() ?? null, intOrNull(d.fee_bps),
-      str(d.payout_recipient) || str(l.payout_recipient), intOrNull(d.token_decimals) ?? Number(l.token_decimals),
+         mint_authority_null, freeze_authority_null, creator_bps, creator_claimed, creator_fees, fees_total, source, token, market, terms)
+       VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, '0', '0', '0', ?, ?, ?, ?)`,
+      id, nsOpen ?? e.time, (optBig(d.q) ?? optBig(d.quote_reserve))?.toString() ?? null, (optBig(d.t) ?? optBig(d.token_reserve))?.toString() ?? null,
+      intOrNull(d.fee_bps), str(d.payout_recipient) || str(l.payout_recipient), intOrNull(d.token_decimals) ?? Number(l.token_decimals),
       authNull("mint_authority"), authNull("freeze_authority"), intOrNull(d.creator_bps), e.source,
+      str(d.token) || null, e.contract, terms ? JSON.stringify(terms) : null,
     );
+    const supply = optBig(d.total_supply);
+    if (supply !== null) this.run("UPDATE launches SET total_supply = ? WHERE launch_id = ?", supply.toString(), id);
     if (this.get("SELECT 1 AS x FROM flags WHERE k = 'market_paused_global'")) {
       this.run("UPDATE pools SET paused = 1 WHERE launch_id = ?", id);
     }
@@ -219,7 +227,12 @@ export class Folder {
     const pick = (k: string): unknown => src[k] ?? src[`fee_${k}`];
     const names = ["creator", "platform", "holders", "lp", "referral"];
     if (names.some((n) => optBig(pick(n)) === null)) return null;
-    return Object.fromEntries(names.map((n) => [n, String(optBig(pick(n)))]));
+    const out = Object.fromEntries(names.map((n) => [n, String(optBig(pick(n)))]));
+    for (const extra of ["surcharge", "red_holders", "red_referral"]) {
+      const v = optBig(src[extra]);
+      if (v !== null) out[extra] = v.toString();
+    }
+    return out;
   }
 
   private swap(e: StoredEvent, emit: Emit): void {
@@ -231,27 +244,58 @@ export class Folder {
     if (!side) throw new Error("bad swap side");
     const amountIn = big(d.amount_in, "amount_in");
     const amountOut = big(d.amount_out, "amount_out");
-    const quote = side === "buy" ? amountIn : amountOut;
+    const fee = optBig(d.fee_total) ?? 0n;
+    // Gross USDC: a buy pays amount_in; a sell receives amount_out net of the fee (EVENTS.md), so add the fee back.
+    const quote = side === "buy" ? amountIn : amountOut + fee;
     const token = side === "buy" ? amountOut : amountIn;
-    const price = priceE12(quote, token, Number(pool.token_decimals));
+    const qr = optBig(d.q) ?? optBig(d.quote_reserve) ?? optBig((d.reserves_after as Row | undefined)?.quote);
+    const tr = optBig(d.t) ?? optBig(d.token_reserve) ?? optBig((d.reserves_after as Row | undefined)?.token);
+    const dec = Number(pool.token_decimals);
+    // EVENTS.md: the chart price is q/t after the swap; fall back to the execution price when reserves are not logged.
+    const price = (qr !== null && tr !== null ? priceE12(qr, tr, dec) : null) ?? priceE12(quote, token, dec);
     if (price === null) throw new Error("zero token amount in swap");
     const trader = str(d.trader) || str(d.account);
-    const fee = optBig(d.fee_total) ?? 0n;
+    const holder = side === "buy" ? str(d.receiver) || trader : trader;
     const slices = this.feeSlices(d);
-    const qr = optBig(d.quote_reserve) ?? optBig((d.reserves_after as Row | undefined)?.quote);
-    const tr = optBig(d.token_reserve) ?? optBig((d.reserves_after as Row | undefined)?.token);
     this.run("INSERT OR REPLACE INTO trades VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       id, e.blockHeight, e.ord, e.logIndex, e.receiptId, e.time, side, trader, amountIn.toString(), amountOut.toString(),
       quote.toString(), token.toString(), price.toString(), fee.toString(), slices ? JSON.stringify(slices) : null,
       qr?.toString() ?? null, tr?.toString() ?? null, e.source);
-    this.addBalance(id, trader, side === "buy" ? amountOut : -amountIn);
-    const creatorFee = BigInt(slices?.creator ?? "0");
-    this.run("UPDATE pools SET quote_reserve = COALESCE(?, quote_reserve), token_reserve = COALESCE(?, token_reserve), fees_total = ?, creator_fees = ?, source = ? WHERE launch_id = ?",
-      qr?.toString() ?? null, tr?.toString() ?? null, (BigInt(String(pool.fees_total)) + fee).toString(),
-      (BigInt(String(pool.creator_fees)) + creatorFee).toString(), mixSource(pool.source, e.source), id);
+    this.addBalance(id, holder, side === "buy" ? amountOut : -amountIn);
+    const add = (col: string, v: string | undefined): string => (BigInt(String(pool[col])) + BigInt(v ?? "0")).toString();
+    this.run(
+      `UPDATE pools SET quote_reserve = COALESCE(?, quote_reserve), token_reserve = COALESCE(?, token_reserve), fees_total = ?, creator_fees = ?,
+         fees_platform = ?, fees_holders = ?, fees_lp = ?, fees_referral = ?, source = ? WHERE launch_id = ?`,
+      qr?.toString() ?? null, tr?.toString() ?? null, add("fees_total", fee.toString()), add("creator_fees", slices?.creator),
+      add("fees_platform", slices?.platform), add("fees_holders", slices?.holders), add("fees_lp", slices?.lp), add("fees_referral", slices?.referral),
+      mixSource(pool.source, e.source), id,
+    );
     this.touchLaunch(id, e);
     emit({ type: "trade", launchId: id, trade: { launch_id: String(id), side, trader, price_e12: price.toString(), quote: quote.toString(), time: e.time, source: e.source, block_height: e.blockHeight, receipt_id: e.receiptId } });
     this.updateCandles(id, e.time, price, quote, e.source, emit);
+  }
+
+  private genesis(e: StoredEvent, stage: "committed" | "confirmed", emit: Emit): void {
+    const d = e.data;
+    const id = launchId(d);
+    this.touchLaunch(id, e);
+    const cur = this.get("SELECT * FROM genesis WHERE launch_id = ?", id);
+    if (cur?.stage === "confirmed" && stage === "committed") return;
+    const pick = (k: string): string | null => (typeof d[k] === "string" && d[k] !== "" ? (d[k] as string) : (cur?.[k] as string | null | undefined) ?? null);
+    const authority = (k: string): string => (k in d ? (d[k] === null ? "null" : "set") : String(cur?.[k] ?? "unknown"));
+    const checks = Array.isArray(d.verified_checks) ? d.verified_checks.filter((c): c is string => typeof c === "string") : JSON.parse(String(cur?.checks ?? "[]")) as string[];
+    this.run("INSERT OR REPLACE INTO genesis VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      id, stage, pick("network"), pick("path"), pick("spec_hash"), pick("mint"), pick("tx_create"), pick("tx_authority"), pick("distributor"), pick("root"),
+      authority("mint_authority"), authority("freeze_authority"), JSON.stringify(checks), e.time, mixSource(cur?.source, e.source));
+    emit({ type: "launch", launchId: id });
+  }
+
+  private externalPool(e: StoredEvent): void {
+    const d = e.data;
+    const id = launchId(d);
+    this.touchLaunch(id, e);
+    if (typeof d.venue !== "string" || typeof d.pool !== "string" || typeof d.url !== "string") throw new Error("bad external_pool");
+    this.run("INSERT OR REPLACE INTO external_pools VALUES (?, ?, ?, ?, ?)", id, d.venue, d.pool, d.url, e.source);
   }
 
   private updateCandles(id: number, time: number, price: bigint, quote: bigint, source: string, emit: Emit): void {

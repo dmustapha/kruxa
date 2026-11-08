@@ -42,14 +42,14 @@ test("launch feed: stages, search, filters, paging", async () => {
   const all = (await get("/api/launches")).body;
   assert.equal(all.source, "fixture");
   const stages = Object.fromEntries(all.items.map((l: Json) => [l.symbol, l.stage]));
-  assert.deepEqual(stages, { ALPHA: "passed", BRAVO: "failed", CHARLIE: "new" });
+  assert.deepEqual(stages, { ALPHA: "passed", BRAVO: "failed", CHARLIE: "new", DELTA: "passed" });
   assert.equal((await get("/api/launches?stage=failed")).body.items[0].symbol, "BRAVO");
   assert.equal((await get("/api/launches?q=alp")).body.total, 1);
   assert.equal((await get("/api/launches?has_market=true")).body.items.length, 1);
   const p1 = (await get("/api/launches?limit=2")).body;
   assert.equal(p1.items.length, 2);
   const p2 = (await get(`/api/launches?limit=2&cursor=${p1.next_cursor}`)).body;
-  assert.equal(p2.items.length, 1);
+  assert.equal(p2.items.length, 2);
   assert.equal(p2.next_cursor, null);
   assert.equal((await get("/api/launches?stage=bogus")).status, 400);
 });
@@ -146,7 +146,7 @@ test("SSE: a newly ingested trade arrives on the stream with a fixture label, an
   const dec = new TextDecoder();
   let buf = "";
   const tip = store.checkpoint()!;
-  const line = `EVENT_JSON:${JSON.stringify({ standard: "kruxa", version: "1.0.0", event: "swap", data: [{ launch_id: "1", side: "buy", trader: "zed.testnet", amount_in: "500000", amount_out: "20000000", fee_total: "5000" }] })}`;
+  const line = `EVENT_JSON:${JSON.stringify({ standard: "kruxa", version: "1.0.0", event: "swap", data: [{ launch_id: "1", side: "buy", trader: "zed.testnet", amount_in: "500000", amount_out: "20000000", fee_total: "5000", creator: "2500", platform: "750", holders: "0", lp: "1750", referral: "0" }] })}`;
   const fresh = { block: { header: { height: tip.height + 2, hash: "sse-1", prev_hash: tip.hash, timestamp_nanosec: ((BigInt(asOf(store).block_time!) + 60n) * 1_000_000_000n).toString() } },
     shards: [{ receipt_execution_outcomes: [{ execution_outcome: { id: "sse-r1", outcome: { executor_id: "market.fixture.testnet", logs: [line], status: { SuccessValue: "" } } } }] }] };
   setTimeout(() => store.ingestBlock(fresh, "fixture"), 50);
@@ -163,4 +163,113 @@ test("SSE: a newly ingested trade arrives on the stream with a fixture label, an
   const first = dec.decode((await r2.body!.getReader().read()).value);
   ac2.abort();
   assert.match(first, /event: hello/);
+});
+
+test("phase and tab: exclusive, cover every launch, and the tab filter matches them", async () => {
+  const all = (await get("/api/launches")).body.items as Json[];
+  const phases = Object.fromEntries(all.map((l) => [l.symbol, [l.phase, l.tab]]));
+  assert.deepEqual(phases, { ALPHA: ["TRADING", "trading"], BRAVO: ["DISSOLVED", "failed"], CHARLIE: ["OPEN", "live"], DELTA: ["PASS", "passed"] });
+  const counts: Record<string, number> = {};
+  for (const tab of ["live", "walk", "trading", "passed", "failed"]) {
+    const r = (await get(`/api/launches?tab=${tab}`)).body;
+    counts[tab] = r.total;
+    assert.ok(r.items.every((l: Json) => l.tab === tab));
+  }
+  assert.deepEqual(counts, { live: 1, walk: 0, trading: 1, passed: 1, failed: 1 });
+  assert.equal((await get("/api/launches?tab=all")).body.total, 4);
+  assert.equal((await get("/api/launches?tab=nope")).status, 400);
+});
+
+test("search matches name, symbol and accounts server side", async () => {
+  const names = async (q: string): Promise<string[]> => (await get(`/api/launches?q=${encodeURIComponent(q)}`)).body.items.map((l: Json) => l.symbol);
+  assert.deepEqual(await names("bravo cat"), ["BRAVO"]);
+  assert.deepEqual(await names("DELTA"), ["DELTA"]);
+  assert.deepEqual(await names("carol-treasury"), ["CHARLIE"]);
+  assert.deepEqual(await names("dora.testnet"), ["DELTA"]);
+  assert.deepEqual((await get("/api/launch/1")).body.name, "Alpha Coin");
+});
+
+test("token page: supply, token and market accounts, fee terms, window stats", async () => {
+  const t = (await get("/api/token/1")).body;
+  assert.equal(t.pool.total_supply, "2000000000000");
+  assert.equal(t.pool.token, "alpha.token.fixture.testnet");
+  assert.equal(t.pool.market, "market.fixture.testnet");
+  assert.equal(t.pool.fee_terms.fee_vest_days, 90);
+  assert.deepEqual(t.external_pools, []);
+  assert.deepEqual(Object.keys(t.stats.windows), ["5m", "1h", "6h", "24h"]);
+  const w = t.stats.windows["24h"];
+  assert.equal(w.buys + w.sells, t.stats.trades_24h);
+  assert.ok(w.buys > 0 && w.sells > 0 && w.unique_traders > 1);
+  assert.ok(Math.abs(w.volume - t.stats.volume_24h) < 1e-6);
+  assert.ok(t.stats.windows["5m"].buys + t.stats.windows["5m"].sells <= w.buys + w.sells);
+  const pre = (await get("/api/token/3")).body;
+  assert.equal(pre.pool.token, null);
+  assert.equal(pre.pool.fee_terms, null);
+  const trade = (await get("/api/token/1/trades?limit=1&trader=dan.testnet")).body.items[0];
+  assert.equal(trade.fee_slices.holders, "0");
+  assert.equal(trade.fee_slices.referral, "0");
+  assert.ok(BigInt(trade.fee_slices.red_holders) > 0n);
+});
+
+test("genesis: confirmed with null authorities, pending, and none", async () => {
+  const g = (id: number): Promise<Json> => get(`/api/launch/${id}`).then((r) => r.body.genesis as Json);
+  const a = await g(1);
+  assert.equal(a.stage, "confirmed");
+  assert.equal(a.mint_authority, "null");
+  assert.equal(a.network, "solana-devnet");
+  assert.equal(a.source, "fixture");
+  assert.equal((a.verdict_inputs as Json).verdict, "PASS");
+  const d = await g(4);
+  assert.equal(d.stage, "pending");
+  assert.equal(d.mint_authority, "unknown");
+  assert.equal(d.mint, null);
+  assert.equal((await g(2)).stage, "none");
+  assert.equal((await g(3)).stage, "none");
+  assert.equal((await get("/api/token/1")).body.genesis.stage, "confirmed");
+});
+
+test("stats: honest aggregates that reconcile with the underlying rows", async () => {
+  const s = (await get("/api/stats")).body;
+  assert.equal(s.source, "fixture");
+  assert.equal(s.launches.total, 4);
+  assert.equal(s.launches.pass_rate_bps, 6666);
+  assert.equal(s.volume.trades, Number((store.db.prepare("SELECT COUNT(*) AS n FROM trades").get() as { n: number }).n));
+  const refunded = (await get("/api/portfolio/ivy.testnet")).body.positions[0].contributed;
+  const jon = (await get("/api/portfolio/jon.testnet")).body.positions[0].contributed;
+  assert.equal(s.committed.refunds_paid, (BigInt(refunded) + BigInt(jon)).toString());
+  assert.ok(BigInt(s.committed.refund_attempts_failed) > 0n);
+  assert.equal(s.volume.fee_slices.holders, "0");
+  const slices = ["creator", "platform", "holders", "lp", "referral"].reduce((a, k) => a + BigInt(s.volume.fee_slices[k]), 0n);
+  assert.equal(slices.toString(), s.volume.fees_total);
+  assert.ok(typeof s.basis === "string" && s.since_block > 0);
+});
+
+test("ops-log: pause, freeze, cap and market events, newest first, paged", async () => {
+  const log = (await get("/api/ops-log")).body;
+  const evs = log.items.map((i: Json) => i.event);
+  assert.deepEqual([...evs].sort(), ["global_cap_queued", "market_paused", "market_paused", "paused", "platform_withdrawn", "unpaused"]);
+  const hs = log.items.map((i: Json) => i.block_height);
+  assert.deepEqual([...hs].sort((a: number, b: number) => b - a), hs);
+  assert.equal(log.items[0].event, "platform_withdrawn");
+  assert.ok(log.items.every((i: Json) => i.source === "fixture" && typeof i.summary === "string"));
+  assert.equal((await get("/api/ops-log?scope=market")).body.items.length, 3);
+  const p1 = (await get("/api/ops-log?limit=4")).body;
+  const p2 = (await get(`/api/ops-log?limit=4&before=${p1.next_cursor}`)).body;
+  assert.equal(p1.items.length + p2.items.length, 6);
+  assert.equal(p2.next_cursor, null);
+  assert.equal((await get("/api/ops-log?scope=x")).status, 400);
+});
+
+test("external_pool event surfaces a venue link; unknown contracts cannot inject one", async () => {
+  const tip = store.checkpoint()!;
+  const line = (e: string, d: Json): string => `EVENT_JSON:${JSON.stringify({ standard: "kruxa", version: "1.0.0", event: e, data: [d] })}`;
+  const data = { launch_id: "1", venue: "meteora", pool: "PoolAddr1", url: "https://example.invalid/pool" };
+  const mkb = (n: number, exec: string): any => ({ block: { header: { height: tip.height + n, hash: `ext-${n}`, prev_hash: n === 2 ? tip.hash : `ext-${n - 2}`, timestamp_nanosec: ((BigInt(asOf(store).block_time!) + 600n + BigInt(n)) * 1_000_000_000n).toString() } },
+    shards: [{ receipt_execution_outcomes: [{ execution_outcome: { id: `ext-r${n}`, outcome: { executor_id: exec, logs: [line("external_pool", data)], status: { SuccessValue: "" } } } }] }] });
+  store.ingestBlock(mkb(2, "evil.testnet"), "fixture");
+  assert.deepEqual((await get("/api/token/1")).body.external_pools, []);
+  store.ingestBlock(mkb(4, "market.fixture.testnet"), "fixture");
+  assert.deepEqual((await get("/api/token/1")).body.external_pools, []);
+  store.ingestBlock(mkb(6, "core.fixture.testnet"), "fixture");
+  assert.deepEqual((await get("/api/token/1")).body.external_pools, [{ venue: "meteora", pool: "PoolAddr1", url: "https://example.invalid/pool" }]);
 });

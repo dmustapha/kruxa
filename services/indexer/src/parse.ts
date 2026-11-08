@@ -8,9 +8,10 @@ export const CORE_EVENTS = new Set([
   "charter_created", "trial_opened", "contributed", "walked", "verdict", "pass_allocated", "payout_resolved",
   "tokens_claimed", "residue_swept", "dissolved", "bond_reclaimed", "token_creation_failed",
   "contribution_submitted", "contribution_failed", "deposit_rejected", "deposit_rejected_refundable",
-  "paused", "frozen", "unpaused",
+  "paused", "frozen", "unpaused", "global_cap_lowered", "global_cap_queued", "global_cap_applied", "launch_cap_queued", "launch_cap_applied",
+  "genesis_committed", "genesis_confirmed", "external_pool",
 ]);
-export const MARKET_EVENTS = new Set(["pool_opened", "swap", "creator_claimed", "platform_withdrawn", "market_paused"]);
+export const MARKET_EVENTS = new Set(["pool_opened", "swap", "creator_claimed", "platform_withdrawn", "market_paused", "owed_credited", "owed_claimed"]);
 
 /** Parse one log line. Returns the data objects of a valid `kruxa` 1.0.0 event, or [] for anything else. */
 export function parseLogLine(line: string): Array<{ event: string; data: Record<string, unknown> }> {
