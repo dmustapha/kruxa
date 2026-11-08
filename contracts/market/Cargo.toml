@@ -1,0 +1,18 @@
+[package]
+name = "kruxa-market-contract"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+near-sdk = { workspace = true }
+kruxa-math = { path = "../../crates/kruxa-math" }
+kruxa-logic = { path = "../../crates/kruxa-logic" }
+kruxa-market = { path = "../../crates/kruxa-market" }
+
+[dev-dependencies]
+near-sdk = { workspace = true, features = ["unit-testing"] }
