@@ -107,9 +107,9 @@ export CARGO_NET_OFFLINE=true   # from here on cargo may not touch the network
 
 # build ------------------------------------------------------------------------------------------------------------------
 if is_green N2; then
-  EXPECT=("kruxa_core.wasm" "kruxa_market_contract.wasm" "kruxa_instant_contract.wasm")
-  step B1 0 "build core, market and launcher wasm with cargo-near" \
-    bash -c './scripts/build.sh && ./scripts/market-build.sh && ./scripts/instant-build.sh'
+  EXPECT=("kruxa_core.wasm" "kruxa_market_contract.wasm" "kruxa_instant_contract.wasm" "sha256 kruxa_core.wasm")
+  step B1 0 "build core, market and launcher wasm with cargo-near, print their sha256" \
+    bash -c './scripts/build.sh && ./scripts/market-build.sh && ./scripts/instant-build.sh && python3 -I scripts/wasm-sha256.py'
 else skip B1 "build wasm" "N2 red"; fi
 
 # pure tests and golden vectors (no chain, no sandbox) --------------------------------------------------------------------
@@ -226,7 +226,7 @@ if [ "$RECORD" = 1 ]; then
     echo "$SUMMARY"
     echo
     echo "# Key output lines, copied from the step logs"
-    for f in V1:outcome= V1:spend= M2:SLICES M3:BOUND W1:SWARM W1:INVARIANTS W1:sweep A1:ATTACK T2:MISMATCH T5:exit; do
+    for f in B1:sha256 V1:outcome= V1:spend= M2:SLICES M3:BOUND W1:SWARM W1:INVARIANTS W1:sweep A1:ATTACK T2:MISMATCH T5:exit; do
       id=${f%%:*}; pat=${f#*:}; grep -h "$pat" "$OUT/$id.log" 2>/dev/null | head -3
     done
     cat "$OUT/O1.log" 2>/dev/null
