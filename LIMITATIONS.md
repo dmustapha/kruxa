@@ -51,3 +51,13 @@ This file is the design-time scope boundary. It does not move with progress; `SU
 - Fee split 50/15/15/10/10 (RULED): creator-controlled extraction bound is 75% at the default and 80% at the contract bound; Hold Vault and referral payouts are later, so until then the holder slice goes to LP and the referral slice returns to LP.
 - Wave 1 constants changed by delta D-4 (platform share 1_500; standard preset 5_000/1_500/1_500/1_000/1_000) are not yet compiled; the recorded wasm size (456,999 bytes) and hash are from before D-4.
 - Pending recommendations, not rulings: DN-26 to DN-32 (CO-4 section 16). Nothing here treats them as decided.
+
+## Added by Phase 1 (2026-11-08, build agent)
+- Not closed by G1, carried by name: W1-DC-8 (S3 against the REAL `intents.near` wasm; only the mock Verifier ran), W1-DC-12 (factory cost, `ft_burn`, benchmarks), W1-DC-13 (reproducible wasm and testnet `view_code` hash), W1-DC-15 (D-1 creator gate) and W1-DC-16 (D-3 `open_market`). Reason: scheduled in Phase 2 and PLAN C3.6 A-2/A-3.
+- L6 Intents liability (`credited_intents <= mt_balance_of`) is not in `get_invariants`: it needs an async call to `intents.near` (ARCHITECTURE 5.6, Wave 1b). Not claimed.
+- I4 is checked as a snapshot property (status agrees with the settlement record) plus a legal-move check in the sandbox harness; the contract keeps no transition history on chain.
+- FROZEN 7-day auto-expiry is tested as the pure function `pause_at` that the contract calls (boundary at `frozen_until - 1` and `frozen_until`), not with a 7-day sandbox fast-forward.
+- Not built: `kruxa-sim explain`, `claim_refund_batch`, `claim_orphan_credit`, in-claim token registration, `burn_mode`.
+- Per-launch cap wording: the ruled $1,000 per launch is enforced as `R_HARD_CAP` (hard cap above $1,000) while `R_CAP_LAUNCH` fires at 2x the hard cap (custody), so one launch can hold up to $2,000 in escrow; the $3,000 global cap bounds all launches. The oversubscription ceiling is open item DN-2.
+- The cap-raise timelock is 7 days; the 48 h timelock in the rulings belongs to the Solana reserve vault (Phase 4), not to the core contract.
+- Wasm size is 462,540 bytes after Phase 1 additions (budget in the lint script 600,000; the 350 KB target of DT-X2 is still exceeded).
