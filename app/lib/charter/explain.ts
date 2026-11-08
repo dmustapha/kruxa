@@ -1,0 +1,30 @@
+// Plain-language meaning of each rule code, for the Studio. The code itself is the contract's; these sentences are ours.
+import type { RuleCode } from './rules';
+
+export const EXPLAIN: Record<RuleCode, string> = {
+  R_SYMBOL: 'The ticker must be 2 to 12 capital letters or digits and not a reserved name; the name must be 1 to 32 plain characters.',
+  R_SUPPLY: 'Total supply is outside the allowed range.',
+  R_BUCKETS: 'The four token buckets (sale, LP, creator, backer) must each sit in their range and add up to exactly 100%.',
+  R_ALLOC: 'Creator plus backer allocation is above the 25% ceiling. The creator cannot take more of the supply than that.',
+  R_HARD_CAP: 'The hard cap is outside the allowed raise range for this profile.',
+  R_SOFT_CAP: 'The soft cap is below its floor (the larger of 20% of the hard cap and $350) or above the hard cap.',
+  R_MIN_BUY: 'The minimum buy is below its floor or above the soft cap.',
+  R_WALLET_CAP: 'The per-wallet cap setting is outside 0.5% to 5% of the hard cap.',
+  R_FUNDERS: 'Minimum backers must be between 10 and 500.',
+  R_PASSABLE: 'Minimum backers times the minimum buy is more than the soft cap, so the trial could never pass.',
+  R_WINDOW: 'A time window is outside its bounds: commit window, Walk tail or open delay.',
+  R_STREAM: 'The stream length is below the minimum for this raise size or above 365 days.',
+  R_CAP_GLOBAL: 'This hard cap does not fit under the global cap across all launches.',
+  R_FEE_TOTAL: 'The total trading fee is outside its allowed range.',
+  R_CREATOR_SHARE: 'The creator share of the fee is above its ceiling.',
+  R_CREATOR_TAKE: 'The creator would take more than 1.00% of trade volume.',
+  R_PLATFORM_FLOOR: 'The platform share is below its floor.',
+  R_PLATFORM_FIXED: 'The platform share is fixed and was changed.',
+  R_HOLDER_RANGE: 'The holders share is outside its range.',
+  R_LP_RANGE: 'The LP share is outside its range.',
+  R_HOLDER_LP_FLOOR: 'Holders plus LP share is below its floor.',
+  R_REFERRAL: 'The referral share is above its ceiling.',
+  R_SPLIT_SUM: 'The five fee shares do not add up to 100%.',
+  R_FEE_VEST: 'The fee vesting terms are outside their range.',
+  R_OPENING: 'The opening-fee decay terms are inconsistent or too large.',
+};
