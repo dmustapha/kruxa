@@ -9,6 +9,8 @@ const signAndSend = vi.fn(async (_i: unknown) => ({ txHash: 'HASHABCDEF123', raw
 const openChooser = vi.fn();
 let wallet: { guard: { signingEnabled: boolean; lockReason?: string }; sessions: { near: { address: string } | null; solana: unknown }; adapters: unknown; openChooser: unknown };
 vi.mock('@/components/wallet/index', () => ({ useWallet: () => wallet, WalletProvider: ({ children }: { children: unknown }) => children }));
+const unitCfg = vi.hoisted(() => ({ current: { kind: 'ok' as const, config: { unit_ns: '86400000000000' as string | undefined } } }));
+vi.mock('@/lib/instant/preview', async (orig) => ({ ...(await orig<typeof import('@/lib/instant/preview')>()), launcherConfig: vi.fn(async () => unitCfg.current) }));
 vi.mock('@/lib/market/chain', async (orig) => ({ ...(await orig<typeof import('@/lib/market/chain')>()), viewCall: vi.fn(async () => null) }));
 
 const { ModeBadge, InstantNotice } = await import('./InstantNotice');
@@ -48,10 +50,23 @@ describe('mode badge and notice', () => {
 });
 
 describe('ContractFacts', () => {
-  it('lists the facts with their basis and has no verdict or recompute control', () => {
+  it('on a launcher that sends no unit the schedule is in units of unknown length, never days', async () => {
+    unitCfg.current = { kind: 'ok', config: { unit_ns: undefined } };
+    render(<ContractFacts page={page()} facts={facts} instant={bundle()} nowSec={OPEN + DAY} />);
+    expect(await screen.findByText(/7 units \(length not known\) cliff/)).toBeTruthy();
+    expect(screen.queryByText(/7 days? cliff/)).toBeNull();
+    unitCfg.current = { kind: 'ok', config: { unit_ns: '86400000000000' } };
+  });
+  it('on a demo clock (10 s unit) it says so instead of 7 days', async () => {
+    unitCfg.current = { kind: 'ok', config: { unit_ns: '10000000000' } };
+    render(<ContractFacts page={page()} facts={facts} instant={bundle()} nowSec={OPEN + DAY} />);
+    expect(await screen.findByText(/7 units \(10 s each\) cliff/)).toBeTruthy();
+    unitCfg.current = { kind: 'ok', config: { unit_ns: '86400000000000' } };
+  });
+  it('lists the facts with their basis and has no verdict or recompute control', async () => {
     render(<ContractFacts page={page()} facts={facts} instant={bundle()} nowSec={OPEN + DAY} />);
     expect(screen.getByRole('heading', { name: 'Contract facts' })).toBeTruthy();
-    expect(screen.getByText('7 day cliff, linear over 90 days')).toBeTruthy();
+    expect(await screen.findByText('7 days cliff, then 7.8% unlocks at once and the rest linearly until 90 days after the pool opens')).toBeTruthy();
     expect(screen.getByText(/Seeded; the market has no LP withdrawal method/)).toBeTruthy();
     expect(screen.getByText('./scripts/verify.sh instant 1000000003')).toBeTruthy();
     expect(screen.queryByRole('button', { name: /Recompute/ })).toBeNull();

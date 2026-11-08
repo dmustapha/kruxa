@@ -4,7 +4,8 @@ import { useWallet } from '@/components/wallet';
 import { ChainActionButton } from '../trial/ChainActionButton';
 import { ErrorState, LoadingBlock } from '@/components/ui/States';
 import { TxStatus } from '@/components/ui/TxStatus';
-import { abortInstantNear, cancelInstantNear, openInstantNear, reclaimDepositNear, seedInstantNear } from '@/lib/actions';
+import { OPEN_INSTANT_GAS_TGAS, abandonInstantNear, abortInstantNear, openInstantNear, reclaimDepositNear, seedInstantNear } from '@/lib/actions';
+import { fmtDate } from '@/lib/format';
 import { fmtUsdc } from '@/lib/config';
 import { useTx } from '@/lib/useTx';
 import { StatusPill } from './InstantParts';
@@ -22,6 +23,24 @@ export function stepsFor(status: string | undefined, next: string | undefined): 
     { n: 2, label: 'Seed the pool with your USDC', state: seeded ? 'done' : dead ? 'dead' : created ? 'next' : 'wait' },
     { n: 3, label: 'Open the pool', state: open ? 'done' : dead ? 'dead' : seeded || next === 'open_instant' || next === 'retry_open_instant' ? 'next' : 'wait' },
   ];
+}
+
+/** Why abort_instant cannot be sent right now, or null (contract: creator, Seeded or Handoff, after the abort delay, only while the market consumed none of the seed). */
+export function abortBlock(status: string, r: { seed_sent?: string; seed_inflight?: string }, phase: { can_abort_at_ns?: string }, nowNs: bigint): string | null {
+  if (status !== 'Seeded' && status !== 'Handoff') return 'Abort needs a seeded launch.';
+  if ((r.seed_sent && BigInt(r.seed_sent) > 0n) || (r.seed_inflight && BigInt(r.seed_inflight) > 0n)) return 'The market has taken (or is taking) the seed, so it is no longer refundable.';
+  if (phase.can_abort_at_ns && nowNs < BigInt(phase.can_abort_at_ns)) return `Abort opens at ${fmtDate(Number(BigInt(phase.can_abort_at_ns) / 1_000_000_000n))}.`;
+  return null;
+}
+
+function AbortBlock({ status, record, phase, busy, onAbort }: { status: string; record: { seed_sent?: string; seed_inflight?: string }; phase: { can_abort_at_ns?: string }; busy: boolean; onAbort: () => void }) {
+  const why = abortBlock(status, record, phase, BigInt(Date.now()) * 1_000_000n);
+  return (
+    <div className="stack" style={{ marginTop: 12 }}>
+      <button type="button" className="btn-quiet" disabled={!!why || busy} onClick={onAbort}>Abort and take the seed back</button>
+      <p className="hint">{why ?? 'Pays your whole seed back. Only while the market has taken none of it.'}</p>
+    </div>
+  );
 }
 
 /** The three-step tracker for one instant launch, with the one action each step needs. Statuses come from the launcher, never from this page. */
@@ -53,7 +72,8 @@ export function InstantProgress({ launchId, onChanged }: { launchId: string; onC
           </ChainActionButton>
           <p className="hint">The exact amount, once. Only the creator ({record.creator}) can seed; a different amount is returned by the token contract.{sessions.near && !isCreator ? ' You are connected as a different account.' : ''}</p>
           <TxStatus state={seedTx.state} />
-          {isCreator && <button type="button" className="btn-quiet" onClick={() => void run(endTx, () => cancelInstantNear(launchId))}>Cancel before seeding</button>}
+          {isCreator && <button type="button" className="btn-quiet" onClick={() => void run(endTx, () => abandonInstantNear(launchId))}>End this launch before seeding</button>}
+          {isCreator && <p className="hint">Ending it lists nothing and the token is never used. The factory keeps its token deposit.</p>}
         </div>
       )}
       {!dead && (phase.next_action === 'open_instant' || phase.next_action === 'retry_open_instant') && (
@@ -61,10 +81,12 @@ export function InstantProgress({ launchId, onChanged }: { launchId: string; onC
           <ChainActionButton chain="near" action="claim" loading={openTx.state.status === 'pending'} className="btn-primary" onReady={() => void run(openTx, () => openInstantNear(launchId))}>
             {phase.next_action === 'retry_open_instant' ? 'Step 3 of 3: Retry opening the pool' : 'Step 3 of 3: Open the pool'}
           </ChainActionButton>
-          <p className="hint">Anyone can open it. It hands your seed to the market and then the pool tokens. A retry sends only what is missing. Once the market has taken the seed it is not refundable.</p>
+          <p className="hint">Anyone can open it. It hands your seed to the market and then the pool tokens. A retry sends only what is missing. Once the market has taken the seed it is not refundable. This call attaches {OPEN_INSTANT_GAS_TGAS} Tgas.</p>
           <TxStatus state={openTx.state} />
-          {isCreator && phase.status === 'Seeded' && <button type="button" className="btn-quiet" onClick={() => void run(endTx, () => abortInstantNear(launchId))}>Abort and take the seed back (allowed only after the launcher's abort delay, and only if the market has taken none of it)</button>}
         </div>
+      )}
+      {!dead && isCreator && (phase.status === 'Seeded' || phase.status === 'Handoff') && (
+        <AbortBlock status={phase.status} record={record} phase={phase} busy={endTx.state.status === 'pending'} onAbort={() => void run(endTx, () => abortInstantNear(launchId))} />
       )}
       {dead && (
         <div className="callout bad"><p><b>This launch ended: {phase.status}.</b> The token will never be listed.</p>

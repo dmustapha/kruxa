@@ -18,8 +18,9 @@ import { feePreview } from '@/lib/charter/form';
 import { summarizeFees, summarizeOpening } from '@/lib/charter/summary';
 import { CONFIG, fmtUsdc } from '@/lib/config';
 import { fmtNear, microFromDollars } from '@/lib/format';
-import { INSTANT_DEFAULTS, DEPOSIT_ESTIMATE_YOCTO, deriveInstant, rateLimited, toInstantJson, validateInstant, type InstantParams } from '@/lib/instant/rules';
-import { askLauncher, getInstantPhase, instantsByCreator, launcherConfig } from '@/lib/instant/preview';
+import { phaseOf } from '@/lib/phase';
+import { INSTANT_DEFAULTS, deriveInstant, rateLimited, termWord, toInstantJson, unitInfo, validateInstant, type InstantParams } from '@/lib/instant/rules';
+import { askLauncher, getInstant, getInstantPhase, launcherConfig, limitsFrom } from '@/lib/instant/preview';
 import { summarizeAllocation, summarizeOpenPrice, summarizeSeed } from '@/lib/instant/summary';
 import { useTx } from '@/lib/useTx';
 
@@ -50,8 +51,8 @@ function Field({ id, label, value, onChange, error, hint }: { id: string; label:
 
 const Summary = ({ text }: { text: string }) => <p className="summary"><b>Summary:</b> {text}</p>;
 
-function Preview({ f, p }: { f: Form; p: InstantParams | null }) {
-  const d = p ? deriveInstant(p, CONFIG.network) : null;
+function Preview({ f, p, fee }: { f: Form; p: InstantParams | null; fee: bigint | null }) {
+  const d = p ? deriveInstant(p, fee) : null;
   return (
     <article className="lc" aria-label="Draft preview">
       <div className="lc-top">
@@ -62,8 +63,8 @@ function Preview({ f, p }: { f: Form; p: InstantParams | null }) {
       <div className="row"><ModeBadge mode="instant" /></div>
       <dl className="kv lc-kv">
         <div><dt>Opening price</dt><dd>{d?.openPriceUsdc != null ? `${d.openPriceUsdc.toPrecision(3)} USDC` : 'needs a valid seed'}</dd></div>
-        <div><dt>Pool opens with</dt><dd>{d ? fmtUsdc(d.poolSeed) : 'n/a'}</dd></div>
-        <div><dt>Your allocation</dt><dd>{p ? `${p.creator_alloc_bps / 100}% (unlocks slowly)` : 'n/a'}</dd></div>
+        <div><dt>Pool opens with</dt><dd>{d && fee !== null ? fmtUsdc(d.poolSeed) : d ? `${fmtUsdc(d.poolSeed)} before any launch fee` : 'n/a'}</dd></div>
+        <div><dt>Your allocation</dt><dd>{p ? `${p.creator_alloc_bps / 100}% (vests from the pool opening)` : 'n/a'}</dd></div>
       </dl>
       <div className="lc-foot"><span className="sub">Preview of how this launch appears in Discover</span></div>
     </article>
@@ -80,49 +81,43 @@ export function InstantStudio() {
   const [created, setCreated] = useState<string | null>(null);
   const set = (k: keyof Form) => (v: string) => setF((x) => ({ ...x, [k]: v }));
   const parsed = useMemo(() => toParams(f), [f]);
-  const local = useMemo(() => (parsed.ok ? validateInstant(parsed.params, CONFIG.network) : []), [parsed]);
-  const derived = parsed.ok ? deriveInstant(parsed.params, CONFIG.network) : null;
-  const key = parsed.ok ? JSON.stringify(toInstantJson(parsed.params)) : '';
-
   const cfg = useApi(() => launcherConfig(), 'launcher-config');
   const launcher = cfg.status === 'ok' ? cfg.data : null;
-  const gateClosed = launcher?.kind === 'ok' && launcher.config.creator_gate === true;
+  const lcfg = launcher?.kind === 'ok' ? launcher.config : null;
+  const limits = useMemo(() => limitsFrom(lcfg), [lcfg]);
+  const unit = unitInfo(limits.unitNs);
+  const local = useMemo(() => (parsed.ok ? validateInstant(parsed.params, limits) : []), [parsed, limits]);
+  const derived = parsed.ok ? deriveInstant(parsed.params, limits.launchFee) : null;
+  const key = parsed.ok ? JSON.stringify(toInstantJson(parsed.params)) : '';
+
+  const gateClosed = lcfg?.creator_gate === true;
   const mainnetClosed = CONFIG.network === 'mainnet' && (gateClosed || launcher?.kind !== 'ok');
   const notDeployed = launcher?.kind === 'not_deployed';
-  const paused = launcher?.kind === 'ok' && launcher.config.paused !== undefined && launcher.config.paused !== 'None';
+  const paused = !!lcfg && lcfg.paused !== undefined && lcfg.paused !== 'None';
 
   const [ask, setAsk] = useState<Awaited<ReturnType<typeof askLauncher>> | 'asking' | null>(null);
   useEffect(() => {
     if (!parsed.ok) { setAsk(null); return; }
     setAsk('asking');
     let live = true;
-    const t = setTimeout(() => { void askLauncher(parsed.params, signer, payout.resolution.ok ? payout.resolution.accountId : null).then((a) => { if (live) setAsk(a); }); }, 500);
+    const t = setTimeout(() => { void askLauncher(parsed.params, signer).then((a) => { if (live) setAsk(a); }); }, 500);
     return () => { live = false; clearTimeout(t); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key, signer]);
 
-  const mine = useApi(signer ? () => api.launches({ creator: signer, launch_type: 'instant', include_failed: true, limit: 20 }) : null, `instant-mine-${signer}`);
-  const recent = mine.status === 'ok' ? mine.data.items.filter((l) => (l.mode ?? 'trial') === 'instant').map((l) => l.created_at ?? 0) : [];
-  const limited = rateLimited(recent, Math.floor(Date.now() / 1000));
-
-  const [resume, setResume] = useState<string | null>(null);
-  useEffect(() => {
-    if (!signer || notDeployed) { setResume(null); return; }
-    let live = true;
-    void instantsByCreator(signer).then(async (ids) => {
-      const last = ids[ids.length - 1];
-      if (!last) return;
-      const ph = await getInstantPhase(last);
-      if (live && ph && ph.step !== 'done' && !FINAL_DEAD.includes(ph.status)) setResume(last);
-    }).catch(() => undefined);
-    return () => { live = false; };
-  }, [signer, notDeployed, created]);
+  const mine = useApi(signer ? () => api.launches({ creator: signer, launch_type: 'instant', include_failed: true, limit: 20 }) : null, `instant-mine-${signer}-${created ?? ''}`);
+  const instants = mine.status === 'ok' ? mine.data.items.filter((l) => (l.mode ?? 'trial') === 'instant') : [];
+  const limited = rateLimited(instants.map((l) => l.created_at ?? 0), Math.floor(Date.now() / 1000), unit);
+  /** An instant launch of this creator that is still between token creation and an open pool, from the indexer (the launcher has no per-creator view). */
+  const resume = signer && !notDeployed ? instants.find((l) => phaseOf(l, 0) === 'LAUNCHING')?.launch_id ?? null : null;
 
   const launcherViolations = ask && ask !== 'asking' && ask.kind === 'refused' ? ask.violations : [];
   const deposit = ask && ask !== 'asking' && ask.kind === 'ok' ? ask.deposit : null;
-  const clean = parsed.ok && local.length === 0 && launcherViolations.length === 0 && !limited;
+  const launcherFee = ask && ask !== 'asking' && ask.kind === 'ok' && ask.launchFee != null ? BigInt(ask.launchFee) : limits.launchFee;
+  const launcherPoolSeed = ask && ask !== 'asking' && ask.kind === 'ok' ? ask.poolSeed : null;
+  const clean = parsed.ok && local.length === 0 && launcherViolations.length === 0 && limited !== true;
   const canStart = clean && !!deposit && ack && payout.resolution.ok && !mainnetClosed && !notDeployed && !paused;
-  const reason = !parsed.ok ? 'Fix the highlighted fields first.' : local.length || launcherViolations.length ? 'Fix the rule codes above. Nothing is signed.' : limited ? 'One instant launch per account per 24 hours.'
+  const reason = !parsed.ok ? 'Fix the highlighted fields first.' : local.length || launcherViolations.length ? 'Fix the rule codes above. Nothing is signed.' : limited ? `One instant launch per account per ${termWord(1, unit)}.`
     : mainnetClosed ? 'Instant launches are closed on mainnet until the capped beta opens.' : notDeployed ? 'The instant launcher is not deployed on this network yet, so nothing can be created.' : paused ? 'The launcher is paused. Exits stay open; new launches do not.'
       : !deposit ? 'The required deposit comes from the launcher, which is not answering.' : !payout.resolution.ok ? payout.resolution.error : !ack ? 'Tick the acknowledgement to continue.' : 'No wallet is needed until you press the button.';
 
@@ -131,7 +126,12 @@ export function InstantStudio() {
     const recipient = payout.resolution.isSeparate ? payout.resolution.accountId : null;
     await tx.run(async () => {
       const r = await adapters.near.signAndSendTransaction(createInstantNear(toInstantJson(parsed.params), recipient, deposit));
-      try { const ids = await instantsByCreator(signer ?? ''); setCreated(ids[ids.length - 1] ?? null); } catch { /* the progress panel finds it later */ }
+      // The launcher assigns `next_launch_id`; confirm the guess against its own record (creator must match) before showing steps for it.
+      try {
+        const guess = lcfg?.next_launch_id;
+        const rec = guess ? await getInstant(guess) : null;
+        if (guess && rec && rec.creator === signer) setCreated(guess);
+      } catch { /* the Resume panel finds it through the indexer */ }
       return r;
     });
   }
@@ -141,11 +141,11 @@ export function InstantStudio() {
   return (
     <div className="studio">
       <aside className="studio-left" aria-label="Preview and consequences">
-        <Preview f={f} p={p} />
+        <Preview f={f} p={p} fee={launcherFee} />
         <section className="card" aria-labelledby="iw-h">
           <h2 id="iw-h" style={{ marginTop: 0, fontSize: '1.1rem' }}>What happens</h2>
           <ul className="sumlist">
-            {p ? <><li>{summarizeSeed(p, CONFIG.network)}</li><li>{summarizeAllocation(p)}</li><li>{summarizeOpenPrice(p, CONFIG.network)}</li><li>Buyers get no trial and no refund. You cannot withdraw the seed.</li></> : <li>Fix the highlighted fields to see the consequences.</li>}
+            {p ? <><li>{summarizeSeed(p, launcherFee)}</li><li>{summarizeAllocation(p, limits.unitNs)}</li><li>{summarizeOpenPrice(p, launcherFee)}</li><li>Buyers get no trial and no refund. You cannot withdraw the seed.</li></> : <li>Fix the highlighted fields to see the consequences.</li>}
           </ul>
         </section>
       </aside>
@@ -167,9 +167,9 @@ export function InstantStudio() {
 
         <section className="card" aria-labelledby="iseed-h">
           <h2 id="iseed-h" style={{ marginTop: 0 }}>2. Pool seed</h2>
-          <Field id="seed" label="USDC seed ($100 to $1,000)" value={f.seed} onChange={set('seed')} error={errors.seed} hint="This USDC is locked in the pool permanently" />
-          {p && <Summary text={summarizeSeed(p, CONFIG.network)} />}
-          <p className="hint">Launch fee: flat $10 on mainnet only, taken from the seed. None on testnet.</p>
+          <Field id="seed" label={`USDC seed (${fmtUsdc(limits.seedMin)} to ${fmtUsdc(limits.seedMax)})`} value={f.seed} onChange={set('seed')} error={errors.seed} hint="This USDC is locked in the pool permanently" />
+          {p && <Summary text={summarizeSeed(p, launcherFee)} />}
+          <p className="hint">{launcherFee === null ? 'Launch fee: read from the launcher; not known until it answers.' : launcherFee > 0n ? `Launch fee: a flat ${fmtUsdc(launcherFee)} taken from the seed (the launcher's figure).` : 'Launch fee: none on this launcher (its figure).'}</p>
         </section>
 
         <section className="card" aria-labelledby="ialloc-h">
@@ -180,10 +180,11 @@ export function InstantStudio() {
           <div className="grid grid-2" style={{ gap: '0 16px' }}>
             <Field id="allocPct" label="Allocation (percent)" value={f.allocPct} onChange={set('allocPct')} error={errors.allocPct} hint="default 5" />
             <span />
-            <Field id="cliff" label="Cliff (days)" value={f.cliff} onChange={set('cliff')} error={errors.cliff} hint="7 to 30, default 7" />
-            <Field id="vest" label="Unlock ends (days)" value={f.vest} onChange={set('vest')} error={errors.vest} hint="30 to 365, default 90" />
+            <Field id="cliff" label={`Cliff (${unit.kind === 'day' ? 'days' : 'units'})`} value={f.cliff} onChange={set('cliff')} error={errors.cliff} hint="7 to 30, default 7" />
+            <Field id="vest" label={`Unlock ends (${unit.kind === 'day' ? 'days' : 'units'})`} value={f.vest} onChange={set('vest')} error={errors.vest} hint="30 to 365, default 90" />
           </div>
-          {p && <Summary text={summarizeAllocation(p)} />}
+          {unit.kind !== 'day' && <p className="hint warn" role="status">{unit.kind === 'unknown' ? 'The launcher has not said how long a unit is, so cliff and unlock are shown in units, not days.' : `This launcher runs on a ${unit.label}. Cliff and unlock are in those units, not days.`}</p>}
+          {p && <Summary text={summarizeAllocation(p, limits.unitNs)} />}
         </section>
 
         <section className="card" aria-labelledby="ifee-h">
@@ -221,8 +222,8 @@ export function InstantStudio() {
         <section className="card" aria-labelledby="irev-h">
           <h2 id="irev-h" style={{ marginTop: 0 }}>6. Review and launch</h2>
           {deposit ? <p><span className="big">{fmtNear(deposit)}</span><br /><span className="muted">required deposit from the launcher: factory fee, storage and token registration. The refundable part comes back only if the launch ends before it opens.</span></p>
-            : <p>Estimate while the launcher is silent: about <b>{fmtNear(DEPOSIT_ESTIMATE_YOCTO)}</b> (INSTANT-ABI section 5). The exact figure comes from the launcher.</p>}
-          {derived && <p className="hint">Pool opens with {fmtUsdc(derived.poolSeed)} of the {fmtUsdc(parsed.ok ? parsed.params.seed_q : 0n)} seed. One instant launch per account per 24 hours.</p>}
+            : <p>The required deposit comes from the launcher and is not known until it answers. Nothing is estimated here.</p>}
+          {derived && parsed.ok && <p className="hint">{launcherPoolSeed ? `The launcher says the pool opens with ${fmtUsdc(BigInt(launcherPoolSeed))}` : launcherFee === null ? `The pool opens with ${fmtUsdc(parsed.params.seed_q)} less the launch fee, which the launcher has not stated` : `Pool opens with about ${fmtUsdc(derived.poolSeed)} (local figure)`} of the {fmtUsdc(parsed.params.seed_q)} seed. One instant launch per account per {termWord(1, unit)}.</p>}
           <label className="inline"><input type="checkbox" checked={ack} onChange={(e) => setAck(e.target.checked)} aria-describedby="ack-d" /> {ACK_TEXT}</label>
           <p id="ack-d" className="hint">Required before step 1.</p>
           <ChainActionButton chain="near" action="create" disabled={!canStart} loading={tx.state.status === 'pending'} className="btn-primary" onReady={() => void step1()}>
