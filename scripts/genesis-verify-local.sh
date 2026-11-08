@@ -11,7 +11,7 @@ export W MODE
 exec ./scripts/genesis-local.sh -- bash -c '
 set -euo pipefail
 export F0_BACKEND=sandbox
-npx --prefix relayer tsx relayer/src/genesis-cli.ts --launch 1 --mode "$MODE" --cluster local --squads-time-lock 60 --claim-test --record "$W/record.json" | tail -n 6
+npx --prefix relayer tsx relayer/src/genesis-cli.ts --launch 1 --mode "$MODE" --cluster local --squads-time-lock 60 --holders 5 --record "$W/record.json" | tail -n 6
 python3 - <<PY
 import json,os
 r=json.load(open(os.environ["W"]+"/record.json"))
