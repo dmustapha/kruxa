@@ -217,8 +217,9 @@ async fn a01_draw_before_pass() -> anyhow::Result<()> {
     let env = Env::new().await?;
     let id = env.create_launch(&params("A01")).await?;
     buyers(&env, id, 12, 40 * USDC).await?;
-    let mut a = Attack::new("A01", "A5", "Creator draws before PASS", "core", Expect::Refused, "R_NOT_CLEAR")
-        .attempt("The stream recipient calls draw while the launch is still Open (no verdict), once with an amount and once for everything.");
+    let mut a = Attack::new("A01", "A5", "Creator draws before PASS", "core", Expect::Refused, "R_NOT_CLEAR").attempt(
+        "The stream recipient calls draw while the launch is still Open (no verdict), once with an amount and once for everything.",
+    );
     let (core_before, creator_before) = (env.usdc_balance(env.core.id()).await, env.usdc_balance(env.creator.id()).await);
     let r1 = env.call(&env.creator, "draw", json!({ "launch_id": id.to_string(), "amount": "1000000" }), ZERO).await;
     a.attack("draw(1 USDC) on an Open launch", &r1, "R_NOT_CLEAR");
@@ -280,7 +281,10 @@ async fn a04_draw_by_non_recipient_and_recipient_stays_fixed() -> anyhow::Result
     let r = env.call(&eve, "draw", json!({ "launch_id": id.to_string(), "amount": "1000000" }), ZERO).await;
     a.attack("draw by an unrelated account", &r, "R_NOT_AUTHORIZED");
     a.check("attacker received nothing", env.usdc_balance(eve.id()).await == eve_before);
-    a.check("stream recipient is still the creator", env.view("stream_status", lid(id)).await["recipient"] == before && before == json!(env.creator.id()));
+    a.check(
+        "stream recipient is still the creator",
+        env.view("stream_status", lid(id)).await["recipient"] == before && before == json!(env.creator.id()),
+    );
     let (inv, ok) = core_inv(&env).await;
     a.finish(inv, ok);
     Ok(())
@@ -299,7 +303,10 @@ async fn a05_settle_before_the_deadline() -> anyhow::Result<()> {
     a.attack("settle during the commit window", &env.call(&eve, "settle", lid(id), ZERO).await, "R_TOO_EARLY");
     env.advance_to(id, "Closing").await;
     a.attack("settle during the Walk tail", &env.call(&eve, "settle", lid(id), ZERO).await, "R_TOO_EARLY");
-    a.check("launch is still Open with no settlement", env.view("get_settlement", lid(id)).await.is_null() && env.state(id).await["status"] == "Open");
+    a.check(
+        "launch is still Open with no settlement",
+        env.view("get_settlement", lid(id)).await.is_null() && env.state(id).await["status"] == "Open",
+    );
     let (inv, ok) = core_inv(&env).await;
     a.finish(inv, ok);
     Ok(())
@@ -315,13 +322,21 @@ async fn a06_settle_twice_replays_the_same_verdict() -> anyhow::Result<()> {
         .attempt("After the verdict is fixed a second account calls settle again, hoping to re-run allocation or flip the outcome.");
     let first = env.call(&env.creator, "settle", lid(id), ZERO).await;
     a.step("first settle (PASS)", &first);
-    let snap = (env.view("get_settlement", lid(id)).await, env.view("get_ledger", lid(id)).await, env.view("get_verdict_inputs", lid(id)).await);
+    let snap =
+        (env.view("get_settlement", lid(id)).await, env.view("get_ledger", lid(id)).await, env.view("get_verdict_inputs", lid(id)).await);
     let eve = stranger(&env, "eve").await?;
     let again = env.call(&eve, "settle", lid(id), ZERO).await;
     a.attack("second settle by another account", &again, "");
     a.check("no second verdict event emitted", !again.logs().iter().any(|l| l.contains("\"verdict\"")));
     a.check("returns the same PASS", again.json::<bool>().unwrap_or(false));
-    a.check("settlement, ledger and verdict inputs byte-identical", snap == (env.view("get_settlement", lid(id)).await, env.view("get_ledger", lid(id)).await, env.view("get_verdict_inputs", lid(id)).await));
+    a.check(
+        "settlement, ledger and verdict inputs byte-identical",
+        snap == (
+            env.view("get_settlement", lid(id)).await,
+            env.view("get_ledger", lid(id)).await,
+            env.view("get_verdict_inputs", lid(id)).await,
+        ),
+    );
     let (inv, ok) = core_inv(&env).await;
     a.finish(inv, ok);
     Ok(())
@@ -331,8 +346,9 @@ async fn a06_settle_twice_replays_the_same_verdict() -> anyhow::Result<()> {
 async fn a07_replayed_settlement_steps() -> anyhow::Result<()> {
     let env = Env::new().await?;
     let (id, _) = passed_launch(&env, "A07").await?;
-    let mut a = Attack::new("A07", "", "Replayed settlement steps after the sweep", "core", Expect::Refused, "R_NOT_CLEAR")
-        .attempt("sweep_residue is called a second time to move the rounding residue twice; settle_positions_page is replayed over the same range.");
+    let mut a = Attack::new("A07", "", "Replayed settlement steps after the sweep", "core", Expect::Refused, "R_NOT_CLEAR").attempt(
+        "sweep_residue is called a second time to move the rounding residue twice; settle_positions_page is replayed over the same range.",
+    );
     let eve = stranger(&env, "eve").await?;
     let snap = (env.view("get_ledger", lid(id)).await, env.view("get_settlement", lid(id)).await);
     a.attack("second sweep_residue", &env.call(&eve, "sweep_residue", lid(id), ZERO).await, "R_NOT_CLEAR");
@@ -351,8 +367,15 @@ async fn a08_donation_cannot_flip_the_verdict() -> anyhow::Result<()> {
     let id = env.create_launch(&params("A08")).await?;
     let users = buyers(&env, id, 5, 30 * USDC).await?;
     let whale = env.user("whale", 5_000 * USDC).await?;
-    let mut a = Attack::new("A08", "", "Manipulated book: donate USDC to core to push a failing launch over the soft cap", "core", Expect::NoEffect, "")
-        .attempt("A whale sends 2,000 USDC straight to core (no commit message) before the deadline so held funds exceed the soft cap.");
+    let mut a = Attack::new(
+        "A08",
+        "",
+        "Manipulated book: donate USDC to core to push a failing launch over the soft cap",
+        "core",
+        Expect::NoEffect,
+        "",
+    )
+    .attempt("A whale sends 2,000 USDC straight to core (no commit message) before the deadline so held funds exceed the soft cap.");
     let inputs_before = env.view("get_verdict_inputs", lid(id)).await;
     let ledger_before = env.view("get_ledger", lid(id)).await;
     let donate = whale
@@ -385,7 +408,11 @@ async fn deploy_fake_usdc(env: &Env, attacker: &Account) -> anyhow::Result<near_
     let wasm = std::fs::read(format!("{}/../target/near/mock_ft/mock_ft.wasm", env!("CARGO_MANIFEST_DIR")))?;
     let fake = acct.deploy(&wasm).await?.into_result()?;
     fake.call("new").args_json(json!({ "owner_id": env.owner.id(), "total_supply": "0" })).transact().await?.into_result()?;
-    fake.call("mint").args_json(json!({ "account_id": attacker.id(), "amount": (500 * USDC).to_string() })).transact().await?.into_result()?;
+    fake.call("mint")
+        .args_json(json!({ "account_id": attacker.id(), "amount": (500 * USDC).to_string() }))
+        .transact()
+        .await?
+        .into_result()?;
     let reg = json!({ "account_id": env.core.id() });
     env.owner.call(fake.id(), "storage_deposit").args_json(reg).deposit(NearToken::from_millinear(2)).transact().await?.into_result()?;
     Ok(fake)
@@ -556,8 +583,14 @@ async fn a16_freeze_blocks_exits_but_only_for_seven_days() -> anyhow::Result<()>
     a.attack("holder Walk while FROZEN", &env.call(&u, "walk", lid(id), ONE).await, "R_FROZEN");
     a.check("config reports Frozen", env.view("get_config", json!({})).await["pause"] == "Frozen");
     let until = kruxa_logic::frozen_until(1_000);
-    a.check("bound (pure-logic check, not a sandbox wait): freeze ends 7 days after it starts", until - 1_000 == 7 * 86_400 * 1_000_000_000 && until == kruxa_logic::FREEZE_MAX_NS + 1_000);
-    a.check("bound (pure-logic check): effective level at the end of the freeze is Paused, not Frozen", kruxa_logic::pause_at(kruxa_logic::Pause::Frozen, until, until) == kruxa_logic::Pause::Paused);
+    a.check(
+        "bound (pure-logic check, not a sandbox wait): freeze ends 7 days after it starts",
+        until - 1_000 == 7 * 86_400 * 1_000_000_000 && until == kruxa_logic::FREEZE_MAX_NS + 1_000,
+    );
+    a.check(
+        "bound (pure-logic check): effective level at the end of the freeze is Paused, not Frozen",
+        kruxa_logic::pause_at(kruxa_logic::Pause::Frozen, until, until) == kruxa_logic::Pause::Paused,
+    );
     a.step("owner unpause", &env.call(&env.owner, "unpause", json!({}), ZERO).await);
     let walk = env.call(&u, "walk", lid(id), ONE).await;
     a.step("holder Walk after unpause", &walk);
@@ -595,8 +628,9 @@ async fn a18_one_wallet_over_the_per_wallet_cap() -> anyhow::Result<()> {
     let env = Env::new().await?;
     let id = env.create_launch(&params("A18")).await?;
     let u = env.user("whale", 1_000 * USDC).await?;
-    let mut a = Attack::new("A18", "", "One wallet exceeds the per-wallet cap (single and cumulative)", "core", Expect::Refused, "R_CAP_ACCOUNT")
-        .attempt("One wallet commits 101 USDC at once, then 60 + 50 USDC across two commits, to exceed the 100 USDC per-wallet cap.");
+    let mut a =
+        Attack::new("A18", "", "One wallet exceeds the per-wallet cap (single and cumulative)", "core", Expect::Refused, "R_CAP_ACCOUNT")
+            .attempt("One wallet commits 101 USDC at once, then 60 + 50 USDC across two commits, to exceed the 100 USDC per-wallet cap.");
     a.attack("single commit of 101 USDC", &env.commit_native(&u, id, 101 * USDC, None).await, "R_CAP_ACCOUNT");
     a.step("commit 60 USDC (inside the cap)", &env.commit_native(&u, id, 60 * USDC, None).await);
     a.attack("second commit pushes the wallet to 110 USDC", &env.commit_native(&u, id, 50 * USDC, None).await, "R_CAP_ACCOUNT");
@@ -624,7 +658,10 @@ async fn a19_sybil_split_across_wallets_is_bounded_not_blocked() -> anyhow::Resu
     let verdict = env.call(&env.creator, "settle", lid(id), ZERO).await;
     a.step("settle", &verdict);
     a.check("DISCLOSED LIMIT: the split reaches PASS (the contract cannot tell the 12 wallets are one actor)", verdict.json::<bool>()?);
-    a.check("bound: total accepted is exactly the capital the actor put at risk (360 USDC), under the per-launch ceiling", env.state(id).await["total_active"] == (360 * USDC).to_string());
+    a.check(
+        "bound: total accepted is exactly the capital the actor put at risk (360 USDC), under the per-launch ceiling",
+        env.state(id).await["total_active"] == (360 * USDC).to_string(),
+    );
     let (inv, ok) = core_inv(&env).await;
     a.finish(inv, ok);
     Ok(())
@@ -636,11 +673,15 @@ async fn a20_late_walk_after_the_deadline() -> anyhow::Result<()> {
     let id = env.create_launch(&params("A20")).await?;
     let users = buyers(&env, id, 12, 40 * USDC).await?;
     env.advance_to(id, "Ready").await;
-    let mut a = Attack::new("A20", "", "Late Walk after the Walk window closed", "core", Expect::Refused, "R_WALK_CLOSED")
-        .attempt("A holder who sees the book heading to PASS calls walk after the Walk tail ended, to shrink the book and grief the verdict.");
+    let mut a = Attack::new("A20", "", "Late Walk after the Walk window closed", "core", Expect::Refused, "R_WALK_CLOSED").attempt(
+        "A holder who sees the book heading to PASS calls walk after the Walk tail ended, to shrink the book and grief the verdict.",
+    );
     let bal = env.usdc_balance(users[1].id()).await;
     a.attack("walk after walk_end", &env.call(&users[1], "walk", lid(id), ONE).await, "R_WALK_CLOSED");
-    a.check("position kept, book unchanged (12 funders, 480 USDC)", env.state(id).await["active_funders"] == 12 && env.state(id).await["total_active"] == (480 * USDC).to_string());
+    a.check(
+        "position kept, book unchanged (12 funders, 480 USDC)",
+        env.state(id).await["active_funders"] == 12 && env.state(id).await["total_active"] == (480 * USDC).to_string(),
+    );
     a.check("no funds moved", env.usdc_balance(users[1].id()).await == bal);
     let (inv, ok) = core_inv(&env).await;
     a.finish(inv, ok);
@@ -669,8 +710,11 @@ async fn a22_token_claim_before_pass() -> anyhow::Result<()> {
     let env = Env::new().await?;
     let id = env.create_launch(&params("A22")).await?;
     let users = buyers(&env, id, 3, 40 * USDC).await?;
-    let mut a = Attack::new("A22", "", "Claim launch tokens before PASS (open and failed launches)", "core", Expect::Refused, "R_WRONG_PHASE")
-        .attempt("A holder calls claim_tokens while the launch is still Open, then again after it FAILED, to extract tokens without a verdict.");
+    let mut a =
+        Attack::new("A22", "", "Claim launch tokens before PASS (open and failed launches)", "core", Expect::Refused, "R_WRONG_PHASE")
+            .attempt(
+            "A holder calls claim_tokens while the launch is still Open, then again after it FAILED, to extract tokens without a verdict.",
+        );
     a.attack("claim_tokens while Open", &env.call(&users[0], "claim_tokens", lid(id), ONE).await, "R_WRONG_PHASE");
     env.advance_to(id, "Ready").await;
     a.step("settle (FAIL: 3 funders)", &env.call(&env.creator, "settle", lid(id), ZERO).await);
@@ -685,11 +729,19 @@ async fn a22_token_claim_before_pass() -> anyhow::Result<()> {
 async fn a23_creator_buys_their_own_launch() -> anyhow::Result<()> {
     let env = Env::new().await?;
     let id = env.create_launch(&params("A23")).await?;
-    env.usdc.call("mint").args_json(json!({ "account_id": env.creator.id(), "amount": (100 * USDC).to_string() })).transact().await?.into_result()?;
+    env.usdc
+        .call("mint")
+        .args_json(json!({ "account_id": env.creator.id(), "amount": (100 * USDC).to_string() }))
+        .transact()
+        .await?
+        .into_result()?;
     let mut a = Attack::new("A23", "", "Creator wash-buys their own launch", "core", Expect::Refused, "R_SELF_BUY")
         .attempt("The creator commits 30 USDC to their own launch to fake demand.");
     a.attack("creator commit", &env.commit_native(&env.creator, id, 30 * USDC, None).await, "R_SELF_BUY");
-    a.check("book empty and creator refunded", env.state(id).await["total_active"] == "0" && env.usdc_balance(env.creator.id()).await == 100 * USDC);
+    a.check(
+        "book empty and creator refunded",
+        env.state(id).await["total_active"] == "0" && env.usdc_balance(env.creator.id()).await == 100 * USDC,
+    );
     let (inv, ok) = core_inv(&env).await;
     a.finish(inv, ok);
     Ok(())
@@ -707,7 +759,8 @@ async fn a24_forged_and_replayed_signed_walk() -> anyhow::Result<()> {
     let far = u64::MAX / 2;
     let pre = |n: u64, d: u64| format!("kruxa:walk:v1|{}|{}|{}|{}|{}", env.core.id(), id, h.key(), n, d);
     let call = |n: u64, d: u64, sig: String| {
-        let args = json!({ "launch_id": id.to_string(), "holder": h.key(), "nonce": n.to_string(), "deadline": d.to_string(), "signature": sig });
+        let args =
+            json!({ "launch_id": id.to_string(), "holder": h.key(), "nonce": n.to_string(), "deadline": d.to_string(), "signature": sig });
         env.worker_call(&env.creator, env.core.id(), "walk_signed", args)
     };
     a.attack("signature made by the attacker's key", &call(1, far, sol_holder(10).sign(&pre(1, far))).await, "R_SIG");
@@ -730,7 +783,9 @@ async fn a25_second_trial_and_symbol_squat() -> anyhow::Result<()> {
         .attempt("The same creator calls create_trial again with a new symbol to hold more than one slot against the global cap.");
     let p = params("A25B");
     let need: String = env.core.view("required_deposit").args_json(json!({ "params": p })).await?.json()?;
-    let r = env.call(&env.creator, "create_trial", json!({ "params": p, "stream_recipient": null }), NearToken::from_yoctonear(need.parse()?)).await;
+    let r = env
+        .call(&env.creator, "create_trial", json!({ "params": p, "stream_recipient": null }), NearToken::from_yoctonear(need.parse()?))
+        .await;
     a.attack("second create_trial by the same creator", &r, "R_ACTIVE_TRIAL");
     a.check("only launch 1 exists", env.view("get_state", lid(id + 1)).await.is_null());
     let (inv, ok) = core_inv(&env).await;
@@ -750,14 +805,20 @@ async fn m01_fake_token_calls_the_market() -> anyhow::Result<()> {
     let eve = mk.user("eve", 0).await?;
     mk.mint(&fake, eve.id(), 500 * mc::USDC).await?;
     let mut a = Attack::new("M01", "A8", "Fake token buys, sells and seeds on the market", "market", Expect::Refused, "R_UNEXPECTED_TOKEN")
-        .attempt("A look-alike token is used as 'USDC' for a buy, as the launch token for a sell, and as the seed quote leg for a new pool.");
+        .attempt(
+            "A look-alike token is used as 'USDC' for a buy, as the launch token for a sell, and as the seed quote leg for a new pool.",
+        );
     let pool_before = mk.view("get_pool", json!({ "launch_id": "1" })).await;
     a.attack("fake-USDC buy", &mk.send(&eve, &fake, 100 * mc::USDC, mc::Mk::buy_msg(1, 1)).await?, "R_UNEXPECTED_TOKEN");
     a.attack("fake-token sell", &mk.send(&eve, &fake, 100 * mc::USDC, mc::Mk::sell_msg(1, 1)).await?, "R_UNEXPECTED_TOKEN");
     mk.mint(&fake, mk.core.id(), mc::SEED_Q).await?;
     a.attack("fake seed leg for launch 2", &mk.send(&mk.core, &fake, mc::SEED_Q, mk.seed_msg(2, fake.id())).await?, "R_UNEXPECTED_TOKEN");
     a.check("attacker's fake tokens refunded", mk.bal(&fake, eve.id()).await == 500 * mc::USDC);
-    a.check("pool 1 unchanged and no pool 2", mk.view("get_pool", json!({ "launch_id": "1" })).await == pool_before && mk.view("get_pool", json!({ "launch_id": "2" })).await.is_null());
+    a.check(
+        "pool 1 unchanged and no pool 2",
+        mk.view("get_pool", json!({ "launch_id": "1" })).await == pool_before
+            && mk.view("get_pool", json!({ "launch_id": "2" })).await.is_null(),
+    );
     let (inv, ok) = market_inv(&mk, &[1]).await;
     a.finish(inv, ok);
     Ok(())
@@ -771,8 +832,15 @@ async fn m02_redirect_the_market_payout_recipient() -> anyhow::Result<()> {
         .attempt("An attacker seeds a pool for launch 1 naming themselves as payout recipient; after the real handoff they try to seed again over the open pool.");
     let mut seed: Value = serde_json::from_str(&mk.seed_msg(1, mk.token.id()))?;
     seed["payout_recipient"] = json!(eve.id());
-    a.attack("seed_quote from a non-core sender naming the attacker as recipient", &mk.send(&eve, &mk.usdc, mc::SEED_Q, seed.to_string()).await?, "R_NOT_AUTHORIZED");
-    a.check("no pool was created and the attacker keeps their USDC", mk.view("get_pool", json!({ "launch_id": "1" })).await.is_null() && mk.bal(&mk.usdc, eve.id()).await == 2_000 * mc::USDC);
+    a.attack(
+        "seed_quote from a non-core sender naming the attacker as recipient",
+        &mk.send(&eve, &mk.usdc, mc::SEED_Q, seed.to_string()).await?,
+        "R_NOT_AUTHORIZED",
+    );
+    a.check(
+        "no pool was created and the attacker keeps their USDC",
+        mk.view("get_pool", json!({ "launch_id": "1" })).await.is_null() && mk.bal(&mk.usdc, eve.id()).await == 2_000 * mc::USDC,
+    );
     mk.open_pool(1).await?;
     mk.mint(&mk.usdc, mk.core.id(), mc::SEED_Q).await?;
     let mut again: Value = serde_json::from_str(&mk.seed_msg(1, mk.token.id()))?;
@@ -799,10 +867,17 @@ async fn m03_direct_callbacks_on_the_market() -> anyhow::Result<()> {
         .transact()
         .await?;
     a.attack("direct resolve_payout", &r, "PRIVATE_METHOD");
-    let r = eve.call(mk.market.id(), "ft_on_transfer").args_json(json!({ "sender_id": eve.id(), "amount": "100000000", "msg": mc::Mk::buy_msg(1, 1) })).transact().await?;
+    let r = eve
+        .call(mk.market.id(), "ft_on_transfer")
+        .args_json(json!({ "sender_id": eve.id(), "amount": "100000000", "msg": mc::Mk::buy_msg(1, 1) }))
+        .transact()
+        .await?;
     a.attack("direct ft_on_transfer from a plain account", &r, "R_UNEXPECTED_TOKEN");
     a.attack("malformed message", &mk.send(&eve, &mk.usdc, 5 * mc::USDC, "{".to_string()).await?, "R_BAD_MSG");
-    a.check("pool unchanged and attacker's USDC intact", mk.view("get_pool", json!({ "launch_id": "1" })).await == pool_before && mk.bal(&mk.usdc, eve.id()).await == 10 * mc::USDC);
+    a.check(
+        "pool unchanged and attacker's USDC intact",
+        mk.view("get_pool", json!({ "launch_id": "1" })).await == pool_before && mk.bal(&mk.usdc, eve.id()).await == 10 * mc::USDC,
+    );
     let (inv, ok) = market_inv(&mk, &[1]).await;
     a.finish(inv, ok);
     Ok(())
@@ -815,8 +890,15 @@ async fn m04_non_owner_calls_market_admin_and_claims() -> anyhow::Result<()> {
     let alice = mk.user("alice", 1_000 * mc::USDC).await?;
     mk.buy(&alice, 1, 500 * mc::USDC, 1).await?.into_result()?;
     let eve = mk.user("eve", 0).await?;
-    let mut a = Attack::new("M04", "A12", "Non-recipient and non-owner calls on the market (claim, platform withdraw, pause)", "market", Expect::Refused, "R_NOT_AUTHORIZED")
-        .attempt("An attacker calls claim (creator slice), withdraw_platform, pause and (as the guardian) unpause.");
+    let mut a = Attack::new(
+        "M04",
+        "A12",
+        "Non-recipient and non-owner calls on the market (claim, platform withdraw, pause)",
+        "market",
+        Expect::Refused,
+        "R_NOT_AUTHORIZED",
+    )
+    .attempt("An attacker calls claim (creator slice), withdraw_platform, pause and (as the guardian) unpause.");
     let call = |who: &Account, m: &str, args: Value| {
         let (w, id) = (who.clone(), mk.market.id().clone());
         let m = m.to_string();
@@ -842,8 +924,11 @@ async fn m05_reentrant_and_double_creator_claim() -> anyhow::Result<()> {
     mk.open_pool(1).await?;
     let alice = mk.user("alice", 2_000 * mc::USDC).await?;
     mk.buy(&alice, 1, 500 * mc::USDC, 1).await?.into_result()?;
-    let mut a = Attack::new("M05", "", "Reentrant claim from the token contract and a double creator claim", "market", Expect::NoEffect, "")
-        .attempt("The launch token is made hostile: during every transfer it calls claim on the market. The creator then claims twice in a row.");
+    let mut a =
+        Attack::new("M05", "", "Reentrant claim from the token contract and a double creator claim", "market", Expect::NoEffect, "")
+            .attempt(
+            "The launch token is made hostile: during every transfer it calls claim on the market. The creator then claims twice in a row.",
+        );
     let hostile = json!({ "account": mk.market.id(), "method": "claim", "args": json!({ "launch_id": "1" }).to_string() });
     mk.token.call("set_reenter").args_json(hostile).transact().await?.into_result()?;
     let r = mk.buy(&alice, 1, 100 * mc::USDC, 1).await?;
@@ -855,7 +940,10 @@ async fn m05_reentrant_and_double_creator_claim() -> anyhow::Result<()> {
     a.step("first creator claim (legitimate)", &c1);
     a.attack("second creator claim", &c2, "R_NOTHING_TO_CLAIM");
     let st = mk.view("creator_status", json!({ "launch_id": "1" })).await;
-    a.check("creator paid once, never above what has unlocked", mc::n(&st["paid"]) == mk.bal(&mk.usdc, mk.creator.id()).await && mc::n(&st["paid"]) <= mc::n(&st["unlocked"]));
+    a.check(
+        "creator paid once, never above what has unlocked",
+        mc::n(&st["paid"]) == mk.bal(&mk.usdc, mk.creator.id()).await && mc::n(&st["paid"]) <= mc::n(&st["unlocked"]),
+    );
     let (inv, ok) = market_inv(&mk, &[1]).await;
     a.finish(inv, ok);
     Ok(())
@@ -873,7 +961,10 @@ async fn m06_sandwich_without_min_out() -> anyhow::Result<()> {
     let min_out = mc::n(&quote["out"]) * 995 / 1000;
     a.step("attacker front-run buy (800 USDC)", &mk.buy(&attacker, 1, 800 * mc::USDC, 1).await?);
     a.attack("victim buy after the front-run (min_out breached)", &mk.buy(&victim, 1, 100 * mc::USDC, min_out).await?, "R_MIN_OUT");
-    a.check("victim refunded in full, holds no tokens", mk.bal(&mk.usdc, victim.id()).await == 500 * mc::USDC && mk.bal(&mk.token, victim.id()).await == 0);
+    a.check(
+        "victim refunded in full, holds no tokens",
+        mk.bal(&mk.usdc, victim.id()).await == 500 * mc::USDC && mk.bal(&mk.token, victim.id()).await == 0,
+    );
     let no_min = json!({ "v": 1, "op": "buy", "launch_id": "1" }).to_string();
     a.attack("buy with min_out missing", &mk.send(&victim, &mk.usdc, 10 * mc::USDC, no_min).await?, "R_MIN_OUT");
     a.attack("buy with min_out zero", &mk.send(&victim, &mk.usdc, 10 * mc::USDC, mc::Mk::buy_msg(1, 0)).await?, "R_MIN_OUT");
@@ -980,15 +1071,31 @@ async fn g01_creator_gate_bypass() -> anyhow::Result<()> {
         env.view("get_config", json!({})).await["creator_gate"].clone()
     }
     a.check("precondition: creator_gate is true on the mainnet profile", cfg(&env).await == true);
-    a.attack("create_trial by a non-owner", &create_as(&env, &env.creator, TrialParams::example("G01A"), json!({})).await, "R_CREATOR_GATE");
+    a.attack(
+        "create_trial by a non-owner",
+        &create_as(&env, &env.creator, TrialParams::example("G01A"), json!({})).await,
+        "R_CREATOR_GATE",
+    );
     let to_owner = json!({ "stream_recipient": env.owner.id() });
-    a.attack("create_trial by a non-owner naming the owner as recipient", &create_as(&env, &env.creator, TrialParams::example("G01B"), to_owner).await, "R_CREATOR_GATE");
-    a.attack("create_trial by a non-owner with a genesis plan", &create_as(&env, &env.creator, TrialParams::example("G01C"), json!({ "genesis": {} })).await, "R_CREATOR_GATE");
+    a.attack(
+        "create_trial by a non-owner naming the owner as recipient",
+        &create_as(&env, &env.creator, TrialParams::example("G01B"), to_owner).await,
+        "R_CREATOR_GATE",
+    );
+    a.attack(
+        "create_trial by a non-owner with a genesis plan",
+        &create_as(&env, &env.creator, TrialParams::example("G01C"), json!({ "genesis": {} })).await,
+        "R_CREATOR_GATE",
+    );
     a.attack("open_beta by the guardian", &env.call(&env.guardian, "open_beta", json!({}), ZERO).await, "R_NOT_AUTHORIZED");
     a.attack("open_beta by the creator", &env.call(&env.creator, "open_beta", json!({}), ZERO).await, "R_NOT_AUTHORIZED");
     a.step("guardian pause", &env.call(&env.guardian, "pause", json!({}), ZERO).await);
     a.step("owner unpause", &env.call(&env.owner, "unpause", json!({}), ZERO).await);
-    a.attack("create_trial after pause and unpause", &create_as(&env, &env.creator, TrialParams::example("G01D"), json!({})).await, "R_CREATOR_GATE");
+    a.attack(
+        "create_trial after pause and unpause",
+        &create_as(&env, &env.creator, TrialParams::example("G01D"), json!({})).await,
+        "R_CREATOR_GATE",
+    );
     a.check("gate still closed and no launch exists", cfg(&env).await == true && env.view("get_state", lid(1)).await.is_null());
     a.step("owner open_beta (legitimate)", &env.call(&env.owner, "open_beta", json!({}), ZERO).await);
     a.attack("second open_beta has nothing to do", &env.call(&env.owner, "open_beta", json!({}), ZERO).await, "R_NOTHING");
@@ -1086,16 +1193,31 @@ async fn g02_genesis_calls_by_the_wrong_relayer() -> anyhow::Result<()> {
 #[tokio::test]
 async fn g03_genesis_out_of_order_and_twice() -> anyhow::Result<()> {
     let r = genesis_round("G03").await?;
-    let mut a = Attack::new("G03", "A2", "Genesis steps out of order, commit twice, abort or confirm with no commit", "core", Expect::Refused, "R_GENESIS_STATE")
-        .attempt("The relayer confirms and aborts before any commit, sends root pages before commit, then commits twice.");
+    let mut a = Attack::new(
+        "G03",
+        "A2",
+        "Genesis steps out of order, commit twice, abort or confirm with no commit",
+        "core",
+        Expect::Refused,
+        "R_GENESIS_STATE",
+    )
+    .attempt("The relayer confirms and aborts before any commit, sends root pages before commit, then commits twice.");
     let abort = json!({ "launch_id": r.id.to_string(), "reason": "early" });
-    a.attack("confirm_genesis without a commit", &r.call(&r.relayer, "confirm_genesis", r.confirm(&kruxa_logic::hex(&[0u8; 32]))).await, "R_GENESIS_STATE");
+    a.attack(
+        "confirm_genesis without a commit",
+        &r.call(&r.relayer, "confirm_genesis", r.confirm(&kruxa_logic::hex(&[0u8; 32]))).await,
+        "R_GENESIS_STATE",
+    );
     a.attack("abort_genesis without a commit", &r.call(&r.relayer, "abort_genesis", abort).await, "R_GENESIS_STATE");
     a.attack("build_root_page before commit", &r.call(&r.relayer, "build_root_page", r.page(&r.leaves[..1])).await, "R_GENESIS_STATE");
     a.step("commit_genesis (legitimate)", &r.call(&r.relayer, "commit_genesis", r.commit()).await);
     a.attack("second commit_genesis", &r.call(&r.relayer, "commit_genesis", r.commit()).await, "R_GENESIS_ALREADY");
     let other = json!({ "launch_id": r.id.to_string(), "g_pub": kruxa_logic::hex(&[6u8; 32]) });
-    a.attack("commit_genesis again with a different key (swap the mint)", &r.call(&r.relayer, "commit_genesis", other).await, "R_GENESIS_ALREADY");
+    a.attack(
+        "commit_genesis again with a different key (swap the mint)",
+        &r.call(&r.relayer, "commit_genesis", other).await,
+        "R_GENESIS_ALREADY",
+    );
     let g = r.genesis().await;
     a.check("committed key and mint unchanged", g["g_pub"] == kruxa_logic::hex(&[5u8; 32]) && g["status"] == "Committed");
     let (inv, ok) = core_inv(&r.env).await;
@@ -1119,7 +1241,10 @@ async fn g04_forged_root_page_or_leaf() -> anyhow::Result<()> {
     a.attack("replay of the first leaf (overlap)", &r.call(&r.relayer, "build_root_page", r.page(&r.leaves[..2])).await, "R_GENESIS_ORDER");
     let oversize: Vec<_> = (0..26u8).map(|i| ([i; 32], 1u64)).collect();
     a.attack("26 leaves in one page", &r.call(&r.relayer, "build_root_page", r.page(&oversize)).await, "R_GENESIS_ARG");
-    a.check("only the one valid leaf was accepted, root not ready", r.genesis().await["leaf_count"] == 1 && r.genesis().await["root_ready"] == false);
+    a.check(
+        "only the one valid leaf was accepted, root not ready",
+        r.genesis().await["leaf_count"] == 1 && r.genesis().await["root_ready"] == false,
+    );
     let (inv, ok) = core_inv(&r.env).await;
     a.finish(inv, ok);
     Ok(())
@@ -1134,7 +1259,11 @@ async fn g05_confirm_misuse_and_abort_after_confirm() -> anyhow::Result<()> {
     a.step("commit_genesis", &r.call(&r.relayer, "commit_genesis", r.commit()).await);
     a.attack("confirm with an incomplete root", &r.call(&r.relayer, "confirm_genesis", r.confirm(&mint)).await, "R_GENESIS_STATE");
     a.step("all leaves", &r.call(&r.relayer, "build_root_page", r.page(&r.leaves)).await);
-    a.attack("confirm naming a different mint", &r.call(&r.relayer, "confirm_genesis", r.confirm(&kruxa_logic::hex(&[9u8; 32]))).await, "R_GENESIS_ARG");
+    a.attack(
+        "confirm naming a different mint",
+        &r.call(&r.relayer, "confirm_genesis", r.confirm(&kruxa_logic::hex(&[9u8; 32]))).await,
+        "R_GENESIS_ARG",
+    );
     a.step("confirm_genesis (legitimate)", &r.call(&r.relayer, "confirm_genesis", r.confirm(&mint)).await);
     let root = r.genesis().await["merkle_root"].clone();
     a.attack("second confirm_genesis", &r.call(&r.relayer, "confirm_genesis", r.confirm(&mint)).await, "R_GENESIS_STATE");
@@ -1203,10 +1332,17 @@ async fn g08_abort_is_final_and_pause_stops_the_ceremony() -> anyhow::Result<()>
     a.attack("commit_genesis while genesis is paused", &r.call(&r.relayer, "commit_genesis", r.commit()).await, "R_PAUSED");
     a.step("owner resume_genesis", &r.call(&r.env.owner, "resume_genesis", json!({})).await);
     a.step("commit_genesis (legitimate)", &r.call(&r.relayer, "commit_genesis", r.commit()).await);
-    a.step("guardian abort_genesis", &r.call(&r.env.guardian, "abort_genesis", json!({ "launch_id": r.id.to_string(), "reason": "test" })).await);
+    a.step(
+        "guardian abort_genesis",
+        &r.call(&r.env.guardian, "abort_genesis", json!({ "launch_id": r.id.to_string(), "reason": "test" })).await,
+    );
     let fresh = json!({ "launch_id": r.id.to_string(), "g_pub": kruxa_logic::hex(&[8u8; 32]) });
     a.attack("commit_genesis with a fresh key after abort", &r.call(&r.relayer, "commit_genesis", fresh).await, "R_GENESIS_ALREADY");
-    a.attack("confirm_genesis after abort", &r.call(&r.relayer, "confirm_genesis", r.confirm(&kruxa_logic::hex(&[0u8; 32]))).await, "R_GENESIS_STATE");
+    a.attack(
+        "confirm_genesis after abort",
+        &r.call(&r.relayer, "confirm_genesis", r.confirm(&kruxa_logic::hex(&[0u8; 32]))).await,
+        "R_GENESIS_STATE",
+    );
     a.attack("build_root_page after abort", &r.call(&r.relayer, "build_root_page", r.page(&r.leaves[..1])).await, "R_GENESIS_STATE");
     a.check("status stays Aborted", r.genesis().await["status"] == "Aborted");
     let (inv, ok) = core_inv(&r.env).await;
@@ -1229,7 +1365,11 @@ async fn g09_payout_recipient_views_cannot_be_redirected() -> anyhow::Result<()>
         .attempt("The creator (who named someone else as payout recipient) and a stranger both call draw on a PASSed launch; afterwards get_charter, get_state and stream_status must still name the payee.");
     let eve = stranger(&env, "eve").await?;
     async fn views(env: &Env, id: u64) -> (Value, Value, Value) {
-        (env.view("get_charter", lid(id)).await["payout_recipient"].clone(), env.state(id).await["payout_recipient"].clone(), env.view("stream_status", lid(id)).await["recipient"].clone())
+        (
+            env.view("get_charter", lid(id)).await["payout_recipient"].clone(),
+            env.state(id).await["payout_recipient"].clone(),
+            env.view("stream_status", lid(id)).await["recipient"].clone(),
+        )
     }
     let before = views(&env, id).await;
     let call = json!({ "launch_id": id.to_string(), "amount": "1000000" });
