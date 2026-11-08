@@ -194,6 +194,12 @@ if [ "$FAST" = 1 ]; then
   total=$(wc -l <"$OUT/steps.tsv" | tr -d ' '); red=$(awk -F'\t' '$2!="GREEN"' "$OUT/steps.tsv" | wc -l | tr -d ' ')
   echo; echo "FAST subset: $((total - red)) of $total steps green, wall $(( $(date +%s) - T_START ))s. No tracks claimed; run without --fast for the table."
   [ "$red" = 0 ] || awk -F'\t' '$2!="GREEN" {printf "  RED %s: %s %s\n", $1, $4, $5}' "$OUT/steps.tsv"
+  if [ "$RECORD" = 1 ]; then
+    { echo "# Fast judge run record. Written by scripts/judge-run.sh --fast --record on git ${head_sha}."
+      awk -F'\t' '{printf "%-3s %-5s %5ss  %s%s\n", $1, $2, $3, $4, ($5 != "" ? "   [" $5 "]" : "")}' "$OUT/steps.tsv"
+      echo "FAST subset: $((total - red)) of $total steps green, wall $(( $(date +%s) - T_START ))s."
+    } >evidence/judge-fast-run.txt
+  fi
   [ "$red" = 0 ]; exit $?
 fi
 echo

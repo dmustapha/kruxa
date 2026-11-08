@@ -1,0 +1,21 @@
+# Fast judge run record. Written by scripts/judge-run.sh --fast --record on git b4b4c8acb0b493ef1fab8e49fd2cfdc35ae722e1.
+P0  GREEN     0s  prerequisites: Rust 1.95.0, cargo-near, python3, jq, curl
+N1  GREEN     5s  network: crates.io fetch and the hash-pinned intents.near wasm
+N2  GREEN     0s  compile all test binaries (sandbox binary download on a cold machine)
+B1  GREEN    12s  build core, market and launcher wasm with cargo-near, print their sha256
+U1  GREEN    10s  pure unit and property tests (math, logic, sim, market, launcher, swarm)
+V1  GREEN     2s  golden vectors: PASS at the soft cap, FAIL one micro-USDC below, oversubscription refund
+C1  GREEN   334s  FAST core smoke in the sandbox: full lifecycle
+M1  GREEN    41s  FAST market smoke in the sandbox: AMM and fee split
+I1  GREEN   136s  FAST launcher smoke in the sandbox: instant flow
+M2  GREEN     1s  market demo: buy and sell, five fee slices add up, custody unchanged
+M3  GREEN     1s  market simulation: creator share bound over 60 days
+A1  GREEN     0s  FAST attack gallery: committed record shows no failed attack (the full run re-executes all)
+T1  GREEN     1s  verify: recorded launch lifecycle replays to its recorded book hash
+T2  GREEN     1s  tamper: one micro-USDC changed in the record is detected, exit 2
+T3  GREEN     0s  verify: recorded Solana devnet genesis (F0, signed through NEAR Chain Signatures, real testnet core) re-checks clean
+T4  GREEN     0s  tamper-all: every recorded Solana input flipped, each run detected, exit 2
+T5  GREEN     1s  dead RPC exits 4 and never prints MISMATCH
+W1  GREEN     1s  swarm: 16 agents, 24 rounds, invariants every round, recorded runs reproduce, 300-seed sweep
+O1  GREEN     7s  make tour: seven offline scenes
+FAST subset: 19 of 19 steps green, wall 553s.

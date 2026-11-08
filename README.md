@@ -1,6 +1,6 @@
 # Kruxa
 
-A token launchpad on NEAR where a launch is a refundable trial: buyers can walk away until the deadline, and a fixed rule that anyone can recompute decides whether the launch happens. Prove it on your own machine with no keys and no funds: `make judge`.
+A token launchpad on NEAR where a launch is a refundable trial: buyers can walk away until the deadline, and a fixed rule that anyone can recompute decides whether the launch happens. Prove it on your own machine with no keys and no funds: `make judge-fast` (about 10 minutes) or `make judge` (about 40).
 
 Built for NEAR HACKATHON: Build Beyond Boundaries. The judge path runs in a local NEAR sandbox and on recorded data. Nothing here is on mainnet.
 
@@ -18,9 +18,21 @@ Built for NEAR HACKATHON: Build Beyond Boundaries. The judge path runs in a loca
 
 Needs macOS or Linux, Rust 1.95.0 (pinned by `rust-toolchain.toml`), cargo-near 0.23.0, python3, jq and curl. Docker is not needed.
 
-Network use is stated, not hidden. Step N1 fetches crates and makes one read-only `view_code` call to a mainnet RPC node for the hash-pinned `intents.near` wasm (no signature, no transaction). Step N2 compiles the tests, and on a cold machine a cargo build script downloads the NEAR sandbox binary. Every later step runs with `CARGO_NET_OFFLINE=true`. No step reads a key; credential-shaped environment variables are removed before the first step.
+Network use is stated, not hidden. Step N1 fetches crates and makes one read-only `view_code` call to a mainnet RPC node for the hash-pinned `intents.near` wasm (no signature, no transaction). Step N2 compiles the tests, and on a cold machine a cargo build script downloads the NEAR sandbox binary. Every later step runs with `CARGO_NET_OFFLINE=true`. No step reads a key; credential-shaped environment variables are removed before any step runs.
 
-1. In the repository root, run the whole judge path. It builds the contracts, runs the core, market and launcher in a sandbox, runs the attack gallery, the tamper checks, the swarm and the tour, and prints a per-track table.
+1. Quick check, about 10 minutes. In the repository root, run the fast judge subset. It builds the contracts, runs the pure tests and the golden vectors, runs one smoke suite each for the core, market and launcher in a sandbox, checks the committed attack-gallery record, and runs the tamper checks, the swarm and the tour. It claims no tracks.
+
+```bash
+make judge-fast
+```
+
+Expected: every step GREEN, then the summary line.
+
+```expected
+FAST subset: 19 of 19 steps green
+```
+
+2. Full check, about 40 minutes. The same command without the shortcuts: it re-runs every sandbox suite and the whole attack gallery, then prints a per-track table.
 
 ```bash
 make judge
@@ -32,13 +44,13 @@ Expected: every step GREEN, then the verdict line, then the tracks Kruxa lists.
 JUDGE RUN GREEN
 ```
 
-2. Print the tracks this README may list. They come from the GREEN rows of step 1 and are not typed by hand.
+3. Print the tracks this README may list. They come from the GREEN rows of step 2 and are not typed by hand.
 
 ```bash
 make claimed-tracks
 ```
 
-3. Check this README against the run (em-dashes, placeholders, claims for tracks that are not GREEN, output strings that are not in `evidence/`).
+4. Check this README against the run (em-dashes, placeholders, claims for tracks that are not GREEN, output strings that are not in `evidence/`).
 
 ```bash
 make lint-readme
@@ -48,7 +60,7 @@ Expected: the last line reads `README LINT OK`.
 
 ## Do X, see Y
 
-Each command runs alone once `make judge` has built everything.
+Each command runs alone once `make judge-fast` or `make judge` has built everything.
 
 **Verdict at the boundary.** The rule is exact: PASS at the soft cap, FAIL one micro-USDC below, and a 100 USDC buyer in an oversubscribed launch spends 40 and is refunded 60.
 
@@ -133,7 +145,7 @@ The tracks listed for this submission are the GREEN rows of `make judge`, copied
 ### Not claimed
 
 - **Unstoppable DeFi.** The dry quote needs a live Intents endpoint, and the evidence files for the live Intents tests are not committed. Live Intents behaviour, including solver latency, is not evidenced in this repository. Not claimed.
-- **Investment Thesis.** The thesis pack is not in this repository and there is no `make thesis` target.
+- **Investment Thesis.** The thesis pack is not in this repository and no command here checks it.
 - **Agent Economy.** Cut. No agent module is built.
 - Privacy & Private AI, Autonomous Business, Real-World Money, Games With Real Economies, NFTs That Do Something, Social Money: no module exists.
 
