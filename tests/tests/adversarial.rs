@@ -234,6 +234,59 @@ async fn caps_global_launch_and_holder_limits_hold() -> anyhow::Result<()> {
     Ok(())
 }
 
+/// W1-DC-9 at the REAL $3,000 global cap, never lowered: launch A holds $2,000 (twice its $1,000 hard cap, 20 wallets at the $100
+/// wallet cap), launch B by a second creator holds $1,000, and the next $20 is refused with R_CAP_GLOBAL although B itself is nowhere
+/// near its own $2,000 limit. Slow (about 100 transactions): run with `cargo test -- --ignored`.
+#[tokio::test]
+#[ignore]
+async fn global_cap_refuses_at_the_real_three_thousand_dollars() -> anyhow::Result<()> {
+    let env = Env::new().await?;
+    let mut p = params("GLOA");
+    p.commit_secs = 3_600; // the sandbox clock moves with every block; keep both windows open for ~100 transactions
+    let a = env.create_launch(&p).await?; // hard cap 1,000: wallet cap 100, max_total_held 2,000
+    let second_creator = env
+        .worker
+        .root_account()?
+        .create_subaccount("creator2")
+        .initial_balance(NearToken::from_near(100))
+        .transact()
+        .await?
+        .into_result()?;
+    let mut next_seed = 1u8;
+    let mut fill = |launch: u64, wallets: u8| {
+        let seeds: Vec<u8> = (next_seed..next_seed + wallets).collect();
+        next_seed += wallets;
+        (launch, seeds)
+    };
+    let (launch, seeds) = fill(a, 20);
+    for seed in seeds {
+        let h = sol_holder(seed);
+        env.fund_intents(&h.hex, 100 * USDC).await?;
+        assert!(env.commit_s3(&h, launch, 100 * USDC, 0).await.is_success(), "launch A wallet {seed}");
+    }
+    let cfg = env.view("get_config", json!({})).await;
+    assert_eq!((cfg["global_cap"].as_str(), cfg["global_held"].as_str()), (Some("3000000000"), Some("2000000000")), "real cap, A full");
+    let mut q = params("GLOB");
+    q.commit_secs = 3_600;
+    let b = env.create_launch_as(&second_creator, &q).await?; // hard cap 1,000 equals the remaining $1,000 of headroom
+    let (launch, seeds) = fill(b, 10);
+    for seed in seeds {
+        let h = sol_holder(seed);
+        env.fund_intents(&h.hex, 100 * USDC).await?;
+        assert!(env.commit_s3(&h, launch, 100 * USDC, 0).await.is_success(), "launch B wallet {seed}");
+    }
+    assert_eq!(env.view("get_config", json!({})).await["global_held"], "3000000000", "exactly at the $3,000 global cap");
+    let late = sol_holder(200);
+    env.fund_intents(&late.hex, 20 * USDC).await?;
+    let r = env.commit_s3(&late, b, 20 * USDC, 0).await;
+    assert!(has_code(&r, "R_CAP_GLOBAL"), "{:?}", r.logs());
+    assert!(!has_code(&r, "R_CAP_LAUNCH"), "launch B alone would have accepted it: {:?}", r.logs());
+    assert_eq!(env.intents_balance(&late.hex).await, 20 * USDC, "the refused $20 went back to the signer's Intents balance");
+    assert_eq!(env.state(b).await["total_active"], (1_000 * USDC).to_string());
+    assert_eq!(env.view("get_config", json!({})).await["global_held"], "3000000000");
+    Ok(())
+}
+
 #[tokio::test]
 async fn launch_total_cap_stops_oversubscription_at_twice_the_hard_cap() -> anyhow::Result<()> {
     let env = Env::new().await?;

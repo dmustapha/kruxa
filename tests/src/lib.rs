@@ -224,6 +224,11 @@ impl Env {
 
     /// Pre-deploys the token account the real factory would create, then calls create_trial. Returns the launch id.
     pub async fn create_launch(&self, p: &TrialParams) -> anyhow::Result<u64> {
+        self.create_launch_as(&self.creator, p).await
+    }
+
+    /// Same as `create_launch`, for any creator account (one active trial per account, so a second launch needs a second creator).
+    pub async fn create_launch_as(&self, creator: &Account, p: &TrialParams) -> anyhow::Result<u64> {
         let required: String = self.core.view("required_deposit").args_json(json!({ "params": p })).await?.json()?;
         let supply = (p.total_supply_whole as u128) * USDC;
         let token = self
@@ -242,8 +247,7 @@ impl Env {
             .await?
             .into_result()?;
         let id = self.next_id.get();
-        let res = self
-            .creator
+        let res = creator
             .call(self.core.id(), "create_trial")
             .args_json(json!({ "params": p, "stream_recipient": null }))
             .deposit(NearToken::from_yoctonear(required.parse()?))
