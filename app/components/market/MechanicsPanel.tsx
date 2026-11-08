@@ -4,10 +4,10 @@ import type { Section } from '@/lib/market/hooks';
 import type { LaunchDetail, TradeList } from '@/lib/market/types';
 import { Async, Panel } from './shared';
 
-export function MechanicsPanel({ launchId, detail, epochTrades, openedAtSec, onRetry }: { launchId: string; detail: Section<LaunchDetail>; epochTrades: Section<TradeList>; openedAtSec: number | null; onRetry(): void }) {
+export function MechanicsPanel({ launchId, detail, epochTrades, openedAtSec, onRetry, instant }: { launchId: string; detail: Section<LaunchDetail>; epochTrades: Section<TradeList>; openedAtSec: number | null; onRetry(): void; instant?: boolean }) {
   return (
-    <Panel title="Launch mechanics" id="mkt-mech-h">
-      <Async section={detail} lines={3} onRetry={onRetry}>
+    <Panel title={instant ? 'Fee epochs' : 'Launch mechanics'} id="mkt-mech-h">
+      {!instant && <Async section={detail} lines={3} onRetry={onRetry}>
         {(d) => {
           const v = d.verdict_inputs;
           return (
@@ -21,7 +21,7 @@ export function MechanicsPanel({ launchId, detail, epochTrades, openedAtSec, onR
             </>
           );
         }}
-      </Async>
+      </Async>}
       <h3 style={{ fontSize: 13, margin: '14px 0 4px', color: 'var(--muted)', fontWeight: 500 }}>Fee epochs (24 h)</h3>
       <Async section={epochTrades} lines={2} onRetry={onRetry}>
         {(t) => {

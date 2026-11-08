@@ -7,13 +7,13 @@ const WORD: Record<TileStatus, { glyph: string; word: string; cls: string }> = {
 };
 
 /** Header tiles: each is a fact, its status as a word (not colour alone) and its basis. `onOpenVerify` jumps to the Verify tab. */
-export function SafetyTiles({ tiles, onOpenVerify }: { tiles: SafetyTile[]; onOpenVerify(): void }) {
+export function SafetyTiles({ tiles, onOpenVerify, verifyLabel = 'Recompute in your browser' }: { tiles: SafetyTile[]; onOpenVerify(): void; verifyLabel?: string }) {
   const s = tileSummary(tiles);
   return (
     <section aria-labelledby="mkt-tiles-h" className="mkt-tiles-wrap">
       <div className="mkt-tiles-head">
         <h2 id="mkt-tiles-h">Safety and Verify</h2>
-        <button type="button" className="mkt-link" onClick={onOpenVerify}>{s.pass} of {s.total} checks pass, {s.unknown} unknown. Recompute in your browser</button>
+        <button type="button" className="mkt-link" onClick={onOpenVerify}>{s.pass} of {s.total} checks pass, {s.unknown} unknown. {verifyLabel}</button>
       </div>
       <ul className="mkt-tiles">
         {tiles.map((t) => {

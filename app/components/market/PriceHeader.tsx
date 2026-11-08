@@ -1,13 +1,14 @@
 import { fmtCompact, fmtPct, fmtPrice, fmtUnits, fmtUsd, shortAccount } from '@/lib/market/format';
 import type { MarketFacts } from '@/lib/market/facts';
 import type { Phase } from '@/lib/market/phase';
-import type { TokenPageData } from '@/lib/market/types';
+import type { LaunchMode, TokenPageData } from '@/lib/market/types';
 import { CopyButton } from './CopyButton';
+import { ModeBadge } from './InstantNotice';
 import { PhaseBadge } from './PhaseBadge';
 import { Sigil } from './Sigil';
 import { SourceBadge } from './shared';
 
-export function PriceHeader({ page, facts, livePrice, paused, phase, showMarket = true }: { page: TokenPageData; facts: MarketFacts; livePrice?: number | null; paused: boolean; phase: Phase; showMarket?: boolean }) {
+export function PriceHeader({ page, facts, livePrice, paused, phase, showMarket = true, mode = 'trial' }: { mode?: LaunchMode; page: TokenPageData; facts: MarketFacts; livePrice?: number | null; paused: boolean; phase: Phase; showMarket?: boolean }) {
   const { launch, stats, pool } = page;
   const price = livePrice ?? stats.last_price ?? pool.price ?? null;
   const change = stats.change_24h_pct ?? null;
@@ -25,6 +26,7 @@ export function PriceHeader({ page, facts, livePrice, paused, phase, showMarket 
         <div className="mkt-title-text">
           <h1>{launch.name ? <>{launch.name} <span className="mkt-sub">${launch.symbol}</span></> : <>{launch.symbol}</>} <span className="mkt-sub">launch #{launch.launch_id}</span></h1>
           <div className="mkt-chips">
+            <ModeBadge mode={mode} />
             <PhaseBadge phase={phase} />
             {paused && <span className="mkt-chip mkt-chip-warn">Buys paused</span>}
             <SourceBadge source={page.source} asOf={page.as_of} />

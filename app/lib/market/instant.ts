@@ -113,3 +113,22 @@ export function instantTiles(a: { totalSupply: string | null; info: InstantInfo 
       : { id: 'top10', label: 'Top 10 holders', value: fmtBps(a.top10Bps), status: 'info', basis: 'indexed estimate', detail: 'Excludes the liquidity pool and may include the creator.' },
   ];
 }
+
+export interface LaunchStep { id: string; label: string; state: 'done' | 'current' | 'pending' | 'unknown'; receipt?: string; note?: string }
+
+/** Instant launches have three steps, not a trial lifecycle: Created, Seeded, Trading. Receipts come from the launcher's events. */
+export function instantSteps(a: { poolOpen: boolean; status: string; timeline?: { event: string; receipt_id: string }[]; info: InstantInfo | null | undefined }): LaunchStep[] {
+  const ev = (n: string) => a.timeline?.find((e) => e.event === n);
+  const st = a.status.toLowerCase();
+  const known = !!a.info || !!a.timeline?.length || a.poolOpen || st !== '';
+  const created = !!ev('instant_created') || !!a.info || a.poolOpen || ['launching', 'trading', 'seeded', 'tokenready', 'handoff'].includes(st);
+  const seeded = !!ev('instant_seeded') || a.poolOpen || ['seeded', 'handoff', 'trading'].includes(st) || a.info?.seeded_at_ns !== undefined && a.info.seeded_at_ns !== null && a.info.seeded_at_ns !== 0 && a.info.seeded_at_ns !== '0';
+  const steps: LaunchStep[] = [
+    { id: 'created', label: 'Created', state: created ? 'done' : known ? 'pending' : 'unknown', receipt: ev('instant_created')?.receipt_id, note: created ? 'The token exists with its whole supply.' : undefined },
+    { id: 'seeded', label: 'Seeded', state: seeded ? 'done' : known ? 'pending' : 'unknown', receipt: ev('instant_seeded')?.receipt_id, note: seeded ? 'The creator put USDC in as the starting liquidity.' : 'Waiting for the creator to seed the pool.' },
+    { id: 'trading', label: 'Trading', state: a.poolOpen ? 'done' : known ? 'pending' : 'unknown', receipt: ev('instant_opened')?.receipt_id },
+  ];
+  const i = steps.findIndex((s) => s.state === 'pending');
+  if (i >= 0) steps[i] = { ...steps[i]!, state: 'current' };
+  return steps;
+}

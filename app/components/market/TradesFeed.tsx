@@ -4,7 +4,7 @@ import type { Section } from '@/lib/market/hooks';
 import type { Trade, TradeList } from '@/lib/market/types';
 import { Async, EmptyState, Panel, SourceBadge } from './shared';
 
-export function TradesFeed({ trades, nowSec, onRetry }: { trades: Section<TradeList>; nowSec: number; onRetry(): void }) {
+export function TradesFeed({ trades, nowSec, onRetry, declared }: { trades: Section<TradeList>; nowSec: number; onRetry(): void; declared?: Record<string, string> }) {
   return (
     <Panel title="Trades" id="mkt-trades-h" right={trades.status === 'ready' ? <SourceBadge source={trades.data.source} asOf={trades.data.as_of} /> : undefined}>
       <Async section={trades} lines={5} onRetry={onRetry}>
@@ -15,7 +15,7 @@ export function TradesFeed({ trades, nowSec, onRetry }: { trades: Section<TradeL
             <table className="mkt-table">
               <caption className="mkt-sr">Most recent swaps, newest first</caption>
               <thead><tr><th scope="col">Side</th><th scope="col" className="num">Price</th><th scope="col" className="num">Tokens</th><th scope="col" className="num">USDC</th><th scope="col" className="mkt-hide-sm">Trader</th><th scope="col" className="num">Time</th></tr></thead>
-              <tbody>{d.items.map((t) => <Row key={`${t.receipt_id}:${t.time}:${t.side}:${t.trader}`} t={t} nowSec={nowSec} />)}</tbody>
+              <tbody>{d.items.map((t) => <Row key={`${t.receipt_id}:${t.time}:${t.side}:${t.trader}`} t={t} nowSec={nowSec} tag={declared?.[t.trader]} />)}</tbody>
             </table>
           </div>
         )}
@@ -24,7 +24,7 @@ export function TradesFeed({ trades, nowSec, onRetry }: { trades: Section<TradeL
   );
 }
 
-function Row({ t, nowSec }: { t: Trade; nowSec: number }) {
+function Row({ t, nowSec, tag }: { t: Trade; nowSec: number; tag?: string }) {
   const buy = t.side === 'buy';
   return (
     <tr>
@@ -32,7 +32,7 @@ function Row({ t, nowSec }: { t: Trade; nowSec: number }) {
       <td className="num">{fmtPrice(t.price)}</td>
       <td className="num">{fmtTokensCompact(t.token_amount ?? (buy ? t.amount_out : t.amount_in))}</td>
       <td className="num">{fmtUsdcMicro(t.quote_amount ?? (buy ? t.amount_in : t.amount_out))}</td>
-      <td className="mkt-hide-sm mkt-mono" title={t.trader}>{shortAccount(t.trader, 12, 4)}</td>
+      <td className="mkt-hide-sm mkt-mono" title={t.trader}>{shortAccount(t.trader, 12, 4)}{tag && <> <span className="mkt-chip mkt-chip-warn" style={{ padding: '2px 6px', fontSize: 10 }}>{tag}</span></>}</td>
       <td className="num mkt-muted" title={`receipt ${t.receipt_id}`}>{timeAgo(t.time, nowSec)}</td>
     </tr>
   );

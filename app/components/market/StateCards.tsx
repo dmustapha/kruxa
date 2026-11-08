@@ -80,3 +80,23 @@ export function HaltedBanner() {
     </div>
   );
 }
+
+/** Instant launch before the pool opens: three steps, no trial lifecycle. */
+export function LaunchingState({ steps }: { steps: GenesisStep[] }) {
+  return (
+    <section className="mkt-panel mkt-state" aria-labelledby="mkt-launching-h">
+      <h2 id="mkt-launching-h">Launching. Trading opens when the pool is seeded.</h2>
+      <GenesisStepper steps={steps} />
+    </section>
+  );
+}
+
+export function LaunchFailedState({ status }: { status: string }) {
+  return (
+    <section className="mkt-panel mkt-state" aria-labelledby="mkt-lfailed-h" data-tone="bad">
+      <h2 id="mkt-lfailed-h">This launch did not complete</h2>
+      <p className="mkt-state-lead">The status is {status || 'unknown'}. No pool opened and none will. Nothing is traded here.</p>
+      <p className="mkt-note">If the creator seeded the pool before it was abandoned or aborted, the creator can take the seed back from the launcher. Nobody else put money in: instant launches have no backers.</p>
+    </section>
+  );
+}

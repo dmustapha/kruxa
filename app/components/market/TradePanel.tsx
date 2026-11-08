@@ -7,7 +7,9 @@ import { useWallet } from '@/components/wallet/index';
 import { MARKET_CONFIG } from '@/lib/market/config';
 import { viewCall } from '@/lib/market/chain';
 import type { MarketFacts } from '@/lib/market/facts';
-import { fmtUnits, fmtBps } from '@/lib/market/format';
+import { fmtUnits, fmtBps, fmtDuration } from '@/lib/market/format';
+import type { MarketConfigView } from '@/lib/market/chain';
+import { instantCapCheck, REFUSAL_TEXT, selfBuyBlock } from '@/lib/market/rules';
 import { openingWindow } from '@/lib/market/math';
 import { computeQuote, parseReserves, parseSlippagePct, type Side } from '@/lib/market/quote';
 import { buildTradeTx, describeSignError } from '@/lib/market/tx';
@@ -23,12 +25,14 @@ interface Props {
   nowSec: number;
   onSubmitted(): void;
   initialSide?: Side;
+  /** Instant pools: the market's self-buy block and instant sub-cap apply (MARKET-ABI 1.1.0). `declared` is [creator, payout recipient]. */
+  instant?: { declared: string[]; config: MarketConfigView | null };
 }
 type Phase = { s: 'idle' } | { s: 'signing' } | { s: 'sent'; txHash?: string } | { s: 'error'; message: string };
 
 const BUY_QUICK = ['5', '25', '100'];
 
-export function TradePanel({ page, facts, reserves, nowSec, onSubmitted, initialSide }: Props) {
+export function TradePanel({ page, facts, reserves, nowSec, onSubmitted, initialSide, instant }: Props) {
   const { guard, sessions, adapters, openChooser } = useWallet();
   const [side, setSide] = useState<Side>(initialSide ?? 'buy');
   const [amount, setAmount] = useState('');
@@ -54,9 +58,15 @@ export function TradePanel({ page, facts, reserves, nowSec, onSubmitted, initial
   const win = facts.terms && facts.openedAtSec ? openingWindow(facts.terms, facts.openedAtSec, nowSec) : null;
   const openingNote = win ? `${fmtBps(Math.round(win.appliedBps))} now, base ${fmtBps(win.baseBps)}` : null;
 
+  const selfBlock = selfBuyBlock(!!instant, side, instant?.declared ?? [], near?.address ?? null);
+  const poolR = parseReserves(reserves.q, reserves.t);
+  const reserveDelta = view.status === 'ok' && poolR ? view.quote.after.q - poolR.q : null;
+  const cap = instant && side === 'buy' ? instantCapCheck(instant.config, reserveDelta) : null;
   const blockedReason: string | null =
     page.source === 'fixture' ? 'Fixture data: nothing here is on a chain, so trading is off.'
     : !pool.open ? 'Trading opens when the pool opens. No pool has been indexed for this launch.'
+    : selfBlock ? selfBlock
+    : cap?.status === 'refused' ? cap.message
     : side === 'buy' && pool.paused ? 'Buys are paused on this market. Sells, claims and withdrawals are never paused.'
     : side === 'sell' && !facts.token ? 'The launch token account is not reported by the indexer and could not be read from chain, so a sell cannot be built.'
     : !guard.signingEnabled ? (guard.lockReason ?? 'Signing is locked on this network.')
@@ -91,6 +101,11 @@ export function TradePanel({ page, facts, reserves, nowSec, onSubmitted, initial
           </button>
         ))}
       </div>
+      {instant && win && (
+        <p className="mkt-alert" data-tone="warn" role="timer" aria-live="off"><strong>Opening fee: {fmtBps(Math.round(win.appliedBps))} now</strong>Falling to the {fmtBps(win.baseBps)} base in <span className="mkt-mono">{fmtDuration(win.secondsLeft)}</span>. The extra goes to liquidity.</p>
+      )}
+      {instant && cap && cap.status !== 'refused' && side === 'buy' && <p className="mkt-note" style={{ marginTop: 0 }}>{cap.message}</p>}
+      {instant && <p className="mkt-note" style={{ marginTop: 0 }}>Creator and payout recipient accounts cannot buy on an instant pool (R_SELF_BUY). Other wallets are not blocked.</p>}
       <form id="mkt-order" role="tabpanel" aria-labelledby={`mkt-tab-${side}`} onSubmit={(e) => { e.preventDefault(); if (canSubmit || (!near && view.status === 'ok')) void submit(); }} noValidate>
         <div className="mkt-field">
           <div className="mkt-label"><label htmlFor={amountId}>{side === 'buy' ? 'You pay' : 'You sell'}</label>{bal && <span>Balance {bal} {unit}</span>}</div>
@@ -114,7 +129,7 @@ export function TradePanel({ page, facts, reserves, nowSec, onSubmitted, initial
           <div className="mkt-alert" data-tone="ok" role="status">
             <strong>Submitted to your wallet&apos;s network</strong>
             {phase.txHash ? <>Transaction <a href={`${MARKET_CONFIG.explorerTx}${phase.txHash}`} target="_blank" rel="noopener noreferrer" className="mkt-mono">{phase.txHash.slice(0, 10)}…</a>. </> : null}
-            The market can still refuse a swap (min_out not met, pause, reserve cap); the token contract then refunds you. Check the result on the explorer.
+            The market can still refuse a swap; the token contract then refunds you. Check the result on the explorer.{instant && <span className="mkt-note" style={{ display: 'block' }}>{REFUSAL_TEXT.R_SELF_BUY} {REFUSAL_TEXT.R_MARKET_CAP}</span>}
           </div>
         )}
         <button type="submit" className="mkt-submit" data-side={side} disabled={near ? !canSubmit : (view.status !== 'ok' || !!blockedReason)} aria-busy={phase.s === 'signing' || undefined}>{buttonText}</button>

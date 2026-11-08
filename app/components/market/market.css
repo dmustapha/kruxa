@@ -159,7 +159,7 @@ main:has(.mkt-root) { max-width: 1240px; padding-top: 20px; }
 .mkt-tiles-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 12px; margin-bottom: 8px; }
 .mkt-tiles { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
 @media (min-width: 768px) { .mkt-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-@media (min-width: 1100px) { .mkt-tiles { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+@media (min-width: 1100px) { .mkt-tiles { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); } }
 .mkt-tile { background: var(--mkt-panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; display: grid; gap: 4px; align-content: start; min-width: 0; }
 .mkt-tile[data-status='pass'] { border-color: color-mix(in srgb, var(--mkt-up) 45%, var(--line)); }
 .mkt-tile[data-status='fail'], .mkt-tile[data-status='warn'] { border-color: var(--mkt-down); }
@@ -242,3 +242,7 @@ main:has(.mkt-root) { max-width: 1240px; padding-top: 20px; }
 @keyframes mkt-up { from { transform: translateY(24px); opacity: 0; } }
 
 .mkt-stats .mkt-stat-note { font: 400 11px ui-monospace, Menlo, monospace; }
+
+/* instant launch */
+.mkt-instant-notice { margin-top: 12px; display: grid; gap: 2px; padding: 12px 14px; border: 1px solid var(--mkt-warn); border-left-width: 4px; border-radius: 10px; background: color-mix(in srgb, var(--mkt-warn) 10%, transparent); font-size: 14px; }
+.mkt-instant-notice strong { color: var(--fg); } .mkt-instant-notice span { color: var(--fg); }
