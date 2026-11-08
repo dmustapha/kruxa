@@ -2,6 +2,8 @@
 # Builds every contract wasm with cargo-near (handles the wasm feature lowering that mainnet requires).
 set -euo pipefail
 cd "$(dirname "$0")/.."
+# The real intents.near wasm (read-only mainnet view_code, hash-pinned) is a test fixture and is not committed.
+[ -f fixtures/intents_near.wasm ] || ./scripts/fetch-intents-wasm.sh
 for c in core mock-ft mock-intents mock-factory mock-market; do
   (cd "contracts/$c" && cargo near build non-reproducible-wasm --no-abi)
 done

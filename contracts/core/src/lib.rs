@@ -30,6 +30,9 @@ pub const GAS_CB: Gas = Gas::from_tgas(25);
 pub const CREATION_TIMEOUT_NS: u64 = 600_000_000_000;
 pub use kruxa_logic::{CAP_TIMELOCK_NS, FREEZE_MAX_NS, GLOBAL_CAP_USDC};
 pub const FACTORY_DEPOSIT_YOCTO: u128 = 60_000_000_000_000_000_000_000;
+/// NEP-145 registration of one account on one launch token (`storage_balance_bounds` min = max on the factory tokens, probed on testnet).
+/// Reserved from the creator at `create_trial` so `open_market` can register the market on the launch token (HANDOFF.md).
+pub const TOKEN_REG_YOCTO: u128 = 1_250_000_000_000_000_000_000;
 
 #[derive(BorshStorageKey)]
 #[near]

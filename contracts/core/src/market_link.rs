@@ -3,7 +3,7 @@ use crate::ContractExt;
 use kruxa_logic::{hex, RuleCode};
 use near_sdk::json_types::{U128, U64};
 use near_sdk::serde_json::{json, Value};
-use near_sdk::{env, near, AccountId, Gas};
+use near_sdk::{env, near, AccountId, Gas, NearToken};
 
 use crate::events::emit;
 use crate::ext::ext_ft;
@@ -11,6 +11,7 @@ use crate::model::*;
 use crate::{fail, Contract, GAS_CB, ONE_YOCTO};
 
 const GAS_LEG: Gas = Gas::from_tgas(90);
+const GAS_REG: Gas = Gas::from_tgas(15);
 
 #[near(serializers = [json])]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -153,11 +154,24 @@ impl Contract {
 }
 
 impl Contract {
+    /// The token leg first registers the market on the launch token (NEP-145: a real token refuses `ft_transfer` to an unregistered
+    /// account), paid from the reserve the creator attached at `create_trial`. If the market is already registered the token refunds
+    /// the deposit to core. A failed registration is harmless: the transfer then fails too and the callback re-credits.
     fn send_leg(&self, contract: AccountId, market: &AccountId, amount: u128, msg: String, id: u64, leg: MarketLeg) {
-        let _ = ext_ft::ext(contract)
-            .with_attached_deposit(ONE_YOCTO)
-            .with_static_gas(GAS_LEG)
-            .ft_transfer_call(market.clone(), U128(amount), None, msg)
-            .then(Self::ext(env::current_account_id()).with_static_gas(GAS_CB).on_market_leg(U64(id), leg, U128(amount)));
+        let transfer = ext_ft::ext(contract.clone()).with_attached_deposit(ONE_YOCTO).with_static_gas(GAS_LEG).ft_transfer_call(
+            market.clone(),
+            U128(amount),
+            None,
+            msg,
+        );
+        let steps = match leg {
+            MarketLeg::Seed => transfer,
+            MarketLeg::Token => ext_ft::ext(contract)
+                .with_attached_deposit(NearToken::from_yoctonear(crate::TOKEN_REG_YOCTO))
+                .with_static_gas(GAS_REG)
+                .storage_deposit(Some(market.clone()), Some(true))
+                .then(transfer),
+        };
+        let _ = steps.then(Self::ext(env::current_account_id()).with_static_gas(GAS_CB).on_market_leg(U64(id), leg, U128(amount)));
     }
 }
