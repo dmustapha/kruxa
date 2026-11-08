@@ -20,8 +20,9 @@ verify-claims:
 	./scripts/verify-claims.sh
 
 # The whole judge path: sandbox only, no keys. Includes `make tour`. Prints a per-track GREEN/RED table.
+# `make judge JUDGE_ARGS=--record` also writes evidence/judge-run.txt.
 judge:
-	./scripts/judge-run.sh
+	./scripts/judge-run.sh $(JUDGE_ARGS)
 
 # Seven offline scenes on their own (also step O1 of `make judge`).
 tour:
