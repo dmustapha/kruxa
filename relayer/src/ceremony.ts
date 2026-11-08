@@ -7,13 +7,20 @@ import { GenesisRefused, type CoreClient } from "./core.js";
 import { assertSealed, readMint, type MintView } from "./mintcheck.js";
 import type { GenesisSigner } from "./signer.js";
 
+/** Exact lamports G consumes for one genesis (rent for mint, metadata, 3 bucket ATAs, vault ATA, distributor; the Metaplex
+ *  creation fee; transaction fees). Measured on a local validator with the real programs (27,306,000 at price 1000); G is funded
+ *  with exactly this so it ends at 0 (verify C16). A shortfall fails the tx loudly. Recalibrate if the Metaplex fee changes. */
+export const GENESIS_NON_FEE_LAMPORTS = 27_295_600;
+export const genesisCostLamports = (priceMicroLamports: number): number =>
+  GENESIS_NON_FEE_LAMPORTS + 2 * 5000 + Math.ceil((priceMicroLamports * 150_000) / 1e6) + Math.ceil((priceMicroLamports * 250_000) / 1e6);
+
 export interface CeremonyInput {
   conn: Connection; cluster: Cluster; core: CoreClient; signer: GenesisSigner;
-  funder: Keypair; buildSpec: (gPub: Uint8Array) => GenesisSpec; priceMicroLamports: number; fundLamports: number;
+  funder: Keypair; buildSpec: (gPub: Uint8Array) => GenesisSpec; priceMicroLamports: number;
   log: (line: string) => void;
 }
 
-export interface CeremonyResult { mint: string; sigs: [string, string]; slot: number; ceremonyHash: string; view: MintView; compiled: GenesisCompiled }
+export interface CeremonyResult { spec: GenesisSpec; blockhash: string; price: number; mint: string; sigs: [string, string]; slot: number; ceremonyHash: string; view: MintView; compiled: GenesisCompiled }
 
 /** Wire form of a one-signer legacy transaction: compact-u16(1) | signature | message. */
 export function wireTx(message: Uint8Array, signature: Uint8Array): Buffer {
@@ -45,7 +52,7 @@ export async function runCeremony(i: CeremonyInput): Promise<CeremonyResult> {
   const spec = i.buildSpec(signer.pub());
   await i.core.commitGenesis(spec.launchId, signer.pub());
   log(`commit_genesis ok (${i.core.label})`);
-  await fund(conn, i.funder, new PublicKey(signer.pub()), i.fundLamports);
+  await fund(conn, i.funder, new PublicKey(signer.pub()), genesisCostLamports(i.priceMicroLamports));
   const { blockhash, lastValidBlockHeight } = await conn.getLatestBlockhash("confirmed");
   const compiled = compileGenesis(spec, blockhash, i.priceMicroLamports);
   signer.expect?.([compiled.tx1, compiled.tx2]);
@@ -61,7 +68,7 @@ export async function runCeremony(i: CeremonyInput): Promise<CeremonyResult> {
   const slot = await conn.getSlot("confirmed");
   const ceremonyHash = createHash("sha256").update(compiled.specHash).update(bs58.decode(s1)).update(bs58.decode(s2)).digest("hex");
   await i.core.confirmGenesis(spec.launchId, mint.toBase58(), [s1, s2], slot, ceremonyHash);
-  return { mint: mint.toBase58(), sigs: [s1, s2], slot, ceremonyHash, view, compiled };
+  return { spec, blockhash, price: i.priceMicroLamports, mint: mint.toBase58(), sigs: [s1, s2], slot, ceremonyHash, view, compiled };
 }
 
 export async function attemptRefused(core: CoreClient, launchId: bigint, conn: Connection, wouldBeMint: PublicKey | null): Promise<string> {

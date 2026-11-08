@@ -110,3 +110,14 @@ export function compileGenesis(s: GenesisSpec, blockhash: string, price: number)
 }
 
 export const mintAddress = (gPub: Uint8Array, launchId: bigint): string => b58e(createWithSeed(gPub, `kruxa:${launchId}`, TOKENKEG));
+
+export function specToJson(s: GenesisSpec): GenesisSpecJson {
+  return {
+    launch_id: s.launchId.toString(), g_pub: b58e(s.gPub), decimals: s.decimals, name: s.name, symbol: s.symbol,
+    metadata_uri: s.metadataUri, mint_lamports: s.mintLamports.toString(), reserve_owner: b58e(s.reserveOwner),
+    lp_owner: b58e(s.lpOwner), clawback_owner: b58e(s.clawbackOwner), reserve_amount: s.reserveAmount.toString(),
+    lp_amount: s.lpAmount.toString(), jito_program: b58e(s.jitoProgram), merkle_root: Buffer.from(s.merkleRoot).toString("hex"),
+    max_total_claim: s.maxTotalClaim.toString(), max_num_nodes: s.maxNumNodes.toString(), start_ts: s.startTs.toString(),
+    end_ts: s.endTs.toString(), clawback_ts: s.clawbackTs.toString(),
+  };
+}

@@ -8,19 +8,21 @@ import { MockCore } from "./core.js";
 import { buildLaunchSpec, makeHolders, F0_START_DELAY_SEC, START_DELAY_SEC, VERDICTS } from "./launches.js";
 import { F1Signer, type GenesisSigner } from "./signer.js";
 import { JITO_MAINNET } from "./solana-bytes.js";
+import { writeRecord } from "./record.js";
+import { createVault, readOnChain } from "../../tools/squads/vault.js";
 
-interface Args { launch: bigint; mode: "F1" | "F0"; cluster: Cluster; claimTest: boolean; reserveOwner?: string }
+interface Args { launch: bigint; mode: "F1" | "F0"; cluster: Cluster; claimTest: boolean; reserveOwner?: string; record?: string; squadsTimeLock?: number }
 
 function parseArgs(argv: string[]): Args {
   const get = (k: string) => { const i = argv.indexOf(k); return i >= 0 ? argv[i + 1] : undefined; };
   const launch = get("--launch"), mode = get("--mode") ?? "F1", cluster = get("--cluster") ?? "devnet";
-  const known = new Set(["--launch", "--mode", "--cluster", "--claim-test", "--reserve-owner"]);
+  const known = new Set(["--launch", "--mode", "--cluster", "--claim-test", "--reserve-owner", "--record", "--squads-time-lock"]);
   const bad = argv.filter((a) => a.startsWith("--") && !known.has(a));
   if (!launch || !/^\d+$/.test(launch) || !["F1", "F0"].includes(mode) || !["devnet", "local"].includes(cluster) || bad.length) {
     console.error("usage: genesis --launch N --mode F1|F0 [--cluster devnet|local] [--claim-test] [--reserve-owner PUBKEY]");
     process.exit(64);
   }
-  return { launch: BigInt(launch), mode: mode as Args["mode"], cluster: cluster as Cluster, claimTest: argv.includes("--claim-test"), reserveOwner: get("--reserve-owner") };
+  return { launch: BigInt(launch), mode: mode as Args["mode"], cluster: cluster as Cluster, claimTest: argv.includes("--claim-test"), reserveOwner: get("--reserve-owner"), record: get("--record"), squadsTimeLock: get("--squads-time-lock") ? Number(get("--squads-time-lock")) : undefined };
 }
 
 function loadFunder(): Keypair {
@@ -58,19 +60,30 @@ async function main(): Promise<void> {
   const delaySec = a.mode === "F0" ? F0_START_DELAY_SEC : START_DELAY_SEC;
   const t0 = Date.now();
   const specTimeMs = Number(nowSec) * 1000;
+  const squads = a.squadsTimeLock === undefined ? undefined : await createVault(conn, funder, a.squadsTimeLock);
+  if (squads) console.log(`squads multisig: ${squads.multisig.toBase58()} reserve vault: ${squads.vault.toBase58()} time_lock: ${a.squadsTimeLock}`);
   const signer = await makeSigner(a.mode, a.launch);
   const gPub = new PublicKey(signer.pub()).toBase58();
   const r = await runCeremony({
-    conn, cluster: a.cluster, core, signer, funder, priceMicroLamports: 1000, fundLamports: 40_000_000, log: console.log,
-    buildSpec: (g) => buildLaunchSpec(a.launch, g, holders, { jitoProgram: jito, reserveOwner: a.reserveOwner, nowSec, delaySec }),
+    conn, cluster: a.cluster, core, signer, funder, priceMicroLamports: 1000, log: console.log,
+    buildSpec: (g) => buildLaunchSpec(a.launch, g, holders, { jitoProgram: jito, reserveOwner: squads?.vault.toBase58() ?? a.reserveOwner, nowSec, delaySec }),
   });
   const v = r.view;
   console.log(`mint: ${r.mint}\nmint_authority: ${v.mintAuthority}\nfreeze_authority: ${v.freezeAuthority}\nextensions: ${v.space === 82 ? "none" : "PRESENT"}`);
+  console.log(`g_lamports_after: ${await conn.getBalance(new PublicKey(gPub))}`);
   console.log(`space: ${v.space}\nowner: ${v.owner}\nsupply: ${v.supply} (sum of buckets: ${r.compiled.supply})\nlatency_ms: ${Date.now() - t0}`);
   console.log(`signed by ${a.mode === "F0" ? "derived key" : "per-launch key (destroyed)"} ${gPub}`);
   if (a.mode === "F0") console.log("signature verified against the derived key (offline, before broadcast)");
   console.log("confirm_genesis ok");
+  if (a.record) await saveRecord(a, signer, conn, r, holders, squads);
   if (a.claimTest) await claimTest(conn, funder, holders, jito, r.compiled, r.mint, a.launch, specTimeMs, delaySec);
+}
+
+async function saveRecord(a: Args, signer: GenesisSigner, conn: Connection, r: Awaited<ReturnType<typeof runCeremony>>, h: ReturnType<typeof makeHolders>, squads?: Awaited<ReturnType<typeof createVault>>): Promise<void> {
+  const sq = squads ? { multisig: squads.multisig.toBase58(), ...(await readOnChain(conn, squads.multisig)) } : undefined;
+  const f0 = signer.mode === "F0" ? (signer as import("./f0.js").F0Signer).backend.derivation : undefined;
+  writeRecord(a.record!, r, { cluster: a.cluster, mode: a.mode, leaves: h.leaves, squads: sq && { multisig: sq.multisig, members: sq.members, threshold: sq.threshold, time_lock: sq.timeLock }, f0 });
+  console.log(`record: ${a.record}`);
 }
 
 async function claimTest(conn: Connection, funder: Keypair, h: ReturnType<typeof makeHolders>, jito: string,

@@ -11,6 +11,8 @@ export const SIGN_GAS = 300n * 10n ** 12n;
 /** Where the signature comes from: the real testnet MPC signer, or a labelled SANDBOX stand-in. */
 export interface SignBackend {
   label: string;
+  /** Inputs of the offline derivation, published in the ceremony record so verify C27 can recompute the key. */
+  derivation?: { signer_root: string; predecessor: string; path: string };
   derivedPub(): Promise<Uint8Array>;
   sign(message: Uint8Array): Promise<Uint8Array>;
 }
@@ -74,6 +76,7 @@ export async function nearBackend(launch: bigint): Promise<SignBackend> {
   const rootPk = (await account.viewFunction({ contractId: TESTNET_SIGNER, methodName: "public_key", args: { domain_id: 1 } })) as string;
   const pub = derivedKeyBytes(rootPk, k.account_id, path);
   return {
+    derivation: { signer_root: rootPk, predecessor: k.account_id, path },
     label: `NEAR testnet ${TESTNET_SIGNER} (predecessor ${k.account_id}, path ${path})`,
     derivedPub: async () => pub,
     sign: async (message) => {
