@@ -42,6 +42,9 @@ impl Contract {
         let headroom = self.cfg.global_cap.saturating_sub(self.cfg.global_held);
         let derived =
             validate_params(&params, &self.cfg.rules, headroom, creator == self.cfg.owner).unwrap_or_else(|v| env::panic_str(&v.message()));
+        if params.creator_bps > 0 {
+            self.cfg.rules.check_alloc_vest().unwrap_or_else(|v| env::panic_str(&v.message()));
+        }
         let attached = env::attached_deposit().as_yoctonear();
         let need = bond_required(derived.max_holders) + self.cfg.factory_deposit + crate::TOKEN_REG_YOCTO;
         if attached < need {
@@ -199,6 +202,9 @@ impl Contract {
                 l.launch_fee_due = a.launch_fee;
                 l.lp_seed_due = a.lp_quote;
                 l.stream_total = a.stream;
+                let dur = kruxa_math::days_to_ns(ch.params.stream_days as u64).unwrap_or(0);
+                let initial = kruxa_math::linear_unlocked(a.stream, now, dur, now).unwrap_or(0);
+                kruxa_logic::check_stream_init(initial).unwrap_or_else(|v| env::panic_str(&v.message()));
                 let buckets =
                     Buckets { launch_fee_due: a.launch_fee, lp_seed_due: a.lp_quote, stream_total: a.stream, excess_pool: a.excess_pool };
                 if check_pass_conservation(&buckets, st.total_active, 0).is_err() {
@@ -378,6 +384,10 @@ impl Contract {
                 pos.spent = r.spend;
                 pos.tokens_entitled = r.tokens;
                 pos.bonus_entitled = r.bonus;
+                match pos.deliver {
+                    HolderId::Near(_) => l.unclaimed_sale_total += r.tokens,
+                    HolderId::Solana(_) => l.solana_locked_total += r.tokens + r.bonus,
+                }
             }
             Status::Passed => {}
             _ => return,
@@ -396,7 +406,12 @@ impl Contract {
         let key = (launch_id, holder.clone());
         let Some(pos) = self.positions.get(&key) else { return };
         let tokens_done = match st.status {
-            Status::Passed => pos.claimed == pos.tokens_entitled + pos.bonus_entitled && matches!(holder, HolderId::Near(_)),
+            Status::Passed => {
+                let sweep_at = self.charters.get(&launch_id).zip(st.settlement.as_ref()).map(|(c, s)| crate::token_claims::bonus_sweep_at(c, s));
+                let bonus_closed = sweep_at.is_some_and(|t| env::block_timestamp() >= t);
+                let paid = pos.claimed == pos.tokens_entitled + pos.bonus_entitled || (bonus_closed && pos.claimed >= pos.tokens_entitled);
+                paid && pos.claim_inflight == 0 && matches!(holder, HolderId::Near(_))
+            }
             _ => true,
         };
         if !pos.settled || pos.owed() + pos.inflight() + pos.open() != 0 || !tokens_done {

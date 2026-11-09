@@ -18,13 +18,18 @@ pub struct MockFt {
     /// Test hook (A-REENTRANCY-REFUND): when set, every `ft_transfer` also calls `(account, method, json args)` from this token,
     /// so the call lands between the transfer and the caller's callback.
     reenter: Option<(AccountId, String, String)>,
+    /// Test hook: every `storage_deposit` panics, to exercise the registration-failure path.
+    fail_storage_deposit: bool,
 }
+
+/// NEP-145 bounds of the testnet factory token (min = max, probed): a registration needs at least this much, the excess is refunded.
+const STORAGE_MIN_YOCTO: u128 = 1_250_000_000_000_000_000_000;
 
 #[near]
 impl MockFt {
     #[init]
     pub fn new(owner_id: AccountId, total_supply: U128) -> Self {
-        let mut s = Self { balances: LookupMap::new(b"b"), registered: LookupMap::new(b"r"), total: total_supply.0, reenter: None };
+        let mut s = Self { balances: LookupMap::new(b"b"), registered: LookupMap::new(b"r"), total: total_supply.0, reenter: None, fail_storage_deposit: false };
         s.balances.insert(owner_id.clone(), total_supply.0);
         s.registered.insert(owner_id, true);
         s
@@ -40,7 +45,15 @@ impl MockFt {
 
     #[payable]
     pub fn storage_deposit(&mut self, account_id: Option<AccountId>, _registration_only: Option<bool>) -> Value {
+        require!(!self.fail_storage_deposit, "storage_deposit is switched off");
+        let attached = env::attached_deposit().as_yoctonear();
+        require!(attached >= STORAGE_MIN_YOCTO, "attached deposit is less than the minimum storage balance");
         let who = account_id.unwrap_or_else(env::predecessor_account_id);
+        if self.registered.get(&who).copied().unwrap_or(false) {
+            let _ = Promise::new(env::predecessor_account_id()).transfer(NearToken::from_yoctonear(attached));
+        } else if attached > STORAGE_MIN_YOCTO {
+            let _ = Promise::new(env::predecessor_account_id()).transfer(NearToken::from_yoctonear(attached - STORAGE_MIN_YOCTO));
+        }
         self.registered.insert(who, true);
         json!({ "total": "1250000000000000000000", "available": "0" })
     }
@@ -113,6 +126,11 @@ impl MockFt {
     /// Test helper: make every later `ft_transfer` also call `method` on `account` with the JSON `args`. Empty method clears it.
     pub fn set_reenter(&mut self, account: AccountId, method: String, args: String) {
         self.reenter = if method.is_empty() { None } else { Some((account, method, args)) };
+    }
+
+    /// Test helper: make every later `storage_deposit` panic (true) or work again (false).
+    pub fn set_fail_storage_deposit(&mut self, fail: bool) {
+        self.fail_storage_deposit = fail;
     }
 
     /// Test helper: drop an account's registration, to make an outbound ft_transfer fail.
