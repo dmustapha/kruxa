@@ -327,6 +327,23 @@ impl Contract {
         self.save_state(id, st);
     }
 
+    /// OWNER only. Puts an ABORTED genesis back to its starting state so the relayer can commit again. The relayer and the guardian cannot
+    /// do this, so an abort by the guardian stays final until the owner decides otherwise. A confirmed genesis can never be reopened.
+    /// The earlier attempt stays in the `genesis_committed` and `genesis_aborted` events; `genesis_reopened` marks the new start.
+    pub fn reopen_genesis(&mut self, launch_id: U64) {
+        if env::predecessor_account_id() != self.cfg.owner {
+            fail(RuleCode::RNotAuthorized, "owner only");
+        }
+        let id = launch_id.0;
+        let mut st = self.state(id);
+        if st.genesis.status != GenesisStatus::Aborted {
+            fail(RuleCode::RGenesisState, "only an aborted genesis can be reopened");
+        }
+        st.genesis = GenesisState::default();
+        emit("genesis_reopened", json!({ "launch_id": id.to_string(), "by": env::predecessor_account_id() }));
+        self.save_state(id, st);
+    }
+
     /// RELAYER: appends the hash of a Verdict Rail attestation (the verify script flags attestations missing from this log).
     pub fn attest_log_append(&mut self, launch_id: U64, attestation_hash: String) {
         self.require_relayer();

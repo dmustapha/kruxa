@@ -234,6 +234,43 @@ async fn abort_before_confirm_is_final_for_the_relayer_and_the_guardian_can_do_i
 }
 
 #[tokio::test]
+async fn only_the_owner_can_reopen_an_aborted_genesis_and_the_second_attempt_completes() -> anyhow::Result<()> {
+    let r = round("GENR", 12, 0, true).await?;
+    assert!(has_code(&r.call(&r.env.owner, "reopen_genesis", lid(r.id)).await, "R_GENESIS_STATE"), "nothing to reopen before a commit");
+    r.call(&r.relayer, "commit_genesis", commit_args(r.id)).await.into_result()?;
+    assert!(has_code(&r.call(&r.env.owner, "reopen_genesis", lid(r.id)).await, "R_GENESIS_STATE"), "a committed genesis is not aborted");
+    r.call(&r.env.guardian, "abort_genesis", json!({ "launch_id": r.id.to_string(), "reason": "first attempt failed" }))
+        .await
+        .into_result()?;
+    for who in [&r.relayer, &r.env.guardian, &r.env.creator] {
+        assert!(has_code(&r.call(who, "reopen_genesis", lid(r.id)).await, "R_NOT_AUTHORIZED"), "only the owner reopens");
+    }
+    assert!(
+        has_code(&r.call(&r.relayer, "commit_genesis", commit_args(r.id)).await, "R_GENESIS_ALREADY"),
+        "still final until the owner acts"
+    );
+    r.call(&r.env.owner, "reopen_genesis", lid(r.id)).await.into_result()?;
+    let g = r.genesis().await;
+    assert_eq!((g["status"].as_str(), g["abort_reason"].as_str(), g["g_pub"].is_null()), (Some("None"), Some(""), true));
+    r.call(&r.relayer, "commit_genesis", commit_args(r.id)).await.into_result()?;
+    let g = r.genesis().await;
+    assert_eq!((g["status"].as_str(), g["root_ready"].as_bool()), (Some("Committed"), Some(true)));
+    let mint = g["mint_address"].as_str().unwrap().to_string();
+    let confirm = json!({ "launch_id": r.id.to_string(), "mint": mint, "sigs": ["s"], "slot": "1", "ceremony_hash": hex(&[0; 32]) });
+    r.call(&r.relayer, "confirm_genesis", confirm).await.into_result()?;
+    assert_eq!(r.genesis().await["status"], "Confirmed");
+    assert!(
+        has_code(&r.call(&r.env.owner, "reopen_genesis", lid(r.id)).await, "R_GENESIS_STATE"),
+        "a confirmed genesis can never be reopened"
+    );
+    assert!(has_code(
+        &r.call(&r.relayer, "abort_genesis", json!({ "launch_id": r.id.to_string(), "reason": "late" })).await,
+        "R_GENESIS_STATE"
+    ));
+    Ok(())
+}
+
+#[tokio::test]
 async fn pause_genesis_is_guardian_only_and_blocks_the_ceremony() -> anyhow::Result<()> {
     let r = round("GENG", 12, 0, true).await?;
     assert!(has_code(&r.call(&r.env.creator, "pause_genesis", json!({})).await, "R_NOT_AUTHORIZED"));
