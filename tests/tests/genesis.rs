@@ -47,10 +47,14 @@ impl Round {
 
 /// A launch with `n_native` NEAR buyers and `n_sol` Solana buyers (30 USDC each); settled but not yet committed to genesis when `settle` is true.
 async fn round(symbol: &str, n_native: usize, n_sol: usize, settle: bool) -> anyhow::Result<Round> {
+    round_with_plan(symbol, n_native, n_sol, settle, Value::Null).await
+}
+
+async fn round_with_plan(symbol: &str, n_native: usize, n_sol: usize, settle: bool, plan: Value) -> anyhow::Result<Round> {
     let env = Env::new().await?;
     let relayer = env.user("relayer", 0).await?;
     env.owner.call(env.core.id(), "set_genesis_relayer").args_json(json!({ "account": relayer.id() })).transact().await?.into_result()?;
-    let id = env.create_launch(&params(symbol)).await?;
+    let id = env.create_launch_with_plan(&env.creator, &params(symbol), None, plan).await?;
     for i in 0..n_native {
         let u = env.user(&format!("n{i}"), 1_000 * USDC).await?;
         env.commit_native(&u, id, 30 * USDC, None).await.into_result()?;
@@ -318,5 +322,79 @@ async fn solana_allocations_page_lists_only_solana_holders_after_settlement() ->
     let mut want: Vec<(String, String)> = r.leaves.iter().map(|(k, a)| (hex(k), a.to_string())).collect();
     want.sort();
     assert_eq!(got, want);
+    Ok(())
+}
+
+async fn f0_round(symbol: &str) -> anyhow::Result<Round> {
+    round_with_plan(symbol, 12, 0, true, json!({ "mode": "F0", "mint_pubkey_f0": hex(&G_PUB) })).await
+}
+
+fn sign_args(id: u64, index: u8, message: &[u8]) -> Value {
+    json!({ "launch_id": id.to_string(), "tx_index": index, "message_hex": hex(message) })
+}
+
+fn register_args(id: u64, index: u8, message: &[u8]) -> Value {
+    json!({ "launch_id": id.to_string(), "tx_index": index, "message_sha256": hex(&sha256(message)) })
+}
+
+fn sha256(b: &[u8]) -> [u8; 32] {
+    use sha2::{Digest, Sha256};
+    Sha256::digest(b).into()
+}
+
+#[tokio::test]
+async fn f0_policy_gate_signs_only_the_registered_message_once_and_only_for_f0() -> anyhow::Result<()> {
+    let r = f0_round("GENP").await?;
+    let (msg_a, msg_b) = (b"tx1 message as compiled".to_vec(), b"some other transaction".to_vec());
+    assert!(has_code(&r.call(&r.relayer, "sign_genesis", sign_args(r.id, 0, &msg_a)).await, "R_GENESIS_STATE"), "nothing is committed yet");
+    r.call(&r.relayer, "commit_genesis", commit_args(r.id)).await.into_result()?;
+    for who in [&r.env.creator, &r.env.owner, &r.env.guardian] {
+        assert!(has_code(&r.call(who, "register_f0_message", register_args(r.id, 0, &msg_a)).await, "R_NOT_AUTHORIZED"));
+        assert!(has_code(&r.call(who, "sign_genesis", sign_args(r.id, 0, &msg_a)).await, "R_NOT_AUTHORIZED"));
+    }
+    assert!(
+        has_code(&r.call(&r.relayer, "register_f0_message", register_args(r.id, 2, &msg_a)).await, "R_GENESIS_STATE"),
+        "only tx index 0 or 1"
+    );
+    let unregistered = r.call(&r.relayer, "sign_genesis", sign_args(r.id, 0, &msg_a)).await;
+    assert!(
+        has_code(&unregistered, "R_GENESIS_ARG") && format!("{:?}", unregistered.failures()).contains("E_POLICY_MISMATCH"),
+        "no hash registered"
+    );
+    r.call(&r.relayer, "register_f0_message", register_args(r.id, 0, &msg_a)).await.into_result()?;
+    let wrong = r.call(&r.relayer, "sign_genesis", sign_args(r.id, 0, &msg_b)).await;
+    assert!(format!("{:?}", wrong.failures()).contains("E_POLICY_MISMATCH"), "another message is refused: {:?}", wrong.failures());
+    let wrong_slot = r.call(&r.relayer, "sign_genesis", sign_args(r.id, 1, &msg_a)).await;
+    assert!(format!("{:?}", wrong_slot.failures()).contains("E_POLICY_MISMATCH"), "the tx1 message cannot be signed as tx2");
+    let huge = vec![7u8; 1233];
+    r.call(&r.relayer, "register_f0_message", register_args(r.id, 1, &huge)).await.into_result()?;
+    assert!(has_code(&r.call(&r.relayer, "sign_genesis", sign_args(r.id, 1, &huge)).await, "R_GENESIS_ARG"), "over one packet");
+    assert_eq!(r.genesis().await["f0_gate"]["registered"][0], hex(&sha256(&msg_a)));
+    r.call(&r.relayer, "register_f0_message", register_args(r.id, 0, &msg_b)).await.into_result()?;
+    assert_eq!(r.genesis().await["f0_gate"]["registered"][0], hex(&sha256(&msg_b)), "an unsigned slot can take a new blockhash's message");
+    // The registered message passes the gate and the request leaves (the sandbox has no MPC signer, so the signer leg itself fails there).
+    let ok = r.call(&r.relayer, "sign_genesis", sign_args(r.id, 0, &msg_b)).await;
+    assert!(ok.logs().iter().any(|l| l.contains("f0_sign_requested")), "{:?}", ok.logs());
+    assert_eq!(r.genesis().await["f0_gate"]["signed"], json!([true, false]));
+    assert!(
+        has_code(&r.call(&r.relayer, "sign_genesis", sign_args(r.id, 0, &msg_b)).await, "R_GENESIS_STATE"),
+        "one signature per registration"
+    );
+    assert!(
+        has_code(&r.call(&r.relayer, "register_f0_message", register_args(r.id, 0, &msg_a)).await, "R_GENESIS_STATE"),
+        "a signed slot cannot be re-registered"
+    );
+    r.call(&r.env.guardian, "abort_genesis", json!({ "launch_id": r.id.to_string(), "reason": "retry" })).await.into_result()?;
+    r.call(&r.env.owner, "reopen_genesis", lid(r.id)).await.into_result()?;
+    assert_eq!(r.genesis().await["f0_gate"]["registered"], json!([null, null]), "a reopened genesis starts with an empty gate");
+    Ok(())
+}
+
+#[tokio::test]
+async fn f0_gate_methods_refuse_an_f1_launch() -> anyhow::Result<()> {
+    let r = round("GENQ", 12, 0, true).await?;
+    r.call(&r.relayer, "commit_genesis", commit_args(r.id)).await.into_result()?;
+    assert!(has_code(&r.call(&r.relayer, "register_f0_message", register_args(r.id, 0, b"m")).await, "R_GENESIS_STATE"));
+    assert!(has_code(&r.call(&r.relayer, "sign_genesis", sign_args(r.id, 0, b"m")).await, "R_GENESIS_STATE"));
     Ok(())
 }

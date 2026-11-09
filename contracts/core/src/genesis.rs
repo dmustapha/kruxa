@@ -11,7 +11,7 @@ use kruxa_logic::genesis::{
 use kruxa_logic::{hex, RuleCode};
 use near_sdk::json_types::U64;
 use near_sdk::serde_json::{json, Value};
-use near_sdk::{env, near, AccountId};
+use near_sdk::{env, near, AccountId, Gas, NearToken, Promise};
 
 use crate::events::emit;
 use crate::model::*;
@@ -20,6 +20,16 @@ use crate::{fail, Contract};
 const PAGE_MAX: usize = 25;
 const MAINNET_GENESIS_HASH: &str = "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d";
 const DEVNET_GENESIS_HASH: &str = "EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG";
+/// F0 signing: gas forwarded to the MPC signer (it yields and refunds what it does not use).
+const GAS_SIGN: Gas = Gas::from_tgas(200);
+/// A Solana legacy transaction message is at most 1232 bytes.
+const F0_MESSAGE_MAX: usize = 1232;
+
+/// v1.signer-prod.testnet on testnet, v1.signer elsewhere. The child key's predecessor is this core account, so only this code can sign for it.
+fn mpc_signer() -> AccountId {
+    let name = if env::current_account_id().as_str().ends_with(".testnet") { "v1.signer-prod.testnet" } else { "v1.signer" };
+    name.parse().expect("valid account id")
+}
 
 /// What a creator may say about the genesis. Every field is optional; the defaults are the only safe values.
 #[near(serializers = [json])]
@@ -50,6 +60,15 @@ fn unhex32(s: &str) -> [u8; 32] {
         *b = u8::from_str_radix(&s[2 * i..2 * i + 2], 16).expect("checked hex");
     }
     out
+}
+
+/// Lowercase or uppercase hex of 1 to 1232 bytes (one Solana packet).
+fn unhex(s: &str) -> Vec<u8> {
+    let ok = s.len() % 2 == 0 && !s.is_empty() && s.len() <= 2 * F0_MESSAGE_MAX && s.bytes().all(|b| b.is_ascii_hexdigit());
+    if !ok {
+        fail(RuleCode::RGenesisArg, "message must be hex of 1 to 1232 bytes");
+    }
+    (0..s.len()).step_by(2).map(|i| u8::from_str_radix(&s[i..i + 2], 16).expect("checked hex")).collect()
 }
 
 fn opt32(s: &Option<String>) -> [u8; 32] {
@@ -344,6 +363,60 @@ impl Contract {
         self.save_state(id, st);
     }
 
+    fn require_f0_signing_open(st: &LaunchState, ch: &Charter, tx_index: u8) {
+        if ch.genesis.mode != GenesisMode::F0 {
+            fail(RuleCode::RGenesisState, "F0 launches only; F1 signs with a memory-only key");
+        }
+        if st.genesis.status != GenesisStatus::Committed || !st.genesis.root_ready || tx_index > 1 {
+            fail(RuleCode::RGenesisState, "needs a committed F0 genesis with a complete root, and tx_index 0 or 1");
+        }
+    }
+
+    /// RELAYER, F0 only. Registers the sha256 of the exact message that `sign_genesis` may sign for tx1 (index 0) or tx2 (index 1), i.e.
+    /// compile(committed spec, blockhash, price). The registration is an event, so anyone can recompute the compile output and compare;
+    /// a message that was already signed cannot be replaced. A new blockhash (expired transaction) re-registers an unsigned slot.
+    pub fn register_f0_message(&mut self, launch_id: U64, tx_index: u8, message_sha256: String) {
+        self.require_relayer();
+        self.require_genesis_live();
+        let id = launch_id.0;
+        let (mut st, ch) = (self.state(id), self.charter(id));
+        Self::require_f0_signing_open(&st, &ch, tx_index);
+        let i = usize::from(tx_index);
+        if st.genesis.f0_signed[i] {
+            fail(RuleCode::RGenesisState, "this message was already signed; it cannot be replaced");
+        }
+        st.genesis.f0_hash[i] = Some(unhex32(&message_sha256));
+        emit("f0_message_registered", json!({ "launch_id": id.to_string(), "tx_index": tx_index, "message_sha256": message_sha256 }));
+        self.save_state(id, st);
+    }
+
+    /// RELAYER, F0 only. The policy gate (ARCHITECTURE 5.5): the MPC signer is asked to sign only a message whose sha256 equals the hash
+    /// registered for that slot, once per registration, on the path `kruxa:genesis:<launch_id>` (built here, never passed in). The
+    /// relayer cannot name another path or message. The slot is spent before the request leaves (debit first) and the signer's response
+    /// is the call's result. A request that fails at the signer is not retried here: abort, and the owner reopens (a fresh gate).
+    pub fn sign_genesis(&mut self, launch_id: U64, tx_index: u8, message_hex: String) -> Promise {
+        self.require_relayer();
+        self.require_genesis_live();
+        let id = launch_id.0;
+        let (mut st, ch) = (self.state(id), self.charter(id));
+        Self::require_f0_signing_open(&st, &ch, tx_index);
+        let message = unhex(&message_hex);
+        let i = usize::from(tx_index);
+        if st.genesis.f0_hash[i] != Some(env::sha256_array(&message)) {
+            fail(RuleCode::RGenesisArg, "E_POLICY_MISMATCH: the message is not the registered compile() output for this transaction");
+        }
+        if st.genesis.f0_signed[i] {
+            fail(RuleCode::RGenesisState, "this message is already signed or its request is in flight");
+        }
+        st.genesis.f0_signed[i] = true;
+        emit("f0_sign_requested", json!({ "launch_id": id.to_string(), "tx_index": tx_index }));
+        self.save_state(id, st);
+        // ARCHITECTURE 5.5: sign({ request: { payload_v2: { Eddsa: hex }, path, domain_id: 1 } }); domain 1 = Ed25519.
+        let request =
+            format!(r#"{{"request":{{"payload_v2":{{"Eddsa":"{}"}},"path":"kruxa:genesis:{id}","domain_id":1}}}}"#, hex(&message));
+        Promise::new(mpc_signer()).function_call("sign".to_string(), request.into_bytes(), NearToken::from_yoctonear(1), GAS_SIGN)
+    }
+
     /// RELAYER: appends the hash of a Verdict Rail attestation (the verify script flags attestations missing from this log).
     pub fn attest_log_append(&mut self, launch_id: U64, attestation_hash: String) {
         self.require_relayer();
@@ -368,6 +441,7 @@ impl Contract {
             "genesis_spec_hash": h(&g.genesis_spec_hash), "max_total_claim": g.expected_total.to_string(), "sol_mint_supply": g.sol_mint_supply.to_string(),
             "tx_sigs": g.tx_sigs, "slot": g.slot.to_string(), "ceremony_hash": h(&g.ceremony_hash),
             "attest_log": g.attest_log.iter().map(|b| hex(b)).collect::<Vec<_>>(), "abort_reason": g.abort_reason,
+            "f0_gate": { "registered": g.f0_hash.iter().map(h).collect::<Vec<_>>(), "signed": g.f0_signed },
             "plan": { "decimals": ch.genesis.decimals, "mint_authority_none": ch.genesis.mint_authority_none, "freeze_authority_none": ch.genesis.freeze_authority_none,
                       "extensions_allowed": ch.genesis.extensions_allowed, "lp_mirror_to_solana": ch.genesis.lp_mirror_to_solana, "reserve_bps": ch.genesis.reserve_bps,
                       "clawback_days": ch.genesis.clawback_days, "disclosure": format!("{:?}", ch.genesis.disclosure) },

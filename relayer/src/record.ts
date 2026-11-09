@@ -20,6 +20,7 @@ export function writeRecord(file: string, r: CeremonyResult, x: RecordExtras): v
     blockhash: r.blockhash, price: r.price, sigs: r.sigs, slot: r.slot, ceremony_hash: r.ceremonyHash, sign_ms: r.timing.signMs,
     leaves: x.leaves.map((l) => ({ claimant: new PublicKey(l.claimant).toBase58(), unlocked: l.unlocked.toString(), locked: l.locked.toString() })),
     squads: x.squads ?? null, f0: x.f0 ?? null, spec_source: x.sources,
+    ...(r.sweepSig ? { sweep_sig: r.sweepSig } : {}),
   };
   writeFileSync(file, JSON.stringify(rec, null, 2) + "\n");
 }

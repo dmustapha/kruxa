@@ -266,6 +266,17 @@ impl Env {
 
     /// Same, with an explicit payout recipient (`stream_recipient` in the Charter, named `payout_recipient` in the views).
     pub async fn create_launch_to(&self, creator: &Account, p: &TrialParams, recipient: Option<&AccountId>) -> anyhow::Result<u64> {
+        self.create_launch_with_plan(creator, p, recipient, Value::Null).await
+    }
+
+    /// Same, with a genesis plan (`null` = the defaults), e.g. an F0 plan naming the MPC child key.
+    pub async fn create_launch_with_plan(
+        &self,
+        creator: &Account,
+        p: &TrialParams,
+        recipient: Option<&AccountId>,
+        genesis: Value,
+    ) -> anyhow::Result<u64> {
         let required: String = self.core.view("required_deposit").args_json(json!({ "params": p })).await?.json()?;
         let supply = (p.total_supply_whole as u128) * USDC;
         let token = self
@@ -286,7 +297,7 @@ impl Env {
         let id = self.next_id.get();
         let res = creator
             .call(self.core.id(), "create_trial")
-            .args_json(json!({ "params": p, "stream_recipient": recipient }))
+            .args_json(json!({ "params": p, "stream_recipient": recipient, "genesis": genesis }))
             .deposit(NearToken::from_yoctonear(required.parse()?))
             .gas(GAS)
             .transact()
