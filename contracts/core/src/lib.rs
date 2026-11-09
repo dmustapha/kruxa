@@ -18,6 +18,7 @@ mod previews;
 mod s4;
 mod solvency;
 mod token;
+mod token_claims;
 mod views;
 
 use kruxa_logic::{RuleCode, Rules};
@@ -104,6 +105,8 @@ impl Contract {
             market_locked: false,
             genesis_relayer: None,
             genesis_paused: false,
+            burn_mode: BurnMode::Hold,
+            burn_mode_locked: false,
         };
         Self {
             cfg,

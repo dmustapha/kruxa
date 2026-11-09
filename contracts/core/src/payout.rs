@@ -2,7 +2,7 @@ use crate::ContractExt;
 use kruxa_logic::RuleCode;
 use kruxa_math::{dec, linear_unlocked};
 use near_sdk::json_types::U128;
-use near_sdk::{assert_one_yocto, env, near, Promise, PromiseOrValue};
+use near_sdk::{env, near, Promise, PromiseOrValue};
 
 use crate::events::emit;
 use crate::ext::{ext_ft, ext_intents};
@@ -20,6 +20,9 @@ pub enum PayoutKind {
     RelayFee,
     Consolidate,
     Claim,
+    /// token_claims.rs: creator allocation claim and `sweep_tokens` legs.
+    AllocClaim,
+    Sweep,
 }
 
 /// Everything a callback needs to undo or confirm one outbound leg. Debit happened before the call.
@@ -52,15 +55,17 @@ impl Contract {
         PromiseOrValue::Value(self.pay_due(id, &holder))
     }
 
-    /// Delivers sale tokens plus the vested part of the backer bonus to a NEAR holder. The holder must already be
-    /// registered on the launch token (NEP-145). A failed transfer restores `claimed` in the callback.
+    /// Delivers sale tokens plus the vested part of the backer bonus to a NEAR holder. Attach 1 yocto, or 0.00125 NEAR plus 1 yocto when
+    /// the holder is not yet registered on the launch token (NEP-145): core then registers the holder and refunds everything above that.
+    /// A failed step restores `claimed` and refunds the deposit. The bonus stops at the sweep window (`sweep_tokens` releases the rest).
     #[payable]
     pub fn claim_tokens(&mut self, launch_id: U64Arg) -> Promise {
-        assert_one_yocto();
+        let deposit = Self::attached_for_delivery();
         self.require_exit_open();
         let id = launch_id.0;
         let (mut st, ch) = (self.state(id), self.charter(id));
-        let holder = HolderId::Near(env::predecessor_account_id());
+        let claimant = env::predecessor_account_id();
+        let holder = HolderId::Near(claimant.clone());
         if st.status != Status::Passed {
             fail(RuleCode::RWrongPhase, "tokens exist only after PASS");
         }
@@ -68,22 +73,29 @@ impl Contract {
         let Some(mut pos) = self.positions.get(&(id, holder.clone())).cloned() else { fail(RuleCode::RNoPosition, "no position") };
         let s = st.settlement.clone().expect("Passed has a settlement");
         let vest_ns = kruxa_math::days_to_ns(ch.rules.backer_vest_days as u64).unwrap_or(0);
-        let bonus = linear_unlocked(pos.bonus_entitled, s.settled_at, vest_ns, env::block_timestamp()).unwrap_or(0);
+        let now = env::block_timestamp();
+        let bonus = if now >= crate::token_claims::bonus_sweep_at(&ch, &s) {
+            0
+        } else {
+            linear_unlocked(pos.bonus_entitled, s.settled_at, vest_ns, now).unwrap_or(0)
+        };
         let amount = (pos.tokens_entitled + bonus).saturating_sub(pos.claimed);
         if amount == 0 {
             fail(RuleCode::RNothing, "nothing claimable yet");
         }
+        if pos.claimed == 0 {
+            st.ledger.unclaimed_sale_total -= pos.tokens_entitled;
+        }
+        st.ledger.claimed_total += amount;
         pos.claimed += amount;
+        pos.claim_inflight += amount;
         self.positions.insert((id, holder.clone()), pos);
         self.save_state(id, st.clone());
         let token = st.token.clone().expect("Passed launches have a token");
         let op = PayoutOp { kind: PayoutKind::Claim, launch_id: id, holder: Some(holder.key()), amount };
         emit("tokens_claimed", json!({ "launch_id": id.to_string(), "holder": holder.key(), "amount": amount.to_string() }));
-        ext_ft::ext(token)
-            .with_attached_deposit(ONE_YOCTO)
-            .with_static_gas(GAS_OUT)
-            .ft_transfer(env::predecessor_account_id(), U128(amount), None)
-            .then(self.callback(op))
+        let d = crate::token_claims::Delivery { op, receiver: claimant.clone(), payer: claimant, deposit: U128(deposit) };
+        self.begin_delivery(token, d)
     }
 
     /// Moves settled Intents-held proceeds to native USDC so the fee, stream and LP buckets can be paid. Debit first.
@@ -180,6 +192,9 @@ impl Contract {
     #[private]
     pub fn on_payout(&mut self, op: PayoutOp) {
         let ok = env::promise_result_checked(0, 1 << 16).is_ok();
+        if matches!(op.kind, PayoutKind::Claim | PayoutKind::AllocClaim | PayoutKind::Sweep) {
+            return self.settle_token_leg(op, ok);
+        }
         let Some(mut st) = self.states.get(&op.launch_id).cloned() else { return };
         let a = op.amount;
         let holder = op.holder.as_deref().and_then(HolderId::parse);
@@ -246,8 +261,7 @@ impl Contract {
                     l.consolidated += a;
                 }
             }
-            (PayoutKind::Claim, false) => pos.iter_mut().for_each(|p| p.claimed = p.claimed.saturating_sub(a)),
-            (PayoutKind::Claim, true) => {}
+            (PayoutKind::Claim | PayoutKind::AllocClaim | PayoutKind::Sweep, _) => {}
         }
         if let (Some(h), Some(p)) = (holder.as_ref(), pos) {
             self.positions.insert((op.launch_id, h.clone()), p);
@@ -264,7 +278,7 @@ impl Contract {
 pub type U64Arg = near_sdk::json_types::U64;
 
 impl Contract {
-    fn callback(&self, op: PayoutOp) -> Promise {
+    pub(crate) fn callback(&self, op: PayoutOp) -> Promise {
         Self::ext(env::current_account_id()).with_static_gas(GAS_CB).on_payout(op)
     }
 

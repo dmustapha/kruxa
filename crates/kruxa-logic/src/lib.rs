@@ -19,7 +19,10 @@ pub use ledger::{
     check_flow, check_pass_conservation, i2_position_count, i3_inputs_frozen, i4_status_monotone, i5_no_overpay, BookSums, Buckets,
     LedgerTotals, StatusClass,
 };
-pub use rules::{bond_required, validate_all, validate_params, Derived, FeeTerms, RuleCode, RuleViolation, Rules, TrialParams};
+pub use rules::{
+    bond_required, check_payees, check_stream_init, validate_all, validate_params, Derived, FeeTerms, RuleCode, RuleViolation, Rules,
+    TrialParams,
+};
 pub use settle::{allocate, launch_fee, phase_at, settle_position, walk_window_open, Allocation, Phase, PositionSettlement};
 pub use verdict::{book_next, hex, inputs_hash, verdict, Outcome, VerdictInputs};
 

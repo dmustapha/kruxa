@@ -163,9 +163,16 @@ impl Contract {
             ("lp tokens sent + inflight > bucket", l.lp_tokens_sent + l.lp_tokens_inflight, ch.derived.n_lp),
             ("stream drawn + inflight > total", l.stream_drawn + l.stream_inflight, l.stream_total),
             ("relay fee paid + inflight > collected", l.relay_fee_paid + l.relay_fee_inflight, l.relay_fee_total),
+            ("creator allocation claimed > allocation", l.alloc_claimed, ch.derived.n_creator),
+            (
+                "tokens claimed + swept > the pool they come from",
+                l.claimed_total + l.swept,
+                if st.status == Status::Dissolved { ch.derived.n_total } else { ch.derived.n_sale + ch.derived.n_backer },
+            ),
         ]);
         let l6 = self.l6_counters_hold().then_some(()).ok_or("L6: solvency counters differ from the sum over launches");
-        let checks = [("l1", &l1), ("l3", &l3), ("l4", &l4), ("l6", &l6), ("i2", &i2), ("i3", &i3), ("i4", &i4), ("i5", &i5)];
+        let l7 = self.l7_lock_mirror(st, ch);
+        let checks = [("l1", &l1), ("l3", &l3), ("l4", &l4), ("l6", &l6), ("i2", &i2), ("i3", &i3), ("i4", &i4), ("i5", &i5), ("l7", &l7)];
         let mut out = near_sdk::serde_json::Map::new();
         for (name, r) in checks {
             out.insert(format!("{name}_ok"), json!(r.is_ok()));
@@ -197,6 +204,22 @@ fn sums_buckets(l: &Ledger) -> Buckets {
 }
 
 impl Contract {
+    /// L7' (lock-mirror): `near_circulating + sol_mint_supply == total`. Once the genesis root is ready, the Solana mint supply must equal
+    /// the leaf total plus the mirrored LP bucket (what `build_spec` committed) and fit inside the supply; the NEAR copy stays locked in core.
+    pub(crate) fn l7_lock_mirror(&self, st: &LaunchState, ch: &Charter) -> Result<(), &'static str> {
+        let g = &st.genesis;
+        if !g.root_ready {
+            return Ok(());
+        }
+        let lp = if ch.genesis.lp_mirror_to_solana { ch.derived.n_lp } else { 0 };
+        let sol = g.sol_mint_supply as u128;
+        if sol != g.expected_total as u128 + lp {
+            return Err("L7: Solana mint supply is not the leaf total plus the mirrored LP bucket");
+        }
+        let circulating = ch.derived.n_total.checked_sub(sol).ok_or("L7: Solana mint supply exceeds the total supply")?;
+        (circulating + sol == ch.derived.n_total).then_some(()).ok_or("L7: near_circulating + sol_mint_supply != total")
+    }
+
     fn sum_positions(&self, id: u64, st: &LaunchState) -> PositionSums {
         let mut s = PositionSums { l3_ok: true, sum_open: 0, count_open_unsettled: 0, position_overpay: 0, claim_overpay: 0 };
         for seq in 0..st.holder_count {

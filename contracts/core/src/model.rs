@@ -153,6 +153,16 @@ pub struct Ledger {
     pub relay_fee_total: u128,
     pub relay_fee_paid: u128,
     pub relay_fee_inflight: u128,
+    /// Launch-token custody (token_claims.rs). Creator allocation claimed (debited at claim, re-credited on failure).
+    pub alloc_claimed: u128,
+    /// Position token claims in flight or done (debited at claim, re-credited on failure).
+    pub claimed_total: u128,
+    /// Sum of `tokens_entitled` over NEAR positions whose `claimed` is still zero: sale tokens that stay owed to buyers.
+    pub unclaimed_sale_total: u128,
+    /// Sum of `tokens_entitled + bonus_entitled` over Solana-delivery positions: the NEAR copy stays locked for the Solana mint (L7').
+    pub solana_locked_total: u128,
+    /// Supply released by `sweep_tokens` to `burn_mode` (sunk, or marked held). Debited before the transfer.
+    pub swept: u128,
 }
 
 #[near(serializers = [borsh])]
@@ -227,6 +237,8 @@ pub struct Position {
     pub tokens_entitled: u128,
     pub bonus_entitled: u128,
     pub claimed: u128,
+    /// Part of `claimed` whose `ft_transfer` has not resolved yet. A position is not deleted while this is non-zero.
+    pub claim_inflight: u128,
     pub settled: bool,
 }
 
@@ -274,6 +286,38 @@ pub struct Config {
     /// The genesis relayer (`genesis-relayer.kruxa.near`): commit, build_root_page, confirm, abort, attest_log_append and nothing else.
     pub genesis_relayer: Option<AccountId>,
     pub genesis_paused: bool,
+    /// What `sweep_tokens` does with unclaimed bonus, rounding dust and a dissolved launch's supply. Default Hold.
+    pub burn_mode: BurnMode,
+    /// Set by the first `set_burn_mode` or the first sweep: the destination can then never be changed.
+    pub burn_mode_locked: bool,
+}
+
+/// `Burn` calls the token's `ft_burn`; the testnet factory token has none (evidence/factory-probe.txt), so it is refused today.
+#[near(serializers = [borsh])]
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum BurnMode {
+    Burn,
+    Sink(AccountId),
+    Hold,
+}
+
+impl BurnMode {
+    /// "burn", "hold" or "sink:<account>": the text form used by `set_burn_mode`, events and views.
+    pub fn label(&self) -> String {
+        match self {
+            BurnMode::Burn => "burn".into(),
+            BurnMode::Hold => "hold".into(),
+            BurnMode::Sink(a) => format!("sink:{}", a),
+        }
+    }
+
+    pub fn parse(s: &str) -> Option<BurnMode> {
+        match s {
+            "burn" => Some(BurnMode::Burn),
+            "hold" => Some(BurnMode::Hold),
+            _ => s.strip_prefix("sink:")?.parse().ok().map(BurnMode::Sink),
+        }
+    }
 }
 
 #[near(serializers = [borsh])]

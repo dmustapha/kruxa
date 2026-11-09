@@ -70,6 +70,14 @@ pub enum RuleCode {
     RGenesisArg,
     RGenesisOrder,
     RGenesisLeaf,
+    /// The stream must start at zero (PRD gap 17): nothing is drawable at the verdict instant.
+    RStreamInit,
+    /// Payee list: 1..=10, unique accounts, each bps above zero, sum 10_000.
+    RPayees,
+    /// Creator allocation schedule: cliff floor, total span floor and ceiling.
+    RVest,
+    /// `burn_mode` Burn is not available: the testnet factory token has no `ft_burn` (evidence/factory-probe.txt).
+    RBurnUnsupported,
 }
 
 impl RuleCode {
@@ -138,6 +146,10 @@ impl RuleCode {
             RGenesisArg => "R_GENESIS_ARG",
             RGenesisOrder => "R_GENESIS_ORDER",
             RGenesisLeaf => "R_GENESIS_LEAF",
+            RStreamInit => "R_STREAM_INIT",
+            RPayees => "R_PAYEES",
+            RVest => "R_VEST",
+            RBurnUnsupported => "R_BURN_UNSUPPORTED",
         }
     }
 }
@@ -238,8 +250,18 @@ pub struct Rules {
     pub max_fee_vest_days: u16,
     pub max_opening_fee_start_bps: u16,
     pub max_opening_decay_minutes: u16,
+    /// Creator allocation (`creator_bps`): nothing is claimable before the cliff, then it vests linearly. Seconds from PASS.
+    pub alloc_cliff_secs: u64,
+    pub alloc_linear_secs: u64,
+    /// R_VEST floors: cliff at least 14 days, cliff + linear between 180 and 1460 days (S1-A 6.2).
+    pub min_alloc_cliff_secs: u64,
+    pub min_alloc_total_secs: u64,
+    pub max_alloc_total_secs: u64,
+    /// Unclaimed backer bonus (and rounding dust) is released to `burn_mode` this long after the bonus vest ends.
+    pub bonus_sweep_after_secs: u64,
 }
 
+const DAY_S: u64 = 86_400;
 const USDC: u128 = 1_000_000;
 
 impl Rules {
@@ -303,13 +325,59 @@ impl Rules {
             max_fee_vest_days: 365,
             max_opening_fee_start_bps: 1_000,
             max_opening_decay_minutes: 120,
+            alloc_cliff_secs: 30 * DAY_S,
+            alloc_linear_secs: 365 * DAY_S,
+            min_alloc_cliff_secs: 14 * DAY_S,
+            min_alloc_total_secs: 180 * DAY_S,
+            max_alloc_total_secs: 1_460 * DAY_S,
+            bonus_sweep_after_secs: 180 * DAY_S,
         }
     }
 
     /// Labelled demo profile (separate account, same wasm): clock compressed. Hostile-preset checks unchanged.
     pub fn demo_clock() -> Self {
-        Rules { min_commit_secs: 90, min_tail_secs: 30, ..Rules::ladder() }
+        Rules {
+            min_commit_secs: 90,
+            min_tail_secs: 30,
+            alloc_cliff_secs: 20,
+            alloc_linear_secs: 40,
+            min_alloc_cliff_secs: 10,
+            min_alloc_total_secs: 30,
+            bonus_sweep_after_secs: 30,
+            ..Rules::ladder()
+        }
     }
+
+    /// R_VEST: the creator allocation schedule this rule set would snapshot must respect the floors and the ceiling.
+    pub fn check_alloc_vest(&self) -> Result<(), RuleViolation> {
+        let total = self.alloc_cliff_secs.saturating_add(self.alloc_linear_secs);
+        if self.alloc_cliff_secs < self.min_alloc_cliff_secs {
+            return Err(RuleViolation::new(RuleCode::RVest, "alloc_cliff_secs", self.alloc_cliff_secs, "cliff floor"));
+        }
+        if total < self.min_alloc_total_secs || total > self.max_alloc_total_secs {
+            return Err(RuleViolation::new(RuleCode::RVest, "alloc_cliff_secs+alloc_linear_secs", total, "total floor and ceiling"));
+        }
+        Ok(())
+    }
+}
+
+/// R_STREAM_INIT: the amount drawable at the verdict instant must be zero (stream initial release is 0).
+pub fn check_stream_init(drawable_at_verdict: u128) -> Result<(), RuleViolation> {
+    if drawable_at_verdict != 0 {
+        return Err(RuleViolation::new(RuleCode::RStreamInit, "stream_initial_release", drawable_at_verdict, "== 0"));
+    }
+    Ok(())
+}
+
+/// R_PAYEES: 1..=10 payees, no duplicate account, every share above zero, shares sum to exactly 10_000 bps.
+pub fn check_payees<A: PartialEq>(payees: &[(A, u16)]) -> Result<(), RuleViolation> {
+    let sum: u32 = payees.iter().map(|p| p.1 as u32).sum();
+    let unique = payees.iter().enumerate().all(|(i, p)| payees[..i].iter().all(|q| q.0 != p.0));
+    if payees.is_empty() || payees.len() > 10 || !unique || payees.iter().any(|p| p.1 == 0) || sum != 10_000 {
+        let got = format!("{} payees, sum {}", payees.len(), sum);
+        return Err(RuleViolation::new(RuleCode::RPayees, "payees", got, "1..=10 unique, each bps > 0, sum 10000"));
+    }
+    Ok(())
 }
 
 /// Trading-fee terms committed in the Charter. In Wave 1 they are validated and stored but INERT: the market contract
@@ -753,6 +821,31 @@ mod tests {
         let mut old = TrialParams::example("ABCD");
         old.fees.platform_bps = 2_000;
         assert_eq!(code(&old), RuleCode::RPlatformFixed);
+    }
+
+    #[test]
+    fn r_vest_floors_and_ceiling() {
+        assert!(Rules::ladder().check_alloc_vest().is_ok());
+        assert!(Rules::demo_clock().check_alloc_vest().is_ok());
+        let short_cliff = Rules { alloc_cliff_secs: 13 * 86_400, ..Rules::ladder() };
+        assert_eq!(short_cliff.check_alloc_vest().unwrap_err().code, RuleCode::RVest);
+        let short_total = Rules { alloc_cliff_secs: 14 * 86_400, alloc_linear_secs: 100 * 86_400, ..Rules::ladder() };
+        assert_eq!(short_total.check_alloc_vest().unwrap_err().code, RuleCode::RVest);
+        let too_long = Rules { alloc_linear_secs: 1_431 * 86_400, ..Rules::ladder() };
+        assert_eq!(too_long.check_alloc_vest().unwrap_err().code, RuleCode::RVest);
+        assert!(check_stream_init(1).unwrap_err().message().starts_with("R_STREAM_INIT: "));
+        assert!(check_stream_init(0).is_ok());
+    }
+
+    #[test]
+    fn r_payees_cases() {
+        assert!(check_payees(&[("a", 6_000u16), ("b", 4_000)]).is_ok());
+        for bad in [vec![], vec![("a", 9_999u16)], vec![("a", 5_000), ("a", 5_000)], vec![("a", 10_000), ("b", 0)]] {
+            assert_eq!(check_payees(&bad).unwrap_err().code, RuleCode::RPayees, "{bad:?}");
+        }
+        let eleven: Vec<(u32, u16)> = (0..11).map(|i| (i, if i == 0 { 9_990 } else { 1 })).collect();
+        assert_eq!(check_payees(&eleven).unwrap_err().code, RuleCode::RPayees, "more than ten payees");
+        assert_eq!(RuleCode::RBurnUnsupported.as_str(), "R_BURN_UNSUPPORTED");
     }
 
     #[test]

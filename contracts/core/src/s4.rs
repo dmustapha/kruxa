@@ -130,6 +130,7 @@ impl Contract {
                 tokens_entitled: 0,
                 bonus_entitled: 0,
                 claimed: 0,
+                claim_inflight: 0,
                 settled: false,
             }
         });
