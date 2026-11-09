@@ -78,6 +78,11 @@ pub enum RuleCode {
     RVest,
     /// `burn_mode` Burn is not available: the testnet factory token has no `ft_burn` (evidence/factory-probe.txt).
     RBurnUnsupported,
+    /// One launch is halted by governance: new commits and creator-side payouts stop, exits stay open.
+    RHalted,
+    RLengthenOnly,
+    RBatchSize,
+    RUpgradeHash,
 }
 
 impl RuleCode {
@@ -150,6 +155,10 @@ impl RuleCode {
             RPayees => "R_PAYEES",
             RVest => "R_VEST",
             RBurnUnsupported => "R_BURN_UNSUPPORTED",
+            RHalted => "R_HALTED",
+            RLengthenOnly => "R_LENGTHEN_ONLY",
+            RBatchSize => "R_BATCH_SIZE",
+            RUpgradeHash => "R_UPGRADE_HASH",
         }
     }
 }

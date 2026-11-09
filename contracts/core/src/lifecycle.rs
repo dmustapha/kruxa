@@ -299,7 +299,7 @@ impl Contract {
         let amount = st.bond + reg + if st.status == Status::CreationFailed { self.cfg.factory_deposit } else { 0 };
         self.save_state(launch_id.0, st);
         emit("bond_reclaimed", json!({ "launch_id": launch_id.0.to_string(), "amount": amount.to_string() }));
-        Promise::new(ch.creator).transfer(near_sdk::NearToken::from_yoctonear(amount))
+        self.push_near(ch.creator, amount)
     }
 }
 

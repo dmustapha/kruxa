@@ -35,7 +35,7 @@ pub(crate) fn parse_msg(msg: &str) -> Result<(u64, IntakeMsg), RuleViolation> {
 }
 
 /// 64 lowercase hex chars -> 32 bytes.
-fn hex32(s: &str) -> Option<[u8; 32]> {
+pub(crate) fn hex32(s: &str) -> Option<[u8; 32]> {
     if s.len() != 64 || !s.bytes().all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b)) {
         return None;
     }
@@ -185,6 +185,9 @@ impl Contract {
         };
         if st.status != Status::Open || phase_at(env::block_timestamp(), ch.opens_at, ch.commit_end, ch.walk_end) != Phase::Open {
             return Err(v(RuleCode::RWrongPhase, "phase", format!("{:?}", st.status), "Open window".into()));
+        }
+        if st.halted {
+            return Err(v(RuleCode::RHalted, "launch", id.to_string(), "not halted".into()));
         }
         if let HolderId::Near(a) = holder {
             if *a == ch.creator || *a == ch.stream_recipient {
