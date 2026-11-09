@@ -1,0 +1,26 @@
+{
+ "account_creation_parents_sample.csv": {
+  "pulled_on": "2026-11-08",
+  "query_file": "queries/03_account_creation_parents_sample.sql",
+  "query_sha256": "a793f69a98a9fbcca906ffac303cf31e3426666606c82eee6997d1acf758645a",
+  "rows": 27,
+  "sha256": "81d52f03f43b5460614cdef8a7f1425a454f02938d0952428290a995f7dd7cb2",
+  "window": "2026-10-15"
+ },
+ "daily_usage.csv": {
+  "pulled_on": "2026-11-08",
+  "query_file": "queries/01_daily_usage.sql",
+  "query_sha256": "b12f7f1a3efb8236b6218a22bce56311e41607ce31c5e35e15c6a90bacd797c0",
+  "rows": 433,
+  "sha256": "833fbabcdd1f8eaabaffe641713b9d536faf951d94c0ac0a7e2daa8aaf94f153",
+  "window": "2025-09-01..2026-11-07"
+ },
+ "intents_events_sample.csv": {
+  "pulled_on": "2026-11-08",
+  "query_file": "queries/02_intents_events_sample.sql",
+  "query_sha256": "a63873d9f0c8369e8f52291bfd3764a8f901b92fa4187b21d8a17c1da93bf15a",
+  "rows": 22,
+  "sha256": "38353f7d4e330209998b94e40bf742eba2f3ab14812ffe49a911630ee8b58043",
+  "window": "every 20th day from 2025-09-01"
+ }
+}

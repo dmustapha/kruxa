@@ -1,4 +1,4 @@
-.PHONY: judge-fast test-unit sim build lint test verify-claims judge tour claimed-tracks lint-readme
+.PHONY: thesis judge-fast test-unit sim build lint test verify-claims judge tour claimed-tracks lint-readme
 
 test-unit:
 	cargo test -p kruxa-math -p kruxa-logic
@@ -41,3 +41,7 @@ lint-readme:
 
 # One fragment per workstream (PLAN C3.3): make/<ws>.mk
 -include make/*.mk
+
+# Investment Thesis pack: offline rebuild from committed snapshots (Python 3 standard library only). Ends with THESIS OK.
+thesis:
+	$(MAKE) --no-print-directory -C thesis thesis
