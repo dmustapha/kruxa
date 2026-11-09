@@ -11,7 +11,6 @@ set -uo pipefail
 cd "$(dirname "$0")/.."
 LOG=target/gate-g1
 EVID=rehearsal/GATE-EVIDENCE.md
-WASM=target/near/kruxa_core/kruxa_core.wasm
 BLOCKERS=""
 
 ran_ok() { grep -qE "^test (.*::)?$1 \.\.\. ok$" "$LOG/native.log" "$LOG/sandbox.log" 2>/dev/null; }
@@ -63,13 +62,20 @@ if [ -s rehearsal/CONFIRMATIONS.md ]; then emit GR-11 HARD PENDING "rehearsal/CO
 else emit GR-11 HARD PENDING "filled at execution, not now"; fi
 evidence_row GR-12 HARD "genesis mode decided (F0 3 of 3 or F1 disclosed)"
 evidence_row GR-13 WAIVABLE "Meteora spike result recorded"
-# GR-14
-frozen=$(grep -E '\| A-4 \|.*FREEZE sha256 [0-9a-f]{64}' rehearsal/LOG.md 2>/dev/null | tail -n 1 | grep -oE 'FREEZE sha256 [0-9a-f]{64}' | grep -oE '[0-9a-f]{64}')
-built=$([ -f "$WASM" ] && shasum -a 256 "$WASM" | cut -c1-64)
+# GR-14: hash the file the newest FREEZE row names (gate-freeze.sh records its path), not the local dev build. A reproducible candidate
+# is a different byte string from target/near/..., so comparing against $WASM could never match. Fall back to artifacts/SHA256SUMS when the
+# named file is not in this checkout.
+frozen_row=$(grep -E '\| A-4 \|.*FREEZE sha256 [0-9a-f]{64}' rehearsal/LOG.md 2>/dev/null | tail -n 1)
+frozen=$(echo "$frozen_row" | grep -oE 'FREEZE sha256 [0-9a-f]{64}' | grep -oE '[0-9a-f]{64}')
+frozen_path=$(echo "$frozen_row" | grep -oE 'sha256sum [^` ]+' | head -n 1 | cut -d' ' -f2)
+built=""; built_from=""
+if [ -n "$frozen_path" ] && [ -f "$frozen_path" ]; then built=$(shasum -a 256 "$frozen_path" | cut -c1-64); built_from="$frozen_path"
+elif [ -f artifacts/SHA256SUMS ]; then built=$(awk '$2 ~ /(^|\/)kruxa_core\.wasm$/ {print $1}' artifacts/SHA256SUMS | head -n 1); built_from="artifacts/SHA256SUMS"; fi
 if [ -z "$frozen" ]; then emit GR-14 HARD UNKNOWN "no A-4 FREEZE row with a sha256 in rehearsal/LOG.md"
-elif [ "$frozen" != "$built" ]; then emit GR-14 HARD FAIL "built wasm $built differs from the frozen $frozen"
+elif [ -z "$built" ]; then emit GR-14 HARD UNKNOWN "the FREEZE row names ${frozen_path:-no file}; neither it nor artifacts/SHA256SUMS is in this checkout (run ./scripts/build-artifacts.sh)"
+elif [ "$frozen" != "$built" ]; then emit GR-14 HARD FAIL "wasm $built (from $built_from) differs from the frozen $frozen"
 elif have_logs && ran_ok mainnet_profile_refuses_non_owner_create_trial_with_creator_gate && ran_ok after_open_beta_a_non_owner_create_trial_passes; then
-  emit GR-14 HARD PASS "wasm sha256 ${frozen:0:16}... recorded and built; R_CREATOR_GATE tests ok"
+  emit GR-14 HARD PASS "wasm sha256 ${frozen:0:16}... equals $built_from; R_CREATOR_GATE tests ok"
 else emit GR-14 HARD UNKNOWN "hash matches but no gate-g1 logs with the R_CREATOR_GATE tests"; fi
 tests_row GR-15 HARD "open_market handoff against the stub and the real market" open_market_moves_lp_seed_and_recredits_on_failure open_market_against_the_real_market_opens_the_pool_and_a_buy_works
 evidence_row GR-16 WAIVABLE "Market-lite testnet e2e (make market-demo); otherwise the market stays testnet"
