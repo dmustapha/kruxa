@@ -20,6 +20,8 @@ pub struct MockFt {
     reenter: Option<(AccountId, String, String)>,
     /// Test hook: every `storage_deposit` panics, to exercise the registration-failure path.
     fail_storage_deposit: bool,
+    /// Test hook: every `ft_transfer` panics, to exercise the re-credit after a failed outbound transfer.
+    fail_transfer: bool,
 }
 
 /// NEP-145 bounds of the testnet factory token (min = max, probed): a registration needs at least this much, the excess is refunded.
@@ -29,7 +31,14 @@ const STORAGE_MIN_YOCTO: u128 = 1_250_000_000_000_000_000_000;
 impl MockFt {
     #[init]
     pub fn new(owner_id: AccountId, total_supply: U128) -> Self {
-        let mut s = Self { balances: LookupMap::new(b"b"), registered: LookupMap::new(b"r"), total: total_supply.0, reenter: None, fail_storage_deposit: false };
+        let mut s = Self {
+            balances: LookupMap::new(b"b"),
+            registered: LookupMap::new(b"r"),
+            total: total_supply.0,
+            reenter: None,
+            fail_storage_deposit: false,
+            fail_transfer: false,
+        };
         s.balances.insert(owner_id.clone(), total_supply.0);
         s.registered.insert(owner_id, true);
         s
@@ -73,6 +82,7 @@ impl MockFt {
     #[payable]
     pub fn ft_transfer(&mut self, receiver_id: AccountId, amount: U128, _memo: Option<String>) {
         assert_one_yocto();
+        require!(!self.fail_transfer, "ft_transfer is switched off");
         self.move_tokens(&env::predecessor_account_id(), &receiver_id, amount.0);
         if let Some((account, method, args)) = self.reenter.clone() {
             // Detached on purpose: its result must not become this transfer's result.
@@ -126,6 +136,11 @@ impl MockFt {
     /// Test helper: make every later `ft_transfer` also call `method` on `account` with the JSON `args`. Empty method clears it.
     pub fn set_reenter(&mut self, account: AccountId, method: String, args: String) {
         self.reenter = if method.is_empty() { None } else { Some((account, method, args)) };
+    }
+
+    /// Test helper: make every later `ft_transfer` panic (true) or work again (false).
+    pub fn set_fail_transfer(&mut self, fail: bool) {
+        self.fail_transfer = fail;
     }
 
     /// Test helper: make every later `storage_deposit` panic (true) or work again (false).

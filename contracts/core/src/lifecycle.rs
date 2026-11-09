@@ -407,7 +407,8 @@ impl Contract {
         let Some(pos) = self.positions.get(&key) else { return };
         let tokens_done = match st.status {
             Status::Passed => {
-                let sweep_at = self.charters.get(&launch_id).zip(st.settlement.as_ref()).map(|(c, s)| crate::token_claims::bonus_sweep_at(c, s));
+                let sweep_at =
+                    self.charters.get(&launch_id).zip(st.settlement.as_ref()).map(|(c, s)| crate::token_claims::bonus_sweep_at(c, s));
                 let bonus_closed = sweep_at.is_some_and(|t| env::block_timestamp() >= t);
                 let paid = pos.claimed == pos.tokens_entitled + pos.bonus_entitled || (bonus_closed && pos.claimed >= pos.tokens_entitled);
                 paid && pos.claim_inflight == 0 && matches!(holder, HolderId::Near(_))

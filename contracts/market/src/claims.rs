@@ -4,14 +4,15 @@
 use crate::events::emit;
 use crate::{fail, Market, MarketExt};
 use kruxa_market::{creator_unlocked, fold_vested, MIN_CLAIM_QUOTE};
-use near_sdk::json_types::U64;
+use near_sdk::json_types::{U128, U64};
 use near_sdk::serde_json::json;
 use near_sdk::{env, near, AccountId, Promise};
 
 #[near]
 impl Market {
-    /// Pays the unlocked creator slice to the payout recipient (fixed at open). Recipient only.
-    pub fn claim(&mut self, launch_id: U64) -> Promise {
+    /// Pays the unlocked creator slice to the payout recipient (fixed at open). Recipient only. With an explicit `amount`, asking for more
+    /// than has vested reverts with `FEE_VEST_CAP` (the same shape as `STREAM_CAP` on the core stream); without one it pays everything unlocked.
+    pub fn claim(&mut self, launch_id: U64, amount: Option<U128>) -> Promise {
         let Some(mut pool) = self.pools.get(&launch_id.0).cloned() else { fail("R_NO_POOL", "unknown launch") };
         if env::predecessor_account_id() != pool.payout_recipient {
             fail("R_NOT_AUTHORIZED", "only the payout recipient can claim");
@@ -20,7 +21,12 @@ impl Market {
         fold_vested(&mut pool.epochs, &mut pool.ledger.folded_unlocked, pool.opened_ns, &pool.terms, now);
         let unlocked = creator_unlocked(&pool.epochs, pool.ledger.folded_unlocked, pool.opened_ns, &pool.terms, now)
             .unwrap_or_else(|_| fail("R_MATH", "unlock overflow"));
-        let amount = unlocked.saturating_sub(pool.ledger.paid_creator);
+        let claimable = unlocked.saturating_sub(pool.ledger.paid_creator);
+        if let Some(want) = amount.filter(|w| w.0 > claimable) {
+            let vesting = pool.ledger.acc_creator.saturating_sub(unlocked);
+            env::panic_str(&format!("FEE_VEST_CAP: requested {} > claimable {} (still vesting {})", want.0, claimable, vesting));
+        }
+        let amount = amount.map_or(claimable, |w| w.0);
         if amount < MIN_CLAIM_QUOTE {
             fail("R_NOTHING_TO_CLAIM", "below the $1 minimum claim");
         }

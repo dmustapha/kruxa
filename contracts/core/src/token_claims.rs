@@ -127,7 +127,9 @@ impl Contract {
         let Some(mode) = BurnMode::parse(&mode) else { fail(RuleCode::RNothing, "mode must be hold, burn or sink:<account>") };
         match &mode {
             BurnMode::Burn => fail(RuleCode::RBurnUnsupported, "the factory token has no ft_burn; use Sink or Hold"),
-            BurnMode::Sink(a) if self.is_kruxa_account(a) => fail(RuleCode::RNotAuthorized, "the sink must not be a Kruxa-controlled account"),
+            BurnMode::Sink(a) if self.is_kruxa_account(a) => {
+                fail(RuleCode::RNotAuthorized, "the sink must not be a Kruxa-controlled account")
+            }
             _ => {}
         }
         self.cfg.burn_mode = mode;
@@ -165,7 +167,11 @@ impl Contract {
             .with_attached_deposit(NearToken::from_yoctonear(TOKEN_REG_YOCTO))
             .with_static_gas(GAS_REGISTER)
             .storage_deposit(Some(d.receiver.clone()), Some(true))
-            .then(Self::ext(env::current_account_id()).with_static_gas(GAS_CB_REGISTERED).on_token_step(d.op, d.receiver, d.payer, d.deposit, 1));
+            .then(
+                Self::ext(env::current_account_id())
+                    .with_static_gas(GAS_CB_REGISTERED)
+                    .on_token_step(d.op, d.receiver, d.payer, d.deposit, 1),
+            );
     }
 
     /// Creator allocation, token custody counters, sweep window and burn mode. `solana_claim_rent` is DECIDED, not carved: the buyer's quoted
@@ -188,7 +194,6 @@ impl Contract {
         }))
     }
 }
-
 
 impl Contract {
     /// The attached NEAR, at least 1 yocto (the `ft_transfer` deposit). Everything above that is the registration allowance.
@@ -226,10 +231,9 @@ impl Contract {
 
     /// Promise chain start. The delivery's `op` is already debited.
     pub(crate) fn begin_delivery(&self, token: AccountId, d: Delivery) -> Promise {
-        ext_ft::ext(token)
-            .with_static_gas(GAS_BALANCE)
-            .storage_balance_of(d.receiver.clone())
-            .then(Self::ext(env::current_account_id()).with_static_gas(GAS_CB_BALANCE).on_token_step(d.op, d.receiver, d.payer, d.deposit, 0))
+        ext_ft::ext(token).with_static_gas(GAS_BALANCE).storage_balance_of(d.receiver.clone()).then(
+            Self::ext(env::current_account_id()).with_static_gas(GAS_CB_BALANCE).on_token_step(d.op, d.receiver, d.payer, d.deposit, 0),
+        )
     }
 
     fn send_tokens(&self, token: AccountId, d: Delivery) {
@@ -267,7 +271,10 @@ impl Contract {
             PayoutKind::Sweep if !ok => st.ledger.swept = st.ledger.swept.saturating_sub(a),
             _ => {}
         }
-        emit("payout_resolved", json!({ "launch_id": op.launch_id.to_string(), "kind": format!("{:?}", op.kind), "amount": a.to_string(), "ok": ok }));
+        emit(
+            "payout_resolved",
+            json!({ "launch_id": op.launch_id.to_string(), "kind": format!("{:?}", op.kind), "amount": a.to_string(), "ok": ok }),
+        );
         self.save_state(op.launch_id, st);
     }
 
@@ -287,3 +294,7 @@ impl Contract {
         self.try_delete_position(st, op.launch_id, &holder);
     }
 }
+
+#[cfg(test)]
+#[path = "token_claims_tests.rs"]
+mod tests;

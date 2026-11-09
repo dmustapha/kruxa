@@ -74,7 +74,11 @@ impl Contract {
         let s = st.settlement.clone().expect("Passed has a settlement");
         let vest_ns = kruxa_math::days_to_ns(ch.rules.backer_vest_days as u64).unwrap_or(0);
         let now = env::block_timestamp();
-        let bonus = if now >= crate::token_claims::bonus_sweep_at(&ch, &s) { 0 } else { linear_unlocked(pos.bonus_entitled, s.settled_at, vest_ns, now).unwrap_or(0) };
+        let bonus = if now >= crate::token_claims::bonus_sweep_at(&ch, &s) {
+            0
+        } else {
+            linear_unlocked(pos.bonus_entitled, s.settled_at, vest_ns, now).unwrap_or(0)
+        };
         let amount = (pos.tokens_entitled + bonus).saturating_sub(pos.claimed);
         if amount == 0 {
             fail(RuleCode::RNothing, "nothing claimable yet");

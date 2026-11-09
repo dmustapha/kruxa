@@ -164,7 +164,11 @@ impl Contract {
             ("stream drawn + inflight > total", l.stream_drawn + l.stream_inflight, l.stream_total),
             ("relay fee paid + inflight > collected", l.relay_fee_paid + l.relay_fee_inflight, l.relay_fee_total),
             ("creator allocation claimed > allocation", l.alloc_claimed, ch.derived.n_creator),
-            ("tokens claimed + swept > sale and bonus pools", l.claimed_total + l.swept, ch.derived.n_sale + ch.derived.n_backer),
+            (
+                "tokens claimed + swept > the pool they come from",
+                l.claimed_total + l.swept,
+                if st.status == Status::Dissolved { ch.derived.n_total } else { ch.derived.n_sale + ch.derived.n_backer },
+            ),
         ]);
         let l7 = self.l7_lock_mirror(st, ch);
         let checks = [("l1", &l1), ("l3", &l3), ("l4", &l4), ("i2", &i2), ("i3", &i3), ("i4", &i4), ("i5", &i5), ("l7", &l7)];
@@ -200,7 +204,7 @@ fn sums_buckets(l: &Ledger) -> Buckets {
 impl Contract {
     /// L7' (lock-mirror): `near_circulating + sol_mint_supply == total`. Once the genesis root is ready, the Solana mint supply must equal
     /// the leaf total plus the mirrored LP bucket (what `build_spec` committed) and fit inside the supply; the NEAR copy stays locked in core.
-    fn l7_lock_mirror(&self, st: &LaunchState, ch: &Charter) -> Result<(), &'static str> {
+    pub(crate) fn l7_lock_mirror(&self, st: &LaunchState, ch: &Charter) -> Result<(), &'static str> {
         let g = &st.genesis;
         if !g.root_ready {
             return Ok(());

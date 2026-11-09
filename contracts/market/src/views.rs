@@ -62,6 +62,22 @@ impl Market {
                 "claimable": s(unlocked.saturating_sub(p.ledger.paid_creator)), "epochs": p.epochs.len() })
     }
 
+    /// Creator fee epochs still vesting: for each, the accrued slice and how much of it has vested at this block. Fully vested epochs are
+    /// folded into `folded_unlocked` and no longer listed.
+    pub fn get_epochs(&self, launch_id: U64) -> Value {
+        let Some(p) = self.pools.get(&launch_id.0) else { return Value::Null };
+        let now = env::block_timestamp();
+        let rows: Vec<Value> = p
+            .epochs
+            .iter()
+            .map(|e| {
+                let vested = creator_unlocked(std::slice::from_ref(e), 0, p.opened_ns, &p.terms, now).unwrap_or(0);
+                json!({ "epoch": e.epoch, "accrued": s(e.amount), "vested": s(vested) })
+            })
+            .collect();
+        json!({ "folded_unlocked": s(p.ledger.folded_unlocked), "vest_days": p.terms.fee_vest_days, "vest_bps": p.terms.fee_vest_bps, "epochs": rows })
+    }
+
     pub fn ledger_report(&self, launch_id: U64) -> Value {
         let Some(p) = self.pools.get(&launch_id.0) else { return Value::Null };
         let l = &p.ledger;
