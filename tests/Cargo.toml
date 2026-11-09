@@ -15,3 +15,4 @@ bs58 = "0.5"
 kruxa-logic = { path = "../crates/kruxa-logic" }
 borsh = "1"
 base64 = "0.22"
+sha2 = "0.10"

@@ -327,6 +327,9 @@ pub struct GenesisState {
     pub ceremony_hash: Option<[u8; 32]>,
     pub attest_log: Vec<[u8; 32]>,
     pub abort_reason: String,
+    /// F0 policy gate: sha256 of the only message `sign_genesis` may sign for tx1 (index 0) and tx2 (index 1); and whether it was signed.
+    pub f0_hash: [Option<[u8; 32]>; 2],
+    pub f0_signed: [bool; 2],
 }
 
 impl Default for GenesisState {
@@ -351,6 +354,8 @@ impl Default for GenesisState {
             ceremony_hash: None,
             attest_log: Vec::new(),
             abort_reason: String::new(),
+            f0_hash: [None; 2],
+            f0_signed: [false; 2],
         }
     }
 }
