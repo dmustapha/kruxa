@@ -1,18 +1,15 @@
 //! State owned by the admin and exit-convenience methods (upgrade queue, queued force-resolves, stream lengthening,
 //! owed NEAR, credited S4 payload hashes). One additive field on `Contract`, so the existing layout is untouched.
 use near_sdk::store::{LookupMap, LookupSet};
-use near_sdk::{near, AccountId, BorshStorageKey};
+use near_sdk::{near, AccountId};
 
 use crate::Contract;
 
-#[derive(BorshStorageKey)]
-#[near]
-enum ExtraKey {
-    QueuedOps,
-    StreamExt,
-    OwedNear,
-    Credited,
-}
+/// Storage prefixes. The core's own maps use the one-byte `Key` enum (0, 1, 2, ...), so these start with a byte (b'x') that enum never reaches.
+const OPS: &[u8] = b"x:ops";
+const STREAM: &[u8] = b"x:stream";
+const OWED: &[u8] = b"x:owed";
+const CREDITED: &[u8] = b"x:cred";
 
 /// A lengthened stream: the unlocked amount at the change (`base`) and the new line from there to `end_ns`.
 #[near(serializers = [borsh])]
@@ -40,10 +37,10 @@ impl Extra {
     pub fn new() -> Self {
         Self {
             upgrade: None,
-            queued_ops: LookupMap::new(ExtraKey::QueuedOps),
-            stream_ext: LookupMap::new(ExtraKey::StreamExt),
-            owed_near: LookupMap::new(ExtraKey::OwedNear),
-            credited: LookupSet::new(ExtraKey::Credited),
+            queued_ops: LookupMap::new(OPS),
+            stream_ext: LookupMap::new(STREAM),
+            owed_near: LookupMap::new(OWED),
+            credited: LookupSet::new(CREDITED),
         }
     }
 }

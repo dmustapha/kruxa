@@ -222,9 +222,8 @@ async fn adversarial_halt_is_per_launch_and_refunds_stay_open_on_a_halted_failed
 
 /// patch_state helper: writes the owed-NEAR entry the failed-push callback would have created.
 async fn patch_owed(env: &Env, account: &str, amount: u128) -> anyhow::Result<()> {
-    // Key = ExtraKey::OwedNear (variant 2) then borsh(AccountId) = u32 length + bytes.
-    let mut key = Vec::new();
-    key.push(2u8);
+    // Key = the `x:owed` prefix then borsh(AccountId) = u32 length + bytes.
+    let mut key = b"x:owed".to_vec();
     key.extend_from_slice(&(account.len() as u32).to_le_bytes());
     key.extend_from_slice(account.as_bytes());
     env.worker.patch_state(env.core.id(), &key, &amount.to_le_bytes()).await?;

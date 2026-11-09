@@ -16,7 +16,7 @@ pub const MAX_BATCH: usize = 25;
 /// Gas one holder can need: two legs of (transfer + callback) plus the position reads and writes.
 const GAS_PER_HOLDER: Gas = Gas::from_tgas(120);
 /// `ft_transfer_call` into intents.near runs a receiver call and a resolve on the token.
-const GAS_ROUTE: Gas = Gas::from_tgas(80);
+const GAS_ROUTE: Gas = Gas::from_tgas(120);
 
 #[near]
 impl Contract {
