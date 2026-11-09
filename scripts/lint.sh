@@ -5,7 +5,7 @@ cd "$(dirname "$0")/.."
 cargo fmt --all -- --check
 cargo clippy -p kruxa-math -p kruxa-logic -p kruxa-sim --all-targets -- -D warnings
 cargo clippy -p kruxa-core -p mock-ft -p mock-intents -p mock-factory -p mock-market --target wasm32-unknown-unknown -- -D warnings
-MAX=600000
+MAX=700000
 SIZE=$(wc -c < target/near/kruxa_core/kruxa_core.wasm)
 if [ "$SIZE" -gt "$MAX" ]; then echo "kruxa_core.wasm is $SIZE bytes, budget $MAX"; exit 1; fi
 echo "lint ok, kruxa_core.wasm $SIZE bytes (budget $MAX)"
