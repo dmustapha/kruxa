@@ -47,6 +47,11 @@ impl MockIntents {
         self.balances.insert((account_id, token_id), b + amount.0);
     }
 
+    /// Test helper (solvency anchor): set a balance directly, like a Verifier-side force withdraw or a loss. No USDC moves.
+    pub fn mt_force_set(&mut self, account_id: AccountId, token_id: String, amount: U128) {
+        self.balances.insert((account_id, token_id), amount.0);
+    }
+
     pub fn mt_balance_of(&self, account_id: AccountId, token_id: String) -> U128 {
         U128(self.bal(&account_id, &token_id))
     }

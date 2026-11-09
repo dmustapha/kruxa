@@ -177,6 +177,9 @@ impl Contract {
         if self.pause_level() != PauseLevel::None {
             return Err(v(RuleCode::RPaused, "pause", "on".into(), "none".into()));
         }
+        if custody == Custody::Intents && self.intents_alert() {
+            return Err(v(RuleCode::RSolvency, "intents_alert", "set".into(), "clear (reconcile_intents found Intents short)".into()));
+        }
         let (Some(ch), Some(st)) = (self.charters.get(&id), self.states.get(&id)) else {
             return Err(v(RuleCode::RNoLaunch, "launch_id", id.to_string(), "exists".into()));
         };

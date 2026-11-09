@@ -115,6 +115,12 @@ impl MockFt {
         self.reenter = if method.is_empty() { None } else { Some((account, method, args)) };
     }
 
+    /// Test helper (solvency anchor): destroy `amount` of an account's balance, to model a loss of native USDC.
+    pub fn burn(&mut self, account_id: AccountId, amount: U128) {
+        let b = self.bal(&account_id);
+        self.balances.insert(account_id, b.saturating_sub(amount.0));
+    }
+
     /// Test helper: drop an account's registration, to make an outbound ft_transfer fail.
     pub fn unregister(&mut self, account_id: AccountId) {
         self.registered.insert(account_id, false);

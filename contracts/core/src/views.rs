@@ -164,12 +164,14 @@ impl Contract {
             ("stream drawn + inflight > total", l.stream_drawn + l.stream_inflight, l.stream_total),
             ("relay fee paid + inflight > collected", l.relay_fee_paid + l.relay_fee_inflight, l.relay_fee_total),
         ]);
-        let checks = [("l1", &l1), ("l3", &l3), ("l4", &l4), ("i2", &i2), ("i3", &i3), ("i4", &i4), ("i5", &i5)];
+        let l6 = self.l6_counters_hold().then_some(()).ok_or("L6: solvency counters differ from the sum over launches");
+        let checks = [("l1", &l1), ("l3", &l3), ("l4", &l4), ("l6", &l6), ("i2", &i2), ("i3", &i3), ("i4", &i4), ("i5", &i5)];
         let mut out = near_sdk::serde_json::Map::new();
         for (name, r) in checks {
             out.insert(format!("{name}_ok"), json!(r.is_ok()));
             out.insert(format!("{name}_err"), json!(r.as_ref().err()));
         }
+        out.insert("intents_alert".into(), json!(self.intents_alert()));
         out.insert("all_ok".into(), json!(checks.iter().all(|(_, r)| r.is_ok())));
         Some(Value::Object(out))
     }
