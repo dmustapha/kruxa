@@ -262,6 +262,15 @@ def c_squads(rpc, rec, spec, out, charter, production, r):
         r.ok("C12", "squads %d-of-%d time_lock %d == charter, config_authority None, reserve owner is vault %s%s" % (threshold, len(members), tl, sol.b58e(out["accounts"]["reserve_owner"])[:8], tag))
 
 
+def _is_plain_sweep(rpc, sig, g):
+    """The F1 sweep must be one confirmed transaction made only of System program instructions, with G as fee payer."""
+    t = rpc.call("getTransaction", [sig, {"encoding": "base64", "maxSupportedTransactionVersion": 0, "commitment": rpc.commitment}])
+    if not t or t["meta"]["err"] is not None:
+        return False
+    pm = sol.parse_message(base64.b64decode(t["transaction"][0])[65:])
+    return pm["keys"][0] == g and all(pm["keys"][i["program"]] == sol.SYSTEM for i in pm["instructions"])
+
+
 def c_g(rpc, rec, r):
     g = rec["g_pub"]
     toks = rpc.call("getTokenAccountsByOwner", [g, {"programId": sol.TOKENKEG}, {"encoding": "base64", "commitment": rpc.commitment}])["value"]
@@ -270,10 +279,12 @@ def c_g(rpc, rec, r):
     else:
         r.ok("C14", "G holds no token accounts")
     sigs = {s["signature"] for s in rpc.call("getSignaturesForAddress", [g, {"commitment": rpc.commitment, "limit": 20}])}
-    if not set(rec["sigs"]) <= sigs or len(sigs) > 3:
-        r.bad("C15", "g_pub", "ceremony txs only (fund, tx1, tx2)", "%d signatures, ceremony txs present: %s" % (len(sigs), set(rec["sigs"]) <= sigs))
+    sweep = rec.get("sweep_sig")
+    allowed = 3 + (1 if sweep else 0)
+    if not set(rec["sigs"]) <= sigs or len(sigs) > allowed or (sweep and not _is_plain_sweep(rpc, sweep, g)):
+        r.bad("C15", "g_pub", "ceremony txs only (fund, tx1, tx2%s)" % (", sweep" if sweep else ""), "%d signatures, ceremony txs present: %s" % (len(sigs), set(rec["sigs"]) <= sigs))
     else:
-        r.ok("C15", "G history is the ceremony only (%d signatures)" % len(sigs))
+        r.ok("C15", "G history is the ceremony only (%d signatures%s)" % (len(sigs), ", the last is the F1 sweep of leftover lamports to the funder" if sweep else ""))
     a = rpc.account(g)
     lam = a["lamports"] if a else 0
     if lam > G_DUST_MAX:
