@@ -40,14 +40,19 @@ full_run() {
   local c_near c_ops c_sol
   echo "== NEAR recompute (C31-C34, kruxa-sim)"
   set +e
-  $SIM verify --rpc "$near" --contract "$contract" --launch "$id" ${tamper:+$tamper} ${rpc2:+--rpc2 "$rpc2"}; c_near=$?
+  sim_out=$($SIM verify --rpc "$near" --contract "$contract" --launch "$id" ${tamper:+$tamper} ${rpc2:+--rpc2 "$rpc2"} 2>&1); c_near=$?
+  printf '%s\n' "$sim_out"
   echo "== operator lines (VX-2)"
   python3 -I scripts/verify_near_ops.py --rpc "$near" --contract "$contract" --sums artifacts/SHA256SUMS; c_ops=$?
   echo "== Solana genesis (C3-C28)"
   if [ -f "$rec" ]; then
     python3 -I scripts/verify_solana.py --record "$rec" --rpc "$sol" ${rpc2:+--rpc2 "$rpc2"} ${tamper:+$tamper} ${charter:+--charter "$charter"} ${prod:+$prod}; c_sol=$?
   else
-    echo "PENDING: no $rec (genesis record not published yet)"; c_sol=3
+    if [ "$c_near" = 0 ] && printf '%s\n' "$sim_out" | grep -q "recomputed outcome=FAIL"; then
+      echo "no mint (expected for FAIL): launch $id failed its verdict, so no Solana genesis exists"; c_sol=0
+    else
+      echo "PENDING: no $rec (genesis record not published yet)"; c_sol=3
+    fi
   fi
   set -e
   exit "$(worst "$c_near" "$c_ops" "$c_sol")"
