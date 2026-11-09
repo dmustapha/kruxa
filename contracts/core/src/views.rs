@@ -100,14 +100,12 @@ impl Contract {
     pub fn stream_status(&self, launch_id: U64) -> Option<Value> {
         let (ch, st) = (self.charters.get(&launch_id.0)?, self.states.get(&launch_id.0)?);
         let s = st.settlement.as_ref().filter(|s| s.pass)?;
-        let dur = kruxa_math::days_to_ns(ch.params.stream_days as u64).unwrap_or(0);
-        let now = env::block_timestamp();
-        let cap = kruxa_math::linear_unlocked(st.ledger.stream_total, s.settled_at, dur, now).unwrap_or(0);
+        let cap = self.stream_cap(st, ch, s.settled_at, env::block_timestamp());
         let out = st.ledger.stream_drawn + st.ledger.stream_inflight;
         Some(json!({ "recipient": ch.stream_recipient, "total": st.ledger.stream_total.to_string(), "cap": cap.to_string(),
                      "drawn": st.ledger.stream_drawn.to_string(), "inflight": st.ledger.stream_inflight.to_string(),
                      "drawable": cap.saturating_sub(out).to_string(), "starts_at": s.settled_at.to_string(),
-                     "ends_at": s.settled_at.saturating_add(dur).to_string(), "paused": self.pause_level() != PauseLevel::None }))
+                     "ends_at": self.stream_end(ch, s.settled_at).to_string(), "paused": self.pause_level() != PauseLevel::None }))
     }
 
     pub fn preview_contribution(&self, launch_id: U64, holder: String, amount: U128, relay_fee: Option<U128>) -> Value {

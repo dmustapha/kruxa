@@ -70,6 +70,11 @@ pub enum RuleCode {
     RGenesisArg,
     RGenesisOrder,
     RGenesisLeaf,
+    /// One launch is halted by governance: new commits and creator-side payouts stop, exits stay open.
+    RHalted,
+    RLengthenOnly,
+    RBatchSize,
+    RUpgradeHash,
 }
 
 impl RuleCode {
@@ -138,6 +143,10 @@ impl RuleCode {
             RGenesisArg => "R_GENESIS_ARG",
             RGenesisOrder => "R_GENESIS_ORDER",
             RGenesisLeaf => "R_GENESIS_LEAF",
+            RHalted => "R_HALTED",
+            RLengthenOnly => "R_LENGTHEN_ONLY",
+            RBatchSize => "R_BATCH_SIZE",
+            RUpgradeHash => "R_UPGRADE_HASH",
         }
     }
 }

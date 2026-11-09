@@ -9,13 +9,13 @@ use crate::model::PauseLevel;
 use crate::{fail, Contract};
 
 impl Contract {
-    fn require_owner(&self) {
+    pub(crate) fn require_owner(&self) {
         if env::predecessor_account_id() != self.cfg.owner {
             fail(RuleCode::RNotAuthorized, "owner only");
         }
     }
 
-    fn require_owner_or_guardian(&self) {
+    pub(crate) fn require_owner_or_guardian(&self) {
         let p = env::predecessor_account_id();
         if p != self.cfg.owner && p != self.cfg.guardian {
             fail(RuleCode::RNotAuthorized, "owner or guardian only");

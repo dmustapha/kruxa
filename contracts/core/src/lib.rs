@@ -7,15 +7,19 @@
 mod admin;
 mod events;
 mod ext;
+mod extra;
 mod genesis;
+mod govern;
 mod intake;
 mod lifecycle;
 mod market_link;
 mod model;
 mod payout;
 mod previews;
+mod refunds;
 #[cfg(feature = "s4-fallback")]
 mod s4;
+mod stream;
 mod token;
 mod views;
 
@@ -28,6 +32,8 @@ pub const ONE_YOCTO: NearToken = NearToken::from_yoctonear(1);
 pub const GAS_OUT: Gas = Gas::from_tgas(20);
 pub const GAS_CB: Gas = Gas::from_tgas(25);
 pub const CREATION_TIMEOUT_NS: u64 = 600_000_000_000;
+/// Short clock for the demo profile only, so a sandbox can fast-forward through the upgrade and force-resolve timelocks.
+pub const DEMO_DELAY_NS: u64 = 60_000_000_000;
 pub use kruxa_logic::{CAP_TIMELOCK_NS, FREEZE_MAX_NS, GLOBAL_CAP_USDC};
 pub const FACTORY_DEPOSIT_YOCTO: u128 = 60_000_000_000_000_000_000_000;
 /// NEP-145 registration of one account on one launch token (`storage_balance_bounds` min = max on the factory tokens, probed on testnet).
@@ -58,6 +64,7 @@ pub struct Contract {
     symbols: LookupSet<String>,
     walk_nonces: LookupMap<[u8; 32], u64>,
     next_launch_id: u64,
+    x: extra::Extra,
 }
 
 /// Every panic message starts with the rule code so a UI or agent can match on the prefix.
@@ -114,6 +121,7 @@ impl Contract {
             symbols: LookupSet::new(Key::Symbols),
             walk_nonces: LookupMap::new(Key::WalkNonces),
             next_launch_id: 1,
+            x: extra::Extra::new(),
         }
     }
 }

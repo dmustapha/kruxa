@@ -27,4 +27,5 @@ pub trait ExtIntents {
     fn mt_balance_of(&self, account_id: AccountId, token_id: String) -> U128;
     fn ft_withdraw(&mut self, token: AccountId, receiver_id: AccountId, amount: U128, memo: Option<String>, msg: Option<String>);
     fn execute_intents(&mut self, signed: Vec<Value>);
+    fn is_nonce_used(&self, account_id: AccountId, nonce: String) -> bool;
 }

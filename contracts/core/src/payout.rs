@@ -137,8 +137,7 @@ impl Contract {
             fail(RuleCode::RNotAuthorized, "stream recipient only");
         }
         let s = st.settlement.clone().expect("Passed has a settlement");
-        let dur = kruxa_math::days_to_ns(ch.params.stream_days as u64).unwrap_or(0);
-        let cap = linear_unlocked(st.ledger.stream_total, s.settled_at, dur, env::block_timestamp()).unwrap_or(0);
+        let cap = self.stream_cap(&st, &ch, s.settled_at, env::block_timestamp());
         let drawable = cap.saturating_sub(st.ledger.stream_drawn + st.ledger.stream_inflight);
         let want = amount.map(|a| a.0).unwrap_or(drawable);
         if want > drawable {
@@ -180,6 +179,11 @@ impl Contract {
     #[private]
     pub fn on_payout(&mut self, op: PayoutOp) {
         let ok = env::promise_result_checked(0, 1 << 16).is_ok();
+        self.apply_payout(op, ok);
+    }
+
+    /// The resolution itself, shared with `force_resolve_op` and the refund-route callback (not exported: not `pub`).
+    pub(crate) fn apply_payout(&mut self, op: PayoutOp, ok: bool) {
         let Some(mut st) = self.states.get(&op.launch_id).cloned() else { return };
         let a = op.amount;
         let holder = op.holder.as_deref().and_then(HolderId::parse);
@@ -269,6 +273,9 @@ impl Contract {
     }
 
     pub(crate) fn require_buckets_ready(&self, st: &LaunchState) {
+        if st.halted {
+            fail(RuleCode::RHalted, "launch is halted; exits stay open");
+        }
         if st.status != Status::Passed || st.positions_unsettled != 0 || !st.residue_swept {
             fail(RuleCode::RNotClear, "needs Passed, every position settled and sweep_residue done");
         }
