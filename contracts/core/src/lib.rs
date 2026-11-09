@@ -16,6 +16,7 @@ mod payout;
 mod previews;
 #[cfg(feature = "s4-fallback")]
 mod s4;
+mod solvency;
 mod token;
 mod views;
 
@@ -127,7 +128,9 @@ impl Contract {
         self.states.get(&id).cloned().unwrap_or_else(|| fail(RuleCode::RNoLaunch, &format!("launch {} not found", id)))
     }
 
+    /// The only writer of an existing launch state. It also applies the launch's liability change to the solvency counters.
     pub(crate) fn save_state(&mut self, id: u64, st: LaunchState) {
+        self.track_liability(id, &st);
         self.states.insert(id, st);
     }
 
