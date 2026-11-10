@@ -1,0 +1,151 @@
+{
+  "attempt": "A compromised guardian and a stranger queue a code hash; the owner's queue is tried with malformed hashes; a guardian and a stranger deploy a queued wasm; the owner deploys the queued wasm at once and after a few minutes, on the profile that uses the real 7 day delay.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "the queued deploy is more than 6.9 days away (real days, not demo seconds)"
+    },
+    {
+      "ok": true,
+      "what": "the deployed code is unchanged"
+    }
+  ],
+  "co4": "",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_NOT_AUTHORIZED",
+  "id": "C11",
+  "invariants_after": [],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "core",
+  "title": "Upgrade queue: queued by the guardian or a stranger, with a malformed hash, deployed by a non-owner, or deployed before the 7 day delay",
+  "transactions": [
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "queue_upgrade by the guardian",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "FToXayAbr9tUkw7szCW6z5o9ndV6aNzjrRByfkZYsbYx"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "queue_upgrade by the stranger",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "EaphEXwQNKXi7XB1VJxVRrczSAs93XhRg9y7kozygZPN"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "queue_upgrade by the creator",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "9YaMbfMd4F4DgLaw2A8iPWXtgd9co9XgFG7z2rXHqF9N"
+    },
+    {
+      "expected_rule_code": "R_UPGRADE_HASH",
+      "label": "queue_upgrade with hash \"\"",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_UPGRADE_HASH",
+      "status": "failed",
+      "tx": "BLoJwJooZseN8VCqNS4iGAV3JKgzfJm2Z5mxx2wvQfbn"
+    },
+    {
+      "expected_rule_code": "R_UPGRADE_HASH",
+      "label": "queue_upgrade with hash \"abc\"",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_UPGRADE_HASH",
+      "status": "failed",
+      "tx": "5Pis44CbamDssLSbWDLdkNJ5nDyHnUodQkKk3HLVYqZQ"
+    },
+    {
+      "expected_rule_code": "R_UPGRADE_HASH",
+      "label": "queue_upgrade with hash \"1AE1F48D\"",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_UPGRADE_HASH",
+      "status": "failed",
+      "tx": "5kCjvFuVnAA8uKpQc8Pp8qJjzmVLkE2VCji96N37M3tC"
+    },
+    {
+      "expected_rule_code": "R_UPGRADE_HASH",
+      "label": "queue_upgrade with hash \"1ae1f48d\"",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_UPGRADE_HASH",
+      "status": "failed",
+      "tx": "2gLu4hoV31MJKUU9s7Q5fDLJKrgAe5V677yYUcX6e8mj"
+    },
+    {
+      "expected_rule_code": "R_NOTHING",
+      "label": "upgrade_core with nothing queued",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOTHING",
+      "status": "failed",
+      "tx": "7SHihJvgN5FK6zg1xWDaZK3FkBiTxqFGc4piwEBZ8nyp"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "owner queue_upgrade (legitimate)",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "BQTTAhcRduop2aAnctdgMH1DGrLbKy15UNdudErs233m"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "upgrade_core by the guardian",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "BfC2aHLhrKDcwSmt5zABwLRtnhH1uSNiVP2GdwDwJUCd"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "upgrade_core by a stranger",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "ziNwGUQ9oxcxEK1iHBGG3GiN9bhEj8z2DGd4mRtuyxe"
+    },
+    {
+      "expected_rule_code": "R_NOT_YET",
+      "label": "upgrade_core by the owner immediately",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_YET",
+      "status": "failed",
+      "tx": "Crcr7ygvB3JGHKLWWrm3kjMkvwE4Kc9HuTXdaJ6sBfKE"
+    },
+    {
+      "expected_rule_code": "R_NOT_YET",
+      "label": "upgrade_core by the owner a few minutes later",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_YET",
+      "status": "failed",
+      "tx": "AXFzyNGW8UfaMcw7LCQcp2M84qtKNQCxVYdx8jApJm3Q"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "cancel_upgrade by a stranger",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "63hbtDrADSyrxu4KGoqXn6nWqSATrhgH19XCPoXgZ3n3"
+    }
+  ]
+}

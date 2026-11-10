@@ -1,0 +1,66 @@
+{
+  "attempt": "The delay on the demo clock is 60 seconds. After it, a different wasm (the unmodified build) is supplied against the queued hash, the guardian tries to deploy the right wasm, and the owner re-queues and deploys at the old time.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "the deployed code is still the original"
+    }
+  ],
+  "co4": "",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_UPGRADE_HASH",
+  "id": "C12",
+  "invariants_after": [],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "core",
+  "title": "Upgrade bait and switch: deploy a wasm that is not the queued hash after the delay, deploy as the guardian after the delay, or re-queue and deploy at the old time",
+  "transactions": [
+    {
+      "expected_rule_code": null,
+      "label": "owner queue_upgrade",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "FecdDQtcygG1SN1fBLbiLGhcF3xC6GixbDufeopPvKUr"
+    },
+    {
+      "expected_rule_code": "R_UPGRADE_HASH",
+      "label": "deploy a wasm that is not the queued one",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_UPGRADE_HASH",
+      "status": "failed",
+      "tx": "FrRVxF6EeNAdDJs3wuGExEAhxHVe3UxfPSteozQqj7Ln"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "the guardian deploys the right wasm after the delay",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "DTjy1iTiM1RqU1mxDE95R9L6JtbYLyEhPBVCdtrK813w"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "owner re-queues the same hash",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "H9YKJtKJwL724a37bP1Pge2JXwgFuhyk4H9VbKQQRvHg"
+    },
+    {
+      "expected_rule_code": "R_NOT_YET",
+      "label": "deploy at the old time after the re-queue",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_YET",
+      "status": "failed",
+      "tx": "3c3bzcZf4trZnd9gzzruJSqUKty5ndQhdtdUPm1csgTc"
+    }
+  ]
+}

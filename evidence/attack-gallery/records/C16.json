@@ -1,0 +1,95 @@
+{
+  "attempt": "A stranger sends batches that name two holders several times each, repeats the batch four times, and adds their own account. Each named holder may be paid once, to their own account; the stranger gains nothing.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "each named holder was refunded exactly once, to their own account"
+    },
+    {
+      "ok": true,
+      "what": "the stranger gained nothing"
+    },
+    {
+      "ok": true,
+      "what": "the ledger paid two refunds of 30 USDC, not more"
+    },
+    {
+      "ok": true,
+      "what": "the holders who were not named still hold their claim"
+    }
+  ],
+  "co4": "",
+  "expected_result": "NO_EFFECT",
+  "expected_rule_code": "",
+  "id": "C16",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "intents_alert": false,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true,
+        "l6_err": null,
+        "l6_ok": true,
+        "l7_err": null,
+        "l7_ok": true
+      },
+      "launch_id": 1
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "NO_EFFECT",
+  "target": "core",
+  "title": "claim_refund_batch: duplicate holders, repeated batches, and the batch caller's own account in the list",
+  "transactions": [
+    {
+      "expected_rule_code": null,
+      "label": "batch #0 with duplicates",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "8LjEyF9sSvX1DSVtq2XQQzWhygmanf4j6SCVfVrabwt1"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "batch #1 with duplicates",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "Cbhuz4YTFswG1Nvk5sNJvHdTsb8zLBucXP9vnGQpJpha"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "batch #2 with duplicates",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "EJb54BsiKweL4oKr1RxTswvyF2QkycxmnTD9YmfmCwdu"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "batch #3 with duplicates",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "288ahkRwj2CDBYuwUU6FEJtswEeHKCMVZJR9Y1GbXNpZ"
+    }
+  ]
+}

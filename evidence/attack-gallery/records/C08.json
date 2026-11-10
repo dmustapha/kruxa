@@ -1,0 +1,96 @@
+{
+  "attempt": "The creator allocation belongs to the payout recipient. A stranger and the creator (a different account) claim it; the recipient claims before PASS, with no deposit, and at the cliff.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "nothing was claimed"
+    },
+    {
+      "ok": true,
+      "what": "no wallet received launch tokens"
+    }
+  ],
+  "co4": "",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_NOT_AUTHORIZED",
+  "id": "C08",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "intents_alert": false,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true,
+        "l6_err": null,
+        "l6_ok": true,
+        "l7_err": null,
+        "l7_ok": true
+      },
+      "launch_id": 1
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "core",
+  "title": "claim_creator_alloc by a stranger, by the creator who is not the payout recipient, early, or without a deposit",
+  "transactions": [
+    {
+      "expected_rule_code": "R_WRONG_PHASE",
+      "label": "recipient claims on an Open launch",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_WRONG_PHASE",
+      "status": "failed",
+      "tx": "BFVu2NXhnSi1cUTrQdbRCAxmQb5wEPGujAwMFYXjKKPv"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "stranger claims",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "5zka9jTqC6KLJFdAefeATDV8jsgGX5RXEcHrtXyU4rb8"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "the creator (not the recipient) claims",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "8sHNf3ABE9qAFsrcXfbp9skeotQX3ZT2QQs15RE1eGwQ"
+    },
+    {
+      "expected_rule_code": "R_DEPOSIT",
+      "label": "recipient claims with no attached deposit",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_DEPOSIT",
+      "status": "failed",
+      "tx": "Dnj7uwM4QScYDLnEjZZWescbksPiJB5aNm2x52rvULmd"
+    },
+    {
+      "expected_rule_code": "R_NOTHING",
+      "label": "recipient claims at the cliff, nothing vested",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOTHING",
+      "status": "failed",
+      "tx": "7jf7J6rrijrJLakLhUjLGXGtQUPyR7iFRkhsZtPKiis7"
+    }
+  ]
+}

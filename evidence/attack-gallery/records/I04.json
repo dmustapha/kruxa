@@ -34,7 +34,7 @@
       "role": "attack",
       "rule_code": "R_SYMBOL_RESERVED",
       "status": "failed",
-      "tx": "GZs3PnfTjnuAV25wsibT5Uu3Y9uo4VuQRF5Xdb7wZ4xo"
+      "tx": "GsV1TbS6ra5uPhnzcbL9cA522XAgbs3mesTjjFRxkaZm"
     },
     {
       "expected_rule_code": "R_SYMBOL_RESERVED",
@@ -43,7 +43,7 @@
       "role": "attack",
       "rule_code": "R_SYMBOL_RESERVED",
       "status": "failed",
-      "tx": "EyCpZAU9V5q5z1pqTFVxojVpL2RdRGqYmBpuS5Rkhv26"
+      "tx": "HWWiWZkKvqvuuMpusU9aSQWUiYWDsPzKspuP5jpK3j8G"
     },
     {
       "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -52,7 +52,7 @@
       "role": "attack",
       "rule_code": "R_NOT_AUTHORIZED",
       "status": "failed",
-      "tx": "EL9hm7JFQ8xQnNBmPyjM9QotMxHNvk98RLkA6PZr7Cwu"
+      "tx": "5fMzKB11mv7AEikeXtyBbxUNxwrZ38S3b5noCJAwQSwo"
     }
   ]
 }

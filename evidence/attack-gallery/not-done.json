@@ -31,8 +31,8 @@
   },
   {
     "id": "GENESIS-F0-SIGN",
-    "what": "F0 genesis (MPC child key) attacks and Solana-side checks",
-    "why": "sign_genesis (Task 4.6) is not built; NEAR cannot see Solana, so confirm_genesis is a signed claim audited by verify.sh (detected, not prevented). The gallery attacks only the contract-side state machine, leaves and plan."
+    "what": "the real MPC signature on Solana, and Solana-side checks",
+    "why": "The contract-side F0 policy gate (register_f0_message, sign_genesis, reopen_genesis) is attacked in C02 to C04. The sandbox has no MPC signer, so the signer leg itself and everything on Solana are not attacked here. NEAR cannot see Solana, so confirm_genesis is a signed claim audited by verify.sh (detected, not prevented)."
   },
   {
     "id": "INSTANT-REAL-FACTORY",
@@ -42,7 +42,7 @@
   {
     "id": "INSTANT-SEVEN-DAY-CLOCKS",
     "what": "freeze auto-expiry and the 7-day cap timelock by waiting",
-    "why": "Both are 7 real days even on the demo profile (only the launcher's day unit is 10 s). A sandbox wait would need about 2 million blocks. I36 and I38 assert the bound with the pure kruxa_logic functions and the queued effective_at instead."
+    "why": "Both are 7 real days even on the demo profile (only the launcher's day unit is 10 s). A sandbox wait would need about 2 million blocks. I36 and I38 assert the bound with the pure kruxa_logic functions and the queued effective_at instead. The core's own FROZEN expiry (D-15) is not a gallery row; tests/tests/negative_paths.rs proves it by rewriting frozen_until in the sandbox state, and A16 asserts the bound with the pure function."
   },
   {
     "id": "INSTANT-ANNOUNCED-OPEN",

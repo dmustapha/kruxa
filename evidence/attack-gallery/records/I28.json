@@ -79,7 +79,7 @@
       "role": "attack",
       "rule_code": "R_SELF_BUY",
       "status": "succeeded",
-      "tx": "3i9yZQNbuXMGSHncVfxx9HLxPAEk7p7NcLsYxpc1HMa9"
+      "tx": "92LwBKBxW4qpymxKneFRVXHy2VfraD5YFJvo4R1t8poM"
     },
     {
       "expected_rule_code": "R_SELF_BUY",
@@ -88,7 +88,7 @@
       "role": "attack",
       "rule_code": "R_SELF_BUY",
       "status": "succeeded",
-      "tx": "CtT6d5T54dkpJhVDNx7VZorpmhnwZSZpzRLhZCdYzbME"
+      "tx": "AFdBHFUKNX78RD6h6CD2EffSR7X1Ny7nWNWerjPCTwCP"
     },
     {
       "expected_rule_code": "R_SELF_BUY",
@@ -97,7 +97,7 @@
       "role": "attack",
       "rule_code": "R_SELF_BUY",
       "status": "succeeded",
-      "tx": "DTD5CatRrjhMfjKmJKziNFdtrncACdWA5D9d7VrXj3Hq"
+      "tx": "GFSqFJ5Bfo547YuQaoVvCwHmVQXDrAgWRJPZRdQQQD1J"
     },
     {
       "expected_rule_code": "R_SELF_BUY",
@@ -106,7 +106,7 @@
       "role": "attack",
       "rule_code": "R_SELF_BUY",
       "status": "succeeded",
-      "tx": "EcGDufKixiM4WW55M72AtPX4THiUwa3qiNPHQxufr7g7"
+      "tx": "HT2vA3xyCth88i26tbMynBqhh8dsybCkDvjQppsN3pVr"
     }
   ]
 }

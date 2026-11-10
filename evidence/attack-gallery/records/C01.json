@@ -1,0 +1,177 @@
+{
+  "attempt": "The relayer, the guardian, the creator and a stranger try to reopen an aborted genesis (to re-run the ceremony with a key of their choice); the owner's reopen is tried before any commit, while committed, and after a confirm, where it must be refused.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "the guardian's abort is still final"
+    },
+    {
+      "ok": true,
+      "what": "a confirmed genesis keeps its status and root"
+    }
+  ],
+  "co4": "",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_NOT_AUTHORIZED",
+  "id": "C01",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "intents_alert": false,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true,
+        "l6_err": null,
+        "l6_ok": true,
+        "l7_err": null,
+        "l7_ok": true
+      },
+      "launch_id": 1
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "core",
+  "title": "reopen_genesis by the relayer, guardian, creator or a stranger, and outside an aborted genesis",
+  "transactions": [
+    {
+      "expected_rule_code": "R_GENESIS_STATE",
+      "label": "owner reopen before any commit",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_STATE",
+      "status": "failed",
+      "tx": "CjGLrSKAVDkK7HVgPTcrSJnZ9VBWp59ySaPMcPqjaAz8"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "commit_genesis (legitimate)",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "8geSduF3v99LvczyedPQwQJ6DJE5BfaQy9rAwCHuWfs3"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_STATE",
+      "label": "owner reopen while committed (not aborted)",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_STATE",
+      "status": "failed",
+      "tx": "D217oRsXzNcTzegtmRmBsAwzG3NpvySfgeCWoV1okYD7"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "guardian abort_genesis",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "7h1NUupbjeV6LbjktRtoKNtJgRYHv4QbS2ZXfJZgAjqa"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "reopen_genesis by the relayer",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "4WADZxfiYuFurF3RSt5WawudsAkPyUHZRDXyCXpxbYii"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "reopen_genesis by the guardian",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "Et9m8SjggvedsNJjfMrSATumiUWQeGXtgN1vXuHpMiKt"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "reopen_genesis by the creator",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "9YcNiKJtzKE2huFKYo8hmKqgKyN1FpqWnN64eioz5CTH"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "reopen_genesis by the stranger",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "4BbYgXKQAdQCdA57VKtSNKjddLuLYSyiFe8fUq8CxFT9"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "owner reopen_genesis (legitimate)",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "75ydoyVQQUHqVaxeRxeVR1Mqv9PKvpa8C5jGN31w1u7S"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "commit_genesis again",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "Dn8N2KSJWP6KB2UyRG7GAtuH1nemaAoJAYBVdCRU9BEL"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "all leaves",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "GEYE6Dc6ArKfeiGRqDNB5gw4qS2PDLqsMBmSPvPiwkt1"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "confirm_genesis",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "jor644mPCicvodnfQr16Rp954UFHmAUKgomKJSkhLrd"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_STATE",
+      "label": "owner reopen after confirm",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_STATE",
+      "status": "failed",
+      "tx": "8z7M86n8Lg8VWsRVPk9ktSQve9LpfUuNQAMsN9NyrySx"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "relayer reopen after confirm",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "VdBnNkZD3edtA5Yqm65n43gqLMdaVD41e5uHoLGytQH"
+    }
+  ]
+}

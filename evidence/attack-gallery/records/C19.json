@@ -1,0 +1,104 @@
+{
+  "attempt": "A payload executed by someone else at the Verifier is credited once through claim_orphan_credit. The same claim is then replayed, the plain S4 path is tried on it, and a second payload (30 USDC) signed with the same nonce, which the Verifier never executed, is claimed to credit money that never arrived.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "credited exactly 40 USDC"
+    },
+    {
+      "ok": true,
+      "what": "core refused it in the callback: the Verifier's nonce was already spent"
+    },
+    {
+      "ok": true,
+      "what": "the ledger still shows only the real 40 USDC"
+    },
+    {
+      "ok": true,
+      "what": "core's Intents balance is the 40 USDC that really arrived"
+    }
+  ],
+  "co4": "",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_NOTHING",
+  "id": "C19",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "intents_alert": false,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true,
+        "l6_err": null,
+        "l6_ok": true,
+        "l7_err": null,
+        "l7_ok": true
+      },
+      "launch_id": 1
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "core",
+  "title": "claim_orphan_credit: the same payload twice, the S4 path after the claim, and a payload that reuses a spent nonce",
+  "transactions": [
+    {
+      "expected_rule_code": null,
+      "label": "somebody executes the payload at the Verifier (an orphan)",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "GtBhNQGcp61pHdWusgcdFEVRqkVkyEz3aJTw2HugmPdE"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "claim_orphan_credit (legitimate, credits the signer once)",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "EqufY7FufKhywdSVthh622DcwnZWB2pJxzFVzJhXPAgx"
+    },
+    {
+      "expected_rule_code": "R_NOTHING",
+      "label": "the same claim again",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOTHING",
+      "status": "failed",
+      "tx": "EkZwNYDi3nTuqWbNpaPFcB6SAkxgzGfcoznp1JKXnzer"
+    },
+    {
+      "expected_rule_code": "R_NOTHING",
+      "label": "the S4 path on the already-credited payload",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOTHING",
+      "status": "failed",
+      "tx": "7XDNFYgP8ZY2sQpwhMCwRC5r3v1yfCrWQD8LFcS1EPdC"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "a different payload (30 USDC) reusing the spent nonce",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "9HNbYA4ZDHB9dEJyxPnGasjR48qcDYUE28waFhbQ13yV"
+    }
+  ]
+}

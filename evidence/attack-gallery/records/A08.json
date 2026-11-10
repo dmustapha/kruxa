@@ -38,12 +38,17 @@
         "i4_ok": true,
         "i5_err": null,
         "i5_ok": true,
+        "intents_alert": false,
         "l1_err": null,
         "l1_ok": true,
         "l3_err": null,
         "l3_ok": true,
         "l4_err": null,
-        "l4_ok": true
+        "l4_ok": true,
+        "l6_err": null,
+        "l6_ok": true,
+        "l7_err": null,
+        "l7_ok": true
       },
       "launch_id": 1
     }
@@ -61,7 +66,7 @@
       "role": "attack",
       "rule_code": null,
       "status": "succeeded",
-      "tx": "GMJs28FBkN9zbFhSBtEMztBjj877gExSFUmr3XQH2TUV"
+      "tx": "76ghSUGAN98a3CMhwYX5qpVGFbPG8e6zizUA6TVzuEM6"
     },
     {
       "expected_rule_code": null,
@@ -70,7 +75,7 @@
       "role": "support",
       "rule_code": null,
       "status": "succeeded",
-      "tx": "34GHJMnWkUzyn1LHKzXt4TCVrECCQxYs8UidUPQmkZKr"
+      "tx": "7Msxn2bu5t984CjQCvAwgmENWX8WKuvxan3qKUnTgxZh"
     },
     {
       "expected_rule_code": null,
@@ -79,7 +84,7 @@
       "role": "support",
       "rule_code": null,
       "status": "succeeded",
-      "tx": "GG7PQffUQJhyZz75jKRQ4Tz2bDugssCoHsAy8Ex7vTJC"
+      "tx": "7sPEJgbHZfpv78GnnYD5Tuk9EtHmLrvfgx3dF6CctTox"
     }
   ]
 }

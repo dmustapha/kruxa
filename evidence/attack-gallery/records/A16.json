@@ -34,12 +34,17 @@
         "i4_ok": true,
         "i5_err": null,
         "i5_ok": true,
+        "intents_alert": false,
         "l1_err": null,
         "l1_ok": true,
         "l3_err": null,
         "l3_ok": true,
         "l4_err": null,
-        "l4_ok": true
+        "l4_ok": true,
+        "l6_err": null,
+        "l6_ok": true,
+        "l7_err": null,
+        "l7_ok": true
       },
       "launch_id": 1
     }
@@ -57,7 +62,7 @@
       "role": "support",
       "rule_code": null,
       "status": "succeeded",
-      "tx": "4YZy6JFKUjspx8NoGVAXV1zn8D8ZVq7vcEH4yBKg8sXh"
+      "tx": "HTSybhuwKaeq7Z7zYerGaGi8sXPPuRLrcedsB7W6BiYj"
     },
     {
       "expected_rule_code": "R_FROZEN",
@@ -66,7 +71,7 @@
       "role": "attack",
       "rule_code": "R_FROZEN",
       "status": "failed",
-      "tx": "GL3qDQfSeXri9wE3bscmRbiGmcdwa371LKVhT3sDse1e"
+      "tx": "6YMyAnwjBgS452jYv345wvRDbwCag95jrtHCgSA7XbtN"
     },
     {
       "expected_rule_code": null,
@@ -75,7 +80,7 @@
       "role": "support",
       "rule_code": null,
       "status": "succeeded",
-      "tx": "4u4HoJ3cWV9vyMuBt9FhnkU7jvLXxTgs97VKAx8MmRrE"
+      "tx": "6PJBdgiwxCPm4Tw4aoUhzoKbKMjXp3rAvsCES3Qo96JE"
     },
     {
       "expected_rule_code": null,
@@ -84,7 +89,7 @@
       "role": "support",
       "rule_code": null,
       "status": "succeeded",
-      "tx": "CarfDN9LoNcdaugTC5x9BVU3y4gZtLiuh12ZypkBgg9Z"
+      "tx": "9X1GPQvGHSvJ4P5cAuHfn3LyY1CzAmMeRdMtuG4to1sD"
     }
   ]
 }

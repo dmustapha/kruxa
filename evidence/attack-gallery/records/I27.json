@@ -38,7 +38,7 @@
       "role": "attack",
       "rule_code": "R_ID_NAMESPACE",
       "status": "succeeded",
-      "tx": "2yZK7Jwa113kmSqX2kdLR1pu41Cv55fXctqLr79TU62V"
+      "tx": "9zHfWamn1wMWfXTK7nM7HMhdvHPVjMQzYDEdHQFxTQP6"
     },
     {
       "expected_rule_code": "R_ID_NAMESPACE",
@@ -47,7 +47,7 @@
       "role": "attack",
       "rule_code": "R_ID_NAMESPACE",
       "status": "succeeded",
-      "tx": "2Tejsz9Pe7aMX6hX4pTNBeqMTKNqrojpTiHzephxcUbU"
+      "tx": "46dFbTN2mjh6zo4a1yF4PFTw2DDhSsMQjqtBFR1uXwFF"
     },
     {
       "expected_rule_code": "R_ID_NAMESPACE",
@@ -56,7 +56,7 @@
       "role": "attack",
       "rule_code": "R_ID_NAMESPACE",
       "status": "succeeded",
-      "tx": "HdYVGSMDkzCi5vAG1cTTHRnn2PHRMxc3TykxBwhcFNxj"
+      "tx": "7oJSu4tYmWrUD1RuuEyDbXzdG9JfP55hWtMtzzWXmbRg"
     },
     {
       "expected_rule_code": "R_ID_NAMESPACE",
@@ -65,7 +65,7 @@
       "role": "attack",
       "rule_code": "R_ID_NAMESPACE",
       "status": "succeeded",
-      "tx": "FvMUUhg4vGTmJswEvaxazLTjby6ypeF3GzyGSxRfdzRC"
+      "tx": "EdfmGy8QiXVvKNKjUScuzuLE6Xzw6hRwL5dHptKnuXvw"
     }
   ]
 }

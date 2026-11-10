@@ -73,7 +73,7 @@
       "role": "support",
       "rule_code": null,
       "status": "succeeded",
-      "tx": "Ghm7jwxJoxGsxhMr3TFo4oK4pWPH5wUZhUjH4Qnibgi9"
+      "tx": "23PkLLq39G2FHrkT1Jz1w2n57ZysqQatnzkJ5NLuAi2e"
     },
     {
       "expected_rule_code": "R_CAP_GLOBAL",
@@ -82,7 +82,7 @@
       "role": "attack",
       "rule_code": "R_CAP_GLOBAL",
       "status": "succeeded",
-      "tx": "B427pLGSteVq7dQc8aMai9SrQyb1JuQN8RRheyfvt6Ld"
+      "tx": "FpJzMhWyCGTxNeY9SjRnZmDMdLiy8iXd2U7p5SDqahHm"
     },
     {
       "expected_rule_code": "R_SEED_RANGE",
@@ -91,7 +91,7 @@
       "role": "attack",
       "rule_code": "R_SEED_RANGE",
       "status": "failed",
-      "tx": "7rfzQADoPykvEXqK7F5eCswVjUDX2STNaUToMM4JbcnS"
+      "tx": "Cro4PKFRPSdyxjc65WuR1jUZnf8sL3j8zpbyWT3AJEiR"
     }
   ]
 }

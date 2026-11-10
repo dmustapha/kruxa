@@ -60,7 +60,7 @@
       "role": "attack",
       "rule_code": "R_UNEXPECTED_TOKEN",
       "status": "succeeded",
-      "tx": "BocAAmZuPSqDvm11p4hvyf5nXxRg1rCzVP7BZybz3k8f"
+      "tx": "28nQwcFWN3gEyav3Wq4fJkxVf5hznKWaoXcuNLLYWsPu"
     },
     {
       "expected_rule_code": "R_UNEXPECTED_TOKEN",
@@ -69,7 +69,7 @@
       "role": "attack",
       "rule_code": "R_UNEXPECTED_TOKEN",
       "status": "succeeded",
-      "tx": "pdEMuQRLNxVNUfa4JYqpfyNAtNYHhPHqkGtXdMaMSKZ"
+      "tx": "FawEpzdRM8ZfFkZr73MH6QD6VytgcBzzYRnB1WPB7it6"
     }
   ]
 }

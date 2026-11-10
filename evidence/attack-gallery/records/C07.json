@@ -1,0 +1,90 @@
+{
+  "attempt": "The launch token (made hostile for this test) calls claim_tokens again from inside ft_transfer, before core's callback ran; the holder then claims a second time immediately; a stranger with no position claims.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "the holder received tokens once, equal to the position's claimed counter"
+    },
+    {
+      "ok": true,
+      "what": "never more than the entitlement"
+    },
+    {
+      "ok": true,
+      "what": "the second claim added only what vested since (a few seconds of linear bonus), never the sale share again"
+    },
+    {
+      "ok": true,
+      "what": "the stranger received nothing"
+    },
+    {
+      "ok": true,
+      "what": "claimed_total equals what the holder holds"
+    }
+  ],
+  "co4": "",
+  "expected_result": "NO_EFFECT",
+  "expected_rule_code": "",
+  "id": "C07",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "intents_alert": false,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true,
+        "l6_err": null,
+        "l6_ok": true,
+        "l7_err": null,
+        "l7_ok": true
+      },
+      "launch_id": 1
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "NO_EFFECT",
+  "target": "core",
+  "title": "claim_tokens: re-entry from inside the token transfer, a second claim at once, and a stranger's claim",
+  "transactions": [
+    {
+      "expected_rule_code": null,
+      "label": "claim_tokens with a reentering token",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_DEPOSIT",
+      "status": "succeeded",
+      "tx": "BSpvgu3NXv33iRR6p5d5oGExXAZXBJM1gKk2iX5RHA39"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "second claim_tokens straight after (linear bonus only)",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "FMMerXzHLX3g5N7LsM56pJLX2zPqcysyRNyjdDMjgecs"
+    },
+    {
+      "expected_rule_code": "R_NO_POSITION",
+      "label": "claim_tokens by a stranger",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NO_POSITION",
+      "status": "failed",
+      "tx": "Baaq2GaJiQk2HVqqenSAKUDMqTA99e7z1UrjiHiqksww"
+    }
+  ]
+}

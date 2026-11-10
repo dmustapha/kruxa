@@ -64,6 +64,6 @@ describe('FACTS.gallery match the committed evidence file', () => {
     });
     expect(g.refused + g.noEffect + g.bounded + g.failed).toBe(g.total);
     const bounded = d.attacks.filter((a: { result: string }) => a.result === 'BOUNDED').map((a: { id: string }) => a.id).sort();
-    expect(bounded).toEqual(['A16', 'A19']);
+    expect(bounded).toEqual(['A16', 'A19', 'I06', 'I29', 'I36']);
   });
 });

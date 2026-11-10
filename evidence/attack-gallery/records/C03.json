@@ -1,0 +1,222 @@
+{
+  "attempt": "On an F0 launch the relayer asks the MPC signer to sign a message nobody registered, then a different message than the registered one, then the tx1 message as tx2, an oversize packet; strangers register and sign; and commit_genesis names a key other than the MPC child key.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "nothing was signed"
+    },
+    {
+      "ok": true,
+      "what": "the registered hash for tx1 is still the honest one"
+    }
+  ],
+  "co4": "",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_GENESIS_ARG",
+  "id": "C03",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "intents_alert": false,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true,
+        "l6_err": null,
+        "l6_ok": true,
+        "l7_err": null,
+        "l7_ok": true
+      },
+      "launch_id": 1
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "core",
+  "title": "F0 policy gate: sign_genesis with an unregistered hash, a mismatched message, the wrong slot, a stranger, or the wrong MPC key",
+  "transactions": [
+    {
+      "expected_rule_code": "R_GENESIS_ARG",
+      "label": "commit_genesis with a key other than the plan's MPC child key",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_ARG",
+      "status": "failed",
+      "tx": "BuqDioDEcjCgsFAUVR3Pc5d3P2X746TzYNmFhxuM7vwN"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_STATE",
+      "label": "sign_genesis before any commit",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_STATE",
+      "status": "failed",
+      "tx": "8CCaZmTVc1Yn1w1QN8swXtrfjrrm7e1pZFqWMS6GNRcg"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "commit_genesis with the MPC child key",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "7E2PSgXK446WwQ6pWbKsRT5QCrkszZNyLR3tpdBaANeb"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "all leaves (the gate opens once the root is complete)",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "3kyXDUmcyMNUC2yFak6RkpMiBiqtqqX2XBy8MQ2ZiFpV"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "register_f0_message by the stranger",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "87QTM5QWmmDQR8LqLiXXHBTxHyh87XDn31PUF2ASEAuv"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "sign_genesis by the stranger",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "9qH3uPUaENkoBXppx9Fgi8D8RJJ6ZMnhepA4bM4wdu6e"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "register_f0_message by the owner",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "CYiPVe382d5QYoyXWRkpMT4QnJyRUmBqg3uCr2WzpD86"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "sign_genesis by the owner",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "DRdV37j1CiSCv5pxK8Xnx9FpV5tPrLGFqrRECH3pZQqA"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "register_f0_message by the guardian",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "9rJH3wNLUY1VLFnEP1iuU146tPuvAKb7z7kCaLPnZibR"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "sign_genesis by the guardian",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "6irmiHWFZfqiYwzsjkiZYmWD2v4vB8bzb5GwrYmBSarr"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "register_f0_message by the creator",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "D3yUsPaSBN3dts7ZhwHFWDs2HGBZnDRYB5KeG1uqwZNp"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "sign_genesis by the creator",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "FWFE4GzRuX8sAVKCjALiAmhdrnvB6aoTVB11WAD1KS5m"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_STATE",
+      "label": "register_f0_message for tx index 2",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_STATE",
+      "status": "failed",
+      "tx": "9yjkdpe8ekUshDffS3JRGCzFyCrATa2msDXASoLGJoAd"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_ARG",
+      "label": "sign_genesis with nothing registered",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_ARG",
+      "status": "failed",
+      "tx": "AnqZJTGQwECVT9hY7wvRoD5TNa7wQETHgNqbGmHRnwJg"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "register_f0_message (tx1)",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "2YdXbPLxsXaTTXsd2LA67iRgRS3NzjRcBg1yVW7EwvZG"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_ARG",
+      "label": "sign_genesis with a different message",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_ARG",
+      "status": "failed",
+      "tx": "HFafHMmPVdFDeovjnRhpZV7aVfkoktLJVgStyjKEdGRz"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_ARG",
+      "label": "sign the tx1 message as tx2",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_ARG",
+      "status": "failed",
+      "tx": "89wHchMVoRiVi5HMjpDTXs7svxa6myHhAtyj4bzPGAUz"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "register an oversize packet for tx2",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "4SC42CjDaM9Nd2WiKPXbwqjxMCBJDhVAJHtCbGs3NTKu"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_ARG",
+      "label": "sign_genesis with a message over one packet",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_ARG",
+      "status": "failed",
+      "tx": "H6ZPNuVCcbnMRmHKxbDXcEqGtdbKxbzg9wSJ51vehe3C"
+    }
+  ]
+}

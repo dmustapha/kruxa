@@ -12,7 +12,7 @@ KRUXA_FINDINGS_OUT="$PWD/$out" cargo test -p kruxa-tests --test known_findings -
 rc=$?
 set -e
 python3 - "$out" "$rc" <<'PY'
-import glob, json, subprocess, sys, datetime
+import glob, json, os, subprocess, sys, datetime
 out, rc = sys.argv[1:3]
 recs = [json.load(open(p)) for p in sorted(glob.glob(out + "/*.json"))]
 c = lambda r: sum(1 for x in recs if x["result"] == r)
@@ -21,6 +21,19 @@ obj = {"schema": "kruxa.known-findings/1", "network": "SANDBOX", "git_head": hea
        "counts": {"total": len(recs), "exploitable": c("EXPLOITABLE"), "not_exploitable": c("NOT_EXPLOITABLE"), "not_reproduced": c("NOT_REPRODUCED")},
        "cargo_exit": int(rc), "findings": recs}
 json.dump(obj, open("evidence/attack-gallery/known-findings.json", "w"), indent=2)
+df_path = "evidence/attack-gallery/disclosed-facts.json"
+df = json.load(open(df_path)) if os.path.exists(df_path) else []
+df_rows = "\n".join(f"| {x['id']} | {x['review']} | {x['title']} | {x['status']} | {x['summary'].replace('|', '/')} |" for x in df)
+df_text = "" if not df else f"""
+## Disclosed bounds and read-only facts (not reproductions, not counted above)
+
+Measured or read once and written to `{df_path}`. The N-04 measurement is a sandbox test (`tests/tests/instant_token_leg_storage.rs`,
+record in `evidence/instant-n04/`); the N-06 facts are read-only mainnet RPC view calls (no key, no write).
+
+| Id | Review | Topic | Status | What was measured |
+|---|---|---|---|---|
+{df_rows}
+"""
 rows = "\n".join(f"| {x['id']} | {x['review_id']} | {x['title']} | **{x['result']}** | {x['summary'].replace('|', '/')} |" for x in recs)
 open("docs/KNOWN-FINDINGS.md", "w").write(f"""# Known findings (pre-fix evidence)
 
@@ -37,6 +50,7 @@ NOT_REPRODUCED = the harness cannot exercise it (the summary says why).
 |---|---|---|---|---|
 {rows}
 
+{df_text}
 `make known-findings` exits 1 while any row is EXPLOITABLE.
 """)
 print(f"KNOWN FINDINGS: {obj['counts']}")

@@ -71,7 +71,7 @@ doc_obj = {
     "wasm_sha256": {n: sha(f"target/near/{n}/{n}.wasm") for n in ["kruxa_core", "kruxa_market_contract", "kruxa_instant_contract"]},
     "counts": {"total": len(recs), "tests_listed": int(listed), "refused": count("REFUSED"), "no_effect": count("NO_EFFECT"),
                "bounded": count("BOUNDED"), "failed": count("FAILED"), "succeeded_unexpectedly": count("SUCCEEDED_UNEXPECTEDLY"),
-               "by_group": {"core_and_genesis": sum(1 for x in recs if x["id"][0] in "AG"), "market": sum(1 for x in recs if x["id"][0] == "M"),
+               "by_group": {"core_and_genesis": sum(1 for x in recs if x["id"][0] in "AGC"), "market": sum(1 for x in recs if x["id"][0] == "M"),
                             "instant_launcher_and_market_1_1": sum(1 for x in recs if x["id"][0] == "I")},
                "invariants_held": sum(1 for x in recs if x["invariants_ok"]),
                "with_rule_code": sum(1 for x in recs if any(t["role"] == "attack" and t["rule_code"] for t in x["transactions"])),
@@ -121,7 +121,7 @@ These adversaries are our own red team, not an independent audit.
 
 {line}
 
-Groups: core and genesis {g['core_and_genesis']}, market {g['market']}, instant launcher and market 1.1.0 {g['instant_launcher_and_market_1_1']} (ids I01 and up).
+Groups: core, genesis and the newer core surface (ids A, G and C) {g['core_and_genesis']}, market {g['market']}, instant launcher and market 1.1.0 {g['instant_launcher_and_market_1_1']} (ids I01 and up).
 
 Result meanings: REFUSED = the contract rejected every attack transaction with the stated rule code. NO_EFFECT = the call
 ran but changed nothing that matters (idempotent replay, donation, trapped-exit attempt that still exits). BOUNDED = the

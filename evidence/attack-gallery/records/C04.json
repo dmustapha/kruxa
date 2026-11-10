@@ -1,0 +1,186 @@
+{
+  "attempt": "After one legitimate signature request for tx1 the relayer asks again with the same message, re-registers a replacement message on the spent slot, and signs while the ceremony is paused and after it is aborted; after the owner reopens, the old registration must be gone.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "the slot is spent"
+    },
+    {
+      "ok": true,
+      "what": "the reopened gate is empty and unsigned"
+    }
+  ],
+  "co4": "",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_GENESIS_STATE",
+  "id": "C04",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "intents_alert": false,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true,
+        "l6_err": null,
+        "l6_ok": true,
+        "l7_err": null,
+        "l7_ok": true
+      },
+      "launch_id": 1
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "core",
+  "title": "F0 policy gate: a second signature, a swap after signing, signing while paused or aborted, and a registration that survives the reopen",
+  "transactions": [
+    {
+      "expected_rule_code": null,
+      "label": "commit_genesis",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "6eyUaJDxj9H9xH2TozMP3W5X7EVaW8QVE2KNECwbvZyz"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "all leaves (the gate opens once the root is complete)",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "2zkTr1VCaMh62efY2WjrdZkRds3gdqi87zf5fC1sLyys"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "register_f0_message (tx1)",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "7jP8cF373E3LCARMRiVDHNXMDvpFYjxeYQFQQD2A7Nmh"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "sign_genesis (legitimate, one per registration)",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "failed",
+      "tx": "BcyWzZG3n19jxFLbVyBeCRcRoAe73b5w7bsLnp33N64Q"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_STATE",
+      "label": "sign_genesis a second time with the same message",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_STATE",
+      "status": "failed",
+      "tx": "EQvVLYnCJWhYx4PLFfRzgbgxHn5vZZ9MyJNuvi5KJmvr"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_STATE",
+      "label": "re-register a replacement message on the signed slot",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_STATE",
+      "status": "failed",
+      "tx": "9NdGHLLR845cW9GzDMXpTYWa3iQi3StxSCH6AYVtM8aF"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_ARG",
+      "label": "sign the replacement message",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_ARG",
+      "status": "failed",
+      "tx": "5W5qZGHgVwLAnWj3waZTsxebsMqJrQXjnfbQ74KUktPW"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "register_f0_message (tx2)",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "9T9Ru9FDpEJEqAChCwkLVnYsx2oWLbR3iPWFE3L7wzA1"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "guardian pause_genesis",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "5YU4KssnHBfi3sRzCDXYRx7Q1se9eHHu5c2YUmcXqLTc"
+    },
+    {
+      "expected_rule_code": "R_PAUSED",
+      "label": "sign_genesis (tx2) while genesis is paused",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_PAUSED",
+      "status": "failed",
+      "tx": "5kut9mDY5aiQSSYjWL9omx1CXeBAiVDEGsE7mnsNxrTB"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "owner resume_genesis",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "8ZcVebBXhZjPxznxGbP4qjndd5sYziWUMKC83iBSrHRh"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "guardian abort_genesis",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "597rvW6zWDwiQQUzCW5qjrhdNtof3phD8kfHa1D4L3Cr"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_STATE",
+      "label": "sign_genesis (tx2) after the abort",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_STATE",
+      "status": "failed",
+      "tx": "5CheyPN5N4zP2ZxhmdgsDTsZqLR4Mx59RKtqaGm8Ysfk"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "owner reopen_genesis",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "EULWoMnjytZ6k9XKz6BAWew32PPcYbkq1tfkw8egRNNR"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_STATE",
+      "label": "sign_genesis with the old registration after the reopen",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_STATE",
+      "status": "failed",
+      "tx": "9FGHPZKwL2CqBS1vgwEH6cWn1ajZtUsWCdwpfKq1VihS"
+    }
+  ]
+}

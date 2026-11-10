@@ -1,0 +1,163 @@
+{
+  "attempt": "After the guardian aborts a committed genesis the relayer commits again (same key, fresh key), pages and confirms, and the guardian itself commits. After the owner reopens, a confirm that names the OLD attempt's mint is sent against the NEW commit.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "status stays Aborted"
+    },
+    {
+      "ok": true,
+      "what": "the reopened genesis starts clean: no key, no mint, no root, no leaves"
+    },
+    {
+      "ok": true,
+      "what": "the new commit is still unconfirmed"
+    }
+  ],
+  "co4": "",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_GENESIS_ALREADY",
+  "id": "C02",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "intents_alert": false,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true,
+        "l6_err": null,
+        "l6_ok": true,
+        "l7_err": null,
+        "l7_ok": true
+      },
+      "launch_id": 1
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "core",
+  "title": "Re-commit after a guardian abort, and a stale ceremony replayed after the owner reopens",
+  "transactions": [
+    {
+      "expected_rule_code": null,
+      "label": "commit_genesis (legitimate)",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "As7yWj9FjBci9SVNgG8ma3nSLoxHf96YcFyhVGPaXQfg"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "guardian abort_genesis",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "4XB8UfRkpijYgApJWM7L6G7VyKpdbvngiUwSYagByNBC"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_ALREADY",
+      "label": "commit_genesis with the same key after the abort",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_ALREADY",
+      "status": "failed",
+      "tx": "3UnZjpzE8ANf81x9imgDP5Qs8t3NPzF5v21kCdV1vadg"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_ALREADY",
+      "label": "commit_genesis with a fresh key after the abort",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_ALREADY",
+      "status": "failed",
+      "tx": "2iJMj3piCuD8EZnFwviuPBbofLuGcSYDqJjTvxo77m34"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_STATE",
+      "label": "build_root_page after the abort",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_STATE",
+      "status": "failed",
+      "tx": "FRzU3wdtvyAhXQK3XT731gfbRFx1cR8uTiLdWHHnwLpn"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_STATE",
+      "label": "confirm_genesis after the abort",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_STATE",
+      "status": "failed",
+      "tx": "HVhKf89JUKgRHy62eg8MNrogoEjQJwuVSDo9BZqgmFkc"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "the guardian commits",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "GRT9YipTt8HPc3euz2YZyvQk964X8qKg7Ar8H9eww2yw"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "owner reopen_genesis",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "6nSHA5fCRjgrL3Wq4Q1HkULWwus8NAKyYnhXR3BsT5X1"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_STATE",
+      "label": "confirm_genesis before the new commit",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_STATE",
+      "status": "failed",
+      "tx": "G9vk2qcXpthPeZhwqWNt8rG4JzAcFuo3py515PXg3Q9c"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "commit_genesis with the fresh key",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "BUnVLRJsNbngWPTWrkNZSWF5VmhWccKwLPe3aqSiGZCY"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "all leaves",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "EqPsWyjy3NExPaBgf3juwgybiiuokamzCpVbkQcWnByg"
+    },
+    {
+      "expected_rule_code": "R_GENESIS_ARG",
+      "label": "confirm naming the old attempt's mint",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_GENESIS_ARG",
+      "status": "failed",
+      "tx": "3YicEHDLVULubdb7nRNKjgzD5ctEvs9dQ46DGtmsTt7r"
+    }
+  ]
+}

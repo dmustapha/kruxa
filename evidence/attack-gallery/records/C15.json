@@ -1,0 +1,101 @@
+{
+  "attempt": "A stranger sends a 26 holder batch, an empty batch, a holder that is not near:<account> or sol:<key>, a batch for a launch that does not exist, and (after a guardian freeze) a valid batch.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "nobody was paid by any refused batch"
+    }
+  ],
+  "co4": "",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_BATCH_SIZE",
+  "id": "C15",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "intents_alert": false,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true,
+        "l6_err": null,
+        "l6_ok": true,
+        "l7_err": null,
+        "l7_ok": true
+      },
+      "launch_id": 1
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "core",
+  "title": "claim_refund_batch: oversize and empty batches, a malformed holder, an unknown launch, and a batch while FROZEN",
+  "transactions": [
+    {
+      "expected_rule_code": "R_BATCH_SIZE",
+      "label": "26 holders",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_BATCH_SIZE",
+      "status": "failed",
+      "tx": "863g75UYVpHFgDkeGTg2HD5Fx9xE8iv3XD7rs1ahQjeY"
+    },
+    {
+      "expected_rule_code": "R_BATCH_SIZE",
+      "label": "0 holders",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_BATCH_SIZE",
+      "status": "failed",
+      "tx": "9Ys7ZEkVxTs6tbPRok6jyXvL2mVUbbvnGFJs1yV6i5yQ"
+    },
+    {
+      "expected_rule_code": "R_NO_POSITION",
+      "label": "a holder that is not near:<account> or sol:<key>",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NO_POSITION",
+      "status": "failed",
+      "tx": "GXkBkUAsJMzMPNZ6U5yrbD39ot1S913JerCcCzR6pnZJ"
+    },
+    {
+      "expected_rule_code": "R_NO_LAUNCH",
+      "label": "a launch that does not exist",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NO_LAUNCH",
+      "status": "failed",
+      "tx": "HALkB6CUkdVc9reVCSbJWWBAm4CymVRsng9Qq51S1r8y"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "guardian freeze",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "8xBU3ZJqJAoH3kkQaZorCABsnE2vyw8xCE2E6Sj6b4RP"
+    },
+    {
+      "expected_rule_code": "R_FROZEN",
+      "label": "a valid batch while FROZEN",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_FROZEN",
+      "status": "failed",
+      "tx": "6JEssG6P2ZGCmHWxaifkL1TU8vBUniXCB8wPHi4keijB"
+    }
+  ]
+}

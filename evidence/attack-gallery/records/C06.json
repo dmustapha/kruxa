@@ -1,0 +1,82 @@
+{
+  "attempt": "A stranger calls the private solvency callback directly with a huge pre-call Intents liability, to make core report a shortfall and refuse every Intents commit; a donation to core's balance is also tried to disturb the counters.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "no alert was raised"
+    },
+    {
+      "ok": true,
+      "what": "counters equal the recomputation after the donation"
+    },
+    {
+      "ok": true,
+      "what": "the Intents commit was credited"
+    }
+  ],
+  "co4": "",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "PRIVATE_METHOD",
+  "id": "C06",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "intents_alert": false,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true,
+        "l6_err": null,
+        "l6_ok": true,
+        "l7_err": null,
+        "l7_ok": true
+      },
+      "launch_id": 1
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "core",
+  "title": "Forged on_solvency_checked and a fake shortfall to raise the Intents alert (griefing the Intents commit path)",
+  "transactions": [
+    {
+      "expected_rule_code": "PRIVATE_METHOD",
+      "label": "direct on_solvency_checked",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "PRIVATE_METHOD",
+      "status": "failed",
+      "tx": "2jSmfPWp1wJBsZB6ubMxpAKtYULksy8D4vmfQLSfhWJf"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "honest check_solvency after a 25 USDC donation to core",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "796HzrnfzNHTtC4nWKcWbBNSP42CmtG4sAoRYyung6hX"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "an Intents commit still goes through",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "AbM3BEw95BTjod9qwZR5kHXpbXR6nJRspQBdQVVMAj7H"
+    }
+  ]
+}
