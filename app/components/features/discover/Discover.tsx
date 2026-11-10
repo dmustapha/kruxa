@@ -16,6 +16,7 @@ import { shortAccount } from '@/lib/format';
 import { hrefFor, phaseOf } from '@/lib/phase';
 import { SORTS, TABS, TAB_EMPTY, TAB_LABEL, type Tab } from './streams';
 import { isTab, useFeed, useTabCounts } from './useDiscover';
+import { useHiddenTokens, useWatchlist } from '@/lib/useSettings';
 
 const LS = { hero: 'kruxa.hero.collapsed', rules: 'kruxa.rules3.dismissed', view: 'kruxa.feed.view' };
 const read = (k: string): string | null => { try { return localStorage.getItem(k); } catch { return null; } };
@@ -76,8 +77,15 @@ export function Discover() {
 
   const counts = useTabCounts(q, mode);
   const feed = useFeed(tab, q, sort, hasMarket, mode);
-  const ok = feed.state.status === 'ok' ? feed.state : null;
+  const [watch, toggleWatch] = useWatchlist();
+  const [hidden, toggleHidden] = useHiddenTokens();
+  const [watchOnly, setWatchOnly] = useState(false);
+  const [showHidden, setShowHidden] = useState(false);
+  const raw = feed.state.status === 'ok' ? feed.state : null;
+  const hiddenHere = raw ? raw.items.filter((l) => hidden.includes(l.launch_id)).length : 0;
+  const ok = raw ? { ...raw, items: raw.items.filter((l) => (showHidden || !hidden.includes(l.launch_id)) && (!watchOnly || watch.includes(l.launch_id))) } : null;
   const now = useNow(ok?.source, ok?.asOf);
+  const local = (id: string) => ({ watched: watch.includes(id), onWatch: toggleWatch, onHide: toggleHidden, id });
 
   const onTabKey = (e: React.KeyboardEvent, i: number) => {
     if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
@@ -110,6 +118,8 @@ export function Discover() {
           <button type="button" aria-pressed={view === 'grid'} onClick={() => { setView('grid'); write(LS.view, null); }}>Grid</button>
           <button type="button" aria-pressed={view === 'list'} onClick={() => { setView('list'); write(LS.view, 'list'); }}>List</button>
         </div>
+        <label className="inline"><input type="checkbox" checked={watchOnly} onChange={(e) => setWatchOnly(e.target.checked)} /> Watchlist only ({watch.length})</label>
+        {hiddenHere > 0 && <button type="button" className="btn-quiet" aria-pressed={showHidden} onClick={() => setShowHidden(!showHidden)}>{showHidden ? 'Hide' : 'Show'} {hiddenHere} hidden by me</button>}
         {q && <span className="chip">Search: {q}<button type="button" aria-label="Clear search" onClick={() => setParam('q', null)}>x</button></span>}
         {ok && <span style={{ marginLeft: 'auto' }}><Freshness source={ok.source} asOf={ok.asOf} /></span>}
       </div>
@@ -120,10 +130,10 @@ export function Discover() {
         {ok && ok.source === 'fixture' && <div className="callout"><p><b>Fixture data.</b> These launches come from the offline fixture generator, not a chain. Countdowns are frozen at the indexed time.</p></div>}
         {ok && ok.items.length === 0 && (
           <EmptyState title={q || hasMarket ? 'No launch matches these filters' : `Nothing in ${TAB_LABEL[tab]}`} action={tab === 'live' && !q ? <Link className="btn btn-primary" href="/create">Create a trial</Link> : q ? <button type="button" onClick={() => setParam('q', null)}>Clear search</button> : undefined}>
-            {q ? 'Search covers symbol, creator account and launch number.' : TAB_EMPTY[tab]}
+            {watchOnly ? 'None of your watched launches is in this tab.' : q ? 'Search covers symbol, creator account and launch number.' : TAB_EMPTY[tab]}
           </EmptyState>
         )}
-        {ok && ok.items.length > 0 && view === 'grid' && <div className="grid grid-cards">{ok.items.map((l) => <LaunchCard key={l.launch_id} launch={l} now={now} frozenClock={l.source === 'fixture'} />)}</div>}
+        {ok && ok.items.length > 0 && view === 'grid' && <div className="grid grid-cards">{ok.items.map((l) => <LaunchCard key={l.launch_id} launch={l} now={now} frozenClock={l.source === 'fixture'} local={local(l.launch_id)} />)}</div>}
         {ok && ok.items.length > 0 && view === 'list' && (
           <div className="tbl-wrap"><table>
             <thead><tr><th>Launch</th><th>Phase</th><th>Type</th><th>Margin</th><th className="n">Committed</th><th className="n">Backers</th><th>Source</th></tr></thead>

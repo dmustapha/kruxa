@@ -54,7 +54,7 @@ export function SearchBox() {
     else if (e.key === 'Enter' && term) {
       e.preventDefault();
       const it = items[active];
-      go(it ? hrefFor(it, phaseOf(it, Math.floor(Date.now() / 1000))) : `/?q=${encodeURIComponent(term)}`);
+      go(it ? hrefFor(it, phaseOf(it, Math.floor(Date.now() / 1000))) : `/search?q=${encodeURIComponent(term)}`);
     }
   }
 
@@ -76,7 +76,7 @@ export function SearchBox() {
               <PhaseBadge phase={phaseOf(l, Math.floor(Date.now() / 1000))} />
             </li>
           ))}
-          {state.status === 'ok' && items.length > 0 && <li role="presentation"><a className="sr-msg" style={{ display: 'block' }} href={`/?q=${encodeURIComponent(term)}`} onMouseDown={(e) => { e.preventDefault(); go(`/?q=${encodeURIComponent(term)}`); }}>See all results</a></li>}
+          {state.status === 'ok' && items.length > 0 && <li role="presentation"><a className="sr-msg" style={{ display: 'block' }} href={`/search?q=${encodeURIComponent(term)}`} onMouseDown={(e) => { e.preventDefault(); go(`/search?q=${encodeURIComponent(term)}`); }}>See all results</a></li>}
         </ul>
       )}
     </div>

@@ -1,7 +1,22 @@
 // Every number the docs quote, in one place. app/content/docs/facts.test.ts checks these against
 // crates/kruxa-logic/src/rules.rs (Rules::ladder and FeeTerms::standard), the instant launcher constants and the committed
 // attack gallery file, so the prose cannot drift from the code or the evidence.
+import galleryJson from './attack-gallery.summary.json';
+
 export const STATUS_DATE = '2026-11-08';
+
+// The attack gallery numbers are IMPORTED from attack-gallery.summary.json, a copy of the committed evidence file written by
+// `npm run sync` (scripts/sync-evidence.mjs). They are never typed, and content/evidence-sync.test.ts fails if the copy drifts.
+// Only the fields this app reads are typed. The `attacks` rows are what the Security page lists as bounded.
+export interface GalleryAttack { id: string; title: string; result: 'REFUSED' | 'NO_EFFECT' | 'BOUNDED'; expected_rule_code?: string | null }
+export interface GalleryFile {
+  network: string; generated_at: string; git_head: string;
+  counts: { total: number; refused: number; no_effect: number; bounded: number; failed: number; succeeded_unexpectedly: number; attack_transactions: number; by_group: Record<string, number> };
+  attacks: GalleryAttack[];
+  not_done: { id: string; what: string; why: string }[];
+}
+export const GALLERY = galleryJson as unknown as GalleryFile;
+export const BOUNDED_ATTACKS: GalleryAttack[] = GALLERY.attacks.filter((a) => a.result === 'BOUNDED');
 
 export const FACTS = {
   perLaunchCapUsdc: 1_000,
@@ -69,15 +84,17 @@ export const FACTS = {
   },
   gallery: {
     file: 'evidence/attack-gallery/attack-gallery.json',
-    network: 'SANDBOX',
-    generatedAt: '2026-11-08T14:11:38Z',
-    total: 43,
-    refused: 32,
-    noEffect: 9,
-    bounded: 2,
-    failed: 0,
-    succeededUnexpectedly: 0,
-    attackTransactions: 119,
+    network: GALLERY.network,
+    generatedAt: GALLERY.generated_at,
+    total: GALLERY.counts.total,
+    refused: GALLERY.counts.refused,
+    noEffect: GALLERY.counts.no_effect,
+    bounded: GALLERY.counts.bounded,
+    failed: GALLERY.counts.failed,
+    succeededUnexpectedly: GALLERY.counts.succeeded_unexpectedly,
+    attackTransactions: GALLERY.counts.attack_transactions,
+    byGroup: GALLERY.counts.by_group,
+    gitHead: GALLERY.git_head,
   },
   test1Tx: '3KLVemdjr387BsqJiuuV9By9VXzeri6GRFwy3HMRT6ko',
 } as const;

@@ -48,7 +48,7 @@ describe('registry', () => {
 });
 
 describe('links', () => {
-  const known = new Set(['/', '/demo', '/create', ...DOC_PAGES.map((p) => `/docs/${p.slug}`), ...LEGAL_PAGES.map((p) => `/legal/${p.slug}`)]);
+  const known = new Set(['/', '/create', '/ops-log', '/status', '/insights', '/settings', '/search', '/charter', '/legal/risk', '/llms.txt', '/AGENTS.md', '/openapi.yaml', ...DOC_PAGES.map((p) => `/docs/${p.slug}`), ...LEGAL_PAGES.map((p) => `/legal/${p.slug}`)]);
   it('every internal link resolves to a route that exists', () => {
     for (const pg of ALL) {
       const hrefs = [...textOf(pg).matchAll(/\]\(([^)\s]+)\)/g)].map((m) => m[1]);

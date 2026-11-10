@@ -4,9 +4,16 @@ const pick = (v: string | undefined, d: string): string => (v !== undefined && v
 
 export const NETWORK = pick(process.env.NEXT_PUBLIC_NEAR_NETWORK, 'testnet');
 
-if (NETWORK === 'mainnet' && process.env.NEXT_PUBLIC_MAINNET_CONFIRMED !== 'DAMI-PER-ACTION-CONFIRMED') {
-  throw new Error('R_MAINNET_GATE: mainnet needs Dami per-action confirmation; refusing to start');
+const MAINNET_CONFIRMATION_TOKEN = 'DAMI-PER-ACTION-CONFIRMED';
+
+/** Pure gate (tested in config.test.ts): mainnet starts only with the exact confirmation token. Any other network passes. */
+export function assertMainnetGate(network: string, confirmed: string | undefined): void {
+  if (network === 'mainnet' && confirmed !== MAINNET_CONFIRMATION_TOKEN) {
+    throw new Error('R_MAINNET_GATE: mainnet needs Dami per-action confirmation; refusing to start');
+  }
 }
+
+assertMainnetGate(NETWORK, process.env.NEXT_PUBLIC_MAINNET_CONFIRMED);
 
 export const CONFIG = {
   network: NETWORK,

@@ -1,0 +1,564 @@
+{
+ "schema": "kruxa.attack-gallery.summary/1",
+ "source": "evidence/attack-gallery/attack-gallery.json",
+ "network": "SANDBOX",
+ "generated_at": "2026-11-08T16:28:44Z",
+ "git_head": "29a629cef1306d2ebb1546f39a7a8442c01ed864",
+ "counts": {
+  "total": 81,
+  "tests_listed": 81,
+  "refused": 64,
+  "no_effect": 12,
+  "bounded": 5,
+  "failed": 0,
+  "succeeded_unexpectedly": 0,
+  "by_group": {
+   "core_and_genesis": 34,
+   "market": 9,
+   "instant_launcher_and_market_1_1": 38
+  },
+  "invariants_held": 81,
+  "with_rule_code": 69,
+  "attack_transactions": 233
+ },
+ "attacks": [
+  {
+   "id": "A01",
+   "title": "Creator draws before PASS",
+   "result": "REFUSED",
+   "expected_rule_code": "R_NOT_CLEAR"
+  },
+  {
+   "id": "A02",
+   "title": "Creator draws the whole stream right after PASS",
+   "result": "REFUSED",
+   "expected_rule_code": "STREAM_CAP"
+  },
+  {
+   "id": "A03",
+   "title": "Creator draws half the stream right after PASS",
+   "result": "REFUSED",
+   "expected_rule_code": "STREAM_CAP"
+  },
+  {
+   "id": "A04",
+   "title": "Non-recipient draws the creator stream (redirect of the payout)",
+   "result": "REFUSED",
+   "expected_rule_code": "R_NOT_AUTHORIZED"
+  },
+  {
+   "id": "A05",
+   "title": "Forged verdict: settle before the deadline",
+   "result": "REFUSED",
+   "expected_rule_code": "R_TOO_EARLY"
+  },
+  {
+   "id": "A06",
+   "title": "Replayed verdict: settle called twice",
+   "result": "NO_EFFECT",
+   "expected_rule_code": ""
+  },
+  {
+   "id": "A07",
+   "title": "Replayed settlement steps after the sweep",
+   "result": "REFUSED",
+   "expected_rule_code": "R_NOT_CLEAR"
+  },
+  {
+   "id": "A08",
+   "title": "Manipulated book: donate USDC to core to push a failing launch over the soft cap",
+   "result": "NO_EFFECT",
+   "expected_rule_code": ""
+  },
+  {
+   "id": "A09",
+   "title": "Fake token pays into core intake",
+   "result": "REFUSED",
+   "expected_rule_code": "R_UNEXPECTED_TOKEN"
+  },
+  {
+   "id": "A10",
+   "title": "Direct calls to the Intents hook and to the payout callback",
+   "result": "REFUSED",
+   "expected_rule_code": "R_NOT_AUTHORIZED"
+  },
+  {
+   "id": "A11",
+   "title": "Non-owner calls the owner-only admin methods (pause, caps, unpause)",
+   "result": "REFUSED",
+   "expected_rule_code": "R_NOT_AUTHORIZED"
+  },
+  {
+   "id": "A12",
+   "title": "Double claim of a refund (holder and keeper)",
+   "result": "NO_EFFECT",
+   "expected_rule_code": ""
+  },
+  {
+   "id": "A13",
+   "title": "Reentrant refund claim from inside the token transfer",
+   "result": "NO_EFFECT",
+   "expected_rule_code": ""
+  },
+  {
+   "id": "A14",
+   "title": "Claim another holder's refund to redirect the money",
+   "result": "NO_EFFECT",
+   "expected_rule_code": ""
+  },
+  {
+   "id": "A15",
+   "title": "Pause used to trap holder funds",
+   "result": "NO_EFFECT",
+   "expected_rule_code": ""
+  },
+  {
+   "id": "A16",
+   "title": "Freeze blocks exits (disclosed limit: bounded to 7 days)",
+   "result": "BOUNDED",
+   "expected_rule_code": "R_FROZEN"
+  },
+  {
+   "id": "A17",
+   "title": "Oversubscription beyond twice the hard cap",
+   "result": "REFUSED",
+   "expected_rule_code": "R_CAP_LAUNCH"
+  },
+  {
+   "id": "A18",
+   "title": "One wallet exceeds the per-wallet cap (single and cumulative)",
+   "result": "REFUSED",
+   "expected_rule_code": "R_CAP_ACCOUNT"
+  },
+  {
+   "id": "A19",
+   "title": "Sybil: one actor splits capital over 12 wallets",
+   "result": "BOUNDED",
+   "expected_rule_code": "R_CAP_ACCOUNT"
+  },
+  {
+   "id": "A20",
+   "title": "Late Walk after the Walk window closed",
+   "result": "REFUSED",
+   "expected_rule_code": "R_WALK_CLOSED"
+  },
+  {
+   "id": "A21",
+   "title": "Late commit after the commit window",
+   "result": "REFUSED",
+   "expected_rule_code": "R_WRONG_PHASE"
+  },
+  {
+   "id": "A22",
+   "title": "Claim launch tokens before PASS (open and failed launches)",
+   "result": "REFUSED",
+   "expected_rule_code": "R_WRONG_PHASE"
+  },
+  {
+   "id": "A23",
+   "title": "Creator wash-buys their own launch",
+   "result": "REFUSED",
+   "expected_rule_code": "R_SELF_BUY"
+  },
+  {
+   "id": "A24",
+   "title": "Forged, expired and replayed signed Walk",
+   "result": "REFUSED",
+   "expected_rule_code": "R_SIG"
+  },
+  {
+   "id": "A25",
+   "title": "Creator opens a second trial while one is active",
+   "result": "REFUSED",
+   "expected_rule_code": "R_ACTIVE_TRIAL"
+  },
+  {
+   "id": "G01",
+   "title": "Creator-gate bypass: non-owner create_trial, open_beta by the wrong caller",
+   "result": "REFUSED",
+   "expected_rule_code": "R_CREATOR_GATE"
+  },
+  {
+   "id": "G02",
+   "title": "Genesis ceremony driven by the wrong account",
+   "result": "REFUSED",
+   "expected_rule_code": "R_NOT_AUTHORIZED"
+  },
+  {
+   "id": "G03",
+   "title": "Genesis steps out of order, commit twice, abort or confirm with no commit",
+   "result": "REFUSED",
+   "expected_rule_code": "R_GENESIS_STATE"
+  },
+  {
+   "id": "G04",
+   "title": "Forged Merkle root page or leaf",
+   "result": "REFUSED",
+   "expected_rule_code": "R_GENESIS_LEAF"
+  },
+  {
+   "id": "G05",
+   "title": "Confirm before the root is complete, wrong mint, abort or re-confirm after confirm",
+   "result": "REFUSED",
+   "expected_rule_code": "R_GENESIS_STATE"
+  },
+  {
+   "id": "G06",
+   "title": "Genesis on an Open launch and on a FAILED launch",
+   "result": "REFUSED",
+   "expected_rule_code": "R_GENESIS_STATE"
+  },
+  {
+   "id": "G07",
+   "title": "Genesis plan that keeps a mint or freeze authority, allows extensions, or breaks the plan rules",
+   "result": "REFUSED",
+   "expected_rule_code": "R_GENESIS_AUTH"
+  },
+  {
+   "id": "G08",
+   "title": "Re-commit after abort, confirm after abort, ceremony while paused",
+   "result": "REFUSED",
+   "expected_rule_code": "R_GENESIS_ALREADY"
+  },
+  {
+   "id": "G09",
+   "title": "Redirect the payout recipient (creator and stranger draw; views stay fixed)",
+   "result": "REFUSED",
+   "expected_rule_code": "R_NOT_AUTHORIZED"
+  },
+  {
+   "id": "I01",
+   "title": "create_instant by non-owners on the mainnet profile before open_beta",
+   "result": "REFUSED",
+   "expected_rule_code": "R_CREATOR_GATE"
+  },
+  {
+   "id": "I02",
+   "title": "create_instant by the owner and the guardian before open_beta; open_beta by non-owners",
+   "result": "REFUSED",
+   "expected_rule_code": "R_CREATOR_GATE"
+  },
+  {
+   "id": "I03",
+   "title": "Symbol squat: a second launch under a symbol already in use",
+   "result": "REFUSED",
+   "expected_rule_code": "R_SYMBOL"
+  },
+  {
+   "id": "I04",
+   "title": "Squat the reserved symbol KRUXA and edit the reserved list",
+   "result": "REFUSED",
+   "expected_rule_code": "R_SYMBOL_RESERVED"
+  },
+  {
+   "id": "I05",
+   "title": "Second instant launch by the same account within 24 hours",
+   "result": "REFUSED",
+   "expected_rule_code": "R_RATE_LIMIT"
+  },
+  {
+   "id": "I06",
+   "title": "Rate limit evaded with a second wallet (Sybil)",
+   "result": "BOUNDED",
+   "expected_rule_code": ""
+  },
+  {
+   "id": "I07",
+   "title": "Hostile fee terms in create_instant (creator-set fees)",
+   "result": "REFUSED",
+   "expected_rule_code": "R_FEE_*"
+  },
+  {
+   "id": "I08",
+   "title": "Seed with the wrong amount",
+   "result": "REFUSED",
+   "expected_rule_code": "R_SEED_AMOUNT"
+  },
+  {
+   "id": "I09",
+   "title": "Seed with a look-alike token, and a forged ft_on_transfer",
+   "result": "REFUSED",
+   "expected_rule_code": "R_UNEXPECTED_TOKEN"
+  },
+  {
+   "id": "I10",
+   "title": "Seed before the token exists (unknown id, failed creation, malformed message)",
+   "result": "REFUSED",
+   "expected_rule_code": "R_INSTANT_STATE"
+  },
+  {
+   "id": "I11",
+   "title": "A stranger seeds the creator's launch (front-run the seed)",
+   "result": "REFUSED",
+   "expected_rule_code": "R_NOT_CREATOR"
+  },
+  {
+   "id": "I12",
+   "title": "open_instant called again after the pool is open",
+   "result": "REFUSED",
+   "expected_rule_code": "R_INSTANT_STATE"
+  },
+  {
+   "id": "I13",
+   "title": "Three open_instant calls in the same block",
+   "result": "NO_EFFECT",
+   "expected_rule_code": ""
+  },
+  {
+   "id": "I14",
+   "title": "claim_vested before the cliff",
+   "result": "REFUSED",
+   "expected_rule_code": "R_NOTHING_TO_CLAIM"
+  },
+  {
+   "id": "I15",
+   "title": "claim_vested above the claimable amount (just after the cliff)",
+   "result": "REFUSED",
+   "expected_rule_code": "STREAM_CAP"
+  },
+  {
+   "id": "I16",
+   "title": "claim_vested by someone other than the payout recipient",
+   "result": "REFUSED",
+   "expected_rule_code": "R_NOT_AUTHORIZED"
+  },
+  {
+   "id": "I17",
+   "title": "claim_vested again after the allocation was claimed in full",
+   "result": "REFUSED",
+   "expected_rule_code": "R_NOTHING_TO_CLAIM"
+  },
+  {
+   "id": "I18",
+   "title": "claim_vested while the launch is not Open (TokenReady, Seeded)",
+   "result": "REFUSED",
+   "expected_rule_code": "R_INSTANT_STATE"
+  },
+  {
+   "id": "I19",
+   "title": "abort_instant abuse: too early, by a stranger, twice, then reuse of the dead launch",
+   "result": "REFUSED",
+   "expected_rule_code": "R_TOO_EARLY"
+  },
+  {
+   "id": "I20",
+   "title": "Abort to take the seed back after the market already consumed it (IL-8)",
+   "result": "REFUSED",
+   "expected_rule_code": "R_INSTANT_STATE"
+  },
+  {
+   "id": "I21",
+   "title": "reclaim_deposit abuse: stranger, live launch, double reclaim",
+   "result": "REFUSED",
+   "expected_rule_code": "R_NOT_AUTHORIZED"
+  },
+  {
+   "id": "I22",
+   "title": "abandon_instant abuse: stranger early, on a seeded launch, twice",
+   "result": "REFUSED",
+   "expected_rule_code": "R_TOO_EARLY"
+  },
+  {
+   "id": "I23",
+   "title": "set_launcher by a non-owner, or pointing it at core, USDC or the treasury",
+   "result": "REFUSED",
+   "expected_rule_code": "R_NOT_AUTHORIZED"
+  },
+  {
+   "id": "I24",
+   "title": "Re-point the launcher after the first instant pool exists",
+   "result": "REFUSED",
+   "expected_rule_code": "R_LAUNCHER_LOCKED"
+  },
+  {
+   "id": "I25",
+   "title": "set_market on the launcher: non-owner, then after the first open_instant",
+   "result": "REFUSED",
+   "expected_rule_code": "R_NOT_AUTHORIZED"
+  },
+  {
+   "id": "I26",
+   "title": "Spoofed mode in a seed_quote message (trial pool from the launcher, instant pool from core)",
+   "result": "NO_EFFECT",
+   "expected_rule_code": ""
+  },
+  {
+   "id": "I27",
+   "title": "Launcher below 1e9 and core at or above 1e9, on the seed leg and the token leg",
+   "result": "REFUSED",
+   "expected_rule_code": "R_ID_NAMESPACE"
+  },
+  {
+   "id": "I28",
+   "title": "Self-buy by the creator, the payout recipient, and through the receiver field",
+   "result": "REFUSED",
+   "expected_rule_code": "R_SELF_BUY"
+  },
+  {
+   "id": "I29",
+   "title": "Self-buy through an undeclared second wallet",
+   "result": "BOUNDED",
+   "expected_rule_code": ""
+  },
+  {
+   "id": "I30",
+   "title": "Seed above the market's per-pool reserve cap",
+   "result": "REFUSED",
+   "expected_rule_code": "R_MARKET_CAP"
+  },
+  {
+   "id": "I31",
+   "title": "Buy that would push the market past the global reserve cap (instant pool)",
+   "result": "REFUSED",
+   "expected_rule_code": "R_MARKET_CAP"
+  },
+  {
+   "id": "I32",
+   "title": "Instant seeds crowd out the market: a seed above the instant sub-cap",
+   "result": "REFUSED",
+   "expected_rule_code": "R_MARKET_CAP"
+  },
+  {
+   "id": "I33",
+   "title": "Unconsumed seeds above the launcher's aggregate cap; a seed above the per-launch cap",
+   "result": "REFUSED",
+   "expected_rule_code": "R_CAP_GLOBAL"
+  },
+  {
+   "id": "I34",
+   "title": "Fake launch token and fake USDC against instant pools",
+   "result": "REFUSED",
+   "expected_rule_code": "R_UNEXPECTED_TOKEN"
+  },
+  {
+   "id": "I35",
+   "title": "Pause: new launches, seeds and opens are refused; exits stay open",
+   "result": "REFUSED",
+   "expected_rule_code": "R_PAUSED"
+  },
+  {
+   "id": "I36",
+   "title": "Freeze closes the launcher's exits (disclosed limit: bounded to 7 days)",
+   "result": "BOUNDED",
+   "expected_rule_code": "R_FROZEN"
+  },
+  {
+   "id": "I37",
+   "title": "Market pause used to trap holders of an instant pool",
+   "result": "NO_EFFECT",
+   "expected_rule_code": ""
+  },
+  {
+   "id": "I38",
+   "title": "Raise a seed cap without the 7-day timelock",
+   "result": "REFUSED",
+   "expected_rule_code": "R_NOT_YET"
+  },
+  {
+   "id": "M01",
+   "title": "Fake token buys, sells and seeds on the market",
+   "result": "REFUSED",
+   "expected_rule_code": "R_UNEXPECTED_TOKEN"
+  },
+  {
+   "id": "M02",
+   "title": "Redirect the market payout recipient at pool opening",
+   "result": "REFUSED",
+   "expected_rule_code": "R_NOT_AUTHORIZED"
+  },
+  {
+   "id": "M03",
+   "title": "Direct calls to the market callback and intake",
+   "result": "REFUSED",
+   "expected_rule_code": "PRIVATE_METHOD"
+  },
+  {
+   "id": "M04",
+   "title": "Non-recipient and non-owner calls on the market (claim, platform withdraw, pause)",
+   "result": "REFUSED",
+   "expected_rule_code": "R_NOT_AUTHORIZED"
+  },
+  {
+   "id": "M05",
+   "title": "Reentrant claim from the token contract and a double creator claim",
+   "result": "NO_EFFECT",
+   "expected_rule_code": ""
+  },
+  {
+   "id": "M06",
+   "title": "Sandwich: front-run a buy, and trades without min_out",
+   "result": "REFUSED",
+   "expected_rule_code": "R_MIN_OUT"
+  },
+  {
+   "id": "M07",
+   "title": "Donation attack on pool reserves",
+   "result": "NO_EFFECT",
+   "expected_rule_code": ""
+  },
+  {
+   "id": "M08",
+   "title": "Pause used to trap holders in the market",
+   "result": "NO_EFFECT",
+   "expected_rule_code": ""
+  },
+  {
+   "id": "M09",
+   "title": "Oversubscription: buy past the global reserve cap",
+   "result": "REFUSED",
+   "expected_rule_code": "R_MARKET_CAP"
+  }
+ ],
+ "not_done": [
+  {
+   "id": "CO4-A3",
+   "what": "Solana devnet mintTo on the genesis mint",
+   "why": "Needs a Solana devnet program; the gallery is NEAR sandbox only."
+  },
+  {
+   "id": "CO4-A10",
+   "what": "tampered evidence file against verify.sh",
+   "why": "Offline verify.sh tamper is a separate deliverable (scripts/verify.sh --tamper-all), not a contract attack."
+  },
+  {
+   "id": "CO4-A13",
+   "what": "hijacked agent against the vault",
+   "why": "Cut with the vault (CHANGE-ORDER-6 E-2)."
+  },
+  {
+   "id": "REDIRECT-VIA-SETTER",
+   "what": "call a method that changes the stream or payout recipient after open",
+   "why": "No such method exists in core or market: the recipient is fixed at create_trial / pool open. A04 and M02 attack the only reachable paths and assert the recipient is unchanged."
+  },
+  {
+   "id": "CORE-PLATFORM-WITHDRAW",
+   "what": "non-owner platform withdraw on core",
+   "why": "Core has no platform-withdraw method (launch fee goes to a fixed treasury via permissionless pay_launch_fee). The market has withdraw_platform and M04 attacks it."
+  },
+  {
+   "id": "CORE-SANDWICH",
+   "what": "sandwich on core",
+   "why": "Core has no AMM. Sandwich and min_out are market attacks (M06)."
+  },
+  {
+   "id": "GENESIS-F0-SIGN",
+   "what": "F0 genesis (MPC child key) attacks and Solana-side checks",
+   "why": "sign_genesis (Task 4.6) is not built; NEAR cannot see Solana, so confirm_genesis is a signed claim audited by verify.sh (detected, not prevented). The gallery attacks only the contract-side state machine, leaves and plan."
+  },
+  {
+   "id": "INSTANT-REAL-FACTORY",
+   "what": "launcher against the real token factory (token.primitives.testnet)",
+   "why": "The sandbox factory is a mock that creates nothing. The real factory runs only on testnet: see evidence/instant-testnet (factory behaviour, registration with 0.00125 NEAR, failed-creation refund)."
+  },
+  {
+   "id": "INSTANT-SEVEN-DAY-CLOCKS",
+   "what": "freeze auto-expiry and the 7-day cap timelock by waiting",
+   "why": "Both are 7 real days even on the demo profile (only the launcher's day unit is 10 s). A sandbox wait would need about 2 million blocks. I36 and I38 assert the bound with the pure kruxa_logic functions and the queued effective_at instead."
+  },
+  {
+   "id": "INSTANT-ANNOUNCED-OPEN",
+   "what": "trade_from_ns announced open",
+   "why": "Not in market 1.1.0 (cut first in CO-7); nothing to attack."
+  }
+ ]
+}

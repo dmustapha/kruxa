@@ -1,11 +1,20 @@
 // Read-only access to the core contract. near-api-js 7.4.0: JsonRpcProvider.callFunction (same call shape as the signed-tests kit).
 import { JsonRpcProvider } from 'near-api-js';
 import { CONFIG } from './config';
+import { loadSettings } from './settings';
 
-const provider = new JsonRpcProvider({ url: CONFIG.rpcUrl });
+/** The RPC url is the Settings override when one is saved (https only), otherwise the configured default. Providers are cached per url. */
+const providers = new Map<string, JsonRpcProvider>();
+const rpcUrl = (): string => loadSettings().nearRpc || CONFIG.rpcUrl;
+function provider(): JsonRpcProvider {
+  const url = rpcUrl();
+  let p = providers.get(url);
+  if (!p) { p = new JsonRpcProvider({ url }); providers.set(url, p); }
+  return p;
+}
 
 export async function view<T = unknown>(method: string, args: Record<string, unknown> = {}, contractId: string = CONFIG.core): Promise<T> {
-  return (await provider.callFunction<any>({ contractId, method, args })) as T;
+  return (await provider().callFunction<any>({ contractId, method, args })) as T;
 }
 
 export interface LaunchState {
@@ -61,3 +70,14 @@ export interface CreatorStatus { recipient: string; accrued: string; unlocked: s
 export const creatorStatus = (id: string) => view<CreatorStatus | null>('creator_status', { launch_id: id }, CONFIG.market);
 /** NEP-145: a non-null storage balance means the account is registered on USDC and can receive it. */
 export const usdcRegistered = async (account: string): Promise<boolean> => (await view<unknown>('storage_balance_of', { account_id: account }, CONFIG.usdc)) !== null;
+
+/** get_ops_state (contracts/core/src/govern.rs): the queued upgrade, a launch's halt flag, an account's owed NEAR. All strings are base-unit decimals or nanosecond timestamps. */
+export interface OpsState { halted: boolean; owed_near: string; pending_upgrade: { code_hash: string; effective_at: string } | null }
+export const getOpsState = (launchId?: string, account?: string) => view<OpsState>('get_ops_state', { launch_id: launchId ?? null, account_id: account ?? null });
+
+/** solvency_report (contracts/core/src/solvency.rs): running counters against a recomputation from state. Informational; a failed check can pause new Intents commits. */
+export interface SolvencyReport {
+  held_native: string; held_intents: string; recomputed_native: string; recomputed_intents: string; counters_ok: boolean; intents_alert: boolean; cooldown_ns: string;
+  last_check: Record<string, unknown> | null;
+}
+export const getSolvencyReport = () => view<SolvencyReport>('solvency_report');

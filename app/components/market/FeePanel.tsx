@@ -4,6 +4,7 @@ import { fmtBps, fmtDuration, shortAccount } from '@/lib/market/format';
 import { openingWindow } from '@/lib/market/math';
 import type { TokenPageData } from '@/lib/market/types';
 import { Panel } from './shared';
+import { VolumeScenarios } from '../features/VolumeScenarios';
 
 export function FeePanel({ page, facts, nowSec }: { page: TokenPageData; facts: MarketFacts; nowSec: number }) {
   const t = facts.terms;
@@ -36,6 +37,8 @@ export function FeePanel({ page, facts, nowSec }: { page: TokenPageData; facts: 
           </ul>
           <p className="mkt-note"><span aria-hidden="true" className="mkt-warn">▨</span> Hatched slices (holders and referral) are redirected to the liquidity slice in this release: nothing is paid to holders or referrers yet. The creator slice is the declared one; see the <a href="/charter">Charter</a> for what creator-controlled wallets can do beyond it.</p>
           <p className="mkt-note">{t.fee_vest_bps > 0 ? `${fmtBps(t.fee_vest_bps)} of each 24 h epoch's creator slice vests linearly over ${t.fee_vest_days} days; the rest is claimable at once.` : 'The creator slice is claimable at once.'}</p>
+          <h3 style={{ fontSize: 13, margin: '14px 0 4px', color: 'var(--muted)', fontWeight: 500 }}>Volume scenarios</h3>
+          <VolumeScenarios fees={t} />
           <h3 style={{ fontSize: 13, margin: '14px 0 4px', color: 'var(--muted)', fontWeight: 500 }}>Opening fee</h3>
           {win ? (
             <p role="timer" aria-live="off" style={{ margin: 0, fontSize: 14 }}>

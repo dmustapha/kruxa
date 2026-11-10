@@ -5,5 +5,5 @@ import { fileURLToPath } from 'node:url';
 export default defineConfig({
   resolve: { alias: { '@': fileURLToPath(new URL('.', import.meta.url)) } },
   oxc: { jsx: { runtime: 'automatic' } },
-  test: { include: ['lib/**/*.test.ts', 'components/**/*.test.{ts,tsx}'] },
+  test: { include: ['lib/**/*.test.ts', 'components/**/*.test.{ts,tsx}', 'content/**/*.test.ts'] },
 });

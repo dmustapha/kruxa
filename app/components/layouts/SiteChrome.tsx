@@ -3,17 +3,26 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { NetworkBadge, WalletStatus } from '@/components/wallet';
 import { SearchBox } from './SearchBox';
+import { useSnapshotServed } from '@/lib/api/snapshot';
+import { fmtDate } from '@/lib/format';
 
 const NAV = [
   { href: '/', label: 'Discover' }, { href: '/create', label: 'Create' }, { href: '/portfolio', label: 'Portfolio' },
-  { href: '/creator', label: 'Creator' }, { href: '/docs', label: 'Docs' },
+  { href: '/creator', label: 'Creator' }, { href: '/insights', label: 'Insights' }, { href: '/docs', label: 'Docs' },
 ];
 
 const MAINTENANCE = process.env.NEXT_PUBLIC_MAINTENANCE ?? '';
 
 /** One line on every page: the network and the limits. A maintenance message turns it amber and says the contracts still decide. */
 export function StatusStrip() {
+  const snap = useSnapshotServed();
   return (
+    <>
+    {snap && (
+      <div className="strip" role="status" style={{ background: 'var(--info-bg)' }}>
+        <div className="strip-in"><b style={{ color: 'var(--info)' }}>Recorded</b><span>The live data service is not reachable, so this page shows a RECORDED snapshot{snap.at ? ` from ${fmtDate(snap.at)}` : ''}. It is not live. Actions and balances may differ.</span><Link href="/status">Status</Link></div>
+      </div>
+    )}
     <div className="strip" role="region" aria-label="Status and limits">
       <div className="strip-in">
         {MAINTENANCE
@@ -22,6 +31,7 @@ export function StatusStrip() {
         <Link href="/charter">Read the limits</Link>
       </div>
     </div>
+    </>
   );
 }
 
@@ -48,6 +58,7 @@ export function SiteHeader() {
 const FOOT = [
   { href: '/docs', label: 'Docs' }, { href: '/docs/faq', label: 'FAQ' }, { href: '/docs/security', label: 'Security' }, { href: '/charter', label: 'Disclosures' },
   { href: '/legal/terms', label: 'Terms' }, { href: '/legal/privacy', label: 'Privacy' }, { href: '/legal/risk', label: 'Risk' }, { href: '/docs/api', label: 'API' },
+  { href: '/status', label: 'Status' }, { href: '/ops-log', label: 'Ops log' }, { href: '/settings', label: 'Settings' },
 ];
 
 export function SiteFooter() {

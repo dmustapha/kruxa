@@ -1,6 +1,7 @@
 import type { Page } from '../../types';
 import { h2, h3, note, ol, p, table, ul } from '../../blocks';
-import { FACTS as F, STATUS_DATE } from '../facts';
+import { OPEN_LIMITS } from '../limits';
+import { BOUNDED_ATTACKS, FACTS as F, GALLERY, STATUS_DATE } from '../facts';
 
 const I = F.instant;
 const G = F.gallery;
@@ -37,12 +38,14 @@ export const security: Page = {
     h2('Who holds power, honestly'),
     table(
       ['Party or key', 'What it can do', 'How it is disclosed or limited'],
-      ['Upgrade key (phase 0)', 'A single full-access key held by the project owner can replace the core contract code. There is no multisig and no timelock on upgrades yet.', '`verify.sh` is designed to print a `KEYS` line and a `CODE` line. Do not read "immutable" or "no admin key" from anything until KEYS shows zero full-access keys.'],
+      ['Owner key (phase 0)', 'One person holds the owner key. It can queue a new core code hash in public (`queue_upgrade`); the code can be replaced only 7 days after the hash was queued, and the guardian can cancel a queued upgrade.', 'Queued upgrades are visible on the [operations log](/ops-log) page, read from the contract. Whether the core account also still carries a full-access key is what the `KEYS` line of `verify.sh` prints. Do not read "immutable" or "no admin key" from anything until KEYS shows zero full-access keys.'],
       ['Demo reserve (Squads vault)', 'For the demo and the Genesis Round, one person holds all three keys, on separate hardware wallets.', 'This is a single-party reserve. A 2-of-3 setup with two named independent signers is required before third-party creators open. That blocker is still open.'],
       ['Launch-token factory', 'Launch tokens adopt code from a global contract whose owner holds one full-access key. That owner can update the code.', 'Disclosed. The platform cannot detect a code swap on-chain. A fixed token published by hash is the fix and is not approved.'],
       ['NEAR Intents Verifier', 'Money held in `intents.near` is exposed to its DAO-held force-withdraw and lock functions.', 'Time in Intents is minimised by consolidating after PASS, not eliminated. A reconcile check detects, and does not prevent.'],
       ['Genesis key (Solana mint)', 'A single-use key is trusted for one ceremony session to create the mint.', 'Detected, not prevented. The verifier is designed to audit that it signed only the ceremony transactions. The relayer path has not run on mainnet.'],
-      ['Guardian and owner', 'Pause the contracts. Freeze, which **can block exits** and expires by itself after 7 days. Queue a cap raise, which waits 7 days.', 'Exits stay open under a pause but not under a freeze. Neither can change a stored verdict, move buyer funds, redirect a refund or change a payout recipient.'],
+      ['Guardian and owner', 'Pause the contracts. Freeze, which **can block exits** and expires by itself after 7 days. Queue a cap raise, which waits 7 days. Halt one launch with `halt_launch`: it stops new commits and the creator side payouts of that launch.', 'Exits stay open under a pause and under a halt, but not under a freeze. None of these can change a stored verdict, move buyer funds, redirect a refund or change a payout recipient.'],
+      ['Owner: force-resolve a stuck payout', '`force_resolve_op` resolves one outbound payout leg whose callback never ran, in two steps with the same arguments, 48 hours apart.', 'It can move at most what is in flight, to no new destination, and never touches a verdict. Both steps are contract events.'],
+      ['Anyone: solvency check', '`check_solvency` compares the core contract balances with what it owes.', 'Informational. It moves no money. If the Intents balance is below what core owes there, it raises an alert that pauses new Intents commits only; exits stay open.'],
       ['Hosting and RPC', 'The website and its data source can be wrong or down.', 'Run the verifier yourself. It does not depend on the indexer.'],
     ),
     h2('What the contracts defend'),
@@ -65,10 +68,10 @@ export const security: Page = {
       ['Brand symbol squatting', 'KRUXA and eight other symbols are reserved to the owner.'],
       ['Mainnet by accident', 'The app config and deploy script refuse mainnet without an explicit confirmation token.'],
     ),
-    h3('Instant launcher (being built, not deployed)'),
-    p('These come from the launcher interface (INSTANT-ABI 1.0.0, a draft) and its code and tests on a branch that is not in this repository yet. They are not part of the committed attack gallery.'),
+    h3('Instant launcher (built, run on NEAR testnet)'),
+    p('The launcher is built. It was run end to end on NEAR testnet against the real token factory, and the transcripts are committed in `evidence/instant-testnet/`. It has not run on mainnet. The rows below are covered by the attack gallery group for the launcher and the market.'),
     table(
-      ['Threat', 'Defense in the design'],
+      ['Threat', 'Defense'],
       ['A fake token counted as the seed', 'The seed is accepted only from the configured USDC contract, from the creator, for the exact declared amount.'],
       ['Seed or tokens sent somewhere else', 'The launcher hands pool tokens and the seed only to the market, which is locked on first use.'],
       ['Faking the badge', 'The market derives the launch mode from the authenticated sender, never from the message, so an Instant pool cannot be shown as TRIAL-VERIFIED.'],
@@ -77,6 +80,9 @@ export const security: Page = {
       ['Launch spam', 'One launch per account per 24 hours (`R_RATE_LIMIT`); the aggregate of unconsumed seeds is capped at $3,000.'],
       ['Getting the seed back after the pool opens', 'Not possible. The creator can abort only before the market consumed any of the seed.'],
     ),
+    h2('Open limits we disclose'),
+    p('These are known and not fixed. Each is also in the [risk disclosure](/legal/risk).'),
+    table(['Id', 'Limit', 'What is true'], ...OPEN_LIMITS.map((l) => [l.id, l.title, l.text])),
     h2('What is not defended against'),
     ol(
       '**Sybil wallets.** Nothing proves that committed money comes from distinct people. The minimum-backer count counts accounts. No sybil-resistance claim is made.',
@@ -85,7 +91,7 @@ export const security: Page = {
       '**The launch-token factory.** Its owner can update the token code, and the platform cannot see that on-chain.',
       '**No independent review.** No audit has covered this code.',
       '**Mainnet compile and VM compatibility.** The contract loaded in a sandbox on protocol 88, and mainnet reported protocol 88 on 2026-11-08. Acceptance on the real network is untested until a deployment.',
-      '**Omissions that are exposures.** The async solvency anchor, burning a failed launch\'s token, creator-allocation vesting and in-claim token registration are not built.',
+      '**Omissions that are exposures.** A failed or dissolved launch\'s token is not burned: the default burn mode is Hold, which marks the supply as held and moves nothing, and the factory token has no burn method.',
       '**Frontend runtime.** The app was built but not exercised against a live wallet. Wallet tests are listed as pending.',
       '**Block-timestamp skew.** A boundary can shift by seconds. Windows are at least 24 hours on the real profile.',
       '**Trusting the website and RPC.** Anyone who does not run the verifier relies on both.',
@@ -112,17 +118,21 @@ export const security: Page = {
       ['Succeeded unexpectedly', `${G.succeededUnexpectedly}`],
       ['Attack transactions sent', `${G.attackTransactions}`],
     ),
+    table(
+      ['Group', 'Attacks'],
+      ...Object.entries(G.byGroup).map(([k, n]) => [k.replace(/_/g, ' '), `${n}`]),
+    ),
     p('The file also records that the contract invariants held after every attack. Transaction hashes in it are sandbox hashes. They cannot be looked up on a public explorer.'),
-    h3('The two limits the gallery found and we disclose'),
+    h3('The limits the gallery found and we disclose'),
+    p('Each row below is an attack the file marks as bounded: the rules limit it, and nothing prevents it. The list is read from the file.'),
     table(
       ['Id', 'Attack', 'Result'],
-      ['A16', 'A guardian freeze blocks exits.', '**Bounded, not prevented.** A freeze can block exits. It ends by itself after 7 days and falls back to a pause, and an owner can lift it sooner. After it is lifted the holder exits with the full commit.'],
-      ['A19', 'One actor splits capital over 12 wallets to reach the soft cap and the minimum backers.', '**Bounded, not prevented.** The split reaches PASS, because the contract cannot tell the wallets are one actor. The total accepted equals the capital the actor put at risk.'],
+      ...BOUNDED_ATTACKS.map((a) => [a.id, a.title, '**Bounded, not prevented.**']),
     ),
+    p('The freeze limit (A16 and I36) ends by itself after 7 days and falls back to a pause; the owner can lift it sooner. The split-wallet limit (A19, I06, I29) exists because the contracts cannot tell that several wallets belong to one actor.'),
     h3('What the gallery does not cover'),
     ul(
-      'It covers the core and the market contracts. It has no rows for the Instant launcher yet.',
-      'It does not attack the Solana side, the genesis ceremony, or the Intents path. The file lists these as not done.',
+      ...GALLERY.not_done.map((n) => `${n.id}: ${n.what}. Not done; the reason is recorded in the file.`),
       'An attack that unexpectedly succeeds is a bug to fix and publish. None did in this run.',
     ),
     h2('Report a problem'),

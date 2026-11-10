@@ -7,7 +7,7 @@ export const verify: Page = {
   group: 'Trust',
   summary: 'Recompute a verdict yourself, with no wallet and no funds, and know what each exit code means.',
   blocks: [
-    p('You do not need to trust the website. The verdict depends on three recorded numbers, and a script in the repository recomputes it from public chain state. A browser version of the same recompute is on the [verify page](/demo).'),
+    p('You do not need to trust the website. The verdict depends on three recorded numbers, and a script in the repository recomputes it from public chain state. A browser version of the same recompute is on every launch: open a launch from [Discover](/) and choose Verify.'),
     h2('Run it'),
     p('From the root of the repository. These commands are in `scripts/verify.sh`.'),
     code(`# Offline: recompute the documented boundary vectors. No network.
@@ -62,7 +62,7 @@ export const verify: Page = {
     h2('If you cannot install anything'),
     p('The project lists a `make judge` path that runs from committed, hash-pinned artifacts. It is not yet proven in a clean container, so treat it as planned until its evidence file is committed.'),
     ol(
-      'Open the [no-wallet verify page](/demo) in the app.',
+      'Open a launch from [Discover](/) and choose Verify. It needs no wallet.',
       'Read the launch page. It shows the three verdict inputs and the margin to PASS.',
       'Compare them with the chain yourself through a public NEAR RPC view.',
     ),

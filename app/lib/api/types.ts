@@ -168,3 +168,20 @@ export interface VerifyData {
 }
 
 export interface ApiErrorBody { error: { code: string; message: string } }
+
+/** OpenAPI `Stats` (GET /api/stats). Every figure is a fold of indexed events; `basis` says so. */
+export interface Stats {
+  launches: { total: number; by_phase?: Record<string, number>; by_tab?: Record<string, number>; passed?: number; failed?: number; pass_rate_bps?: number | null };
+  committed?: { total_committed?: string; total_walked?: string; active_in_open_trials?: string; refunds_paid?: string; refund_attempts_failed?: string };
+  volume: { trades?: number; quote_volume?: number; unique_traders?: number; fees_total?: string; fee_slices?: { creator?: string; platform?: string; holders?: string; lp?: string; referral?: string } };
+  instant?: { launches?: { total?: number; open?: number; failed?: number }; seeds_declared?: string; alloc_claimed?: string; volume?: { trades?: number; quote_volume?: number; unique_traders?: number; fees_total?: string } };
+  combined?: { launches?: number; trades?: number; quote_volume?: number; by_mode?: Record<string, number> };
+  since_block?: number | null;
+  basis: string;
+  as_of: AsOf;
+  source: Source;
+}
+
+export interface OpsLogItem { event: string; scope: 'core' | 'market' | 'launcher'; contract: string; summary: string; data: Record<string, unknown>; block_height: number; receipt_id: string; time: number; source: Source }
+/** OpenAPI `OpsLog` (GET /api/ops-log): what the contracts logged, newest first. Not a moderation list. */
+export interface OpsLog { items: OpsLogItem[]; next_cursor: string | null; as_of: AsOf; source: Source }
