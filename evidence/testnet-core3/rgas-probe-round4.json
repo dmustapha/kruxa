@@ -1,0 +1,16 @@
+{
+  "creator": "creator-a.kxi-root-1108.testnet",
+  "symbol": "KXDR",
+  "tgas": 150,
+  "deposit_yocto": "421250000000000000000000",
+  "tx": "9e3HdKjvrKEZPLFuPJ8kTBEHGzd2GTgd6tE9gx3ayMSa",
+  "success": false,
+  "rule_codes": [
+    "R_GAS"
+  ],
+  "error": "{\"index\":0,\"kind\":{\"index\":0,\"kind\":{\"FunctionCallError\":{\"ExecutionError\":\"Smart contract panicked: R_GAS: attach at least 250 Tgas to create_trial\"}}}}",
+  "next_free_launch_id_before": 10,
+  "next_free_launch_id_after": 10,
+  "creator_near_before": 0.7928463875075445,
+  "creator_near_after": 0.7926329722594949
+}

@@ -1,1 +1,1 @@
-non-reproducible (local cargo-near)
+core: reproducible (docker cargo-near 0.23.0, rust 1.99.1, two runs identical, file artifacts/kruxa_core.reproducible.wasm); market and instant: non-reproducible (local cargo-near)

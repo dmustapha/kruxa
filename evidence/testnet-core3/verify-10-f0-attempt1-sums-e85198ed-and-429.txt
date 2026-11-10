@@ -1,0 +1,9 @@
+== NEAR recompute (C31-C34, kruxa-sim)
+infrastructure error: rpc https://test.rpc.fastnear.com: https://test.rpc.fastnear.com/: status code 429
+== operator lines (VX-2)
+KEYS: 1 full-access key(s): ed25519:2LXB3AWpWCYEgypBA7KFP9WGX6ZNK3ByZ6XJohvXwTVq; 0 function-call key(s)
+NOTE: a full-access key is present, so its owner can redeploy this contract.
+CODE: view_code sha256 665caab5a582a58b2412dfb2e81f1caf2ff94339c8bcc9f8be9ebebb72239c64; reproducible build sha256 e85198ed37c2aa1d6cd5f18571f5e023eed391108ca8f22edc8599ac390e65ac; MISMATCH
+MISMATCH contract_code
+== Solana genesis (C3-C28)
+infrastructure error: near rpc https://test.rpc.fastnear.com get_state: HTTP Error 429: Too Many Requests
