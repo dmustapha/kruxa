@@ -8,6 +8,9 @@ use near_sdk::json_types::{U128, U64};
 use near_sdk::serde_json::json;
 use near_sdk::{env, near, AccountId, Promise, PromiseOrValue};
 
+/// Least prepaid gas `create_trial` accepts. Measured on testnet: 150 Tgas left a launch stuck in Creating, 300 works.
+const MIN_CREATE_GAS_TGAS: u64 = 250;
+
 use crate::events::emit;
 use crate::ext::ext_ft;
 use crate::model::*;
@@ -29,6 +32,11 @@ impl Contract {
         genesis: Option<crate::genesis::GenesisPlanInput>,
     ) -> Promise {
         self.require_live();
+        // create_trial starts the factory call (110 Tgas) and its callback; with 150 Tgas on testnet the launch stuck in Creating and locked the
+        // creator for 10 minutes. Refuse before any state change. The app attaches 300 Tgas; unused gas is refunded.
+        if env::prepaid_gas() < near_sdk::Gas::from_tgas(MIN_CREATE_GAS_TGAS) {
+            fail(RuleCode::RGas, &format!("attach at least {MIN_CREATE_GAS_TGAS} Tgas to create_trial"));
+        }
         let creator = env::predecessor_account_id();
         if self.cfg.creator_gate && creator != self.cfg.owner {
             fail(RuleCode::RCreatorGate, "creation is limited to the owner until open_beta");

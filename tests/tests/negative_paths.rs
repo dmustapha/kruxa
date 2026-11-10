@@ -164,3 +164,24 @@ async fn each_rule_code_the_audit_listed_as_untriggered_fires_once() -> anyhow::
     assert!(has_code(&late, "R_TOO_LATE"), "{:?}", late.failures());
     Ok(())
 }
+
+/// `create_trial` refuses a call with too little prepaid gas before any state change (testnet: 150 Tgas left a launch stuck in
+/// Creating and locked the creator). With enough gas the same call works, so the creator is not locked by the refused call.
+#[tokio::test]
+async fn create_trial_with_too_little_prepaid_gas_is_refused_and_leaves_the_creator_free() -> anyhow::Result<()> {
+    let env = Env::new().await?;
+    let p = params("GASR");
+    let required: String = env.core.view("required_deposit").args_json(json!({ "params": &p })).await?.json()?;
+    let res = env
+        .creator
+        .call(env.core.id(), "create_trial")
+        .args_json(json!({ "params": &p, "stream_recipient": Value::Null, "genesis": Value::Null }))
+        .deposit(NearToken::from_yoctonear(required.parse()?))
+        .gas(near_workspaces::types::Gas::from_tgas(150))
+        .transact()
+        .await?;
+    assert!(has_code(&res, "R_GAS"), "150 Tgas must be refused with R_GAS");
+    let id = env.create_launch(&p).await?;
+    assert_eq!(id, 1, "the refused call did not take a launch id or lock the creator");
+    Ok(())
+}

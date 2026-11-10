@@ -83,6 +83,8 @@ pub enum RuleCode {
     RLengthenOnly,
     RBatchSize,
     RUpgradeHash,
+    /// A call that starts a chain of promises was given too little prepaid gas; refused before any state change so nothing gets stuck.
+    RGas,
 }
 
 impl RuleCode {
@@ -159,6 +161,7 @@ impl RuleCode {
             RLengthenOnly => "R_LENGTHEN_ONLY",
             RBatchSize => "R_BATCH_SIZE",
             RUpgradeHash => "R_UPGRADE_HASH",
+            RGas => "R_GAS",
         }
     }
 }
