@@ -59,7 +59,7 @@ Written by workstream I from `contracts/core/src/*.rs` on main (the section was 
 | `refund_route_set` | `launch_id, holder, amount, intents_account` | a holder routed their native refund to an Intents account |
 | `orphan_credit_refused` | `launch_id, holder, nonce_spent` | an orphan Intents credit was refused (nonce unspent, or no free balance) |
 
-`external_pool` is still proposed and not emitted by core. Until `genesis_confirmed` exists for a launch the API reports genesis `stage:"pending"` (after `genesis_reopened` the stage is `pending` again and `reopen_count` rises).
+Coverage check (2026-11-10): every one of the 56 event names that `contracts/core/src` passes to `emit(...)` appears in the tables above (compared by script against the source; the field lists were read from the code, not generated). `external_pool` is still proposed and not emitted by core. Until `genesis_confirmed` exists for a launch the API reports genesis `stage:"pending"` (after `genesis_reopened` the stage is `pending` again and `reopen_count` rises).
 
 `set_burn_mode` emits no event; the mode in force is read from the `mode` field of `tokens_swept`. The indexer's projections for these events (halts, upgrades, force_resolves, solvency_reports, owed, launch_custody, flags) and the endpoints that serve them are listed in `services/indexer/README.md`.
 <!-- END CORE EVENTS -->

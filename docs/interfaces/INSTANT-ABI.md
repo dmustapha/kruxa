@@ -1,7 +1,7 @@
 # Instant launcher ABI (owner: workstream L; readers: I indexer, U app, D docs, T tests)
 
-Status: DRAFT 1.0.0, 2026-11-08. Source: CHANGE-ORDER-7 (sections 2.3 to 2.14), DECISIONS-PACK1 fourteenth block (R-INSTANT-NOW, D-2 to D-11 adopted provisionally). Contract: `contracts/instant`, account `instant.kruxa.near`, wasm `kruxa_instant_contract`. Pure logic: `crates/kruxa-instant`.
-Not deployed, not signed, nothing on mainnet. Where this file and the code disagree the code on branch `ws/instant` wins and this file is fixed in the same commit.
+Status: 1.0.0, BUILT and run on NEAR testnet against the real token factory (`evidence/instant-testnet/run2`, market ABI 1.1.2), synced 2026-11-10. NOT deployed to mainnet. Earlier status: DRAFT 1.0.0, 2026-11-08. Source: CHANGE-ORDER-7 (sections 2.3 to 2.14), DECISIONS-PACK1 fourteenth block (R-INSTANT-NOW, D-2 to D-11 adopted provisionally). Contract: `contracts/instant`, account `instant.kruxa.near`, wasm `kruxa_instant_contract`. Pure logic: `crates/kruxa-instant`.
+Nothing on mainnet. Where this file and the code disagree the code (`contracts/instant`, merged to main) wins and this file is fixed in the same commit.
 
 Conventions (same as MARKET-ABI): u128 and u64 are decimal strings in JSON. USDC has 6 decimals (micro-USDC); the launch token has 6 decimals. `ft_on_transfer` messages are JSON objects with `"v":1` and an `"op"`. Panics (user calls) start with the rule code: `R_X: text`. `ft_on_transfer` and every callback NEVER panic: a refusal returns the full amount and logs the code as the first token of a log line.
 Times are block nanoseconds. `unit` below means one "day": 86 400 s on the `mainnet` and `testnet` profiles, 10 s on the `demo` profile (labelled demo account and sandbox tests only, same wasm).

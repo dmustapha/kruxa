@@ -31,6 +31,8 @@ Findings (TESTNET):
 | wave 1 baseline (G1 closeout) | 462,222 | see LIMITATIONS |
 | local `scripts/build.sh`, rustc 1.95.0, D-1, D-2, D-3, genesis, app views, commit 1a1e5ab | 570,083 | `8ef81b02e6ef498062fcc67b18a4886cc7c3ca10930d72a2f1fb7236a0672f8f` |
 | reproducible container build, `sourcescan/cargo-near:0.23.0-rust-1.99.1` (linux/amd64), same commit, run twice | 554,862 | `c607839e4548e99b06f1bd83cbaee6d40da9f7474f0c7c3e653a4445ed45754d` (both runs identical) |
+| [SYNC 2026-11-10: final local build, the wasm on `core3.kxi-root-1108.testnet` (final core surface, R_GAS guard); budget raised to 700,000 by Dami on 2026-11-10 (supersedes D-13, 570 KB)] | 675,007 | `e85198ed37c2aa1d6cd5f18571f5e023eed391108ca8f22edc8599ac390e65ac` (equals testnet `view_code` and `artifacts/SHA256SUMS`) |
+| [SYNC 2026-11-10: reproducible candidate, built before the R_GAS guard, NOT deployed (`rehearsal/LOG.md` A-4 and R2-5)] | 655,251 | `d362ffa2e37a85158eb43ebba34b7418a5b1b5f3bf77044b97d5879a88326f5f` (two runs identical) |
 
 The sha256 changes with every source commit (panic locations are embedded), so the hash that counts is the one recorded by `./scripts/gate-freeze.sh freeze` after the last commit.
 
