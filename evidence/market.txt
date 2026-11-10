@@ -1,0 +1,11 @@
+# make market-demo: buy and sell, five fee slices add up, two fee_bps_applied values
+# git ae8ed226a259, written by scripts/collect-track-evidence.sh
+# command: ./scripts/market-demo.sh
+market-sim demo: pool 1000 USDC / 1000000000000000 tokens, fee 1.00% (opening 5.00% decaying over 60 min), split 50/15/15/10/10, M-A routing
+  BUY  100 USDC at t=0 (opening fee): fee 5000000 = creator 500000 + platform 150000 + holders 0 + lp 4350000 + referral 0 | k_ok=true creator_bound=true custody_delta=0
+    fee_bps_applied=500 tokens out 86757990867579
+  SELL all back at t=2h (base fee): fee 953774 = creator 476887 + platform 143066 + holders 0 + lp 333821 + referral 0 | k_ok=true creator_bound=true custody_delta=0
+    fee_bps_applied=100 net USDC out 94423623 (round trip cost 5576377 micro-USDC)
+  round trip loses value: true
+SLICES OK
+# exit 0 (expected 0)

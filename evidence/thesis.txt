@@ -1,0 +1,45 @@
+# make thesis in the working tree
+# git ae8ed226a259, written by scripts/collect-track-evidence.sh
+# command: make thesis
+/Library/Developer/CommandLineTools/usr/bin/make --no-print-directory -C thesis thesis
+python3 build.py
+SNAPSHOT account_creation_parents_sample.csv sha256=81d52f03f43b5460614cdef8a7f1425a454f02938d0952428290a995f7dd7cb2 pulled_on=2026-11-08 window=2026-10-15
+SNAPSHOT daily_usage.csv sha256=833fbabcdd1f8eaabaffe641713b9d536faf951d94c0ac0a7e2daa8aaf94f153 pulled_on=2026-11-08 window=2025-09-01..2026-11-07
+SNAPSHOT intents_events_sample.csv sha256=38353f7d4e330209998b94e40bf742eba2f3ab14812ffe49a911630ee8b58043 pulled_on=2026-11-08 window=every 20th day from 2025-09-01
+CHART daily_active sha256=8bf1729ee63eef1b0388486c6f3352afb3b0ae19250d2e6e54e1bc6d5e2ed70e
+CHART tx_counts sha256=b336d955022fd8b4d3afe60112525339c3b844ff54c1c7ac84cab0060ac84745
+CHART intents_share sha256=aebd1819a59904fa15e44bade702f00be9c8b561ec2fe84eb4a2cb0c07f78d58
+CHART contract_breadth sha256=3c64238f44a097f2f65929bb81957fb727a578745078cc80f4d5c3950ceb9e07
+CHART leadlag_full sha256=b6b12a7814f8911b1233309524fd17b3b410776928093cd6c858c5da65ef11b4
+CHART leadlag_reverse_post sha256=028b11a089cc837948762effa4e46f19939e7162b6640fd5673154ccb4a86013
+CHART leaders sha256=fee4bb3fdd7ce35189155f7b02ab6e5fd1b1457bd382fe2ab97cab65f67ab4f9
+CHART stable_notional sha256=fde63c40e40272d5a4659d30db689583d6a48956640e196e924cb3f10396c9a2
+CHART proxy_check sha256=2e31a0f3bf547b8b311cedcf711e4a6df88478d898226dece0783c6caf6278f3
+CHART accounts sha256=3651a2dc38f96f26aca8dc2160e39a8783f8472ade90ebff737b082a960c0932
+CHART factory_sample sha256=8d6090d77692862f2969555efc30cd8caf1152d0cb0dba9add6f65f60557fc7d
+THESIS.md sha256=903d5c5b832d24e93fe2c716bf8264f05fc01f2f5633746757b6679c0e01c792
+THESIS OK
+# exit 0 (expected 0)
+# make thesis on a clean export of the committed tree (git archive HEAD)
+# git ae8ed226a259, written by scripts/collect-track-evidence.sh
+# command: make -C /var/folders/yn/58fxb5k14xzfvy71sgh8c6c80000gn/T/tmp.USQaVg3XJw thesis
+/Library/Developer/CommandLineTools/usr/bin/make --no-print-directory -C thesis thesis
+python3 build.py
+SNAPSHOT account_creation_parents_sample.csv sha256=81d52f03f43b5460614cdef8a7f1425a454f02938d0952428290a995f7dd7cb2 pulled_on=2026-11-08 window=2026-10-15
+SNAPSHOT daily_usage.csv sha256=833fbabcdd1f8eaabaffe641713b9d536faf951d94c0ac0a7e2daa8aaf94f153 pulled_on=2026-11-08 window=2025-09-01..2026-11-07
+SNAPSHOT intents_events_sample.csv sha256=38353f7d4e330209998b94e40bf742eba2f3ab14812ffe49a911630ee8b58043 pulled_on=2026-11-08 window=every 20th day from 2025-09-01
+CHART daily_active sha256=8bf1729ee63eef1b0388486c6f3352afb3b0ae19250d2e6e54e1bc6d5e2ed70e
+CHART tx_counts sha256=b336d955022fd8b4d3afe60112525339c3b844ff54c1c7ac84cab0060ac84745
+CHART intents_share sha256=aebd1819a59904fa15e44bade702f00be9c8b561ec2fe84eb4a2cb0c07f78d58
+CHART contract_breadth sha256=3c64238f44a097f2f65929bb81957fb727a578745078cc80f4d5c3950ceb9e07
+CHART leadlag_full sha256=b6b12a7814f8911b1233309524fd17b3b410776928093cd6c858c5da65ef11b4
+CHART leadlag_reverse_post sha256=028b11a089cc837948762effa4e46f19939e7162b6640fd5673154ccb4a86013
+CHART leaders sha256=fee4bb3fdd7ce35189155f7b02ab6e5fd1b1457bd382fe2ab97cab65f67ab4f9
+CHART stable_notional sha256=fde63c40e40272d5a4659d30db689583d6a48956640e196e924cb3f10396c9a2
+CHART proxy_check sha256=2e31a0f3bf547b8b311cedcf711e4a6df88478d898226dece0783c6caf6278f3
+CHART accounts sha256=3651a2dc38f96f26aca8dc2160e39a8783f8472ade90ebff737b082a960c0932
+CHART factory_sample sha256=8d6090d77692862f2969555efc30cd8caf1152d0cb0dba9add6f65f60557fc7d
+THESIS.md sha256=903d5c5b832d24e93fe2c716bf8264f05fc01f2f5633746757b6679c0e01c792
+THESIS OK
+# exit 0 (expected 0)
+# CLEAN-EXPORT HASHES IDENTICAL: 11 chart hashes and the THESIS.md hash match

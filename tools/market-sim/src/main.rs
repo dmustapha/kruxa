@@ -132,8 +132,20 @@ fn sim(days: u64) {
     let t = terms();
     let mut out = String::new();
     writeln!(out, "SIMULATION: hypothetical flat daily trading (buy, then sell it all back each day) over {days} days; not a forecast. Amounts in USDC.").unwrap();
-    writeln!(out, "pool {} USDC / {} tokens, fee 1.00%, opening 5.00% decaying over 60 min, split 50/15/15/10/10, M-A routing", SEED.q / USDC, SEED.t).unwrap();
-    writeln!(out, "fee_bps_applied: day 1 at pool open = {} bps, from day 2 (2h after the epoch start) = {} bps", bps_applied(&t, 0), bps_applied(&t, 2 * HOUR_NS)).unwrap();
+    writeln!(
+        out,
+        "pool {} USDC / {} tokens, fee 1.00%, opening 5.00% decaying over 60 min, split 50/15/15/10/10, M-A routing",
+        SEED.q / USDC,
+        SEED.t
+    )
+    .unwrap();
+    writeln!(
+        out,
+        "fee_bps_applied: day 1 at pool open = {} bps, from day 2 (2h after the epoch start) = {} bps",
+        bps_applied(&t, 0),
+        bps_applied(&t, 2 * HOUR_NS)
+    )
+    .unwrap();
     let scenarios = [("LOW", 100u128), ("BASE", 500), ("HIGH", 2_500)];
     let mut outcomes = vec![];
     for (name, daily) in scenarios {
@@ -141,13 +153,20 @@ fn sim(days: u64) {
         outcomes.push(run_scenario(daily * USDC, days, &mut out));
     }
     writeln!(out, "\nTABLE SUPPLY: token supply is fixed at creation, no emission and no mint; the pool only trades what exists").unwrap();
-    writeln!(out, "{:<8} {:>18} {:>18} {:>12} {:>10} {:>10}", "scenario", "total_supply", "pool_tokens", "outside_pool", "fee", "cr_unlock").unwrap();
+    writeln!(
+        out,
+        "{:<8} {:>18} {:>18} {:>12} {:>10} {:>10}",
+        "scenario", "total_supply", "pool_tokens", "outside_pool", "fee", "cr_unlock"
+    )
+    .unwrap();
     for ((name, _), o) in scenarios.iter().zip(&outcomes) {
         let outside = SEED.t.checked_sub(o.reserves.t).unwrap_or(0);
-        writeln!(out, "{:<8} {:>18} {:>18} {:>12} {:>10.2} {:>10.2}", name, SEED.t, o.reserves.t, outside, f(o.fee), f(o.unlocked)).unwrap();
+        writeln!(out, "{:<8} {:>18} {:>18} {:>12} {:>10.2} {:>10.2}", name, SEED.t, o.reserves.t, outside, f(o.fee), f(o.unlocked))
+            .unwrap();
         assert!(o.reserves.t <= SEED.t && o.creator * 2 <= o.fee);
     }
-    writeln!(out, "BOUND OK: all {} scenarios, creator never above 50% of the fee; supply never above the fixed total", scenarios.len()).unwrap();
+    writeln!(out, "BOUND OK: all {} scenarios, creator never above 50% of the fee; supply never above the fixed total", scenarios.len())
+        .unwrap();
     print!("{out}");
     println!("SIM sha256 {}", hex(&Sha256::digest(out.as_bytes())));
 }

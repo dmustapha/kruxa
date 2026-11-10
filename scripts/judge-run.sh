@@ -13,7 +13,11 @@
 #
 # --fast: one smoke test file per sandbox suite and a check of the committed attack-gallery record instead of a re-run (about 10 minutes
 #         on a cold machine). It never claims tracks: only the full run does. Exit 0 means the fast subset is green.
-# Usage: scripts/judge-run.sh [--fast] [--record]     --record also copies the summary to evidence/judge-run.txt
+# --prebuilt: the no-toolchain-build judge path (J-1, Dockerfile.judge). Builds nothing and fetches nothing: it checks artifacts/SHA256SUMS,
+#         runs the sandbox lifecycle on those exact wasm bytes, the golden vectors, the offline verify checks, the market demo and the swarm,
+#         and is RED if the wall time reaches 300 s. Needs artifacts/ (scripts/build-artifacts.sh) and the mock wasm under target/near/
+#         (the image builds them). Never claims tracks. With --record it writes evidence/judge-prebuilt-run.txt.
+# Usage: scripts/judge-run.sh [--fast | --prebuilt] [--record]     --record also copies the summary to evidence/judge-run.txt
 # Exit: 0 every step GREEN, 1 any step RED, 64 usage.
 set -uo pipefail
 cd "$(dirname "$0")/.."
@@ -21,11 +25,13 @@ ROOT=$PWD
 OUT=$ROOT/target/judge
 RECORD=0
 FAST=0
+PREBUILT=0
 for a in "$@"; do case "$a" in
   --record) RECORD=1 ;;
   --fast) FAST=1 ;;
-  -h|--help) sed -n '2,19p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
-  *) echo "usage: $0 [--record]" >&2; exit 64 ;;
+  --prebuilt) PREBUILT=1 ;;
+  -h|--help) sed -n '2,23p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+  *) echo "usage: $0 [--fast | --prebuilt] [--record]" >&2; exit 64 ;;
 esac; done
 
 # ---- scrub: no credential-shaped variable reaches any step ------------------------------------------------------------
@@ -83,6 +89,55 @@ run_gallery() {
   [ -f "$keep/saved/ATTACK-GALLERY.md" ] && cp "$keep/saved/ATTACK-GALLERY.md" docs/ATTACK-GALLERY.md
   return $rc
 }
+
+# ---- --prebuilt: no build, no fetch; the shipped artifacts are what the sandbox runs -------------------------------------------
+prebuilt_run() {
+  export CARGO_NET_OFFLINE=true; echo "== STEPS (--prebuilt)"
+  EXPECT=("kruxa_core.wasm: OK" "kruxa_market_contract.wasm: OK" "kruxa_instant_contract.wasm: OK"); FORBID=("FAILED")
+  step A0 0 "artifacts/SHA256SUMS: every shipped wasm hashes to its recorded sha256" ./scripts/build-artifacts.sh --check
+  if is_green A0; then
+    EXPECT=("using artifacts/kruxa_core.wasm"); step A1 0 "the sandbox below runs the shipped artifact bytes (copied to target/near)" bash -c \
+      'for n in kruxa_core kruxa_market_contract kruxa_instant_contract; do mkdir -p target/near/$n && cp artifacts/$n.wasm target/near/$n/$n.wasm && echo "using artifacts/$n.wasm"; done'
+  else skip A1 "artifact bytes into the sandbox" "A0 red"; fi
+  EXPECT=("outcome=PASS" "outcome=FAIL(reasons=1)" "spend=40000000 refund=60000000")
+  step V1 0 "golden vectors: PASS at the soft cap, FAIL one micro-USDC below, oversubscription refund" ./scripts/verify.sh golden
+  if is_green A1; then
+    EXPECT=("JUDGE LIFECYCLE PASS"); FORBID=("FAILED")
+    step L1 0 "narrated lifecycle on the real core wasm: create, commit, walk, settle PASS and FAIL, refunds, STREAM_CAP" \
+      cargo test --locked --offline -q -p kruxa-tests --test judge_lifecycle -- --nocapture --test-threads=1
+  else skip L1 "narrated lifecycle" "A1 red"; fi
+  BOOK=$(cat fixtures/events/lifecycle.book_hash)
+  EXPECT=("MATCH"); FORBID=("MISMATCH")
+  step T1 0 "verify: recorded launch lifecycle replays to its recorded book hash" \
+    cargo run -q --locked --offline -p kruxa-sim -- fold --events fixtures/events/lifecycle.jsonl --book-hash "$BOOK"
+  EXPECT=("MISMATCH log"); step T2 2 "tamper: one micro-USDC changed in the record is detected, exit 2" \
+    cargo run -q --locked --offline -p kruxa-sim -- fold --events fixtures/events/lifecycle.jsonl --book-hash "$BOOK" --tamper
+  EXPECT=("RECORDED, not live" "PASS C7"); FORBID=("MISMATCH")
+  step T3 0 "verify: recorded Solana devnet genesis re-checks clean" ./scripts/verify.sh --evidence evidence/genesis/core2-f0-devnet-launch6-evidence.json
+  EXPECT=("MISMATCH"); step T4 2 "tamper-all: every recorded Solana input flipped, each run detected, exit 2" \
+    ./scripts/verify.sh --evidence evidence/genesis/core2-f0-devnet-launch6-evidence.json --tamper-all
+  EXPECT=(); FORBID=("MISMATCH"); step T5 4 "dead RPC exits 4 and never prints MISMATCH" \
+    cargo run -q --locked --offline -p kruxa-sim -- verify --rpc http://127.0.0.1:1 --contract core.kruxa.testnet --launch 1
+  EXPECT=("SLICES OK"); step M2 0 "market demo: buy and sell, five fee slices add up, custody unchanged" ./scripts/market-demo.sh
+  EXPECT=("SWARM GREEN"); step W1 0 "swarm: invariants every round, recorded runs reproduce" ./scripts/swarm-run.sh
+  local wall=$(( $(date +%s) - T_START ))
+  if [ "$wall" -lt 300 ]; then printf 'Z1\tGREEN\t0\twall time %ss is under the 300 s budget\t\n' "$wall" >>"$OUT/steps.tsv"
+  else printf 'Z1\tRED\t0\twall time\twall %ss reaches the 300 s budget\n' "$wall" >>"$OUT/steps.tsv"; fi
+  local total red; total=$(wc -l <"$OUT/steps.tsv" | tr -d ' '); red=$(awk -F'\t' '$2!="GREEN"' "$OUT/steps.tsv" | wc -l | tr -d ' ')
+  awk -F'\t' '$1=="Z1" {printf "  %-3s %-5s %5ss  %s%s\n", $1, $2, $3, $4, ($5 != "" ? "   [" $5 "]" : "")}' "$OUT/steps.tsv"
+  echo; echo "PREBUILT: $((total - red)) of $total steps green, wall ${wall}s. No tracks claimed; the full run claims them."
+  [ "$red" = 0 ] || awk -F'\t' '$2!="GREEN" {printf "  RED %s: %s %s\n", $1, $4, $5}' "$OUT/steps.tsv"
+  if [ "$red" = 0 ]; then echo "JUDGE PREBUILT GREEN"; fi
+  if [ "$RECORD" = 1 ]; then
+    { echo "# Prebuilt judge run record. Written by scripts/judge-run.sh --prebuilt --record on commit ${head_sha}."
+      awk -F'\t' '{printf "%-3s %-5s %5ss  %s%s\n", $1, $2, $3, $4, ($5 != "" ? "   [" $5 "]" : "")}' "$OUT/steps.tsv"
+      echo "PREBUILT: $((total - red)) of $total steps green, wall ${wall}s."
+      grep -h "^STEP\|JUDGE LIFECYCLE" "$OUT/L1.log" 2>/dev/null
+    } >evidence/judge-prebuilt-run.txt
+  fi
+  [ "$red" = 0 ]
+}
+if [ "$PREBUILT" = 1 ]; then prebuilt_run; exit $?; fi
 
 echo "== STEPS"
 # P0 prerequisites -------------------------------------------------------------------------------------------------------

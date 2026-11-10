@@ -1,0 +1,57 @@
+# make sim: three volume scenarios, supply table, BOUND OK, SIM sha256
+# git ae8ed226a259, written by scripts/collect-track-evidence.sh
+# command: cargo run -q --offline -p market-sim -- sim 60
+SIMULATION: hypothetical flat daily trading (buy, then sell it all back each day) over 60 days; not a forecast. Amounts in USDC.
+pool 1000 USDC / 1000000000000000 tokens, fee 1.00%, opening 5.00% decaying over 60 min, split 50/15/15/10/10, M-A routing
+fee_bps_applied: day 1 at pool open = 500 bps, from day 2 (2h after the epoch start) = 100 bps
+
+TABLE LOW: 100 USDC bought and sold back each day
+day    volume      fee  creator platform    to_lp  fee_bps   q_after  cr_unlock
+  1    195.38     9.77     0.98     0.29     8.50      500   1008.12       0.49
+  2    199.03     1.99     1.00     0.30     0.70      100   1008.79       0.99
+  3    199.03     1.99     1.00     0.30     0.70      100   1009.45       1.50
+ 10    199.03     1.99     1.00     0.30     0.70      100   1014.11       5.22
+ 20    199.03     1.99     1.00     0.30     0.70      100   1020.77      11.00
+ 30    199.03     1.99     1.00     0.30     0.70      100   1027.42      17.33
+ 40    199.03     1.99     1.00     0.30     0.70      100   1034.08      24.22
+ 50    199.03     1.99     1.00     0.30     0.70      100   1040.74      31.66
+ 60    199.03     1.99     1.00     0.30     0.70      100   1047.41      39.65
+totals over 60 days: fee 127.20, creator 59.69, platform 17.91
+BOUND OK: creator never above 50% of the fee (creator 59.69 of fee 127.20)
+
+TABLE BASE: 500 USDC bought and sold back each day
+day    volume      fee  creator platform    to_lp  fee_bps   q_after  cr_unlock
+  1    982.00    49.10     4.91     1.47    42.72      500   1035.71       2.46
+  2    995.57     9.96     4.98     1.49     3.48      100   1038.63       4.98
+  3    995.56     9.96     4.98     1.49     3.48      100   1041.55       7.52
+ 10    995.56     9.96     4.98     1.49     3.48      100   1062.02      26.12
+ 20    995.55     9.96     4.98     1.49     3.48      100   1091.35      55.04
+ 30    995.54     9.96     4.98     1.49     3.48      100   1120.77      86.72
+ 40    995.53     9.96     4.98     1.49     3.48      100   1150.30     121.17
+ 50    995.52     9.96     4.98     1.49     3.48      100   1179.92     158.38
+ 60    995.51     9.96     4.98     1.49     3.48      100   1209.63     198.36
+totals over 60 days: fee 636.47, creator 298.59, platform 89.58
+BOUND OK: creator never above 50% of the fee (creator 298.59 of fee 636.47)
+
+TABLE HIGH: 2500 USDC bought and sold back each day
+day    volume      fee  creator platform    to_lp  fee_bps   q_after  cr_unlock
+  1   4951.53   247.58    24.76     7.43   215.39      500   1138.86      12.38
+  2   4980.99    49.81    24.90     7.47    17.43      100   1150.30      24.99
+  3   4980.97    49.81    24.90     7.47    17.43      100   1161.76      37.73
+ 10   4980.84    49.81    24.90     7.47    17.43      100   1242.50     130.78
+ 20   4980.67    49.81    24.90     7.47    17.43      100   1359.38     275.47
+ 30   4980.50    49.80    24.90     7.47    17.43      100   1477.99     433.99
+ 40   4980.33    49.80    24.90     7.47    17.43      100   1598.25     606.34
+ 50   4980.18    49.80    24.90     7.47    17.43      100   1720.10     792.52
+ 60   4980.03    49.80    24.90     7.47    17.43      100   1843.45     992.53
+totals over 60 days: fee 3186.07, creator 1494.00, platform 448.20
+BOUND OK: creator never above 50% of the fee (creator 1494.00 of fee 3186.07)
+
+TABLE SUPPLY: token supply is fixed at creation, no emission and no mint; the pool only trades what exists
+scenario       total_supply        pool_tokens outside_pool        fee  cr_unlock
+LOW        1000000000000000   1000000000000000            0     127.20      39.65
+BASE       1000000000000000   1000000000000000            0     636.47     198.36
+HIGH       1000000000000000   1000000000000000            0    3186.07     992.53
+BOUND OK: all 3 scenarios, creator never above 50% of the fee; supply never above the fixed total
+SIM sha256 f7d0c7bee944a2a93335e1141f6f39d15135fe29be4354e5e68da3cc9f8daf98
+# exit 0 (expected 0)

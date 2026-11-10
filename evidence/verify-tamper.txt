@@ -1,0 +1,90 @@
+# recorded lifecycle replays to its recorded book hash
+# git ae8ed226a259, written by scripts/collect-track-evidence.sh
+# command: cargo run -q --offline -p kruxa-sim -- fold --events fixtures/events/lifecycle.jsonl --book-hash f071a9c134c99be905c5c90f8bb6ff4c7a2f6e0c31c9f09410869cae952c756b
+events=33 total_active=1080000000 funders=27 book_hash=f071a9c134c99be905c5c90f8bb6ff4c7a2f6e0c31c9f09410869cae952c756b
+MATCH
+# exit 0 (expected 0)
+# tamper: one micro-USDC changed in the record is detected, exit 2
+# git ae8ed226a259, written by scripts/collect-track-evidence.sh
+# command: cargo run -q --offline -p kruxa-sim -- fold --events fixtures/events/lifecycle.jsonl --book-hash f071a9c134c99be905c5c90f8bb6ff4c7a2f6e0c31c9f09410869cae952c756b --tamper
+MISMATCH log (event 30: walk of 40000000, holder had 40000001)
+# exit 2 (expected 2)
+# recorded Solana devnet genesis re-checks clean (RECORDED, not live)
+# git ae8ed226a259, written by scripts/collect-track-evidence.sh
+# command: ./scripts/verify.sh --evidence evidence/genesis/core2-f0-devnet-launch6-evidence.json
+RECORDED, not live (evidence evidence/genesis/core2-f0-devnet-launch6-evidence.json)
+PASS C5 mint == createWithSeed(g_pub, seed 6, Tokenkeg): no private key exists
+PASS C3 spec re-hash 436020d54afd241e (sha256 of the committed borsh GenesisSpec)
+PASS C4 mint AwLcLNWgKC7oiCjRQjwnJZrardDJ8Y7MJ4YAb1qXbZMh owner Tokenkeg space 82 (no extensions: C8)
+PASS C7 mint_authority=None freeze_authority=None
+PASS C6 decimals 6 supply 649999999999992 == sum of buckets
+PASS C9 metadata is_mutable=false, name/symbol/uri == spec, fee 0, no creators
+PASS C11 reserve bucket 0, distributor vault holds the unclaimed rest
+PASS C13 distributor 9XYvBt root/max_total_claim/max_num_nodes/timestamps/clawback receiver match, admin NULL (1nc1nera)
+PASS C12 squads 2-of-3 time_lock 172800 == charter, config_authority None, reserve owner is vault 8955vW2w
+PASS C14 G holds no token accounts
+PASS C15 G history is the ceremony only (3 signatures)
+PASS C16 G lamports 890880 <= 895880 (rent-exempt floor 890,880 + 5,000; a system account cannot be left lower without a sweep)
+PASS C17 on-chain tx1 and tx2 message bytes == compile(spec, blockhash, price)
+PASS C18 program allowlist holds
+PASS C19 SetAuthority(MintTokens, None) is the last token instruction, after every MintTo
+PASS C20 rebuilt merkle root == spec == on-chain; sum 649999999999992, leaves 12
+PASS C21 all 12 proofs verify against the root
+PASS C27 g_pub == derive(7218da57019c05386280b3a4196e7654279e32c66e129889e17a653fc229cc85, kruxa:genesis:6)
+SKIP C28 (single RPC; pass --rpc2)
+SKIP C1 (needs core genesis views (Task 4.4))
+SKIP C2 (needs core ledger views (Task 4.4))
+SKIP C10 (needs the hosted metadata JSON)
+SKIP C22 (no creator allocation in this record)
+SKIP C23 (needs core genesis events)
+SKIP C24 (needs core PASS block time)
+SKIP C25 (no Verdict Rail attestation in this record)
+SKIP C26 (needs core ceremony hash view)
+SKIP C30 (PASS launch (FAIL path is a core check))
+ALL CHECKS OK (18 passed, 10 skipped)
+# exit 0 (expected 0)
+# tamper-all: every recorded Solana input flipped, each run detected, exit 2
+# git ae8ed226a259, written by scripts/collect-track-evidence.sh
+# command: ./scripts/verify.sh --evidence evidence/genesis/core2-f0-devnet-launch6-evidence.json --tamper-all
+RECORDED, not live (evidence evidence/genesis/core2-f0-devnet-launch6-evidence.json)
+PASS C5 mint == createWithSeed(g_pub, seed 6, Tokenkeg): no private key exists
+PASS C3 spec re-hash 436020d54afd241e (sha256 of the committed borsh GenesisSpec)
+PASS C4 mint AwLcLNWgKC7oiCjRQjwnJZrardDJ8Y7MJ4YAb1qXbZMh owner Tokenkeg space 82 (no extensions: C8)
+PASS C7 mint_authority=None freeze_authority=None
+PASS C6 decimals 6 supply 649999999999992 == sum of buckets
+PASS C9 metadata is_mutable=false, name/symbol/uri == spec, fee 0, no creators
+PASS C11 reserve bucket 0, distributor vault holds the unclaimed rest
+PASS C13 distributor 9XYvBt root/max_total_claim/max_num_nodes/timestamps/clawback receiver match, admin NULL (1nc1nera)
+PASS C12 squads 2-of-3 time_lock 172800 == charter, config_authority None, reserve owner is vault 8955vW2w
+PASS C14 G holds no token accounts
+PASS C15 G history is the ceremony only (3 signatures)
+PASS C16 G lamports 890880 <= 895880 (rent-exempt floor 890,880 + 5,000; a system account cannot be left lower without a sweep)
+PASS C17 on-chain tx1 and tx2 message bytes == compile(spec, blockhash, price)
+PASS C18 program allowlist holds
+PASS C19 SetAuthority(MintTokens, None) is the last token instruction, after every MintTo
+PASS C20 rebuilt merkle root == spec == on-chain; sum 649999999999992, leaves 12
+PASS C21 all 12 proofs verify against the root
+PASS C27 g_pub == derive(7218da57019c05386280b3a4196e7654279e32c66e129889e17a653fc229cc85, kruxa:genesis:6)
+SKIP C28 (single RPC; pass --rpc2)
+SKIP C1 (needs core genesis views (Task 4.4))
+SKIP C2 (needs core ledger views (Task 4.4))
+SKIP C10 (needs the hosted metadata JSON)
+SKIP C22 (no creator allocation in this record)
+SKIP C23 (needs core genesis events)
+SKIP C24 (needs core PASS block time)
+SKIP C25 (no Verdict Rail attestation in this record)
+SKIP C26 (needs core ceremony hash view)
+SKIP C30 (PASS launch (FAIL path is a core check))
+MISMATCH mint (tamper detected)
+MISMATCH g_pub (tamper detected)
+MISMATCH launch_id (tamper detected)
+MISMATCH name (tamper detected)
+MISMATCH symbol (tamper detected)
+MISMATCH decimals (tamper detected)
+MISMATCH reserve_amount (tamper detected)
+MISMATCH max_total_claim (tamper detected)
+MISMATCH max_num_nodes (tamper detected)
+MISMATCH merkle_root (tamper detected)
+MISMATCH reserve_owner (tamper detected)
+MISMATCH spec_hash (tamper detected)
+# exit 2 (expected 2)

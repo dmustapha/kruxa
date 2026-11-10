@@ -1,0 +1,76 @@
+# make swarm: 16 agents, 24 rounds, recorded runs reproduce, 300-seed sweep
+# git ae8ed226a259, written by scripts/collect-track-evidence.sh
+# command: ./scripts/swarm-run.sh
+INV OK   r01/24 Open     total      0.00 funders  0 margin   -600.00 FAIL(BELOW_SOFT_CAP|BELOW_MIN_FUNDERS)
+INV OK   r02/24 Open     total    129.50 funders  2 margin   -470.50 FAIL(BELOW_SOFT_CAP|BELOW_MIN_FUNDERS)
+INV OK   r03/24 Open     total    149.50 funders  3 margin   -450.50 FAIL(BELOW_SOFT_CAP|BELOW_MIN_FUNDERS)
+INV OK   r04/24 Open     total    430.50 funders  6 margin   -169.50 FAIL(BELOW_SOFT_CAP|BELOW_MIN_FUNDERS)
+INV OK   r05/24 Open     total    530.50 funders  7 margin    -69.50 FAIL(BELOW_SOFT_CAP|BELOW_MIN_FUNDERS)
+INV OK   r06/24 Open     total    550.50 funders  7 margin    -49.50 FAIL(BELOW_SOFT_CAP|BELOW_MIN_FUNDERS)
+INV OK   r07/24 Open     total    691.50 funders  9 margin    +91.50 FAIL(BELOW_MIN_FUNDERS)
+INV OK   r08/24 Open     total    691.50 funders  9 margin    +91.50 FAIL(BELOW_MIN_FUNDERS)
+INV OK   r09/24 Open     total    750.50 funders 10 margin   +150.50 PASS
+INV OK   r10/24 Open     total    850.50 funders 11 margin   +250.50 PASS
+INV OK   r11/24 Open     total    850.50 funders 11 margin   +250.50 PASS
+INV OK   r12/24 Open     total    850.50 funders 11 margin   +250.50 PASS
+INV OK   r13/24 Open     total    950.50 funders 12 margin   +350.50 PASS
+INV OK   r14/24 Open     total    977.50 funders 13 margin   +377.50 PASS
+INV OK   r15/24 Open     total   1107.00 funders 14 margin   +507.00 PASS
+INV OK   r16/24 Open     total   1107.00 funders 14 margin   +507.00 PASS
+INV OK   r17/24 Open     total   1107.00 funders 14 margin   +507.00 PASS
+INV OK   r18/24 Open     total   1107.00 funders 14 margin   +507.00 PASS
+INV OK   r19/24 Open     total   1107.00 funders 14 margin   +507.00 PASS
+INV OK   r20/24 Open     total   1207.00 funders 15 margin   +607.00 PASS
+INV OK   r21/24 Closing  total   1207.00 funders 15 margin   +607.00 PASS
+INV OK   r22/24 Closing  total   1207.00 funders 15 margin   +607.00 PASS
+INV OK   r23/24 Closing  total   1207.00 funders 15 margin   +607.00 PASS
+INV OK   r24/24 Closing  total   1207.00 funders 15 margin   +607.00 PASS
+
+id   label              group       commit     spend    refund    tokens(M) walked  refused
+H1   steady             honest       90.00     74.56     15.43       44.739 no      
+H2   dca                honest       40.00     33.14      6.85       19.884 no      
+H3   cautious           honest       59.00     48.88     10.11       29.329 no      
+H4   fill-averse        honest       91.00     75.39     15.60       45.236 no      
+H5   small              honest       27.00     22.36      4.63       13.422 no      
+H6   top-up             honest       59.00     48.88     10.11       29.329 no      
+H7   nervous            honest       41.00     33.96      7.03       20.381 no      
+W1   whale              whale       100.00     82.85     17.14       49.710 no      R_CAP_ACCOUNTx4
+W2   whale              whale       100.00     82.85     17.14       49.710 no      R_CAP_ACCOUNTx2
+S1   sniper-rescuer     sniper        0.00      0.00      0.00        0.000 no      R_WRONG_PHASEx1
+S2   sniper             sniper      100.00     82.85     17.14       49.710 no      R_WRONG_PHASEx1
+Y1   sybil-lead         sybil       100.00     82.85     17.14       49.710 no      R_CAP_ACCOUNTx1
+Y2   sybil              sybil       100.00     82.85     17.14       49.710 no      
+Y3   sybil              sybil       100.00     82.85     17.14       49.710 no      
+Y4   sybil              sybil       100.00     82.85     17.14       49.710 no      
+F    walk-flipper       flipper     100.00     82.85     17.14       49.710 no      
+
+seed 1 (warm crowd, comfortable pass) | soft cap 600.00 | hard cap 1000.00 | wallet cap 100.00
+verdict PASS | committed 1207.00 | accepted 1000.00 | oversubscription 1.21x | margin +607.00 USDC, 5 funders
+clearing price 1.6667 USDC per 1M tokens (same for every buyer); max deviation 0 ppm; price parity true
+group    agents  committed      spend     fill % pool share % token share %
+honest        7     407.00     337.19      82.85        33.71        33.71
+whale         2     200.00     165.70      82.85        16.57        16.57
+sniper        2     100.00      82.85      82.85         8.28         8.28
+sybil         4     400.00     331.40      82.85        33.14        33.14
+flipper       1     100.00      82.85      82.85         8.28         8.28
+
+BLOCKED by rule (contract refuses):
+  sniper   R_WRONG_PHASE x2
+  sybil    R_CAP_ACCOUNT x1
+  whale    R_CAP_ACCOUNT x6
+BOUNDED, NOT BLOCKED:
+  sybil split: ring holds 4.00x one wallet cap (4 unlinkable accounts), same uniform price, diluted pro-rata
+  walk-flip: flip succeeded = false (pass margin before the walk: n/a USDC)
+adversaries beat honest backers on price or caps: false
+
+INVARIANTS HELD in 24 of 24 rounds and at settlement
+SWARM GREEN
+
+== recorded runs reproduce (seeds 1 to 3) ==
+recorded run-1.json reproduces byte-for-byte
+recorded run-2.json reproduces byte-for-byte
+recorded run-3.json reproduces byte-for-byte
+
+== sweep: invariants over 300 more seeds ==
+sweep seeds 1..=300: 0 violations, 23 FAIL verdicts, 13 successful walk-flips
+# exit 0 (expected 0)
