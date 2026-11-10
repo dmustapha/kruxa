@@ -1,0 +1,28 @@
+{
+  "id": "test1-ov4",
+  "title": "OV4: Intents deposit credit (Test 1, mainnet)",
+  "label": "RECORDED",
+  "network": "mainnet (throwaway wallets, far under the 1 USD test cap)",
+  "date": "2026-11-08",
+  "result": "PASS",
+  "source": "warroom/specs/DECISIONS-PACK1.md, block TEST 1 RESULT; kruxa/INVARIANTS.md MUST NOT CLAIM entry (CO-5, CO-6). Every send was made by Dami; the build agents only recorded the result.",
+  "legs": [
+    {
+      "leg": "SOL to USDC (NEAR) through a 1Click quote",
+      "input": { "asset": "SOL", "amount": "0.002" },
+      "credited": { "asset": "USDC (NEAR)", "amount": "0.17742", "to": "the 64-hex Intents account of the Test 1 wallet" },
+      "seconds": 90,
+      "seconds_note": "about 90 s as recorded; no exact timer value was kept"
+    },
+    {
+      "leg": "SOL deposit to a Solana-USDC omft credit",
+      "input": { "asset": "SOL", "amount": "0.001485" },
+      "credited": { "asset": "USDC (Solana omft)", "amount": "0.131942", "to": "the Test 1 NEAR wallet's Intents account" },
+      "seconds": 97
+    }
+  ],
+  "latency_tail": "A separate 0.05 USDC (NEAR) to Solana-USDC 1Click swap sat in PROCESSING for 15+ minutes at the first read and about 35 minutes by the later account; it then completed (SUCCESS, 0.049988 omft credited). Funds were safe throughout. Seen once; not a guarantee in either direction.",
+  "not_proven": "OV3 (Phantom raw_ed25519 byte-exactness) is NOT proven by Test 1.",
+  "tx_hashes": "Not recorded in the repo or the decision log for these two credits. Only the OV15 NEAR transaction hash was kept (see test1-ov15.json). Nothing is invented here.",
+  "scrub": "No key, seed, wallet address or account id is stored in this file. Deposit and Intents account ids were deliberately left out."
+}

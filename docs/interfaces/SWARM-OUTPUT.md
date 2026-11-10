@@ -73,6 +73,10 @@ Conventions (same as the contracts' JSON):
 }
 ```
 
+## Digest for the Create page
+
+`docs/interfaces/swarm-crowd-test.json` (schema `kruxa.swarm.crowd-test/1`) is a small digest of the three committed runs: preset, label, verdict, margin, fill by group, blocked and bounded attacks, plus the sha256 of each source run. The app panel "Test your terms against a simulated crowd" reads this file instead of the full runs. Regenerate with `make swarm-crowd-test`; `make swarm-crowd-test ARGS=--check` fails if it is stale. The panel must show `label` ("SCRIPTED, RECORDED") and must not present it as a live test.
+
 ## How the UI should read it
 
 - Margin over time chart: plot `rounds[i].margin_usdc` (BigInt, divide by 1e6) against `round`; mark `commit_end_round` (commit closes) and `walk_end_round` (Walk closes). `verdict_now` colours the line.

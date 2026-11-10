@@ -1,0 +1,49 @@
+{
+  "label": "RECORDED",
+  "note": "A real 1Click dry quote response (HTTP 201), saved by scripts/intents-dry-quote.sh --refresh. Dry: no deposit address, nothing sendable. Replayed when the network is unavailable.",
+  "http_status": 201,
+  "recorded_at": "2026-11-10T00:08:28Z",
+  "endpoint": "POST https://1click.chaindefuser.com/v0/quote",
+  "response": {
+    "quote": {
+      "amountIn": "1000000000000000000000000",
+      "amountInFormatted": "1.0",
+      "amountInUsd": "3.630000000000",
+      "minAmountIn": "1000000000000000000000000",
+      "amountOut": "1656781997824491",
+      "amountOutFormatted": "0.001656781997824491",
+      "amountOutUsd": "3.531762184762",
+      "minAmountOut": "1640214177846246",
+      "timeEstimate": 29,
+      "refundFee": "0",
+      "withdrawFee": "35000000000000"
+    },
+    "quoteRequest": {
+      "dry": true,
+      "depositMode": "SIMPLE",
+      "swapType": "EXACT_INPUT",
+      "slippageTolerance": 100,
+      "originAsset": "nep141:wrap.near",
+      "depositType": "ORIGIN_CHAIN",
+      "destinationAsset": "nep141:eth.omft.near",
+      "amount": "1000000000000000000000000",
+      "refundTo": "near",
+      "refundType": "ORIGIN_CHAIN",
+      "recipient": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+      "recipientType": "DESTINATION_CHAIN",
+      "deadline": "2026-11-10T00:18:27.000Z",
+      "confidentiality": "public",
+      "quoteWaitingTimeMs": 0,
+      "insured": false,
+      "appFees": [
+        {
+          "recipient": "5880ad2b362620fadf759cbceb1cd5737ce8c6ed7fb8e9942881e6731f9247dd",
+          "fee": 20
+        }
+      ]
+    },
+    "signature": "ed25519:2PXJ6qsUtoj6cvtzxnmJhXoQubHuemhNqs7uNzDvNfKRaW6RfajKNgcCUFxfeBobqVDehteZecYah139cPucKb4F",
+    "timestamp": "2026-11-10T00:08:28.172Z",
+    "correlationId": "5d8ee050-2fc1-4f0b-bf12-1ee40881c0a1"
+  }
+}

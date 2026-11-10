@@ -1,0 +1,9 @@
+# Dockerfile.judge builds everything inside the image; keep host build output and secrets out of the context.
+target
+.git
+.claude
+**/node_modules
+app/.next
+artifacts
+.env
+.env.*

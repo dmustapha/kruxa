@@ -1,0 +1,44 @@
+# Dockerfile.judge: the no-toolchain-on-your-machine judge path (J-1). UNTESTED: written on a machine without a finished image build.
+#
+#   docker build -f Dockerfile.judge -t kruxa-judge .     needs the network ONCE (image build): crates, the NEAR sandbox binary,
+#                                                         the hash-pinned intents.near wasm, the wasm builds
+#   docker run --rm --network none kruxa-judge            offline: JUDGE PREBUILT GREEN in well under 300 s
+#
+# What the image holds after the build: Rust 1.95.0 with the wasm target (rust-toolchain.toml), cargo-near 0.23.0, every crate fetched,
+# the contract wasm built, the test binaries compiled (so the NEAR sandbox binary is baked in), and artifacts/SHA256SUMS written from the
+# wasm built in this image. `docker run` then runs `scripts/judge-run.sh --prebuilt`, which verifies those hashes, runs the narrated sandbox
+# lifecycle on those exact bytes and the offline verify checks. Nothing is fetched or built at run time (CARGO_NET_OFFLINE=true).
+#
+# Honest limit: artifacts/ here come from a NON-reproducible local cargo-near build inside the image (artifacts/BUILD-KIND says so). The
+# reproducible build needs docker-in-docker; `scripts/build-artifacts.sh` without `--local` is the release path and runs on a host.
+#
+# Pinning: the base tag fixes Rust 1.95.0. Pin the digest too once it has been pulled on a networked machine:
+#   FROM rust:1.95.0-bookworm@sha256:<digest from `docker pull rust:1.95.0-bookworm`>
+FROM rust:1.95.0-bookworm
+
+ENV DEBIAN_FRONTEND=noninteractive CARGO_TERM_COLOR=never
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends python3 jq curl ca-certificates build-essential pkg-config libssl-dev clang \
+ && rm -rf /var/lib/apt/lists/*
+
+# cargo-near builds the contracts (the wasm feature lowering mainnet requires). Pinned to the version the repo was built with.
+RUN cargo install cargo-near --version 0.23.0 --locked
+
+WORKDIR /kruxa
+COPY . .
+
+# ---- network is allowed only up to the end of this RUN block ----
+RUN rustup show \
+ && cargo fetch --locked \
+ && ./scripts/fetch-intents-wasm.sh \
+ && ./scripts/build.sh \
+ && ./scripts/market-build.sh \
+ && ./scripts/instant-build.sh \
+ && ./scripts/build-artifacts.sh --local \
+ && cargo test --locked --no-run -p kruxa-tests --test judge_lifecycle \
+ && cargo build --locked -p kruxa-sim -p market-sim -p swarm-sim \
+ && cargo test --locked --no-run -p kruxa-math -p kruxa-logic -p kruxa-sim -p kruxa-market -p kruxa-instant -p swarm-sim
+
+# ---- from here on: no network ----
+ENV CARGO_NET_OFFLINE=true KRUXA_JUDGE=1
+CMD ["./scripts/judge-run.sh", "--prebuilt"]

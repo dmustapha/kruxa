@@ -1,0 +1,5 @@
+# dead RPC (closed local port 127.0.0.1:1) exits 4 and never prints MISMATCH
+# git ae8ed226a259, written by scripts/collect-track-evidence.sh
+# command: cargo run -q --offline -p kruxa-sim -- verify --rpc http://127.0.0.1:1 --contract core.kruxa.testnet --launch 1
+infrastructure error: rpc http://127.0.0.1:1: http://127.0.0.1:1/: Connection Failed: Connect error: Connection refused (os error 61)
+# exit 4 (expected 4)
