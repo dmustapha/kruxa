@@ -28,9 +28,21 @@ export function newKey(name) {
   fs.writeFileSync(keyFile(name), JSON.stringify({ account_id: name, public_key: kp.getPublicKey().toString(), private_key: kp.toString() }), { mode: 0o600 });
   return kp;
 }
+// The shared fastnear endpoint answers HTTP 429 when another client is busy: wait and resend (a 429 means the request was not processed).
+function retryOnRateLimit(provider) {
+  const send = provider.sendJsonRpc.bind(provider);
+  provider.sendJsonRpc = async (method, params) => {
+    for (let i = 0; ; i++) {
+      try { return await send(method, params); } catch (e) {
+        if (i >= 8 || !/-429|Rate limits exceeded/.test(String(e && e.message))) throw e;
+        await sleep(5 * (i + 1));
+      }
+    }
+  };
+}
 let near;
 export async function net() {
-  if (!near) near = await connect({ networkId: 'testnet', nodeUrl: RPC, keyStore });
+  if (!near) { near = await connect({ networkId: 'testnet', nodeUrl: RPC, keyStore }); retryOnRateLimit(near.connection.provider); }
   return near;
 }
 export async function acct(name) {

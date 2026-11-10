@@ -1,0 +1,3 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+cluster: devnet (devnet) mode: F0 launch: 10
+{"jsonrpc": "2.0", "error": {"code": -429, "message": "Rate limits exceeded. For higher rate limits get a subscription at https://fastnear.com"}, "id": "1"}

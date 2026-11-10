@@ -1,0 +1,51 @@
+{
+  "launch_id": "10",
+  "core": "core3.kxi-root-1108.testnet",
+  "keeper": "keeper.kxi-root-1108.testnet",
+  "at": "2026-11-10T19:53:17.649Z",
+  "calls": [
+    {
+      "method": "settle",
+      "tx": "3MB18vUqc4cb4CTQTT9hzVNG9pp1G2Hzv6SoXkV1GGPC",
+      "success": true,
+      "value": "true",
+      "rule_codes": []
+    },
+    {
+      "method": "settle_positions_page",
+      "tx": "DGDMvCSrvrCJL7K76S2t6Sv5zR5caDqDcM4SVBM53UB2",
+      "success": true,
+      "value": "25",
+      "rule_codes": []
+    },
+    {
+      "method": "sweep_residue",
+      "tx": "HXTCzew1EnNCp2wab6RhkWQ5CLhYve5aPfsE1MUHHdSE",
+      "success": true,
+      "rule_codes": []
+    },
+    {
+      "method": "consolidate",
+      "tx": "HNsyaLXwF9NAonJ1gv8y2qFQ88aomN52Gqad54WLj9c1",
+      "success": true,
+      "rule_codes": []
+    },
+    {
+      "method": "pay_launch_fee",
+      "tx": "HD6SJNhnXBD7Y29Hix8ZeWPZZcx6SBsdFaNwzLfJrT4P",
+      "success": true,
+      "rule_codes": []
+    },
+    {
+      "method": "pay_relay_fees",
+      "tx": "C1mcssvqXTLYSMHPpKcZo86aShRep5m1ERH9NViXViS6",
+      "success": false,
+      "rule_codes": [
+        "R_NOTHING_FREE"
+      ]
+    }
+  ],
+  "final_status": "Passed",
+  "positions_unsettled": 0,
+  "residue_swept": true
+}

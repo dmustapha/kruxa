@@ -25,6 +25,7 @@ const SPECS = {
   G: { sym: 'KXCG', mode: 'F0', creator: 'creator-b', buyers: 12, amount: 30n, note: 'F0 run on the final wasm e338f84d (round 2)' },
   H: { sym: 'KXCH', mode: 'F0', creator: 'creator-a', buyers: 12, amount: 30n, note: 'F0 run on the final wasm e338f84d (round 2, create_trial with 300 Tgas)' },
   I: { sym: 'KXCI', mode: 'F0', creator: 'creator-a', buyers: 12, amount: 30n, note: 'F0 run on the FINAL wasm e85198ed with the R_GAS guard (round 3, PD-18)' },
+  J: { sym: 'KXDR', mode: 'F0', creator: 'creator-a', buyers: 12, amount: 30n, note: 'F0 run on the REPRODUCIBLE wasm 665caab5 (round 4, create_trial with 300 Tgas)' },
 };
 
 const b58 = (buf) => {
@@ -101,14 +102,16 @@ function genesisPlan(spec, id) {
     squads_multisig_hash: b58decode32(SQUADS),
   };
   if (spec.mode === 'F0') {
-    plan.mint_pubkey_f0 = execFileSync('npx', ['tsx', 'src/f0-key.ts', '--core', A.core, '--launch', String(id)], { cwd: path.join(REPO, 'relayer'), encoding: 'utf8' }).trim();
+    for (let i = 1; ; i++) { // the shared RPC answers 429 when busy; f0-key.ts is a read-only view, safe to repeat
+      try { plan.mint_pubkey_f0 = execFileSync('npx', ['tsx', 'src/f0-key.ts', '--core', A.core, '--launch', String(id)], { cwd: path.join(REPO, 'relayer'), encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim(); break; } catch (e) { if (i >= 8) throw e; execFileSync('sleep', [String(5 * i)]); }
+    }
   }
   return plan;
 }
 
 const which = process.argv[2];
 const spec = SPECS[which];
-if (!spec) { console.error('usage: seed.mjs A|B|C|D|E|F'); process.exit(64); }
+if (!spec) { console.error('usage: seed.mjs A|B|C|D|E|F|G|H|I|J'); process.exit(64); }
 const book = readJson('launches.json', {});
 if (book[which]) { console.log(`launch ${which} already seeded as id ${book[which].id}`); process.exit(0); }
 

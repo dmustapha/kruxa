@@ -1,0 +1,11 @@
+PASS G2-01 G1 still green (last run's logs: no failed test)
+PASS G2-02 testnet PASS launch 10: MATCH, PASS
+PASS G2-03 testnet FAIL launch 3: MATCH, FAIL
+PASS G2-04 devnet mint: verify.sh 10 exit 0
+PASS G2-05 tamper: verify.sh 10 --tamper-all exit 2
+PASS G2-06 FAIL launch 3 has no mint: prints 'no mint (expected for FAIL)', exit 0
+PASS G2-07 genesis mode F0 (evidence/genesis/core3-f0-devnet-launch10.json)
+PASS G2-08 hygiene: secret-scan PASS, zero mainnet-beta in relayer/src
+PASS G2-09 no mainnet writes: scripts/genesis-devnet.sh mentions mainnet only to refuse it
+
+G2 GREEN (9 of 9)
