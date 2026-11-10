@@ -479,5 +479,91 @@
       "holder_count": 0,
       "phase": "Open"
     }
+  },
+  "H": {
+    "id": 8,
+    "name": "H",
+    "note": "F0 run on the final wasm e338f84d (round 2, create_trial with 300 Tgas)",
+    "symbol": "KXCH",
+    "mode": "F0",
+    "token": "kxch.factory.kxi-root-0811.testnet",
+    "creator": "creator-a.kxi-root-1108.testnet",
+    "core": "core3.kxi-root-1108.testnet",
+    "holders_file_local": "~/.kruxa-secrets/genesis/holders-core3-8.json",
+    "txs": {
+      "mint_to_intents": "FuD5YNJRn73RTsbsHBevA2pxo57AniUohhXEckZEaPsW",
+      "create_trial": "DXD4HAewPe173yDw3KVAD9bhavoCfy6z1fZPoj9yLqqh"
+    },
+    "buyers": [
+      {
+        "holder": "sol:7i2ajLYzC2uTDrVGuLgCtYCEARErqVmUt37N81WPftr8",
+        "tx": "AHSq4z5CmVvjDEnaS9ZK35MCjFEqL4gApLQQbdyBQN1x",
+        "success": true
+      },
+      {
+        "holder": "sol:CAaUaAzidbjefwB7paUYdnGQEcF5s7NtszaZy33EUi9U",
+        "tx": "5vUKFYXHpAQMRs7vfjkBwLDAssz21CVD5cxc1JfqLLrq",
+        "success": true
+      },
+      {
+        "holder": "sol:4atmihuoPx4vWFtykudwr7K6EUNyGs1kBshCPVdy2dEj",
+        "tx": "UHwTJ2vJRiS8ZpsStsayAfRnNeG7NpXEQ5zBLc7ymwP",
+        "success": true
+      },
+      {
+        "holder": "sol:6o4iNFiDqTFGCB4LWnJFU6Zr249C5CNt6yzDGqZ7eBt3",
+        "tx": "C6FSPaYxcR14kRyKaeNM3z2q4tYBs5aJu9XjPj7TMVi1",
+        "success": true
+      },
+      {
+        "holder": "sol:Ar6QhtA7xGKxCSqqWpmgT5ADnUwfDXL52L55MW6mWrj",
+        "tx": "B2zqsnLHF7dCvfv3XLkqNd56T4NmG2Z7c1wJVCUEPkuB",
+        "success": true
+      },
+      {
+        "holder": "sol:9d6V3y3NuPbBDGjrxLv2fhKx5GtVxXqzi2LE7RtvHMN1",
+        "tx": "ALvT245RkRUJqHCWCgyegj94Dzg73MSBF1dDxss6QVJn",
+        "success": true
+      },
+      {
+        "holder": "sol:Hq6vcHygDfHoptE8NSy5avKeDvpbVGygqMCV7BVDVoQY",
+        "tx": "23Z65FuumjyFJw57QrhzMZ6SmzoaygG78aw6yxzkbtmt",
+        "success": true
+      },
+      {
+        "holder": "sol:FsGM7VbQR1LHFiWUymE6Khgs8moeZmdaJv65uqfSegCk",
+        "tx": "684tzTNNLw4DUJ54os8YG7bKwek5GqNCUtFcvELLUEcU",
+        "success": true
+      },
+      {
+        "holder": "sol:HEDFXjSSnv6pdp1P5ikeory22aKsr5dHq5QDnZr84sbz",
+        "tx": "769TCGC2nwRbNupbU38aBmAizoF8fdGXmwnJQQ5YyYnJ",
+        "success": true
+      },
+      {
+        "holder": "sol:5ss2ZEK3JEGWv956NksS4yxkPxLYhH77PPSsVfWLAWKB",
+        "tx": "VZ9osMC8FzwxgNcnuj2gz6c3ciYkbzmTustczFLGa7A",
+        "success": true
+      },
+      {
+        "holder": "sol:DJjFQWLdiC2PzfEMcVh2C7Lhtj5Q3a6tZzCBJbCFNTqX",
+        "tx": "2UPVMvbM5KDqSZyarRQMqgN5WzFeK6M4e96Q3hLNhHxM",
+        "success": true
+      },
+      {
+        "holder": "sol:4Lp893nyVd1J1p7uV3Cz18FKYxQ8ugRNB8CVvE4Coj13",
+        "tx": "BAm6V9PP3JEdhimMTbUAFW5st7qb8MUoBuTwBeun6Hee",
+        "success": true
+      }
+    ],
+    "create_success": true,
+    "create_codes": [],
+    "created_at": "2026-11-10T02:15:58.840Z",
+    "after_commit": {
+      "total_active": "360000000",
+      "active_funders": 12,
+      "holder_count": 12,
+      "phase": "Open"
+    }
   }
 }

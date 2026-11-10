@@ -6,7 +6,8 @@ cd "$(dirname "$0")/.."
 pat='(ed25519:[1-9A-HJ-NP-Za-km-z]{40,}|-----BEGIN [A-Z ]*PRIVATE KEY|"secret_key"|private_key *[=:] *[0-9a-fA-F]{32,}|NEXT_PUBLIC_MAINNET_CONFIRMED=DAMI)'
 # relayer/src/f0.test.ts holds PUBLIC keys only (the MPC signer root key and a derived child key, recorded as test vectors).
 # evidence/genesis* and evidence/testnet-core3 hold public ceremony records and verify outputs: the MPC signer root key and the core owner full-access PUBLIC key printed by the KEYS line.
-allow='^(ARCHITECTURE\.md|DECISIONS\.md|docs/|app/\.env\.example|scripts/secret-scan\.sh|relayer/src/f0\.test\.ts|evidence/genesis|evidence/testnet-core3)'
+# evidence/attack-gallery/disclosed-facts.json quotes the PUBLIC test.near full-access key from the read-only N-06 mainnet view (a public key, not a secret).
+allow='^(ARCHITECTURE\.md|DECISIONS\.md|docs/|app/\.env\.example|scripts/secret-scan\.sh|relayer/src/f0\.test\.ts|evidence/genesis|evidence/testnet-core3|evidence/attack-gallery/disclosed-facts\.json)'
 hits=$(git ls-files -z | xargs -0 grep -IlE "$pat" 2>/dev/null | grep -Ev "$allow" || true)
 if [ -n "$hits" ]; then echo "$hits"; echo "SECRET-SCAN FAIL"; exit 1; fi
 echo "SECRET-SCAN PASS"
