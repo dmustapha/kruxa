@@ -3,6 +3,7 @@
 // Desktop (1024 px and up): header, safety tiles, then chart plus tabs on the left and the order panel and DexScreener-style rail on the
 // right. Mobile: header, chart, activity, segmented tabs (Trades, Holders, Info, Verify) and a sticky Buy / Sell bar that opens a sheet.
 // The page state (trial, failed, genesis, trading, halted) decides what renders; unknown facts are shown as unknown.
+import { useWallet } from '@/components/wallet';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { instantSteps, instantTiles, vestSchedule } from '@/lib/market/instant';
 import { useLauncherUnit } from '@/components/features/instant/useInstant';
@@ -30,6 +31,7 @@ import { PriceChart } from './PriceChart';
 import { PriceHeader } from './PriceHeader';
 import { SafetyPanel } from './SafetyPanel';
 import { FailedState, GenesisState, HaltedBanner, LaunchFailedState, LaunchingState, TrialState } from './StateCards';
+import { FailedRedirect } from './FailedRedirect';
 import { OrderSheet, StickyTradeBar, type SheetSide } from './OrderSheet';
 import { SafetyTiles } from './SafetyTiles';
 import { StatsRail } from './StatsRail';
@@ -57,6 +59,7 @@ function initialTab(): string {
 
 function TokenBody({ id }: { id: string }) {
   const launcherUnit = useLauncherUnit();
+  const you = useWallet().sessions.near?.address ?? null;
   const [interval, setInterval_] = useState<Interval>('1h');
   const [mode, setMode] = useState<'price' | 'mc'>('price');
   const [tab, setTab] = useState('trades');
@@ -150,7 +153,7 @@ function TokenBody({ id }: { id: string }) {
   const verify = isInstant ? <ContractFacts page={page} facts={facts} instant={instantData} nowSec={nowSec} /> : <div className="mkt-stack"><VerifyPanel launchId={id} /><SafetyPanel page={page} /></div>;
   const verifyLabel = isInstant ? 'Contract facts' : 'Verify';
   const creatorTab = isInstant ? <div className="mkt-stack">{alloc}{creator}</div> : creator;
-  const trades_ = <TradesFeed trades={trades} nowSec={nowSec} onRetry={reloadTrades} declared={declared} />;
+  const trades_ = <TradesFeed trades={trades} nowSec={nowSec} onRetry={reloadTrades} declared={declared} you={you} />;
   const holders_ = <HoldersPanel holders={holders} onRetry={reloadHolders} />;
   const stats = <StatsRail rows={rows} partial={!!wideTrades && wideTrades.next_cursor !== null} />;
 
@@ -165,7 +168,7 @@ function TokenBody({ id }: { id: string }) {
     <div className="mkt-root" data-state={state}>
       <PriceHeader page={page} facts={facts} livePrice={live?.price} paused={page.pool.paused} phase={phase} showMarket={trading} mode={lmode} />
       {isInstant && <InstantNotice />}
-      {state === 'failed' ? (isInstant ? <LaunchFailedState status={page.launch.status} /> : <FailedState page={page} />) : (
+      {state === 'failed' ? (isInstant ? <LaunchFailedState status={page.launch.status} /> : <><FailedRedirect id={id} /><FailedState page={page} /></>) : (
         <>
           <SafetyTiles tiles={tiles} verifyLabel={isInstant ? 'See the contract facts' : 'Recompute in your browser'} onOpenVerify={() => { changeTab('verify'); document.getElementById('mkt-tabs')?.scrollIntoView({ block: 'start' }); }} />
           {state === 'halted' && <HaltedBanner />}

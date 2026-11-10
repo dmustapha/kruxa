@@ -27,7 +27,7 @@ describe('llms.txt and AGENTS.md', () => {
     for (const [n, t] of Object.entries(texts)) for (const e of API_ENDPOINTS) expect(t, `${n} ${e.path}`).toContain(e.path);
   });
   it('use no em or en dashes', () => {
-    for (const [n, t] of Object.entries(texts)) expect(/[–—]/.test(t), n).toBe(false);
+    for (const [n, t] of Object.entries(texts)) expect(/[\u2013\u2014]/.test(t), n).toBe(false);
   });
   it('never claim audit, trustlessness, yield or safety except as things not to claim', () => {
     const t = llmsTxt('x');

@@ -19,6 +19,8 @@ import { allocate, settlePosition } from '@/lib/verdict';
 import { getCharter } from '@/lib/near';
 import { useHolderKeys } from '@/lib/useHolders';
 import { useTx } from '@/lib/useTx';
+import { referenceNow } from '@/lib/clock';
+import { GROUP_HINT, GROUP_TITLE, groupPositions } from '@/lib/portfolio';
 
 const TONE: Record<PositionStatus, string> = { active: 'open', walked: 'muted', awaiting_settle: 'warn', refundable: 'warn', claimable: 'pass', claimed: 'muted', market_only: 'source' };
 
@@ -122,7 +124,18 @@ export function PortfolioView() {
           <div style={{ margin: '8px 0 16px' }}><Freshness source={first?.source} asOf={first?.as_of} /></div>
           {positions.length === 0
             ? <EmptyState title="No positions for this account" action={<Link className="btn" href="/launches">Browse launches</Link>}>The indexer has no commit, Walk or market balance for it.</EmptyState>
-            : <div className="grid grid-2">{positions.map((p) => <PositionCard key={p.launch.launch_id} p={p} />)}</div>}
+            : (
+              <>
+                <dl className="kv" aria-label="Summary"><div><dt>Positions</dt><dd>{positions.length}</dd></div><div><dt>Committed now</dt><dd>{fmtUsdc(positions.reduce((a, p) => a + BigInt(p.active ?? '0'), 0n))}</dd></div></dl>
+                {groupPositions(positions, referenceNow(first?.source, first?.as_of)).map(({ group, items }) => (
+                  <section key={group} aria-labelledby={`pf-${group}`}>
+                    <h2 id={`pf-${group}`}>{GROUP_TITLE[group]} <span className="muted num">({items.length})</span></h2>
+                    <p className="hint">{GROUP_HINT[group]}</p>
+                    <div className="grid grid-2">{items.map((p) => <PositionCard key={p.launch.launch_id} p={p} />)}</div>
+                  </section>
+                ))}
+              </>
+            )}
         </>
       )}
       {keys.filter((k) => !k.startsWith('sol:')).slice(0, 1).map((k) => <Allocations key={k} account={k.replace(/^near:/, '')} />)}

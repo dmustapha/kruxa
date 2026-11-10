@@ -27,3 +27,26 @@ export function scenarios(p: TrialParams, r: Rules = LADDER_RULES): Scenario[] |
     return { label, committed, backers, verdict: 'PASS' as const, accepted: a.accepted, launchFee: a.launchFee, lpSeed: a.lpQuote, stream: a.stream, streamPerDay: a.stream / BigInt(p.stream_days), refundPool: a.excessPool, sample: { spend: s.spend, refund: s.refund, tokens: s.tokens + s.bonus } };
   });
 }
+
+// ---- trading volume scenarios (APP-SPEC 4.3, 5.4) ----
+/** The slice of a fee each party gets, in the order the contract states them. Holders and referral slices go to liquidity in this release. */
+export interface VolumeRow {
+  volume: bigint; fee: bigint; creator: bigint; platform: bigint; liquidity: bigint;
+  /** Part of the creator slice that is claimable at once, and the part that vests (fee_vest_bps). */
+  creatorNow: bigint; creatorVesting: bigint;
+}
+
+export const VOLUME_STEPS: bigint[] = [1_000_000_000n, 10_000_000_000n, 100_000_000_000n]; // $1,000, $10,000, $100,000
+
+type FeeShape = { total_fee_bps: number; creator_bps: number; platform_bps: number; fee_vest_bps: number };
+
+/** Integer arithmetic only: amounts in micro-USDC, shares in bps. Rounds down per slice; the remainder goes to liquidity, as in the market. */
+export function volumeScenarios(f: FeeShape, volumes: bigint[] = VOLUME_STEPS): VolumeRow[] {
+  return volumes.map((volume) => {
+    const fee = (volume * BigInt(f.total_fee_bps)) / 10_000n;
+    const creator = (fee * BigInt(f.creator_bps)) / 10_000n;
+    const platform = (fee * BigInt(f.platform_bps)) / 10_000n;
+    const creatorVesting = (creator * BigInt(f.fee_vest_bps)) / 10_000n;
+    return { volume, fee, creator, platform, liquidity: fee - creator - platform, creatorNow: creator - creatorVesting, creatorVesting };
+  });
+}

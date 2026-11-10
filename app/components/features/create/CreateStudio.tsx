@@ -13,6 +13,7 @@ import { TxStatus } from '@/components/ui/TxStatus';
 import { createTrialNear } from '@/lib/actions';
 import { agreement, askContract, type ContractAnswer } from '@/lib/charter/preview';
 import { EXPLAIN } from '@/lib/charter/explain';
+import { VolumeScenarios } from '../VolumeScenarios';
 import { feePreview, formFromPreset, paramsFromForm, type FormState } from '@/lib/charter/form';
 import { PRESETS, presetById } from '@/lib/charter/presets';
 import { DEMO_RULES, LADDER_RULES, bondRequired, derive, toContractJson, validateAll } from '@/lib/charter/rules';
@@ -235,6 +236,8 @@ export function CreateStudio() {
               <>
                 <h3 style={{ fontSize: '1rem' }}>Fee preview</h3>
                 <dl className="kv">{feePreview(parsed.params).map((r) => <div key={r.label}><dt>{r.label}</dt><dd>{r.pct}</dd></div>)}</dl>
+                <h3 style={{ fontSize: '1rem' }}>Volume scenarios</h3>
+                <VolumeScenarios fees={parsed.params.fees} />
                 <p className="hint">Shares of trade volume at the committed standard terms, vesting {parsed.params.fees.fee_vest_bps / 100}% over {parsed.params.fees.fee_vest_days} days. In this release the holders and referral slices go to liquidity. Fees apply only once a pool exists. A model of your terms, not a forecast, and not a promise of income.</p>
               </>
             )}
