@@ -1,0 +1,54 @@
+{
+  "network": "NEAR TESTNET",
+  "factory": "token.primitives.testnet",
+  "runs": [
+    {
+      "probe": "create_token",
+      "symbol": "KXR2G80",
+      "prepaid_tgas": 80,
+      "success": false,
+      "tx": "6WymoWoxhQf38NSQCSf9uUnrbDyM53p1Qdhtzo4pgypT",
+      "token": "kxr2g80.token.primitives.testnet",
+      "probe_balance_change_near": -0.000328
+    },
+    {
+      "probe": "create_token",
+      "symbol": "KXR2G110",
+      "prepaid_tgas": 110,
+      "success": true,
+      "tx": "5oLd9c4UwpuHcKNA4oY9qJzscFioEUpKVnh6vU34Xe1k",
+      "receipts": "token:ok kxr2g110:ok probe2:ok token:ok probe2:ok",
+      "failures": [],
+      "token": "kxr2g110.token.primitives.testnet",
+      "probe_balance_change_near": -0.098439
+    },
+    {
+      "probe": "n04",
+      "token": "kxr2g110.token.primitives.testnet",
+      "target": "treasury.kxi-root-1108.testnet",
+      "before": null,
+      "deposits": [
+        {
+          "n": 1,
+          "tx": "683Ai8Yr9k1GVVMZynFpn2sQsf8N8w6D2UPxGsustVGU",
+          "success": true,
+          "receipts": "kxr2g110:ok",
+          "probe_balance_change_near": -0.032169,
+          "gas_burnt_near": 0.000183
+        },
+        {
+          "n": 2,
+          "tx": "BveMgNnxG4B1BtiJSyswsHQCCYiWpeQPykRJX5Krd1d5",
+          "success": true,
+          "receipts": "kxr2g110:ok probe2:ok probe2:ok",
+          "probe_balance_change_near": 0.030311,
+          "gas_burnt_near": 0.000224
+        }
+      ],
+      "after": {
+        "total": "1250000000000000000000",
+        "available": "0"
+      }
+    }
+  ]
+}

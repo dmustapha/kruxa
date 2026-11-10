@@ -39,7 +39,7 @@ for entry in "${CONTRACTS[@]}"; do
   dir="${entry%%:*}"; name="${entry##*:}"
   src="target/near/$name/$name.wasm"
   if [ "$KIND" != "${KIND#reproducible}" ]; then
-    (cd "contracts/$dir" && cargo near build reproducible-wasm --no-abi)
+    (cd "contracts/$dir" && cargo near build reproducible-wasm)
   fi
   [ -f "$src" ] || { echo "missing $src: build it first (./scripts/build.sh, market-build.sh, instant-build.sh) or drop --local" >&2; rm -f "$OUT/SHA256SUMS.tmp"; exit 1; }
   cp "$src" "$OUT/$name.wasm"
