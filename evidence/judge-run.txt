@@ -1,0 +1,65 @@
+# Judge run record. Written by scripts/judge-run.sh --record on git 4e0bd6b656c3255521fbc1e95a445be0472c7a8e.
+# Every quoted README output string must appear in this file or in another committed evidence file (scripts/readme-lint.sh --evidence).
+# Host: Darwin arm64, cores 15
+
+P0  GREEN     0s  prerequisites: Rust 1.95.0, cargo-near, python3, jq, curl
+N1  GREEN     6s  network: crates.io fetch and the hash-pinned intents.near wasm
+N2  GREEN     8s  compile all test binaries (sandbox binary download on a cold machine)
+B1  GREEN    13s  build core, market and launcher wasm with cargo-near, print their sha256
+U1  GREEN    28s  pure unit and property tests (math, logic, sim, market, launcher, swarm)
+V1  GREEN     3s  golden vectors: PASS at the soft cap, FAIL one micro-USDC below, oversubscription refund
+C1  GREEN 10765s  core in the sandbox: lifecycle, adversarial, creator gate, payout, hand-off, real intents.near wasm, genesis
+M1  GREEN    92s  market in the sandbox: AMM, fee split, caps, pause, adversarial
+I1  GREEN   354s  launcher (Instant mode) in the sandbox: flow, adversarial, review regressions, real market
+M2  GREEN     2s  market demo: buy and sell, five fee slices add up, custody unchanged
+M3  GREEN     1s  market simulation: creator share bound over 60 days
+A1  GREEN   741s  attack gallery: every attack refused, harmless, or a disclosed bound; invariants held
+T1  GREEN     1s  verify: recorded launch lifecycle replays to its recorded book hash
+T2  GREEN     1s  tamper: one micro-USDC changed in the record is detected, exit 2
+T3  GREEN     0s  verify: recorded Solana devnet genesis (F0, signed through NEAR Chain Signatures, real testnet core) re-checks clean
+T4  GREEN     0s  tamper-all: every recorded Solana input flipped, each run detected, exit 2
+T5  GREEN     0s  dead RPC exits 4 and never prints MISMATCH
+W1  GREEN     3s  swarm: 16 agents, 24 rounds, invariants every round, recorded runs reproduce, 300-seed sweep
+O1  GREEN     6s  make tour: seven offline scenes
+H1  GREEN     8s  make thesis
+
+Memecoins With Mechanics     GREEN steps V1 C1 M1 M2 M3 U1
+AI Security & Defense        GREEN steps T1 T2 T3 T4 T5 A1
+AI Swarms                    GREEN steps W1
+Open Innovation              GREEN steps P0 N1 N2 B1 U1 V1 C1 M1 M2 M3 I1 A1 T1 T2 T3 T4 T5 W1 O1
+Unstoppable DeFi             RED   no sandbox-only proof: the dry quote needs a live Intents endpoint and the Test 1 evidence files are not committed
+Investment Thesis            GREEN steps H1
+Agent Economy                RED   track cut (CHANGE-ORDER-6 E-2): no agent module is built
+
+JUDGE RUN GREEN  (20 of 20 steps green, wall 12033s)
+
+# Key output lines, copied from the step logs
+sha256 kruxa_core.wasm e85198ed37c2aa1d6cd5f18571f5e023eed391108ca8f22edc8599ac390e65ac 675007 bytes
+sha256 kruxa_market_contract.wasm c80560d63663fe71526f88de9ebbf5c8c16979c00ed32d1eb11b13c087ae2b26 261077 bytes
+sha256 kruxa_instant_contract.wasm 90b87782e25ee0f7991fac494c895b61a7d4f1008bf02ec32588ac9a6091d255 274053 bytes
+outcome=PASS
+outcome=FAIL(reasons=1)
+spend=40000000 refund=60000000 tokens=4800000000000 bonus=400000000000
+SLICES OK
+BOUND OK: creator never above 50% of the fee (creator 298.59 of fee 636.47)
+SWARM GREEN
+INVARIANTS HELD in 24 of 24 rounds and at settlement
+== sweep: invariants over 300 more seeds ==
+sweep seeds 1..=300: 0 violations, 23 FAIL verdicts, 13 successful walk-flips
+ATTACK GALLERY (sandbox): 100 attacks run, 81 refused with a rule code, 14 ran with no effect, 5 bounded (disclosed limits), 0 failed, 0 succeeded unexpectedly; invariants held in 100/100; 10 not done (see not_done); KNOWN FINDINGS (separate, see docs/KNOWN-FINDINGS.md for pre-fix and current): 0 exploitable, 5 not exploitable, 1 not reproduced (see docs/KNOWN-FINDINGS.md)
+MISMATCH log (event 30: walk of 40000000, holder had 40000001)
+TOUR 1/7 hostile preset refused: R_ALLOC R_WINDOW
+TOUR 2/7 standard preset accepted: no rule violated
+TOUR 3/7 verdict at the boundary: PASS exactly at the soft cap
+         + one micro-USDC below the soft cap: FAIL
+TOUR 4/7 oversubscribed 100 USDC buyer spends 40, refunded 60
+TOUR 5/7 recorded lifecycle replays to the same book hash: MATCH
+         + one micro-USDC changed in the record: MISMATCH, exit 2
+TOUR 6/7 market: fees split five ways, pool constant held
+         + market: creator never above 50% of the fee over 60 days
+TOUR 7/7 swarm: 16 agents, adversaries bounded, invariants hold every round
+TOUR GREEN
+RECORDED, not live (evidence evidence/genesis/core2-f0-devnet-launch6-evidence.json)
+MISMATCH mint (tamper detected)
+MISMATCH g_pub (tamper detected)
+MISMATCH launch_id (tamper detected)
