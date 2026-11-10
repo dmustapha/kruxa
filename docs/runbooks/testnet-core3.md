@@ -4,7 +4,7 @@ Account ids and transaction hashes only. NEAR TESTNET and Solana DEVNET, play mo
 
 | Role | Account |
 |---|---|
-| Core, wasm sha256 `e338f84d30208849a819fee19e8f311e071cd48f37a1f0b6d03744378d97639a` (674,863 B, non-reproducible local build; round 2 redeploy, create_token gas 110 Tgas; was 7d7b0da2... in round 1) | `core3.kxi-root-1108.testnet` |
+| Core, wasm sha256 `e85198ed37c2aa1d6cd5f18571f5e023eed391108ca8f22edc8599ac390e65ac` (675,007 B, non-reproducible local build; final redeploy with the R_GAS guard on 2026-11-10, equal to `view_code` and `artifacts/SHA256SUMS`; was `e338f84d...` (674,863 B, create_token gas 110 Tgas) during round 2 and `7d7b0da2...` in round 1) | `core3.kxi-root-1108.testnet` |
 | Market (sha256 `c80560d63663fe71526f88de9ebbf5c8c16979c00ed32d1eb11b13c087ae2b26`), core = core3 | `market3.kxi-root-1108.testnet` |
 | Owner / mock USDC / guardian / treasury / relay fees | `kxi-root-1108.testnet`, `usdc.`, `guardian.`, `treasury.`, `relay-fees.` under it |
 | Mock Intents (reused) / mock factory (reused) | `intents.kxa1-owner-1203.testnet`, `factory.kxi-root-0811.testnet` |

@@ -1,57 +1,80 @@
 # Submission status
-_Last updated: CHANGE-ORDER-5 doc-sync, 2026-11-08 (after forge Phase 3, CHANGE-ORDER-3 and CHANGE-ORDER-4)_
 
-## Status
-- [x] Pure crates `kruxa-math` and `kruxa-logic` compile and pass 50 unit and property tests (rustc 1.95.0, local run)
-- [x] Core contract builds to wasm with cargo-near 0.23.0 (462,222 bytes) and passes 34 sandbox tests against mock USDC, mock Intents and mock factory (local run)
-- [x] Lifecycle verified in the sandbox: create, commit (native and S3), S4 forward, Walk (key and signature), settle PASS (under- and oversubscribed) and FAIL, refunds, claims, consolidation, launch fee, `STREAM_CAP`
-- [x] Adversarial cases for every reachable `R_*` code, callback re-credit, fake token, direct callback, pause and freeze
-- [x] `scripts/verify.sh golden` reproduces the S1-B boundary vectors and example 1
-- [x] App builds (`/`, `/create`, `/launch/[id]`, `/demo`); TypeScript mirror matches the Rust hashes
-- [x] ARCHITECTURE.md, DECISIONS.md, LIMITATIONS.md written; ARCHITECTURE.md round-trips to the compiled workspace
-- [ ] Repo scaffolded from ARCHITECTURE.md by build (`scripts/extract_architecture.py`)
-- [ ] Wave 0: S3 against the real `intents.near` wasm in the sandbox
-- [ ] Wave 0: testnet probe of the token factory (`create_token` cost, excess refund, `ft_burn`)
-- [ ] Deployed to NEAR testnet; `verify.sh chain` run on a PASS and a FAIL launch
-- [ ] Wave 2: Solana genesis, Merkle distributor, Squads reserve
-- [ ] Market-lite (scope M-A) on testnet, M-gate Nov 11 EOD (CO-3; Hold Vault stays later)
-- [ ] Demo seeded launches A, B, C; README with do-X-see-Y steps; X post; repo public; submission form
+Last updated: 2026-11-10 (docs-sync after the final core build and testnet round 2). Every row cites a file in the repo or says it has none. "Proven" means a committed run record exists; "built" means the code exists. Honest limits are in `LIMITATIONS.md`; unproven items are in `PROOF-DEBTS.md`.
 
-## Known limitations / blockers
-- The real `intents.near` and the real token factory have not been called by this code. Reason: safety and cost; W0 is a source read. Blocker for the claim "works on mainnet".
-- The wasm was loaded by the protocol-88 sandbox only. Reason: no testnet deployment yet. Mainnet also reports protocol 88 [VERIFIED 2026-11-08, curl `status`], so the earlier protocol-87 concern is removed; real-network acceptance is still unverified until the testnet deploy.
-- A live S3 test and Phantom `signMessage` byte-exactness are unproven. Reason: needs Dami's per-action confirmation and funding for the approved <= $1 test.
-- Charter has fee terms but no payees, creator-allocation vesting or LP-token distribution. Reason: scope (Wave 3); fee terms are inert until the market exists.
-- No async solvency anchor, no token burn for failed launches, claimants must register on the launch token first. Reason: scope; designed in ARCHITECTURE.md 5.6.
-- The wasm is 462,222 bytes against a 350 KB budget. Reason: JSON `Value` views; locks about 4.57 NEAR of storage stake.
-- Gas constants are estimates and the 7-day freeze expiry is tested only as a pure function. Reason: a 7-day sandbox fast-forward is impractical (100,000 blocks did not finish in 4 minutes).
-- The app has not been opened in a browser or connected to a wallet. Reason: phase scope.
-- Open rulings (waiting on Dami): relay-fee ceiling (5% / $0.50 implemented, 1% suggested), the 2x oversubscription ceiling, reserve split, storage payer, pool and LP-seed amounts, USDC payout address, README headline, brand-token supply, and Squads independents (BLOCKER BLK-1 for third-party creators only; Dami: "when we get there"). RULED on 2026-11-08 and closed: fee split 50/15/15/10/10, round-one LP seed 100% on the NEAR pool, hosting tier 2 through Nov 25, market reserve caps $5,000 / $15,000 (interim), beta access (open under caps after BLK-1). Reason for the open list: ARCHITECTURE.md 3.2, PRD 9.4.
-- Rust toolchain: the machine default is 1.91.1; 1.95.0 was installed alongside for this run and must be installed on any build machine. Reason: near-sdk 5.30.1 requirement.
-- Any mainnet step, repo publication, X post and the one-shot submission are not done. Reason: each requires Dami's per-action confirmation.
+## 1. Snapshot
 
-## CHANGE-ORDER-3 additions (all unchecked: nothing below is built or run)
-- [ ] Core deltas D-1 (creator gate) and D-3 (`open_market` handoff) merged; Wave 1 suite re-run; core wasm frozen Nov 10 EOD
-- [ ] Meteora devnet spike result (pass/fail per check) in `spikes/meteora/RESULT.md` by Nov 10 midday
-- [ ] Nov 10 EOD Genesis Round go/no-go run (`gate-g3.sh`); result recorded
-- [ ] Indexer, candles, trades feed, launch feed API; hosting tier 2 up
-- [ ] Wallet layer (near-connect pinned and verified; Solana chooser)
-- [ ] Payout recipient visible in Studio, trial page and Creator Desk; earnings CSV
-- [ ] $KRUXA trial opened on mainnet (target Nov 11 12:00 UTC, latest 18:00); settled; genesis; `verify.sh` exit 0 on it
-- [ ] M-gate (Nov 11 EOD) and market on mainnet; B-gate (Nov 12 EOD) and capped beta opened
-- [ ] Per-track claim checklist (PLAN C3.9) green rows only: memecoins, security, open, defi, swarms, agents (tier B conditional); tier C not listed by default
-- BLOCKER BLK-1: two named independent Squads signers. Owner Dami. Dami: "id name 2 friends when we get there": needed before third-party creators open on mainnet, NOT for the Genesis Round. Plan latest Nov 11 EOD [ASSUMED]. Fallback: beta stays closed, testnet open.
+| Fact | Value | Source |
+|---|---|---|
+| Testnet core | `core3.kxi-root-1108.testnet`, `demo` profile, wasm sha256 `e85198ed37c2aa1d6cd5f18571f5e023eed391108ca8f22edc8599ac390e65ac`, 675,007 bytes, local non-reproducible build | `view_code` read from testnet RPC 2026-11-10; `artifacts/SHA256SUMS` |
+| Wasm budget | 700,000 bytes (Dami, 2026-11-10) | `scripts/lint.sh`, DECISIONS-PACK1 seventeenth block |
+| Reproducible candidate | `d362ffa2...`, 655,251 bytes, NOT deployed, built before `R_GAS` | `artifacts/SHA256SUMS.reproducible`, `rehearsal/LOG.md` |
+| Mainnet | nothing deployed | none |
+| Attack gallery | 100 attacks: 81 refused with a rule code, 14 no effect, 5 bounded, 0 failed, 10 not done (sandbox hashes, own red team) | `docs/ATTACK-GALLERY.md` |
+| Fast judge run | 19 of 19 steps GREEN, 553 s, git `b4b4c8a`; no full-run record | `evidence/judge-fast-run.txt` |
+| Gate G3 | NO-GO as last recorded (GR-3, 7, 8, 9, 11, 13, 14, 17) | `evidence/testnet-core3/gate-g3.txt` |
+| Gate G2 | GREEN 9 of 9 on core3 (G2-01 read the Nov 8 gate-g1 logs, not a re-run) | `evidence/testnet-core3/gate-g2-round2.txt` |
 
-## CHANGE-ORDER-5 additions (doc-sync; all unchecked unless stated)
-- [x] Fee split 50/15/15/10/10 applied in the docs (RULED); [ ] constants D-4 (platform 1_500, standard preset) built and the full Wave 1 suite re-run
-- [x] Hosting tier 2 RULED (through Nov 25, minimum Nov 18); [ ] hosting accounts and domain (Dami, Nov 10)
-- [ ] Three separate hardware wallets in hand by Nov 10 (the Squads vault is created at the gate; order now if not owned)
-- [ ] Test 1: funded in part (T1 SOL 0.005, T1 NEAR 0.02; target 0.15 NEAR from held funds, no new money); Dami runs `register`, `get-usdc-t1` and `all` with the `!` prefix; NOT run. If not run by Nov 10 12:00 the Solana-landing claims are dropped
-- [ ] Dated Dami credentials (never in chat): NEAR AI Cloud key Nov 9 12:00 UTC; GCP project and key file Nov 9 18:00 UTC; Intents partner JWT Nov 9 18:00 UTC; thesis dropped at Nov 10 12:00 UTC if unusable
-- [ ] Per-track claim list (CO-4, freeze rule each): memecoins (`make sim` BOUND OK); security (tamper exit 2, gallery 11+ of 13 with rule codes, guard BLOCKED); open (`judge-run.sh` and `make tour` green); defi (dry quote 201 and `SLICES OK`; cross-chain wording only with a committed Test 1); swarms (`make swarm` 24 of 24); agents (6+ real testnet tx hashes, one `V_` rejection, `make receipts-verify` green); thesis conditional (snapshots, `make thesis`, evidence-against by Nov 12 20:00 UTC); nfts and business NOT listed
-- [ ] CO-4 modules built and green: agentkit, agent vault (testnet), Launch Check, attack gallery, swarm simulator, thesis pack; pages `/security`, `/swarm`, thesis dashboard
-- [ ] No-funds judge path green: `scripts/judge-run.sh`, `claimed-tracks.sh`, dry quote, recorded mainnet receipts, replayed model runs (RECORDED)
-- Latest open time for the $KRUXA trial: target Nov 11 12:00 UTC (LP-seed release would be Nov 14 16:00), latest 18:00 (Nov 14 22:00); after about 20:00 any Solana release lands past the deadline (PRD 8.3). Round one seeds the NEAR pool only, so this binds only a later Solana share.
-- Gate names (PRD 9.3): Genesis Round gate Nov 10 EOD; M-gate Nov 11 EOD; B-gate Nov 12 EOD.
-- Pending recommendations, NOT decided: DN-26 to DN-32 (opening-fee start, agent vault, venue builder deferral, thesis promotion, business tier C, model choice, six concurrent agents).
-- [ ] Arcos (DN-25): Dami to supply a link or screenshot; default dropped.
+## 2. Deliverables
+
+### Built and proven (a committed record exists)
+
+| Deliverable | Proof | Caveat |
+|---|---|---|
+| Pure crates, `kruxa-sim`, `verify.sh` golden, tamper (exit 2), dead RPC (exit 4) | `evidence/judge-fast-run.txt` (U1, V1, T1 to T5), `evidence/verify-tamper.txt`, `evidence/verify-dead-rpc.txt` | |
+| Core lifecycle on NEAR testnet: PASS, FAIL, F0 launch, F1 launch, market trading, keeper | `evidence/testnet-core3/launches.json`, `keeper-*.log`, `verify-2-pass.txt`, `verify-3-fail.txt`, `market-flows.json` | play money; mock USDC, mock Intents, mock factory |
+| Solana genesis F0 through the contract gate | 3 of 3 (launches 2, 5, 6) plus a 4th (launch 8), `verify.sh` exit 0, tamper-all exit 2 | `evidence/genesis/core3-f0-devnet-launch*.json`, `rehearsal/ROUND2.md`; the 4th ran on `e338f84d...`, not on the deployed `e85198ed...` |
+| F1 fallback ceremony | launch 4, C16 now passes after the key sweep | `evidence/testnet-core3/verify-4-f1.txt` |
+| S3 against the real `intents.near` wasm | 6 sandbox tests on the hash-pinned wasm | `tests/tests/real_intents.rs`, `fixtures/intents_near.wasm` |
+| Real factory facts (cost kept, no `ft_burn`, `create_token` gas, repeated `storage_deposit` refunded) | `evidence/factory-probe.txt`, `evidence/testnet-core3/real-factory-probe.json` | testnet factory only |
+| Attack gallery (100 attacks) | `evidence/attack-gallery/`, `docs/ATTACK-GALLERY.md` | sandbox; not an audit |
+| Swarm simulator, `make sim`, market demo, tour | `evidence/swarm.txt`, `evidence/sim.txt`, `evidence/market.txt`, judge-fast M2, M3, W1, O1 | simulation, not a forecast |
+| Squads reserve (devnet rehearsal) | `evidence/genesis/squads-devnet-*.txt` | single-party demo vault |
+
+### Built, not yet proven live or not re-run on the final build
+
+| Deliverable | What is missing |
+|---|---|
+| Core sandbox suites on the final wasm | the last committed gate-g1 logs are from Nov 8; re-run `./scripts/gate-g1.sh` at the freeze |
+| Instant launcher (`contracts/instant`) | ran on testnet against the real factory (`evidence/instant-testnet/run2`); not on mainnet; the launcher has no reproducible build |
+| Core to real-factory `create_trial` | not run: the factory account is fixed at `new` and a fresh core needs about 7 NEAR; only direct factory probes were run (`rehearsal/ROUND2.md` step 2) |
+| Indexer, API, app, relayer test suites | no committed run record for them (the fast judge subset does not run them); live testnet ingest by the indexer is not recorded [UNVERIFIED] |
+| App against a real wallet | PD-1, PD-2, PD-3, PD-5 need Dami and a real wallet |
+| Meteora DAMM v2 | devnet spike partial (`spikes/meteora/RESULTS.md`); PDA-owned position and delegate claim not run |
+| Test 1 (OV4, OV15) | RECORDED but thin: only the OV15 NEAR tx hash was kept; no OV4 tx hashes; OV3 unproven |
+| Thesis pack | `evidence/thesis.txt` exists; the dashboard review (PD-15) is Dami's |
+| Reproducible build | candidate exists and is not deployed; `artifacts/SHA256SUMS` hashes the local build |
+| `Dockerfile.judge` and `make judge` | exist; no clean-container run recorded; full run about 2,454 s |
+
+### Missing
+
+| Deliverable | Note |
+|---|---|
+| Full `make judge` record (`--record`) | must run before submission |
+| Fresh-agent run (`rehearsal/fresh-agent-*.md`) | not run |
+| Verdict Rail (SAS attestation) | cut: stretch |
+| Hold Vault, referral lots, ratchets, payees (market M-B) | after Nov 14 by ruling |
+| Mainnet deployment, `$KRUXA` Genesis Round, capped beta | every step needs Dami's per-action confirmation |
+| Live `verify.sh` on a mainnet launch | follows the Genesis Round |
+| README regenerated against the final judge run | regenerated and linted later; not edited in this sync |
+| Demo video, X post, repo public, submission form | `submission/` is empty |
+| NFTs, business, agents tracks | not built (agents cut by CO-6 E-2) |
+
+## 3. Open items that only Dami can do
+
+1. Three hardware wallets and two named independent Squads signers (BLK-1; needed before third-party creators open, not for the Genesis Round).
+2. The X account and the X post.
+3. README headline wording (OPTIONS in PRD 1.1), and the AMEND line for the DEMO OBLIGATION (CHANGE-ORDER-6 section 7).
+4. Hosting accounts and the domain (tier 2 through Nov 25).
+5. Legal counsel review of the legal pages.
+6. GR-17 numbers: brand-token supply and allocation, USDC payout address, pool and LP-seed amounts.
+7. The go or no-go decision at the gate.
+8. Every mainnet action (deploy, Genesis Round, beta, any money move), each by per-action confirmation.
+9. Real-wallet tests: PD-1, PD-2 (Phantom byte-exactness), PD-3, PD-5; the full-access key decision (E-5).
+10. Approval of the demo video.
+11. Making the repo public, publishing the X post, and the one-shot submission (deadline Nov 14 23:59 UTC; plan: submit by 18:00 UTC).
+12. The thesis dashboard review (PD-15) and the Arcos link (DN-25), if wanted.
+
+## 4. Known limitations and blockers
+
+See `LIMITATIONS.md` section 1 for the 17 honest limits that exist now (owner key and upgrade queue, `halt_launch`, force-resolve, solvency report, `burn_mode`, F0 gate, no audit, no mainnet, local build hash, verify skips, Test 1 receipts, and more). Open rulings: README headline, reserve split details, brand-token supply, GR-17 amounts, USDC payout address, Squads independents.

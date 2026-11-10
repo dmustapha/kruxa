@@ -1,64 +1,86 @@
 # Limitations
 
-This file is the design-time scope boundary. It does not move with progress; `SUBMISSION_STATUS.md` does. Every gated item names its reason.
+Current as of 2026-11-10 (docs-sync after the final core build). This file lists what Kruxa does not do and the honest limits of what it does. `SUBMISSION_STATUS.md` tracks progress; `PROOF-DEBTS.md` tracks unproven items. Every limit names its reason or its file.
 
-## In scope (built for this submission)
-- Trial lifecycle on NEAR testnet and in the sandbox: `create_trial` with full parameter and fee-term validation (every rule violation returns its `R_*` code), launch-token creation through a factory with supply verification and recovery, commits from NEAR USDC (`ft_on_transfer`) and from NEAR Intents (`mt_on_transfer`, S3), the S4 parse-and-forward fallback, Walk by NEAR key and by ed25519 signature, creator cancel, a deterministic permissionless `settle`, uniform-price pro-rata settlement with four buckets, lazy per-position settlement, pull-based refunds with callback re-credit, token claims with the 30-day backer-bonus vest, consolidation of Intents proceeds, the launch fee, stream-lite with `STREAM_CAP`, relay-fee payout, dissolve and bond reclaim.
-- Controls: $1,000 per launch and $3,000 global caps in USDC with timelocked raises, 2x oversubscription ceiling, per-wallet and holder caps, guardian pause and auto-expiring freeze.
-- Verification: `kruxa-sim verdict | settle | verify`, `scripts/verify.sh`, a TypeScript mirror pinned to the Rust hashes, ledger identities L1 and L4 as a view.
-- Tests: 50 native unit and property tests in `kruxa-math` and `kruxa-logic` (78 with `kruxa-sim`), 34 sandbox tests (two slow, run by the gate with `--include-ignored`), 7 app tests; fmt and clippy clean. Counts are re-derived from `./scripts/gate-g1.sh` output, not from memory.
-- App: landing, create, launch page with Walk, and a no-wallet demo and verification route.
-- Everything built so far is testnet and sandbox only. Nothing is on mainnet yet. (CO-3: mainnet is the product target; the Genesis Round and the capped beta are planned behind real gates, see below.)
+## 1. Honest limits that exist now
 
-## Feature-gated (deliberately not built for this scope)
-- Real `intents.near` and real token-factory behaviour. Reason: safety and cost. Both are exercised only against mocks; the real-wasm sandbox run and the testnet factory probe are Wave 0 items, and any live Intents call on mainnet needs Dami's per-action confirmation.
-- Solana genesis (G key, transaction compiler, Merkle tree, Jito distributor, Squads reserve, claim page). Reason: time (Wave 2), and no Solana mint may be created for a trial that did not pass; interface and sequence are specified.
-- Market-lite (CO-3): scope M-A is planned pre-freeze behind the M-gate (Nov 11 EOD); until it is green, fee terms are committed in the Charter but inert and the README says so. Still out of scope before the freeze: Hold Vault, referral lots, ratchets, creator epochs beyond one recipient, opening-fee surcharge above base. Reason: scope; Market-lite is new unreviewed code.
-- Creator-allocation vesting and the LP token bucket distribution. Reason: scope. In Wave 1 those token buckets stay in core with no claim path.
-- Verdict Rail (SAS attestation) and F0 Chain Signatures minting. Reason: time and an unrun dust test; both need Dami's per-action go for the signed tests.
-- Async solvency anchor (`check_solvency` / `reconcile_intents` against `mt_balance_of`). Reason: needs two global counters maintained at every mutation; scheduled right after the Wave 1 gate. `get_invariants` covers the stored counters only.
-- In-claim token registration, `claim_refund_batch`, `claim_orphan_credit`, burn of a failed launch's token (`burn_mode`). Reason: scope and an unanswered `ft_burn` probe; refunds and claims work without them.
-- Own immutable FT published by hash. Reason: cost, not approved (RULING 2026-11-07). Every launch uses the factory token, whose publisher can replace its code.
-- Trusted relayer credit (S1). Reason: it gives one party the power to credit anyone; built only if S3 and S4 both fail and Dami agrees.
-- Upgrade multisig and 7-day timelock. Reason: time; Wave 1 has no upgrade path and testnet keys are builder-held (phase P0, disclosed).
-- Gas and storage benchmarks. Reason: time; gas constants are estimates that the sandbox suite passes with, and the 330-byte position estimate is unmeasured.
-- Reproducible wasm build. Reason: needs Docker and the exact image tag, which the first run prints.
-- Browser verification of the app and wallet popups. Reason: not exercised in this phase; `next build` and `tsc` pass.
-- Sybil resistance. Reason: out of reach by design; no claim is made. `min_funders` counts accounts, not people.
-- The wasm exceeds the 350 KB budget of S1-A (462,222 bytes). Reason: `serde_json::Value` views; typed views are the lever. The contract's own storage stake is about 4.57 NEAR, locked not spent.
-- Independent review before real user funds. Reason: cost and time; the gap is disclosed, and the first mainnet token must be the brand token. CO-3: this now also covers Market-lite.
+These are properties of the code and evidence as they stand. None of them is hidden in the README, the app copy or the video.
 
-## Added by CHANGE-ORDER-3 (2026-11-08)
-- Gated, not built yet: the creator gate (D-1), the `open_market` handoff (D-3), Market-lite, the indexer and charts, the wallet layer, the Meteora spike and venue builder, the Launch Check API and guard, the backer agent, the swarm simulator. Reason: scheduled in PLAN Part CO-3; each is claimed only when green.
-- Tier C (not planned unless capacity is freed): keeper business ledger, Survivor Pass. Reason: the budget is full (CO-3: 15.35 demand against 15.2 usable; CO-4: 20.50 against 19.40). The thesis pack was promoted by CO-4 to a conditional tier B module (see the CO-5 section below).
-- Dropped tracks: privacy, realworld, games, social. Reason: no honest module (PRD 1.6).
-- After Nov 14 whatever happens: the Solana LP-seed release and Meteora pool for $KRUXA unless the trial opens by about Nov 11 18:00 UTC; third-party trials opened Nov 13 or later; Hold Vault, referral payouts, ratchets, the payout-change flow, per-chain payouts, DBC, independent review and any cap increase. Reason: 24 h window plus 1 h tail plus the kept 48 h lock.
-- Cross-chain trading of a launched token is not possible (no Intents quote for new tokens). Solana-only creators are out of scope. Solana-side creator fee income is zero.
-- The Launch Check guard is a client-side policy gate: NEAR function-call keys cannot attach the 1 yoctoNEAR that `ft_transfer_call` needs.
-- No revenue claim: the launch fee on PASS ($15 at a $1,000 raise) is demonstration revenue; break-even would need $40M monthly volume at a 0.20% platform share and about $53.3M at the ruled 0.15% share (fee split 50/15/15/10/10, DN-15).
-- Protocol: mainnet reports protocol 88 [VERIFIED 2026-11-08], so the old "protocol 87" limitation is removed; real-network wasm acceptance is still unproven until the testnet deploy.
+1. **Owner key and the upgrade queue.** The owner holds one full-access key on the testnet core (the `KEYS` line of `verify.sh`). The core has a public 7-day upgrade queue (`queue_upgrade`, guardian `cancel_upgrade`, owner `upgrade_core`), but a full-access key can redeploy at once and bypass the queue. The queue is a public commitment, not a technical barrier, until that key is deleted or replaced by a multisig. No immutability claim is made. On the `demo` profile (the testnet core3) the queue delay is 60 seconds, not 7 days. Files: `contracts/core/src/govern.rs`, `extra.rs`; `evidence/testnet-core3/verify-8-f0.txt` (KEYS line).
+2. **`halt_launch`.** The owner or the guardian can halt one launch: new commits, `consolidate`, `pay_launch_fee`, `draw` and `open_market` refuse with `R_HALTED`. A halt cannot block Walk, refunds, token claims or the verdict, so it can only push a launch toward FAIL, never trap money. The owner can resume. It is a trust power over launches and is disclosed as one.
+3. **`force_resolve_op` (48 hours).** The owner can resolve one stuck outbound leg whose callback never ran, in two steps with the same arguments 48 hours apart (60 seconds on the `demo` profile). It can move only what is in flight, to no new destination, and never touches a verdict. Token legs cannot be resolved this way. It is still an owner power over money in flight.
+4. **The solvency report is informational.** `check_solvency` and `reconcile_intents` compare USDC and Intents balances with running liability counters. The only effect is `intents_alert`, which refuses NEW Intents commits; it can never pause exits. The two balance reads can race a refund or a consolidation; a leg in flight across both snapshots can read as short until the next check. It is a reading, not a proof of solvency. One check per 30 seconds.
+5. **`burn_mode` is `Hold` by default.** The factory token has no `ft_burn` (`evidence/factory-probe.txt`), so `Burn` is refused (`R_BURN_UNSUPPORTED`). Under `Hold`, `sweep_tokens` only counts unclaimed supply as swept; the tokens stay in the core. A `Sink` account may be set once by the owner and may not be a Kruxa-controlled account. Nothing is burned.
+6. **The F0 gate cannot prove the registered hash equals the compiled transaction.** `register_f0_message` plus `sign_genesis` make the MPC signer sign only a message whose sha256 equals a hash the relayer registered in public, once, on the fixed path `kruxa:genesis:<id>`. Whether that hash is the sha256 of `compile(spec, blockhash, price)` is checked by `verify.sh` C17, not by the contract. A malicious relayer could register a different hash; C17 would print MISMATCH.
+7. **The core is NOT independently audited.** The attack gallery (100 attacks, 81 refused with a rule code, 14 ran with no effect, 5 bounded, 0 failed, 10 not done) is our own red team on a sandbox, with sandbox hashes that cannot be looked up on an explorer. It is not an audit.
+8. **Mainnet is not deployed.** Nothing Kruxa-owned is on mainnet. Every mainnet step needs Dami's per-action confirmation. The first mainnet token must be the brand token.
+9. **The testnet core is a local, non-reproducible build.** `core3.kxi-root-1108.testnet` runs sha256 `e85198ed37c2aa1d6cd5f18571f5e023eed391108ca8f22edc8599ac390e65ac` (675,007 bytes, local `cargo near` build, equal to `artifacts/SHA256SUMS`). The reproducible build candidate is a different binary (`d362ffa2e37a85158eb43ebba34b7418a5b1b5f3bf77044b97d5879a88326f5f`, 655,251 bytes, built before the `R_GAS` guard). Anyone who rebuilds in the container gets the candidate, not the deployed hash, so the `CODE` line of `verify.sh` matches only against the local-build hash. Market and launcher have no reproducible build metadata.
+10. **Some verify checks skip on plain RPC (as named by the latest outputs).** `evidence/testnet-core3/verify-8-f0.txt` (F0) passes 21 and skips 7: C12 (needs `--charter`), C28 (needs `--rpc2`), C10 (needs the hosted metadata JSON), C22 (no creator allocation in the record), C23 (plain RPC cannot enumerate a contract's events), C25 (no Verdict Rail attestation), C30 (FAIL-path check on a PASS launch). `verify-4-f1.txt` (F1) passes 20 and skips 8: the same seven plus C27 (no derived key in an F1 record). Checks C33 and C34 (solvency views) have no live transcript.
+11. **F0 rehearsal wasm.** Three F0 rehearsals ran through the contract gate on wasm `7d7b0da2...` (launches 2, 5, 6) and a fourth on `e338f84d...` (launch 8). The deployed wasm `e85198ed...` adds only the `R_GAS` guard to `create_trial`, but no F0 run exists on that exact binary.
+12. **Test 1 receipts are thin.** `evidence/test1-ov4.json` and `evidence/test1-ov15.json` are transcriptions of the result Dami recorded on 2026-11-08, labelled RECORDED. Only the OV15 NEAR transaction hash (`3KLVemdjr387BsqJiuuV9By9VXzeri6GRFwy3HMRT6ko`) was ever recorded; the two OV4 credits have no transaction hashes in the repo. OV15 moved 60,000 micro-USDC and 30,000 landed (the bridge fee is a fixed 0.03 USDC). OV4 is a claim without an on-chain receipt. Phantom `signMessage` byte-exactness (OV3) is unproven. One swap stalled about 35 minutes before it completed; the latency tail is disclosed.
+13. **State layout.** The final wasm cannot read state written by core2; core3 is a fresh `new` deploy. `migrate` is the identity. A migration from core2 was not attempted. Any future layout change needs its own `migrate`, shipped through the queue.
+14. **Solana claim rent.** The earlier design had a buyer-funded 0.004 SOL deposit. It is not implemented. The buyer's relay fee, taken from the commit amount, is the buyer-funded claim cost; the relayer's funder account pays Solana-side rent (`relayer/src/claim.ts`, as read by the 2026-11-09 audit; not re-checked in this sync).
+15. **Judge run record.** Only the fast subset is committed (`evidence/judge-fast-run.txt`: 19 of 19 steps, 553 s). The full run (about 2,454 s, not under 300 s) has no committed record yet; it must be run with `--record` before submission.
+16. **FROZEN 7-day auto-expiry** is tested as the pure function `pause_at`, not with a 7-day sandbox fast-forward (impractical: 100,000 blocks did not finish in 4 minutes).
+17. **The gate is not green.** `evidence/testnet-core3/gate-g3.txt` last recorded NO-GO with blockers GR-3, 7, 8, 9, 11, 13, 14 and 17: items that need Dami (hardware wallets and Squads signers, legal minimum, GR-17 numbers) or a record that does not exist yet.
 
-## Added by CHANGE-ORDER-5 (2026-11-08, doc-sync) and CHANGE-ORDER-4 folds
-- Upgrade authorities of Meteora DAMM v2, Raydium CPMM and Orca Whirlpools are unverified (single key or multisig unknown) [UNVERIFIED]. Whichever Solana venue is used, its upgrade risk is disclosed and not claimed away. DexScreener and GeckoTerminal auto-listing of a new pool is unconfirmed [UNVERIFIED].
-- A position owned by a PDA or a Squads vault claiming fees is untested until the devnet spike (DM-3) runs [UNVERIFIED]. DAMM v2 has no built-in platform/creator fee split and no anti-sniper rate limiter, so Kruxa does the split itself and relies on the decaying base-fee scheduler only. Meteora DBC stays off unless four checks pass.
-- Round one has no Solana pool: 100% of the LP seed goes to Kruxa's NEAR pool (DN-14 RULED); any Solana pool is later and may land after Nov 14.
-- Single-party vault disclosure: for the demo and the Genesis Round Dami holds all three Squads keys on separate hardware wallets (disclosed single-party). Third-party creators open only after two named independent signers join (Dami: "when we get there").
-- Test 1 has not been run: the Intents credit (OV4) and `ft_withdraw` to Solana (OV15) are unproven live, and live byte-exact Phantom signing is unproven. Test 1 is partly funded (T1 SOL 0.005, T1 NEAR 0.02 on 2026-11-08, target 0.15 NEAR) and Dami runs every money-moving step himself; if it is not run by Nov 10 12:00 every Solana-landing claim is dropped.
-- Agents track: model-driven agents use `Qwen/Qwen3.8-27B` on NEAR AI Cloud; a TEE signature is claimed only at the level actually reached (L0, L1 or L2, INVARIANTS 12), instances of one model share a signing key, and a live key run is [UNVERIFIED] until Dami supplies the key. Scripted agents are labelled SCRIPTED and replayed runs RECORDED. The agent vault is testnet only, unreviewed, and its key allowance can be exhausted (the owner rotates it). No hiring, no x402 earnings, no "agent economy" claim.
-- Security track: the 100-attack gallery (sandbox only, not run on testnet yet) and the injection harness are our own red team; the Launch Check uses Kruxa's own recomputable facts, not threat intelligence; the guard is a client gate and the vault is the on-chain gate; the measured block rate covers 12 payloads and one model only.
-- Swarms track: 20 agents of which 9 are adversaries written by us; sybil splitting and walk-to-flip are bounded, not blocked; pooled uniform price, not sealed-bid; no sellers; model decisions are replayed offline; no "emergent economy" claim.
-- Thesis track (conditional): BigQuery freshness is [UNVERIFIED] (NEAR Lake deprecated 2026-03-24); credentials are Dami's (never in chat); dropped at Nov 10 12:00 UTC if the freshness check or the JWT fails; correlation is not causation. Business stays tier C and nfts is first stretch, both default not listed.
-- Fee split 50/15/15/10/10 (RULED): creator-controlled extraction bound is 75% at the default and 80% at the contract bound; Hold Vault and referral payouts are later, so until then the holder slice goes to LP and the referral slice returns to LP.
-- Wave 1 constants changed by delta D-4 (platform share 1_500; standard preset 5_000/1_500/1_500/1_000/1_000) are compiled in the current wasm (462,222 bytes); the testnet hash comparison waits for the deploy (W1-DC-13).
-- Pending recommendations, not rulings: DN-26 to DN-32 (CO-4 section 16). Nothing here treats them as decided.
+## 2. What is built
 
-## Added by Phase 1 (2026-11-08, build agent)
-- Not closed by G1, carried by name: W1-DC-8 (S3 against the REAL `intents.near` wasm; only the mock Verifier ran), W1-DC-12 (factory cost, `ft_burn`, benchmarks), W1-DC-13 (reproducible wasm and testnet `view_code` hash), W1-DC-15 (D-1 creator gate) and W1-DC-16 (D-3 `open_market`). Reason: scheduled in Phase 2 and PLAN C3.6 A-2/A-3.
-- L6 Intents liability (`credited_intents <= mt_balance_of`) is not in `get_invariants`: it needs an async call to `intents.near` (ARCHITECTURE 5.6, Wave 1b). Not claimed.
-- I4 is checked as a snapshot property (status agrees with the settlement record) plus a legal-move check in the sandbox harness; the contract keeps no transition history on chain.
-- FROZEN 7-day auto-expiry is tested as the pure function `pause_at` that the contract calls (boundary at `frozen_until - 1` and `frozen_until`), not with a 7-day sandbox fast-forward. Tried 2026-11-08: `Worker::fast_forward(100_000)` had not returned after more than 4 minutes in this sandbox, so 7 days of blocks (several hundred thousand) is not practical; the attempt was killed. Closing it would need a state patch of `frozen_until`, which couples the test to the Borsh layout of the config.
-- The real $3,000 global cap IS exercised: `global_cap_refuses_at_the_real_three_thousand_dollars` (slow, ignored by default, run by the gate) fills two launches to exactly $3,000 and sees `R_CAP_GLOBAL`.
-- Not built: `kruxa-sim explain`, `claim_refund_batch`, `claim_orphan_credit`, in-claim token registration, `burn_mode`.
-- Per-launch cap wording: the ruled $1,000 per launch is enforced as `R_HARD_CAP` (hard cap above $1,000) while `R_CAP_LAUNCH` fires at 2x the hard cap (custody), so one launch can hold up to $2,000 in escrow; the $3,000 global cap bounds all launches. The oversubscription ceiling is open item DN-2.
-- The cap-raise timelock is 7 days; the 48 h timelock in the rulings belongs to the Solana reserve vault (Phase 4), not to the core contract.
-- Wasm size is 462,222 bytes after Phase 1 additions (budget in the lint script 600,000; the 350 KB target of DT-X2 is still exceeded).
+- Trial lifecycle on NEAR testnet and in the sandbox: `create_trial` with full validation (every rule violation returns its `R_*` code), factory token creation with supply verification and recovery, commits from NEAR USDC and from NEAR Intents (S3), the S4 fallback, Walk by key and by ed25519 signature, a promise-free `settle`, refunds, token claims with in-claim registration, consolidation, launch fee, capped stream (`STREAM_CAP`) and `lengthen_stream`.
+- Controls: $1,000 per launch and $3,000 global caps in USDC with 7-day timelocked raises, guardian pause and auto-expiring freeze, halt per launch, creator gate, solvency anchor.
+- Solana genesis: F1 and F0 ceremonies, Merkle distributor, Squads reserve, all on devnet with committed evidence. F0 signs through the contract gate.
+- Market-lite (market ABI 1.1.2) and the instant launcher (`contracts/instant`), both run on NEAR testnet. Neither is on mainnet.
+- Verification: `kruxa-sim`, `scripts/verify.sh` (exit 0 MATCH, 2 MISMATCH, 3 pending, 4 infrastructure, 64 usage, 65 refused parameters in `validate`), a TypeScript mirror pinned to the Rust hashes, the attack gallery, the swarm simulator, `make sim`, `make tour`.
+- App: the routes of `APP-SPEC.md` (no `/demo`, no `/proof`), wallet layer, docs pages, `llms.txt`, `AGENTS.md`. The app has not been exercised against a real wallet.
+
+## 3. Not built (and why)
+
+- Hold Vault, referral lots, ratchets, payees (market M-B). Reason: scope, after Nov 14 by ruling. Until then the holder slice and the referral slice go to LP.
+- Verdict Rail (SAS attestation). Reason: stretch, needs Dami's key; check C25 always skips.
+- Typed views. Reason: tried, saved about 400 bytes; the core still uses `serde_json::Value` views. The wasm is 675,007 bytes against the 700,000 byte budget (Dami, 2026-11-10; supersedes the 570 KB of D-13); about 6.8 NEAR of storage stake is locked.
+- Own immutable FT published by hash. Reason: cost, not approved (RULING 2026-11-07). Every launch token is a factory token whose publisher can replace its code.
+- Trusted relayer credit (S1). Reason: it gives one party the power to credit anyone; not built.
+- Multisig upgrade authority for the core. Reason: time; the queue exists, the key does not change.
+- Burn of a failed launch's token. Reason: the factory token has no `ft_burn`.
+- Sybil resistance. Reason: out of reach by design; `min_funders` counts accounts, not people. No claim is made.
+- `kruxa-sim explain`; a keeper service. Reason: scope.
+- Independent review before real user funds. Reason: cost and time; disclosed.
+- Dropped tracks: privacy, realworld, games, social (no honest module). Cut by CO-6 E-2: agents (agentkit, agent vault, Launch Check, guard), the `/swarm` page. Not started: business, nfts.
+
+## 4. Gated by Dami or by an external party
+
+- Mainnet deployment, the Genesis Round, the capped beta, the X post, repo publication and the one-shot submission: each needs Dami's per-action confirmation. See `SUBMISSION_STATUS.md` for the list.
+- Two named independent Squads signers (BLK-1) before third-party creators open; for the demo and the Genesis Round Dami holds all three keys on separate hardware wallets (disclosed single-party).
+- Legal counsel review of the legal pages (they were written by an agent).
+- Real-wallet tests: PD-1, PD-2 (Phantom byte-exactness), PD-3 (Solflare and Backpack), PD-5.
+
+## 5. Venue, market and economics limits
+
+- Upgrade authorities of Meteora DAMM v2, Raydium CPMM and Orca Whirlpools are unverified [UNVERIFIED]. DexScreener and GeckoTerminal auto-listing of a new pool is unconfirmed [UNVERIFIED].
+- The Meteora DAMM v2 spike ran on devnet (`spikes/meteora/RESULTS.md`). Not run: a position owned by a PDA of Kruxa's own program, a delegate claiming fees, DBC checks. DAMM v2 has no built-in creator and platform fee split and no anti-sniper rate limiter, so Kruxa splits itself and relies on the decaying base-fee scheduler. The protocol takes 20 percent first.
+- Round one has no Solana pool: 100 percent of the LP seed goes to Kruxa's NEAR pool (DN-14 RULED). Any Solana pool is later and may land after Nov 14.
+- Fee split 50/15/15/10/10 (RULED): the creator-controlled extraction bound is 75 percent at the default and 80 percent at the contract bound; until the Hold Vault and referral payouts ship, the holder slice goes to LP and the referral slice returns to LP.
+- Per-launch cap wording: the ruled $1,000 per launch is enforced as `R_HARD_CAP` while `R_CAP_LAUNCH` fires at 2x the hard cap (custody), so one launch can hold up to $2,000 in escrow; the $3,000 global cap bounds all launches.
+- Cross-chain trading of a launched token is not possible (no Intents quote for new tokens). Solana-only creators are out of scope; Solana-side creator fee income is zero.
+- No revenue claim: the launch fee on PASS ($15 at a $1,000 raise) is demonstration revenue.
+- Intents solver latency tail (one swap about 35 minutes). Funds were safe. Seen once.
+- The launch-token factory token is publisher-updatable. The Intents Verifier holds force-withdraw and lock powers over money held in `intents.near`.
+- Protocol: mainnet reports protocol 88 [VERIFIED 2026-11-08]; real-network acceptance of the final wasm on mainnet is untested.
+
+## 6. Track claims (per-track limits)
+
+- memecoins: `make sim` prints `BOUND OK` (`evidence/sim.txt`); the opening-fee sentence is allowed because `make market-demo` shows two `fee_bps_applied` values (`evidence/market.txt`). Testnet only.
+- security: the gallery is our own red team on a sandbox, covers core, genesis, market and launcher, and is not an audit. The injection harness, Launch Check and guard are not built; no block-rate or injection figure is claimed.
+- swarms: 16 agents, 7 scripted and 9 adversaries written by us; no model-driven agents; sybil splitting and walk-to-flip are bounded, not blocked; pooled uniform price; no "emergent economy" claim.
+- defi: the dry quote is read-only (`evidence/dryquote.txt`); the cross-chain claim rests on the thin Test 1 record above; OV3 unproven.
+- thesis (conditional): BigQuery freshness [UNVERIFIED]; correlation is not causation; dropped if credentials are unusable.
+- agents: CUT. Nothing is built.
+
+## 7. Process limits
+
+- Judge path (CO-6 E-3): `make judge` runs a narrated lifecycle subset; the full run is long. The no-Docker path uses committed prebuilt binaries; the Nov 11 clean-container run is not recorded.
+- Operator key (CO-6 E-5): with the phase-0 full-access key present `verify.sh` prints the key and discloses that the owner can redeploy the contract.
+- Rust toolchain: the machine default is 1.91.1; 1.95.0 is required (near-sdk 5.30.1).
+- Counts such as test totals are re-derived from commands (`./scripts/gate-g1.sh`, grep), not from memory; the last committed gate-g1 logs predate the final core and must be re-run at the freeze.
+
+See `PROOF-DEBTS.md` for the tracked list of unproven items, each with an owner and a status.

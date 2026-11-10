@@ -76,7 +76,7 @@ Tiers: **A** = near-free by-products of the core. **B** = one small module that 
 | realworld | DROPPED | none | none | none | A capped creator stream is not payroll, invoicing or a merchant rail for a real business. A token-less refundable pledge preset would need a core change and is a different product. Padding it would violate PH3. The creator-desk CSV export ships as a product feature without a track claim | 0 | none | Never listed (re-open after the hackathon) |
 | games | DROPPED | none | none | none | No game loop, no NPC, no player economy exists or is planned before the freeze | 0 | none | Never listed |
 | nfts | C | weak to medium | Survivor Pass: a non-transferable NEP-171 credential minted to a backer after a PASS by a permissionless method that cross-checks `get_position` and the verdict on core; gated `/pass` page and per-NFT history | after a testnet PASS, `make pass-demo` mints a pass to a backer and prints the gate check (holder 200, non-holder 403) | A credential with gating only: no royalties, no sub-account wallet, so "an NFT that does something" is thin | 1.0 | new `contracts/pass`, a settled PASS launch | Default NOT listed. Listed only if the demo is green and the transfer-refusal tests pass |
-| memecoins | A | medium | Verdict-gated existence, capped stream, Market-lite opening-fee decay (surcharge to LP) and fee epochs, 60-day supply and fee simulation, token-page mechanics panel (CO-4 section 9) | `make sim` prints three tables, `BOUND OK`, `SIM sha256`; `make market-demo` shows two different `fee_bps_applied` | Supply is fixed (no reactive emission); no admin key claim impossible (upgrade key, pause disclosed); no sybil resistance | 0.80 | core, Market M, DN-26 | List if `make sim` exits 0 with `BOUND OK`; opening-fee sentence only if two fee values shown on testnet |
+| memecoins | A | medium | Verdict-gated existence, capped stream, Market-lite opening-fee decay (surcharge to LP) and fee epochs, 60-day supply and fee simulation, token-page mechanics panel (CO-4 section 9) | `make sim` prints three tables, `BOUND OK`, `SIM sha256`; `make market-demo` shows two different `fee_bps_applied` | Supply is fixed (no reactive emission); no admin key claim impossible (upgrade key, pause disclosed); no sybil resistance | 0.80 | core, Market M, DN-26 | List if `make sim` exits 0 with `BOUND OK`; opening-fee sentence only if two fee values shown on testnet [SYNC 2026-11-10: `make sim` output is in `evidence/sim.txt` (three scenario tables, `BOUND OK`, `SIM sha256`) and `make market-demo` in `evidence/market.txt` (`fee_bps_applied=500` then `=100`); both match this row] |
 | social | DROPPED (re-openable) | weak | none built. The only cheap candidate is a Sputnik DAO set as `payout_recipient`, which configures an existing field and is not a built product; the bounty board with earned trust needs about 1.5 agent-days | none | The budget in section 8.3 has no 1.5 agent-days of slack | 0 | none | Re-open only if the Nov 11 M-gate shows 1.5 spare agent-days (expected: no) |
 | open | A | medium | The whole platform story: `make tour` (seven scenes), objections section, optional verdict-consumer example (CO-4 section 10) | `make tour` ends `TOUR GREEN`; full `scripts/judge-run.sh` | Judged on novelty; no "first" claim; Solana pieces not judged (Q-002) | 0.35 | all tracks | List if judge-run is green |
 
@@ -268,7 +268,7 @@ Kofi/Phantom         anyone            intents.near           core.kruxa.near
 5. Edge cases: unclaimable refunds are never forfeited in v1 (ruling #19); a refund whose transfer fails is re-credited in the callback and can be retried.
 
 ### Flow 7: After PASS, backer claims tokens and the creator draws the stream
-1. NEAR-delivery backers call `claim_tokens` with at least 0.00125 NEAR attached for the token-contract registration. Tokens equal `floor(c_i x N_sale / total_active)`.
+1. NEAR-delivery backers call `claim_tokens` with at least 0.00125 NEAR attached for the token-contract registration. Tokens equal `floor(c_i x N_sale / total_active)`. [SYNC 2026-11-10: the call is payable: attach 1 yocto when the holder is already registered on the launch token, or 0.00125 NEAR + 1 yocto when not; the core registers the holder inside the claim (NEP-145) and refunds everything above what it used; about 150 to 200 Tgas (the app attaches 200)]
 2. The creator (or the `stream_recipient`) calls `draw`. The cap at time t is `floor(total x (t - pass_at) / duration)` and is zero at or before PASS.
 3. The demo shows "Withdraw all" reverting with `STREAM_CAP`. A call before the stream exists has no stream row to draw from and is refused (`R_WRONG_PHASE`; S1-C spells it `NOT_PASS` [ASSUMED mapping]).
 4. Creator allocation vesting and the backer bonus are specified in S1-C section 6. The backer bonus is a 30-day linear vest [RULED 2026-11-07] and ships in the full-v1 track; the Genesis Round charter sets `creator_bps` and `backer_pool_bps` to zero unless Dami says otherwise [ASSUMED from RECONCILED section 7].
@@ -278,7 +278,7 @@ Kofi/Phantom         anyone            intents.near           core.kruxa.near
 2. The relayer compiles the GenesisSpec from Charter and state, simulates both transactions, creates the genesis key G, funds it, and calls `commit_genesis` with G's public key. C1 stores the spec hash and Merkle root and emits `genesis_committed`. A second call returns `R_GENESIS_ALREADY`; a call in a state other than PASS returns `R_GENESIS_STATE`.
 3. The relayer submits tx1 (create mint with seed, metadata) and tx2 (create buckets, mint all supply, set mint and freeze authority to None, create the Jito distributor, set admin to a null admin). The mint is a classic Token program mint of 82 bytes with no extensions.
 4. The relayer self-checks, calls `confirm_genesis` (mint, signatures, slot, ceremony hash), sweeps leftover SOL, destroys G.
-5. Solana-origin backers claim from the distributor with a Merkle proof; the claimant pays claim rent from a buyer-funded refundable 0.004 SOL deposit carved out of the buyer's contribution, not paid by the platform.
+5. Solana-origin backers claim from the distributor with a Merkle proof; the claimant pays claim rent from a buyer-funded refundable 0.004 SOL deposit carved out of the buyer's contribution, not paid by the platform. [SYNC 2026-11-10: NOT implemented. The decision is that the buyer's quoted relay fee, taken from the commit amount, is the buyer-funded claim cost; core holds no 0.004 SOL deposit (`get_token_custody.solana_claim_rent = relay_fee_covers`) and the relayer's funder account pays Solana-side claim rent (`relayer/src/claim.ts`, per the 2026-11-09 audit). Disclosed in LIMITATIONS]
 6. Abort path: before `confirm_genesis`, the relayer or the guardian calls `abort_genesis` and the launch stays resolvable for creator and backers.
 7. Platform pays only genesis rent and fees (about 0.0263 SOL in the S1-D budget; DECISIONS-PACK1 quotes 0.0193 SOL from a 3-holder shape) and attestation rent (about 0.00266 SOL, reclaimable), funded from the launch fee.
 
@@ -346,7 +346,7 @@ Specs below give interface contracts and schemas, not implementation. Component 
 | Global cap (all launches) | $3,000 | raising is timelocked | `R_CAP_GLOBAL` | RULED 2026-11-07 |
 | Launch fee | min(2,500, 3% of A, max(1.5% of A, 10)) USDC | rate 150 bps, ceiling 300 bps | `R_LAUNCH_FEE` | S1-B formula |
 | Relay fee | quoted flat in USDC | at most $0.50 and at most 5% of the amount (RECONCILED); DECISIONS-PACK1 suggests at most 1% | `R_RELAY_FEE` | [OPEN] conflict, section 9 |
-| Stream length | 90 d | at least 30 d if H at most $25,000, else at least 90 d; at most 365 d; initial release 0 | `R_STREAM`, `R_STREAM_INIT` | S1-A |
+| Stream length | 90 d | at least 30 d if H at most $25,000, else at least 90 d; at most 365 d; initial release 0 | `R_STREAM`, `R_STREAM_INIT` | S1-A | [SYNC 2026-11-10: the Studio default is 30 days (DECISIONS-PACK1 fifteenth block); 90 days is the minimum above a $25,000 hard cap, not the default. `R_STREAM_INIT` and `R_PAYEES` exist in `RuleCode` with pure checks but no core method calls them today] |
 | Fee terms (total fee, shares, referral, opening decay, vesting, payees) | per vision section 4 | validated at create even though the market ships later | `R_FEE_TOTAL`, `R_CREATOR_SHARE`, `R_CREATOR_TAKE`, `R_PLATFORM_FLOOR`, `R_PLATFORM_FIXED`, `R_HOLDER_LP_FLOOR`, `R_HOLDER_RANGE`, `R_LP_RANGE`, `R_REFERRAL`, `R_SPLIT_SUM`, `R_FEE_VEST`, `R_PAYEES`, `R_VEST`, `R_OPENING` | S1-A 6.2 |
 | One active launch per creator | 1 | | `R_ACTIVE_TRIAL` | S1-A |
 | Genesis flags | mint authority None, freeze authority None, no extensions | all three required | `R_GENESIS_AUTH` | S1-A |
@@ -408,15 +408,17 @@ Worked examples (from S1-B 2.6, recomputed 2026-11-07; supply 1,000,000,000 toke
 | `cancel_trial` | creator | before commit end |
 | `settle`, `settle_positions_page` | anyone | promise-free |
 | `claim_refund`, `claim_refund_batch`, `set_refund_route` | anyone (destination fixed), anyone, holder | batch is cut-first |
-| `claim_tokens` | holder (NEAR delivery) | attach at least 0.00125 NEAR plus 1 yocto |
+| `claim_tokens` | holder (NEAR delivery) | payable: 1 yocto when registered on the launch token, 0.00125 NEAR + 1 yocto when not (registration happens in the claim, the rest is refunded); about 150 to 200 Tgas |
 | `consolidate`, `sweep_residue`, `dissolve`, `reclaim_bond` | anyone, anyone, anyone, creator | |
 | `draw`, `lengthen_stream` | stream recipient, creator | stream-lite in Wave 1 |
-| `release_lp_seed` | owner, timelocked | Genesis Round track only |
+| `release_lp_seed` | owner, timelocked | [SYNC 2026-11-10: does not exist; `open_market` (CO-3, R-46) replaced it] |
 | `commit_genesis`, `confirm_genesis`, `abort_genesis`, `build_root_page`, `attest_log_append`, `pause_genesis` | relayer (abort also guardian), relayer, relayer or guardian, relayer, relayer, guardian | Wave 2 stubs in Wave 1 |
 | `check_solvency`, `reconcile_intents` | anyone | solvency tripwire against `intents.near` `mt_balance_of` |
 | `pause`, `freeze`, `unpause`, `halt_launch`, roles, rule-set and upgrade queue, `force_resolve_op`, `withdraw_owed` | per S1-A section 10 | PAUSED keeps exits open; FROZEN auto-expires after 7 days; the stream clock keeps running during a pause |
 | Views | any | `get_charter`, `get_state`, `get_ledger`, `get_position`, `list_positions`, `get_phase`, `preview_charter`, `preview_contribution`, `preview_settlement`, `get_verdict_inputs`, `get_settlement`, `get_invariants`, `get_book_hash`, `stream_status`, `declared_wallets`, `required_deposit`, `get_rule_set` |
 Deleted from the canonical list: payable NEAR `contribute`, `credit_intake`, `release_lp`, `lp_release_*`, `Settling` status, `near_bps`.
+
+[SYNC 2026-11-10: every method in the table above now exists in `contracts/core` except `release_lp_seed`, and the core also has `open_beta`, `set_market`, `open_market`, `reopen_genesis`, `register_f0_message`, `sign_genesis`, `claim_creator_alloc`, `sweep_tokens`, `set_burn_mode`, `queue_upgrade`, `cancel_upgrade`, `upgrade_core`, `migrate`, `resume_launch`, `get_ops_state`, `get_token_custody`, `solvency_report`. Exact names, callers, arguments, limits and rule codes: `docs/interfaces/CORE-ABI.md`. New rule codes: `R_BURN_UNSUPPORTED`, `R_HALTED`, `R_LENGTHEN_ONLY`, `R_BATCH_SIZE`, `R_UPGRADE_HASH`, `R_GAS`.]
 
 #### C1 detail E: invariants asserted after every mutation
 L1 conservation (credited equals open plus in-flight plus paid plus fees plus spent plus excess due); L3 per-position sum; L4 bucket identity; L6 Intents liability against `mt_balance_of`; I2 position count equals active funders; I3 verdict inputs frozen after `settle`; I4 status never moves back to Open; I5 no position pays out more than it put in. Exposed as `get_invariants` and asserted in tests.
@@ -573,7 +575,7 @@ Dami: "go with your recommendation for the others" (the recommendation was optio
 | B | 45 / 20 / 15 / 10 / 10 | 0.45% | 0.20% | 75% | rejected (kept for the record) |
 | **C (RULED)** | **50 / 15 / 15 / 10 / 10** | **0.50%** | **0.15%** | **75%** | **the default** |
 
-Check [VERIFIED by arithmetic]: C satisfies every bound (sum 100, holders plus LP 25, creator 50 <= 60, platform 15 = floor, creator take 100 x 5,000 = 500,000 <= 1,000,000). Until the Hold Vault ships the holder slice goes to LP, so the effective LP share is 25%. All constants live in ONE place, `crates/kruxa-logic/src/rules.rs::FEE_SPLIT_DEFAULT`, are snapshotted into each Charter (so a later change cannot loosen an existing launch), and are mirrored in a generated `docs/constants.json` for the README. **Wave 1 consequence (CO-5):** the embedded Wave 1 code fixed the platform share at 20% (`Rules.platform_bps = 2_000`, rule `R_PLATFORM_FIXED`) and the standard preset at 30/20/20/25/5; both constants move to the ruled values (platform 1_500; preset 5_000/1_500/1_500/1_000/1_000) with no change to any rule logic or bound (ARCHITECTURE 4.1 and 4.2, CHANGE-ORDER-5 section 3). The code is not yet extracted or compiled, so this is a documentation change that the build applies and re-tests (GR-1) [UNVERIFIED until compiled].
+Check [VERIFIED by arithmetic]: C satisfies every bound (sum 100, holders plus LP 25, creator 50 <= 60, platform 15 = floor, creator take 100 x 5,000 = 500,000 <= 1,000,000). Until the Hold Vault ships the holder slice goes to LP, so the effective LP share is 25%. All constants live in ONE place, `crates/kruxa-logic/src/rules.rs::FEE_SPLIT_DEFAULT`, are snapshotted into each Charter (so a later change cannot loosen an existing launch), and are mirrored in a generated `docs/constants.json` for the README. [SYNC 2026-11-10: the code uses `FeeTerms::standard()` and `Rules::ladder()`; no `docs/constants.json` exists; the hand-written `docs/OPEN-CONSTANTS.md` is the constants record, and `get_rule_set` is the live read] **Wave 1 consequence (CO-5):** the embedded Wave 1 code fixed the platform share at 20% (`Rules.platform_bps = 2_000`, rule `R_PLATFORM_FIXED`) and the standard preset at 30/20/20/25/5; both constants move to the ruled values (platform 1_500; preset 5_000/1_500/1_500/1_000/1_000) with no change to any rule logic or bound (ARCHITECTURE 4.1 and 4.2, CHANGE-ORDER-5 section 3). The code is not yet extracted or compiled, so this is a documentation change that the build applies and re-tests (GR-1) [UNVERIFIED until compiled].
 
 ### 4b.4 Exemption lists
 Kruxa has no anti-sniper exemption list and no creator-controlled allowlist. If one is ever added: it is public, stored in the Charter, fixed at open, capped (interim cap 8 wallets [ASSUMED]), shown in `declared_wallets`, and never creator-controlled. Lesson: Pons V2 let a launcher exempt up to 32 wallets and an analyst alleges about $18M extracted through friendly wallets (single analyst source, no Pons response found [UNVERIFIED]).
@@ -915,8 +917,8 @@ Full document: `ROUTE-ARCHITECTURE.md`. Multi-page, derived from the user classe
 | `/portfolio` | Positions, funds in motion, claims |
 | `/creator` | Creator Desk: stream meter and draw, earnings and fee claims, payout recipient and its USDC registration status, CSV export, declared wallets |
 | `/charter` | Disclosures: custody, review gap, factory token, Intents powers, caps, limits |
-| `/proof` | Judge proof artifacts: signed-test results, hashes, explorer links |
-| `/demo` | Separate judge and demo route: seeded launches, scripted steps, labelled |
+| `/proof` | Judge proof artifacts: signed-test results, hashes, explorer links [SYNC 2026-11-10: REMOVED. Dami ruled there is no `/proof` page: Kruxa is a real launchpad, not a judge showcase. Recorded receipts live in `evidence/` and the docs; the tamper toggle is at `/launch/[id]/verify`] |
+| `/demo` | Separate judge and demo route: seeded launches, scripted steps, labelled [SYNC 2026-11-10: REMOVED by the same ruling; Discover at `/` shows the seeded launches] |
 | `/api`, `/llms.txt`, `/agents` | Agent and API layer, including `/api/check` (Launch Check) and candles |
 | `/beta` | Capped-beta status: open or closed, caps, blocker status (BLK-1), how to create |
 
@@ -933,7 +935,7 @@ Full document: `ROUTE-ARCHITECTURE.md`. Multi-page, derived from the user classe
 
 ## 7.6 Judge Proof Artifacts
 
-- **Proof route:** `/proof` and a README section "Our Integration", mirrored in `submission/proof.md`.
+- **Proof route:** `/proof` and a README section "Our Integration", mirrored in `submission/proof.md`. [SYNC 2026-11-10: no `/proof` route (ruled out); the README section and the recorded evidence remain]
 - **Required artifacts:**
   - NEAR testnet addresses of `core` and `demo`, with the wasm sha256 matching `view_code`.
   - Devnet mint addresses for Launch A with null authorities, and the absent address for Launch B.
@@ -964,7 +966,7 @@ Re-timed by CHANGE-ORDER-3 on Sunday 2026-11-08. Wave numbers follow PRODUCT-VIS
 | Wave 2I Indexer | Nov 8-11 | event ingest, candles, trades, launch feed API, hosting tier 2 | part of M-gate |
 | **G3 Genesis Round go/no-go** | **Nov 10 EOD** (moved from Nov 11) | the rows of section 9.3, hard rows cannot be waived | real check, never skipped |
 | Genesis Round on mainnet | open Nov 11 (target 12:00, latest 18:00 UTC); settle and genesis Nov 12 | each step DAMI CONFIRMS | per-action confirmations |
-| Wave 3 Surfaces | Nov 9-12 | landing, Studio with payout recipient, launch feed, token page with charts, trades, creator desk, portfolio, verify, `/proof`, wallet chooser, tier A and B track modules | **G4: Nov 12 EOD** feature freeze, fresh-agent README run, track claims checked |
+| Wave 3 Surfaces | Nov 9-12 | landing, Studio with payout recipient, launch feed, token page with charts, trades, creator desk, portfolio, verify, `/proof` [SYNC 2026-11-10: no `/proof` page, ruled out], wallet chooser, tier A and B track modules | **G4: Nov 12 EOD** feature freeze, fresh-agent README run, track claims checked |
 | Capped beta | Nov 12 evening to Nov 13, only after genesis success and the B-gate | owner opens the creator gate; same caps | **B-gate: Nov 12 EOD** (BLK-1 closed, C12 passes, disclosures live) |
 | Wave 4 Submission | Nov 13-14 | repo public, X post, one-shot submit | **G5: Nov 13** preflight |
 | Wave 5 (after) | no dates | Earned Terms live, Survivor Pass at scale, Observatory, Calibration Scoreboard, Telegram bot | capped beta needs independent review first |
@@ -1085,7 +1087,7 @@ The ruling fixes the date (Nov 10 EOD since R-GATE-MOVE), the cap and the disclo
 | GR-9 | HARD | Legal minimum (terms, risk disclosure) | P-14 |
 | GR-10 | HARD | Timeline check passed: open by Nov 11 18:00 UTC at the latest (section 8.3) | date math |
 | GR-11 | HARD | Dami confirms each mainnet step individually | per-action log |
-| GR-12 | HARD | F0 clean in three rehearsals on testnet plus devnet, else F1 chosen and disclosed | `rehearse.sh R5` |
+| GR-12 | HARD | F0 clean in three rehearsals on testnet plus devnet, else F1 chosen and disclosed | `rehearse.sh R5` [SYNC 2026-11-10: `scripts/rehearse.sh` defines only R1 and R2. The F0 rehearsals ran through `relayer/src/genesis-cli.ts` and `scripts/genesis-devnet.sh`: 3 of 3 through the contract gate on core3 (launches 2, 5, 6) plus a 4th on a later wasm (launch 8); `evidence/genesis/core3-f0-devnet-launch*.json`, `rehearsal/ROUND2.md`] |
 | GR-13 | WAIVABLE | Meteora spike result recorded with pass/fail per check; a FAIL means NEAR pool only for round one (DT-7) | `spikes/meteora/RESULT.md` |
 | GR-14 | HARD | Core wasm hash recorded with D-1 creator gate closed to everyone but the owner (no other token can exist on mainnet) | wasm sha256, `R_CREATOR_GATE` test |
 | GR-15 | HARD | `open_market` handoff proven against the market stub or market testnet build | sandbox test |

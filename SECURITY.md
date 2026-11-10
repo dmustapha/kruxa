@@ -18,18 +18,23 @@
 | Pause trapping exits | exits require only "not FROZEN"; FROZEN auto-expires in 7 days; unpause is owner-only | `lib.rs::pause_level`, `admin.rs` |
 | Instant cap inflation | raising a cap is queued 7 days and public; lowering is instant | `admin.rs` |
 | Brand symbol squatting | `KRUXA` and 8 others are reserved to the owner | `kruxa-logic::rules::check_text` |
+| Relayer signs an unregistered genesis message (F0) | `register_f0_message` then `sign_genesis`: the MPC signer is asked only for a message whose sha256 equals the registered hash, once, on the fixed path `kruxa:genesis:<id>` | `genesis.rs` |
+| Stuck outbound leg | `force_resolve_op`: owner only, two steps 48 h apart, only what is in flight, no new destination, token legs excluded | `govern.rs` |
+| Halt trapping money | `halt_launch` stops new commits and creator-side payouts only; Walk, refunds, claims and the verdict stay open | `govern.rs`, `payout.rs`, `intake.rs` |
+| Code swap by the owner | public 7-day upgrade queue, guardian can cancel (does NOT stop a full-access key, see Not defended against 2) | `govern.rs` |
+| Intents balance short of liabilities | `check_solvency` and `reconcile_intents` set `intents_alert`, which refuses NEW Intents commits only | `solvency.rs` |
 | Mainnet by accident | `lib/config.ts` throws on mainnet without the confirmation token; `testnet-deploy.sh` refuses non-testnet | `app/lib/config.ts`, `scripts/testnet-deploy.sh` |
 
 ## Not defended against
 
 1. **Sybil wallets.** Nothing here proves that committed money comes from distinct people; `min_funders` counts accounts. No sybil-resistance claim is made.
-2. **Upgrade authority.** Wave 1 has no upgrade path and the deployer holds a full-access key on testnet (phase P0, disclosed). The multisig + 7-day timelock plan (S1-A 10.4) is Wave 2+; until then a key holder can replace the code.
+2. **Upgrade authority.** The core has a public 7-day upgrade queue (`queue_upgrade`, `cancel_upgrade`, `upgrade_core`), but the owner still holds one full-access key (the `KEYS` line of `verify.sh`), and a full-access key can redeploy at once. The queue is a public commitment, not a barrier, until that key is deleted or replaced by a multisig. On the `demo` profile (core3) the delay is 60 s.
 3. **The Intents Verifier and its DAO.** Money held in `intents.near` is exposed to its force-withdraw and lock powers (S1-B X23); time in Intents is minimised by `consolidate`, not eliminated.
 4. **The launch-token factory.** `token.primitives` instances adopt code from a global contract whose owner holds one full-access key. The platform cannot detect a code swap on-chain; detection is off-chain (hash comparison in `verify`, Wave 2). Own-FT-by-hash is the mitigation and is not approved.
-5. **No independent review.** No audit has covered this code. The Genesis Round, if run, runs with that gap disclosed.
-6. **Compile and VM compatibility on mainnet.** The wasm loaded in the protocol-88 sandbox; mainnet also reports protocol 88 [VERIFIED 2026-11-08], but acceptance on the real network is untested until the testnet deploy.
-7. **Wave 1 omissions that are exposures, not features:** the async solvency anchor, burn of a failed launch's token, creator-allocation vesting, and in-claim token registration (Section 5.6).
-8. **Frontend runtime.** The app was built, not exercised in a browser or against a live wallet.
+5. **No independent review.** No audit has covered this code (the 100-attack gallery is our own red team on a sandbox). Mainnet is not deployed. The Genesis Round, if run, runs with that gap disclosed.
+6. **Compile and VM compatibility on mainnet.** The final wasm runs on testnet (core3, 675,007 bytes, sha256 `e85198ed...`, a local non-reproducible build whose hash differs from the reproducible candidate). Mainnet reports protocol 88 [VERIFIED 2026-11-08]; acceptance of the wasm on mainnet is untested.
+7. **Remaining exposures.** The solvency report is informational and can race a refund (it can only pause NEW Intents commits). `burn_mode` defaults to `Hold` (nothing is burned; the factory token has no `ft_burn`). `halt_launch` and `force_resolve_op` are owner powers over launches and in-flight legs. The F0 gate binds the signature to a registered hash; only verify C17 ties that hash to the compiled transaction. Some verify checks skip on plain RPC (C12, C28, C10, C22, C23, C25, C30; C27 on F1). State from core2 is not readable by this wasm (core3 is a fresh deploy).
+8. **Frontend runtime.** The app was built, not exercised against a real wallet. near-connect loads its wallet list and wallet code from remote hosts (raw.githubusercontent.com, jsdelivr) in sandboxed frames; the unreachable-host path is untested (PD-4).
 9. **Block-timestamp skew** shifts a boundary by seconds; windows are 24 hours or more on the ladder profile, 90 s / 30 s on the labelled demo profile.
 10. **Front-end and RPC trust** for anyone who does not run `verify` themselves.
 

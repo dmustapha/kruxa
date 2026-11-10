@@ -13,3 +13,5 @@ Owner: workstream A. All are view-only (no state change), all u128/u64 values ar
 | `get_market_link`, `get_genesis`, `get_genesis_spec`, `solana_allocations_page` | see HANDOFF.md and REQ-1 | handoff and genesis state |
 
 `get_config` gained `creator_gate`, `market`, `genesis_relayer`, `genesis_paused`; `get_ledger` gained `lp_seed_inflight` and `lp_seed_sent`.
+
+Views added later (2026-11-10, details in `CORE-ABI.md`): `solvency_report`, `get_ops_state(launch_id?, account_id?)`, `get_token_custody(launch_id)`; `get_invariants` also asserts the solvency counters (identity L6). `get_config` does not return `burn_mode`; read it from `get_token_custody`.

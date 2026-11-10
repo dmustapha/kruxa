@@ -1,6 +1,8 @@
 # ARCHITECTURE: Kruxa (NEAR HACKATHON: Build Beyond Boundaries)
 
 Version: forge Phase 2, 2026-11-07, amended by CHANGE-ORDER-3 on 2026-11-08 (Section 5.8 to 5.13 and the marked rows; Sections 4.1 to 4.9 Wave 1 code are NOT edited, see 5.13), by CHANGE-ORDER-4 (track depth, folded here as Section 5.14 by CHANGE-ORDER-5) and by CHANGE-ORDER-5 (doc-sync: fee split 50/15/15/10/10, venue fallback tree, Test 1 handling). The ONLY edits inside 4.1 to 4.9 are the two ruled fee constants listed in 5.13 (D-4, CHANGE-ORDER-5 section 3). Ticker $KRUXA. Authority order: DECISIONS-PACK1 RULINGS 2026-11-07 > RECONCILED-INTERFACE > W0 > S1-A > S1-B/C/D.
+**Final-build sync, 2026-11-10 (docs-sync).** This document was written before the build. Its embedded Wave 1 code (4.1 to 4.9) is left as written so the Section 17 round trip stays true; it is a historical record of the Wave 1 files, not of the final core. Where any statement disagrees with the built repo, the code wins. Corrections are marked `[SYNC 2026-11-10: ...]` inline and collected in Section 5.15 (final core surface, deployed state and the register of corrected statements). Sources of truth: `contracts/core/src`, `docs/interfaces/CORE-ABI.md`, `docs/interfaces/EVENTS.md`, `evidence/`, `rehearsal/ROUND2.md`.
+
 Deadline context: feature freeze Nov 12, repo public + X post Nov 13, one-shot submit Nov 14 23:59 UTC. Nothing in this document signs, spends, deploys to mainnet, posts, pushes or submits.
 
 ## How to read this document (copy-exact contract)
@@ -41,7 +43,7 @@ Deadline context: feature freeze Nov 12, repo public + X post Nov 13, one-shot s
 
 ## 1.1 System diagram
 
-[VERIFIED] — derived from RECONCILED-INTERFACE 2.1 (call graph) and the Wave 1 code in Section 4.
+[VERIFIED] - derived from RECONCILED-INTERFACE 2.1 (call graph) and the Wave 1 code in Section 4.
 ```
 # File: (diagram) system overview
   BUYER (NEAR wallet)                 BUYER (Phantom only)                 ANYONE (keeper / judge)
@@ -68,14 +70,14 @@ Deadline context: feature freeze Nov 12, repo public + X post Nov 13, one-shot s
 
 ## 1.2 Technology table
 
-[VERIFIED] — every pin below was resolved or run in this session (cargo 1.95.0, npm view, near-workspaces sandbox) unless the Source column says otherwise.
+[VERIFIED] - every pin below was resolved or run in this session (cargo 1.95.0, npm view, near-workspaces sandbox) unless the Source column says otherwise.
 
 | Technology | Version | Purpose | Source |
 |---|---|---|---|
 | rustc / cargo | 1.95.0 (local default is 1.91.1; see 1.6) | contract and logic build | installed locally for this run: `rustc 1.95.0 (59807616e 2026-04-14)` |
 | near-sdk | =5.30.1, default-features off, no `universal-accounts` | contract SDK | compiled and run; S1-A 1.3; mainnet and sandbox both report protocol 88 [VERIFIED 2026-11-08, CO-3] |
 | cargo-near | 0.23.0 | wasm build with feature lowering | installed and used: `cargo near build non-reproducible-wasm --no-abi` |
-| near-workspaces | =0.24.0 | sandbox integration tests | run: 34 sandbox tests |
+| near-workspaces | =0.24.0 | sandbox integration tests | 34 sandbox tests at Phase 1 [SYNC 2026-11-10: the suite now holds 33 files under `tests/tests` with 322 `#[test]` or `#[tokio::test]` attributes (a grep count on 2026-11-10, not a run result); the attack gallery alone runs 100 attacks] |
 | uint | =0.10.2 | U256 | compiled and tested |
 | proptest | =1.12.0 | property tests | run |
 | sha2 | 0.10 | inputs_hash, book_hash | compiled |
@@ -94,7 +96,7 @@ Deadline context: feature freeze Nov 12, repo public + X post Nov 13, one-shot s
 
 ## 1.3 One-way dependency flow
 
-[VERIFIED] — enforced by the Cargo manifests in Section 4.
+[VERIFIED] - enforced by the Cargo manifests in Section 4.
 ```
 # File: (diagram) dependency direction
 kruxa-core (contract, I/O, near-sdk)  -->  kruxa-logic (pure)  -->  kruxa-math (pure)
@@ -116,7 +118,7 @@ Go/no-go for the Genesis Round (RULING 2026-11-07, YES, capped and labelled): ga
 
 ## 1.5 File structure tree (Wave 1, every file the developer will create)
 
-[VERIFIED] — each entry below has its complete code in Section 4. `[doc]` and `[gen]` marks are not code files and are excluded from the file-coverage metric. The tree encodes physical boundaries: pure core in `crates/`, the only chain adapter in `contracts/core`, test doubles in separate crates, `evidence/` for machine proof output.
+[VERIFIED] - each entry below has its complete code in Section 4. `[doc]` and `[gen]` marks are not code files and are excluded from the file-coverage metric. The tree encodes physical boundaries: pure core in `crates/`, the only chain adapter in `contracts/core`, test doubles in separate crates, `evidence/` for machine proof output.
 ```
 # File: (tree) repository layout
 kruxa/
@@ -207,7 +209,7 @@ Later-wave modules (not in this tree, by design): `contracts/market/`, `crates/k
 
 ## 1.6 Toolchain caveat (build-order prerequisite)
 
-[VERIFIED] — observed: `rustc 1.91.1` is the machine default; `near-sdk 5.30.1` needs 1.95 and refused a native build.
+[VERIFIED] - observed: `rustc 1.91.1` is the machine default; `near-sdk 5.30.1` needs 1.95 and refused a native build.
 
 The local default toolchain is **1.91.1**. `near-sdk 5.30.1` requires **1.95.0** (S1-A 2.1). This run installed 1.95.0 alongside (`rustup toolchain install 1.95.0 --profile minimal -t wasm32-unknown-unknown`) and used `cargo +1.95.0` everywhere. `rust-toolchain.toml` pins 1.95.0 so a plain `cargo` in the repo uses it. Two further facts: (a) near-sdk 5.30 refuses native `cargo build/check` ("use cargo near build"), so contracts are checked with `cargo check --target wasm32-unknown-unknown` and unit-tested only through the sandbox; the pure crates (`kruxa-math`, `kruxa-logic`) exist precisely so the money arithmetic runs under plain `cargo test`; (b) mainnet reports protocol 88, the same as the sandbox [VERIFIED 2026-11-08, CO-3], so the protocol-gap caveat lapses and wasm acceptance is still proven only by a testnet deploy before a mainnet step (none is known; the `universal-accounts` feature is not enabled). The kit's contract (`sign-gate-test`) was built on 1.91.1 with near-sdk 5.9.0 and needed binaryen lowering because that rustc emits bulk-memory. `cargo near build` (0.23.0) ran its own `wasm-opt` post-step for the 1.95.0 build, and the sandbox VM (protocol 88) loaded the resulting wasm in every test. Whether the real network accepts the same wasm is **[UNVERIFIED]** (mainnet is protocol 88, the sandbox's protocol): it is checked by deploying `kruxa_core.wasm` to a funded testnet account in Wave 0 step 5 (Section 13) before any mainnet discussion.
 
@@ -218,31 +220,31 @@ The local default toolchain is **1.91.1**. `near-sdk 5.30.1` requires **1.95.0**
 
 ## 2.1 Component table
 
-[VERIFIED] — components and accounts from RECONCILED-INTERFACE 2.1; Wave column per Section 1.4.
+[VERIFIED] - components and accounts from RECONCILED-INTERFACE 2.1; Wave column per Section 1.4.
 
 | Name | Type | File Path | Purpose | Dependencies | Wave |
 |---|---|---|---|---|---|
 | kruxa-math | pure crate | `crates/kruxa-math/src/lib.rs` | U256 `mul_div_floor/ceil`, bps helpers, linear unlock, decimal-string serde | uint, serde | 1 |
 | kruxa-logic | pure crate | `crates/kruxa-logic/src/*.rs` | rule codes + constants, param validation, verdict, allocation, per-position settlement, book hash, ledger identities | kruxa-math, sha2, borsh, serde | 1 |
-| kruxa-core | contract (`core.kruxa.near`) | `contracts/core/src/*.rs` | Charter, hold ledger, Walk, verdict + settle, refunds, claims, consolidate, fee, stream-lite, caps, pause | near-sdk, kruxa-logic | 1 |
+| kruxa-core | contract (`core.kruxa.near`) | `contracts/core/src/*.rs` | Charter, hold ledger, Walk, verdict + settle, refunds, claims, consolidate, fee, stream-lite, caps, pause [SYNC 2026-11-10: also the Wave 2 and 1b surface that is now built: genesis state machine with the F0 signing gate, solvency anchor, creator allocation claim, `sweep_tokens` and `burn_mode`, 7-day upgrade queue, `halt_launch`, `force_resolve_op`, `withdraw_owed`, refund batch and route, orphan credit, `lengthen_stream`; see 5.15] | near-sdk, kruxa-logic | 1 |
 | TokenProvider / FactoryPrimitives | adapter | `contracts/core/src/token.rs` | create the launch FT with the whole supply minted to core | token factory | 1 |
 | Intents adapter (S3) | adapter | `ext.rs`, `intake.rs::mt_on_transfer` | credit buyers whose USDC sits in `intents.near`; refund by return value | intents.near | 1 |
 | S4 fallback | adapter (feature) | `contracts/core/src/s4.rs` | parse-and-forward a buyer-signed raw_ed25519 transfer | intents.near | 1 |
 | Test doubles | test crates | `contracts/mock-*` | mock USDC, mock Verifier, mock factory | near-sdk | 1 |
 | kruxa-sim + verify.sh | tooling | `tools/kruxa-sim`, `scripts/verify.sh` | recompute verdict / settlement with the contract's own code; `--tamper` | kruxa-logic | 1 |
-| Sandbox suite | tests | `tests/` | 19 end-to-end and adversarial tests | near-workspaces | 1 |
-| App | Next.js | `app/` | landing, create, launch page (Walk), demo page | near-api-js, wallet-selector | 1 |
-| market | contract (`market.kruxa.near`) | `contracts/market/` (planned; CO-3: Market-lite M-A pre-freeze) | constant-product pool, fee router, creator claims; referral and Hold Vault later | kruxa-logic | 3 (M-A pre-freeze) |
-| venue service | TypeScript service | `services/venue/` (planned, CO-3) | Meteora DAMM v2 spike and Squads proposal builder | Meteora, Squads | 2S |
-| indexer and API | service | `services/indexer/`, `services/api/` (planned, CO-3) | neardata ingest, candles, trades, launch feed, OpenAPI | neardata or RPC | 2I |
-| check, agents, swarm, wallet layer | services and app libs | `services/check/`, `agents/backer/`, `swarm/`, `app/lib/wallet/` (planned, CO-3) | track modules and wallet chooser | see 5.12 | 3 |
-| Solana genesis host + relayer | off-chain service | `relayer/` (planned) | G key, tx builder, Merkle pages, Jito distributor, claim page | @solana/web3.js 1.98.4 | 2 |
-| Squads reserve | Solana multisig | `tools/squads/` (planned) | reserve vault, Dami's 3 keys (disclosed single-party) | Squads | 2 |
-| Verdict Rail | Solana SAS attestation | `tools/sas/` (planned) | rules-verified attestation per PASS | SAS | 4 |
+| Sandbox suite | tests | `tests/` | 19 end-to-end and adversarial tests at Phase 0 [SYNC 2026-11-10: 33 test files, 100-attack gallery] | near-workspaces | 1 |
+| App | Next.js | `app/` | landing, create, launch page (Walk), demo page [SYNC 2026-11-10: there is no `/demo` and no `/proof` route (ruled out: Kruxa is a real launchpad, APP-SPEC 2.1); Discover is `/`; the routes are listed in the 4.9 sync note; `llms.txt` and `AGENTS.md` are served] | near-api-js, wallet-selector | 1 |
+| market | contract (`market.kruxa.near`) | `contracts/market/` (BUILT; ABI 1.1.2 in `docs/interfaces/MARKET-ABI.md`, running on testnet as `market3`) | constant-product pool, fee router, creator claims; referral and Hold Vault later | kruxa-logic | 3 (M-A pre-freeze) |
+| venue service | TypeScript service | `services/venue/` (BUILT; devnet spike in `spikes/meteora/RESULTS.md`) | Meteora DAMM v2 spike and Squads proposal builder | Meteora, Squads | 2S |
+| indexer and API | service | `services/indexer/`, `services/api/` (BUILT; OpenAPI 1.3.0 in `docs/interfaces/api.openapi.yaml`) | neardata ingest, candles, trades, launch feed, OpenAPI | neardata or RPC | 2I |
+| check, agents, swarm, wallet layer | services and app libs | `swarm/`, `tools/swarm-sim/`, `app/lib/wallet/` (BUILT); `services/check/` and `agents/backer/` were CUT by CO-6 E-2 and do not exist | track modules and wallet chooser | see 5.12 | 3 |
+| Solana genesis host + relayer | off-chain service | `relayer/` (BUILT; F0 and F1 ran on devnet, see 5.15) | G key, tx builder, Merkle pages, Jito distributor, claim page | @solana/web3.js 1.98.4 | 2 |
+| Squads reserve | Solana multisig | `tools/squads/` (BUILT; devnet rehearsal in `evidence/genesis/squads-devnet-*.txt`) | reserve vault, Dami's 3 keys (disclosed single-party) | Squads | 2 |
+| Verdict Rail | Solana SAS attestation | `tools/sas/` (NOT BUILT: stretch, cut; verify check C25 always skips) | rules-verified attestation per PASS | SAS | 4 |
 
 ## 2.1b PRD component map
 
-[VERIFIED] — PRD.md section 2.2 components against the sections of this document.
+[VERIFIED] - PRD.md section 2.2 components against the sections of this document.
 
 | PRD component | Where it is specified here | Depth |
 |---|---|---|
@@ -274,7 +276,7 @@ The local default toolchain is **1.91.1**. `near-sdk 5.30.1` requires **1.95.0**
 
 ## 2.3 Sequence: S3 commit by a Phantom-only buyer
 
-[VERIFIED] — message order reproduced in `tests/tests/intents.rs::s3_credits_net_of_relay_fee_and_rejects_by_refunding_the_signer` against the mock Verifier; the real Verifier's behaviour is W0 source-read.
+[VERIFIED] - message order reproduced in `tests/tests/intents.rs::s3_credits_net_of_relay_fee_and_rejects_by_refunding_the_signer` against the mock Verifier; the real Verifier's behaviour is W0 source-read.
 ```
 # File: (diagram) S3 commit sequence
 Buyer(Phantom)        Submitter (anyone)         intents.near                 core
@@ -292,7 +294,7 @@ Buyer(Phantom)        Submitter (anyone)         intents.near                 co
 
 ## 2.4 Sequence: Walk and verdict
 
-[VERIFIED] — `tests/tests/lifecycle.rs::walk_shrinks_the_book_refunds_and_closes_at_walk_end`, `pass_undersubscribed_full_money_path`.
+[VERIFIED] - `tests/tests/lifecycle.rs::walk_shrinks_the_book_refunds_and_closes_at_walk_end`, `pass_undersubscribed_full_money_path`.
 ```
 # File: (diagram) walk and settle sequence
 phase:  Scheduled | Open (commit + Walk) | Closing (Walk only, book can only shrink) | Ready (frozen)
@@ -305,7 +307,7 @@ settle(id) after walk_end: verdict(inputs) -> PASS: 4 buckets, status Passed | F
 
 ## 2.5 State machine
 
-[VERIFIED] — `crates/kruxa-logic/src/settle.rs::phase_at` and `contracts/core/src/model.rs::Status`.
+[VERIFIED] - `crates/kruxa-logic/src/settle.rs::phase_at` and `contracts/core/src/model.rs::Status`.
 
 | From | To | Trigger | Who | Precondition (code if violated) |
 |---|---|---|---|---|
@@ -320,7 +322,7 @@ Clock phases (Scheduled, Open, Closing, Ready) are derived, never stored, so not
 
 ## 2.6 State management (what persists where)
 
-[VERIFIED] — `contracts/core/src/lib.rs` and `model.rs`.
+[VERIFIED] - `contracts/core/src/lib.rs` and `model.rs`.
 
 | State | Storage | Key | Notes |
 |---|---|---|---|
@@ -350,7 +352,7 @@ Authority order: DECISIONS-PACK1 RULINGS (live copy, including 2026-11-07) > REC
 | 6 | Caps: DECISIONS #28 said 10 NEAR / 50 NEAR | RULING 2026-11-07: $1,000 per launch and $3,000 global in USDC. Per launch it is `Rules.max_hard_cap`; global is `Config.global_cap` against `global_held` (actual custody, not reservations). Raising either is timelocked 7 days (`queue_*`, `apply_*`); lowering is instant | `rules.rs`, `admin.rs`, `intake.rs::check_commit` |
 | 7 | **NEW, not in any spec:** a hard cap bounds the accepted raise, but oversubscription lets custody exceed it, which would defeat a USDC liability cap | `Rules.max_oversub_bps = 20_000`: `total_active` may reach 2x the hard cap (`Derived.max_total_held`), then commits are rejected with R_CAP_LAUNCH. Flagged for Dami: a RuleSet constant, one-line change | `rules.rs`, `intake.rs` |
 | 8 | Relay fee: RECONCILED 8-16 says <= $0.50 and <= 5%, non-refundable; RULINGS 2026-11-07 lists the policy as open with "suggested <= 1% of commit" | Implemented the RECONCILED values as RuleSet constants (`max_relay_fee_abs`, `max_relay_fee_bps`); the 1% suggestion is a one-line change (`max_relay_fee_bps: 100`). Open item, Section 3.2 | `rules.rs` |
-| 9 | Backer bonus vesting: RECONCILED shipped 0 days until Dami's OK | RULING 2026-11-07 approves 30-day linear: `backer_vest_days = 30`; `claim_tokens` releases `tokens + vested bonus`. Unclaimed-bonus burn (180 days) is Wave 3 | `rules.rs`, `payout.rs::claim_tokens` |
+| 9 | Backer bonus vesting: RECONCILED shipped 0 days until Dami's OK | RULING 2026-11-07 approves 30-day linear: `backer_vest_days = 30`; `claim_tokens` releases `tokens + vested bonus`. Unclaimed-bonus burn (180 days) is Wave 3 [SYNC 2026-11-10: `claim_tokens` registers the holder on the launch token inside the claim (attach 1 yocto when registered, 0.00125 NEAR + 1 yocto when not; the rest is refunded). The unclaimed bonus is released by `sweep_tokens` after `bonus_sweep_after_secs` (180 days) to `burn_mode`, which defaults to `Hold` (nothing moves) because the factory token has no `ft_burn`; the default stream length in Studio is 30 days (minimum 30 days up to a $25,000 hard cap, 90 days above it, maximum 365)] | `rules.rs`, `payout.rs::claim_tokens` |
 | 10 | Own-FT by hash (Route B) for real money vs "not approved" | Factory token for every launch (disclosed). `TokenProvider` trait exists; `TokenRoute::OwnGlobalByHash` is a reserved variant with no implementation | `token.rs`, `model.rs` |
 | 11 | `ft_burn` of a dead token (A yes, B no, C partly) | Wave 1 does not burn: a FAILED launch's token stays in core forever, disclosed. `burn_mode` is Wave 0 probe item V-6 and Wave 3 design | LIMITATIONS |
 | 12 | Ticker $CRUX vs $KRUXA | $KRUXA (ruling). `KRUXA` and 8 other symbols are reserved: only `Config.owner` may launch them, so the brand token cannot be squatted | `rules.rs::check_text` |
@@ -397,7 +399,7 @@ Authority order: DECISIONS-PACK1 RULINGS (live copy, including 2026-11-07) > REC
 
 ## 3.3 W1-SCOPE-KICKOFF done-criteria against this architecture
 
-[VERIFIED] — status taken from the runs recorded in Section 17; "No" rows are real gaps, not wording.
+[VERIFIED] - status taken from the runs recorded in Section 17; "No" rows are real gaps, not wording.
 
 | ID | Status | Note |
 |---|---|---|
@@ -430,7 +432,7 @@ Pin every dependency and the toolchain; one release profile shared by all wasm a
 
 ### Code
 
-[VERIFIED] — resolved and built by cargo 1.95.0; versions per S1-A 2.1
+[VERIFIED] - resolved and built by cargo 1.95.0; versions per S1-A 2.1
 ```toml
 # File: Cargo.toml
 [workspace]
@@ -460,7 +462,7 @@ panic = "abort"
 overflow-checks = true
 ```
 
-[VERIFIED] — channel installed locally via rustup; S1-A 2.2
+[VERIFIED] - channel installed locally via rustup; S1-A 2.2
 ```toml
 # File: rust-toolchain.toml
 [toolchain]
@@ -469,7 +471,7 @@ targets = ["wasm32-unknown-unknown"]
 components = ["rustfmt", "clippy"]
 ```
 
-[VERIFIED] — applied by `cargo fmt --all`; `scripts/lint.sh` enforces it
+[VERIFIED] - applied by `cargo fmt --all`; `scripts/lint.sh` enforces it
 ```toml
 # File: rustfmt.toml
 max_width = 140
@@ -490,7 +492,7 @@ The money arithmetic. `mul_div_floor/ceil` use a 256-bit intermediate so `a * b`
 
 ### Code
 
-[VERIFIED] — built by cargo 1.95.0
+[VERIFIED] - built by cargo 1.95.0
 ```toml
 # File: crates/kruxa-math/Cargo.toml
 [package]
@@ -509,7 +511,7 @@ proptest = { workspace = true }
 serde_json = "1"
 ```
 
-[VERIFIED] — 8 unit + property tests pass (rustc 1.95.0, 2026-11-07); S1-A 7.1-7.2 rounding doctrine
+[VERIFIED] - 8 unit + property tests pass (rustc 1.95.0, 2026-11-07); S1-A 7.1-7.2 rounding doctrine
 ```rust
 // File: crates/kruxa-math/src/lib.rs
 //! kruxa-math: pure integer math. No near-sdk, no I/O. Linked by the contract, kruxa-sim and verify.
@@ -698,7 +700,7 @@ Everything deterministic that is not arithmetic: rule codes and constants, param
 
 ### Code
 
-[VERIFIED] — built by cargo 1.95.0
+[VERIFIED] - built by cargo 1.95.0
 ```toml
 # File: crates/kruxa-logic/Cargo.toml
 [package]
@@ -719,7 +721,7 @@ proptest = { workspace = true }
 serde_json = "1"
 ```
 
-[VERIFIED] — compiled; constants per RULING R6 and S1-A patch 3.2
+[VERIFIED] - compiled; constants per RULING R6 and S1-A patch 3.2
 ```rust
 // File: crates/kruxa-logic/src/lib.rs
 //! kruxa-logic: the deterministic core. Pure functions over integers and byte strings.
@@ -747,7 +749,7 @@ pub const TICKER: &str = "KRUXA";
 pub const STORAGE_BYTE_COST_YOCTO: u128 = 10_000_000_000_000_000_000;
 ```
 
-[VERIFIED] — 6 unit tests incl. one failing case per validation code and inclusive boundaries pass; rule values per S1-B 2.4 and RECONCILED 3.1/3.3
+[VERIFIED] - 6 unit tests incl. one failing case per validation code and inclusive boundaries pass; rule values per S1-B 2.4 and RECONCILED 3.1/3.3
 ```rust
 // File: crates/kruxa-logic/src/rules.rs
 use borsh::{BorshDeserialize, BorshSerialize};
@@ -1425,7 +1427,7 @@ mod tests {
 }
 ```
 
-[VERIFIED] — 3 tests pass; algorithm per S1-B 4.1; hashes pinned by the TypeScript mirror's vitest
+[VERIFIED] - 3 tests pass; algorithm per S1-B 4.1; hashes pinned by the TypeScript mirror's vitest
 ```rust
 // File: crates/kruxa-logic/src/verdict.rs
 use borsh::{BorshDeserialize, BorshSerialize};
@@ -1556,7 +1558,7 @@ mod tests {
 }
 ```
 
-[VERIFIED] — 5 tests incl. S1-B examples 1 and 2 to the unit and a proptest of conservation over random books pass
+[VERIFIED] - 5 tests incl. S1-B examples 1 and 2 to the unit and a proptest of conservation over random books pass
 ```rust
 // File: crates/kruxa-logic/src/settle.rs
 use kruxa_math::{bps_ceil, bps_floor, mul_div_ceil, mul_div_floor, MathError};
@@ -1705,7 +1707,7 @@ mod tests {
 }
 ```
 
-[VERIFIED] — 2 tests pass; identities L1 and L4 (S1-A 5.3 as amended by RECONCILED 3.1)
+[VERIFIED] - 2 tests pass; identities L1 and L4 (S1-A 5.3 as amended by RECONCILED 3.1)
 ```rust
 // File: crates/kruxa-logic/src/ledger.rs
 use serde::{Deserialize, Serialize};
@@ -1785,14 +1787,14 @@ mod tests {
 ## 4.4 kruxa-core (the contract)
 
 ### Purpose
-The only module that touches the chain. Public methods (Wave 1): `new`, `create_trial`, `on_token_created`, `on_token_verified`, `finalize_creation`, `ft_on_transfer`, `mt_on_transfer`, `contribute_via_intents` (feature), `on_contribute_intents`, `walk`, `walk_signed`, `cancel_trial`, `settle`, `settle_positions_page`, `sweep_residue`, `claim_refund`, `claim_tokens`, `consolidate`, `pay_launch_fee`, `draw`, `pay_relay_fees`, `on_payout`, `dissolve`, `reclaim_bond`, `pause`, `freeze`, `unpause`, `lower_global_cap`, `queue_global_cap`, `apply_global_cap`, `queue_launch_cap`, `apply_launch_cap`, and the views `get_config`, `get_charter`, `get_state`, `get_ledger`, `get_position`, `list_positions`, `get_verdict_inputs`, `get_settlement`, `preview_contribution`, `required_deposit`, `get_invariants`.
+The only module that touches the chain. [SYNC 2026-11-10: the list below is the Wave 1 list as first written; the final method set is in 5.15 and `docs/interfaces/CORE-ABI.md`. Beyond the list, the built core adds `open_beta`, `set_market`, `open_market` (returns `u8`, not `Promise`), `set_genesis_relayer`, `pause_genesis`, `resume_genesis`, `reopen_genesis`, `register_f0_message`, `sign_genesis`, `get_phase`, `preview_charter`, `preview_settlement`, `declared_wallets`, `get_book_hash`, `get_market_link`, `get_genesis`, `get_genesis_spec`] Public methods (Wave 1): `new`, `create_trial`, `on_token_created`, `on_token_verified`, `finalize_creation`, `ft_on_transfer`, `mt_on_transfer`, `contribute_via_intents` (feature), `on_contribute_intents`, `walk`, `walk_signed`, `cancel_trial`, `settle`, `settle_positions_page`, `sweep_residue`, `claim_refund`, `claim_tokens`, `consolidate`, `pay_launch_fee`, `draw`, `pay_relay_fees`, `on_payout`, `dissolve`, `reclaim_bond`, `pause`, `freeze`, `unpause`, `lower_global_cap`, `queue_global_cap`, `apply_global_cap`, `queue_launch_cap`, `apply_launch_cap`, and the views `get_config`, `get_charter`, `get_state`, `get_ledger`, `get_position`, `list_positions`, `get_verdict_inputs`, `get_settlement`, `preview_contribution`, `required_deposit`, `get_invariants`.
 
 ### Dependencies
 `near-sdk`, `kruxa-logic`, `kruxa-math`. External calls go to the USDC contract, `intents.near`, the token factory and the launch token only.
 
 ### Code
 
-[VERIFIED] — built by cargo-near 0.23.0; reproducible-build image tag is UNVERIFIED (S1-A 2.4: run `cargo near build reproducible-wasm` once and use the tag it prints)
+[VERIFIED] - built by cargo-near 0.23.0; reproducible-build image tag is UNVERIFIED (S1-A 2.4: run `cargo near build reproducible-wasm` once and use the tag it prints)
 ```toml
 # File: contracts/core/Cargo.toml
 [package]
@@ -1825,7 +1827,7 @@ passed_env = []
 container_build_command = ["cargo", "near", "build", "non-reproducible-wasm", "--locked"]
 ```
 
-[VERIFIED] — compiled to wasm and exercised by the 19-test sandbox suite (2026-11-07)
+[VERIFIED] - compiled to wasm and exercised by the 19-test sandbox suite (2026-11-07)
 ```rust
 // File: contracts/core/src/lib.rs
 //! kruxa-core: the NEAR contract. Wave 1 = trial lifecycle (create, commit, Walk, settle, refunds, claims).
@@ -1977,7 +1979,7 @@ impl Contract {
 }
 ```
 
-[VERIFIED] — compiled; exercised by the sandbox suite
+[VERIFIED] - compiled; exercised by the sandbox suite
 ```rust
 // File: contracts/core/src/model.rs
 use kruxa_logic::{hex, Derived, Rules, TrialParams};
@@ -2193,7 +2195,7 @@ pub struct Config {
 }
 ```
 
-[VERIFIED] — compiled; events asserted in tests via logs
+[VERIFIED] - compiled; events asserted in tests via logs
 ```rust
 // File: contracts/core/src/events.rs
 use kruxa_logic::{EVENT_STANDARD, EVENT_VERSION};
@@ -2206,7 +2208,7 @@ pub fn emit(event: &str, data: Value) {
 }
 ```
 
-[UNVERIFIED] — compiles and works against the mocks; real `intents.near` signatures (`mt_transfer` with `approval, memo`; `ft_withdraw(token, receiver_id, amount, memo, msg)`; `execute_intents`) are from W0 and S1-B, not exercised live
+[UNVERIFIED] - compiles and works against the mocks; real `intents.near` signatures (`mt_transfer` with `approval, memo`; `ft_withdraw(token, receiver_id, amount, memo, msg)`; `execute_intents`) are from W0 and S1-B, not exercised live
 ```rust
 // File: contracts/core/src/ext.rs
 use near_sdk::json_types::U128;
@@ -2239,7 +2241,7 @@ pub trait ExtIntents {
 }
 ```
 
-[UNVERIFIED] — compiles; the `create_token` call shape is from S1-A 8.4 (`{"args":{owner_id,total_supply,metadata}}`) and the mock enforces it; the real factory is a Wave 0 testnet probe against `token.primitives.testnet`
+[UNVERIFIED] - compiles; the `create_token` call shape is from S1-A 8.4 (`{"args":{owner_id,total_supply,metadata}}`) and the mock enforces it; the real factory is a Wave 0 testnet probe against `token.primitives.testnet`
 ```rust
 // File: contracts/core/src/token.rs
 use kruxa_logic::TrialParams;
@@ -2287,7 +2289,7 @@ impl TokenProvider for FactoryPrimitives {
 }
 ```
 
-[UNVERIFIED] — compiles; native path, S3 and walk_signed pass sandbox tests against the mock Verifier; real `mt_on_transfer` semantics are W0 source-read (sender_id = signer, return amounts = refund), live confirmation pending the approved <= $1 test
+[UNVERIFIED] - compiles; native path, S3 and walk_signed pass sandbox tests against the mock Verifier; real `mt_on_transfer` semantics are W0 source-read (sender_id = signer, return amounts = refund), live confirmation pending the approved <= $1 test
 ```rust
 // File: contracts/core/src/intake.rs
 use crate::ContractExt;
@@ -2620,7 +2622,7 @@ impl Contract {
 }
 ```
 
-[VERIFIED] — compiled; create, callbacks, cancel, settle (PASS and FAIL), residue, dissolve, bond all exercised by sandbox tests
+[VERIFIED] - compiled; create, callbacks, cancel, settle (PASS and FAIL), residue, dissolve, bond all exercised by sandbox tests
 ```rust
 // File: contracts/core/src/lifecycle.rs
 use crate::ContractExt;
@@ -3027,7 +3029,7 @@ impl Contract {
 }
 ```
 
-[UNVERIFIED] — compiled; refunds, claims, fee, stream cap, consolidate, relay-fee payout exercised against mocks; `ft_withdraw` to native is mock-only (OV15 is the unproven live piece)
+[UNVERIFIED] - compiled; refunds, claims, fee, stream cap, consolidate, relay-fee payout exercised against mocks; `ft_withdraw` to native is mock-only (OV15 is the unproven live piece)
 ```rust
 // File: contracts/core/src/payout.rs
 use crate::ContractExt;
@@ -3362,7 +3364,7 @@ impl Contract {
 }
 ```
 
-[VERIFIED] — compiled; views used by every sandbox test and by kruxa-sim
+[VERIFIED] - compiled; views used by every sandbox test and by kruxa-sim
 ```rust
 // File: contracts/core/src/views.rs
 use crate::ContractExt;
@@ -3516,7 +3518,7 @@ impl Contract {
 }
 ```
 
-[VERIFIED] — compiled; pause, freeze, role checks and the timelock exercised; FROZEN 7-day auto-expiry is not exercised (the sandbox cannot move 7 days cheaply)
+[VERIFIED] - compiled; pause, freeze, role checks and the timelock exercised; FROZEN 7-day auto-expiry is not exercised (the sandbox cannot move 7 days cheaply)
 ```rust
 // File: contracts/core/src/admin.rs
 use crate::ContractExt;
@@ -3621,7 +3623,7 @@ impl Contract {
 }
 ```
 
-[UNVERIFIED] — compiles; strict-payload refusals and the happy path pass against the mock Verifier; W0 shows `execute_intents` parses this payload shape on mainnet (simulate_intents)
+[UNVERIFIED] - compiles; strict-payload refusals and the happy path pass against the mock Verifier; W0 shows `execute_intents` parses this payload shape on mainnet (simulate_intents)
 ```rust
 // File: contracts/core/src/s4.rs
 //! S4 fallback (cargo feature `s4-fallback`): anyone submits a buyer-signed raw_ed25519 transfer intent.
@@ -3785,7 +3787,7 @@ Faithful-enough stand-ins so the whole money path runs in the free sandbox. They
 
 ### Code
 
-[VERIFIED] — built
+[VERIFIED] - built
 ```toml
 # File: contracts/mock-ft/Cargo.toml
 [package]
@@ -3802,7 +3804,7 @@ crate-type = ["cdylib", "rlib"]
 near-sdk = { workspace = true }
 ```
 
-[ASSUMED] — NEP-141/NEP-145 behaviour mirrors the standard (receiver must be registered; unused amount refunded by the resolver); not the real USDC contract
+[ASSUMED] - NEP-141/NEP-145 behaviour mirrors the standard (receiver must be registered; unused amount refunded by the resolver); not the real USDC contract
 ```rust
 // File: contracts/mock-ft/src/lib.rs
 //! Test-only NEP-141 + NEP-145 token. Stands in for native USDC and for the launch token. Never deployed anywhere real.
@@ -3917,7 +3919,7 @@ impl MockFt {
 }
 ```
 
-[VERIFIED] — built
+[VERIFIED] - built
 ```toml
 # File: contracts/mock-intents/Cargo.toml
 [package]
@@ -3934,7 +3936,7 @@ crate-type = ["cdylib", "rlib"]
 near-sdk = { workspace = true }
 ```
 
-[ASSUMED] — models W0 OV1/OV2: flat `msg`, balance moved before `mt_on_transfer`, unused amounts refunded to the signer, no signature verification
+[ASSUMED] - models W0 OV1/OV2: flat `msg`, balance moved before `mt_on_transfer`, unused amounts refunded to the signer, no signature verification
 ```rust
 // File: contracts/mock-intents/src/lib.rs
 //! Test-only intents.near. Implements the slice Kruxa touches: mt_balance_of, mt_transfer, ft_withdraw and
@@ -4091,7 +4093,7 @@ impl MockIntents {
 }
 ```
 
-[VERIFIED] — built
+[VERIFIED] - built
 ```toml
 # File: contracts/mock-factory/Cargo.toml
 [package]
@@ -4108,7 +4110,7 @@ crate-type = ["cdylib", "rlib"]
 near-sdk = { workspace = true }
 ```
 
-[ASSUMED] — enforces the `create_token` argument shape of S1-A 8.4; creates nothing (the harness pre-deploys the token account)
+[ASSUMED] - enforces the `create_token` argument shape of S1-A 8.4; creates nothing (the harness pre-deploys the token account)
 ```rust
 // File: contracts/mock-factory/src/lib.rs
 //! Test-only stand-in for token.primitives.near. The harness pre-deploys the token account the real factory would create.
@@ -4149,7 +4151,7 @@ The judge path with no keys: recompute a verdict or a settlement with the contra
 
 ### Code
 
-[VERIFIED] — built
+[VERIFIED] - built
 ```toml
 # File: tools/kruxa-sim/Cargo.toml
 [package]
@@ -4167,7 +4169,7 @@ ureq = { version = "2", features = ["json"] }
 base64 = "0.22"
 ```
 
-[VERIFIED] — `verdict` and `settle` subcommands run and match S1-B example 1; `verify` against a live RPC is UNVERIFIED until a testnet deployment exists
+[VERIFIED] - `verdict` and `settle` subcommands run and match S1-B example 1; `verify` against a live RPC is UNVERIFIED until a testnet deployment exists
 ```rust
 // File: tools/kruxa-sim/src/main.rs
 //! kruxa-sim: recompute Kruxa results with the SAME pure code the contract runs.
@@ -4294,7 +4296,7 @@ fn main() {
 }
 ```
 
-[VERIFIED] — `golden` mode ran 2026-11-07 and printed the expected PASS / FAIL / example-1 numbers; `chain` mode needs a deployment
+[VERIFIED] - `golden` mode ran 2026-11-07 and printed the expected PASS / FAIL / example-1 numbers; `chain` mode needs a deployment
 ```bash
 # File: scripts/verify.sh
 #!/usr/bin/env bash
@@ -4322,6 +4324,8 @@ case "${1:-}" in
 esac
 ```
 
+> **Sync 2026-11-10 (4.6).** `kruxa-sim verify` and `scripts/verify.sh` follow the CO-6 exit-code contract and add `--rpc2`, `--tamper <field>`, `--tamper-all`, `fold`, `validate`, `fuzz` and a full-run mode. `kruxa-sim validate` exits 65 on a refused parameter set and 0 on an accepted one (the Wave 1 text here says exit 0 with no rule code). The embedded `kruxa-sim` and `verify.sh` code above is the pre-patch version by design. Check coverage is C1 to C28 plus the NEAR recompute lines C31 to C34 printed by `kruxa-sim`; checks C33 and C34 have no live transcript in `evidence/`. On plain RPC the latest F0 run (`evidence/testnet-core3/verify-8-f0.txt`) passes 21 checks and skips 7: C12 (needs `--charter`), C28 (needs `--rpc2`), C10 (needs the hosted metadata JSON), C22 (no creator allocation in the record), C23 (plain RPC cannot enumerate a contract's events), C25 (no Verdict Rail attestation), C30 (FAIL-path check on a PASS launch). The F1 run (`verify-4-f1.txt`) skips 8 (the same seven plus C27, no derived key). The CODE line compares `view_code` with `artifacts/SHA256SUMS`; after any redeploy run `./scripts/build-artifacts.sh --local` first or the run exits 2 on a CODE MISMATCH.
+
 ## 4.7 Sandbox test suite
 
 ### Purpose
@@ -4329,7 +4333,7 @@ End-to-end and adversarial coverage against the real compiled wasm in the near-w
 
 ### Code
 
-[VERIFIED] — built
+[VERIFIED] - built
 ```toml
 # File: tests/Cargo.toml
 [package]
@@ -4349,7 +4353,7 @@ bs58 = "0.5"
 kruxa-logic = { path = "../crates/kruxa-logic" }
 ```
 
-[VERIFIED] — harness used by all 19 tests
+[VERIFIED] - harness used by all 19 tests
 ```rust
 // File: tests/src/lib.rs
 //! Sandbox harness: deploys core + mock USDC + mock intents + mock factory, and wraps the calls the tests repeat.
@@ -4645,7 +4649,7 @@ impl Env {
 }
 ```
 
-[VERIFIED] — 6 tests pass
+[VERIFIED] - 6 tests pass
 ```rust
 // File: tests/tests/lifecycle.rs
 //! End-to-end lifecycle against the sandbox: create, commit, Walk, settle PASS (under- and oversubscribed), settle FAIL, refunds, claims.
@@ -4814,7 +4818,7 @@ async fn walk_shrinks_the_book_refunds_and_closes_at_walk_end() -> anyhow::Resul
 }
 ```
 
-[VERIFIED] — 9 tests pass (one is `#[ignore]` and slow; `scripts/test.sh --include-ignored` runs it)
+[VERIFIED] - 9 tests pass (one is `#[ignore]` and slow; `scripts/test.sh --include-ignored` runs it)
 ```rust
 // File: tests/tests/adversarial.rs
 //! Adversarial cases: one failing case per R_* code reachable through the public API, plus pause/freeze,
@@ -5116,7 +5120,7 @@ async fn a_pause_cannot_hold_the_verdict_hostage_but_it_does_hold_creator_payout
 }
 ```
 
-[VERIFIED] — 4 tests pass against the mock Verifier
+[VERIFIED] - 4 tests pass against the mock Verifier
 ```rust
 // File: tests/tests/intents.rs
 //! Solana-buyer paths against the mock Verifier: S3 (signed transfer with flat msg, primary), S4 (parse-and-forward fallback),
@@ -5281,11 +5285,13 @@ async fn pass_with_intents_buyers_consolidates_and_pays_the_stream() -> anyhow::
 | R_CREATOR_TAKE (fee router, validated in Wave 1) | the same create test; every other fee code by `one_failing_case_per_code` |
 | Codes that exist but no test triggers | R_TOO_LATE (cancel after `commit_end`), R_NOT_CLEAR (early `dissolve`, `sweep_residue`, `consolidate`), R_NOTHING (empty claim), R_NO_LAUNCH (unknown id), R_SOLVENCY (settle-time conservation guard, unreachable unless arithmetic is wrong), R_MATH (needs a u128 overflow the rule bounds exclude). All are one-line guards; listed so nobody counts them as exercised |
 
+> **Sync 2026-11-10 (4.7).** The embedded suite is the 19-test Wave 1 suite. The repo now has 33 files under `tests/tests` (322 test attributes by grep, not a run result), including `real_intents.rs` (6 tests against the real hash-pinned `intents.near` wasm, which closes the "mock Verifier only" statements in 2.3 and W1-DC-8), the 100-attack gallery (81 refused with a rule code, 14 ran with no effect, 5 bounded, 0 failed, 10 not done; `docs/ATTACK-GALLERY.md`), and the negative-path tests for every reachable rule code of the final core surface.
+
 ## 4.8 Scripts and CI
 
 ### Code
 
-[VERIFIED] — ran; produced the four wasm files
+[VERIFIED] - ran; produced the four wasm files
 ```bash
 # File: scripts/build.sh
 #!/usr/bin/env bash
@@ -5298,7 +5304,7 @@ done
 ls -l target/near/*/*.wasm
 ```
 
-[VERIFIED] — ran end to end 2026-11-07 (Section 17)
+[VERIFIED] - ran end to end 2026-11-07 (Section 17)
 ```bash
 # File: scripts/test.sh
 #!/usr/bin/env bash
@@ -5311,7 +5317,7 @@ cargo test -p kruxa-math -p kruxa-logic
 cargo test -p kruxa-tests -- --test-threads=3 "$@"
 ```
 
-[VERIFIED] — fmt and clippy parts ran clean; the 600,000-byte wasm gate is a budget set from the measured size (see below)
+[VERIFIED] - fmt and clippy parts ran clean; the 600,000-byte wasm gate is a budget set from the measured size (see below)
 ```bash
 # File: scripts/lint.sh
 #!/usr/bin/env bash
@@ -5327,7 +5333,7 @@ if [ "$SIZE" -gt "$MAX" ]; then echo "kruxa_core.wasm is $SIZE bytes, budget $MA
 echo "lint ok, kruxa_core.wasm $SIZE bytes (budget $MAX)"
 ```
 
-[UNVERIFIED] — syntax-checked and dry-run printed; never executed; the `near` CLI argument grammar (near-cli-rs) is from memory and must be checked on first use
+[UNVERIFIED] - syntax-checked and dry-run printed; never executed; the `near` CLI argument grammar (near-cli-rs) is from memory and must be checked on first use
 ```bash
 # File: scripts/testnet-deploy.sh
 #!/usr/bin/env bash
@@ -5354,7 +5360,7 @@ done
 [ "${1:-}" = "--yes" ] || echo "(dry run: pass --yes with NEAR_ENV=testnet to execute)"
 ```
 
-[UNVERIFIED] — syntax-checked and dry-run printed; never executed; near-cli-rs argument grammar is from memory
+[UNVERIFIED] - syntax-checked and dry-run printed; never executed; near-cli-rs argument grammar is from memory
 ```bash
 # File: scripts/keeper.sh
 #!/usr/bin/env bash
@@ -5382,7 +5388,7 @@ for m in sweep_residue consolidate pay_launch_fee pay_relay_fees; do call "$m" "
 $RUN || echo "(dry run: pass --yes with NEAR_ENV=testnet to execute; later steps fail until earlier ones finish, which is expected)"
 ```
 
-[UNVERIFIED] — not run on GitHub
+[UNVERIFIED] - not run on GitHub
 ```yaml
 # File: .github/workflows/ci.yml
 name: ci
@@ -5412,7 +5418,7 @@ jobs:
       - run: npm run build
 ```
 
-[VERIFIED] — run against this file; output diffed against the compiled workspace (Section 17)
+[VERIFIED] - run against this file; output diffed against the compiled workspace (Section 17)
 ```python
 # File: scripts/extract_architecture.py
 #!/usr/bin/env python3
@@ -5472,7 +5478,7 @@ Four routes: landing `/`, create `/create`, launch page `/launch/[id]` (status, 
 
 ### Code
 
-[VERIFIED] — `npm install` resolved these exact versions; `next build` succeeded
+[VERIFIED] - `npm install` resolved these exact versions; `next build` succeeded
 ```json
 // File: app/package.json
 {
@@ -5506,7 +5512,7 @@ Four routes: landing `/`, create `/create`, launch page `/launch/[id]` (status, 
 }
 ```
 
-[VERIFIED] — `tsc --noEmit` clean; the `jsx`, `allowJs` and `include` lines were rewritten by `next build` and are kept as written
+[VERIFIED] - `tsc --noEmit` clean; the `jsx`, `allowJs` and `include` lines were rewritten by `next build` and are kept as written
 ```json
 // File: app/tsconfig.json
 {
@@ -5552,7 +5558,7 @@ Four routes: landing `/`, create `/create`, launch page `/launch/[id]` (status, 
 }
 ```
 
-[VERIFIED] — `next build` succeeded
+[VERIFIED] - `next build` succeeded
 ```js
 // File: app/next.config.mjs
 /** @type {import('next').NextConfig} */
@@ -5560,7 +5566,7 @@ const nextConfig = { reactStrictMode: true };
 export default nextConfig;
 ```
 
-[VERIFIED] — `vitest run` passes
+[VERIFIED] - `vitest run` passes
 ```ts
 // File: app/vitest.config.ts
 import { defineConfig } from 'vitest/config';
@@ -5568,7 +5574,7 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({ test: { include: ['lib/**/*.test.ts'] } });
 ```
 
-[VERIFIED] — variable names are read by lib/config.ts
+[VERIFIED] - variable names are read by lib/config.ts
 ```bash
 # File: app/.env.example
 # Testnet defaults. Mainnet is refused unless NEXT_PUBLIC_MAINNET_CONFIRMED is set to the exact confirmation token below,
@@ -5582,7 +5588,7 @@ NEXT_PUBLIC_FACTORY_ACCOUNT=factory.kruxa.testnet
 # NEXT_PUBLIC_MAINNET_CONFIRMED=DAMI-PER-ACTION-CONFIRMED
 ```
 
-[VERIFIED] — typechecks; mainnet gate is code, not convention
+[VERIFIED] - typechecks; mainnet gate is code, not convention
 ```ts
 // File: app/lib/config.ts
 // Single place that reads configuration. Mainnet is refused without Dami's per-action confirmation token.
@@ -5612,7 +5618,7 @@ export const fmtUsdc = (micro: string | bigint): string => {
 };
 ```
 
-[VERIFIED] — 3 vitest tests pass; pinned to the hashes printed by the Rust `kruxa-sim verdict`
+[VERIFIED] - 3 vitest tests pass; pinned to the hashes printed by the Rust `kruxa-sim verdict`
 ```ts
 // File: app/lib/verdict.ts
 // TypeScript mirror of kruxa-logic (verdict, allocation, per-position settlement). Kept byte-identical by lib/verdict.test.ts,
@@ -5699,7 +5705,7 @@ export function settlePosition(commit: bigint, total: bigint, accepted: bigint, 
 }
 ```
 
-[VERIFIED] — passes
+[VERIFIED] - passes
 ```ts
 // File: app/lib/verdict.test.ts
 import { describe, expect, it } from 'vitest';
@@ -5728,7 +5734,7 @@ describe('verdict mirrors kruxa-logic', () => {
 });
 ```
 
-[VERIFIED] — typechecks against near-api-js 7.4.0 (`JsonRpcProvider.callFunction`, same call shape as the signed-test kit); no live RPC call was made
+[VERIFIED] - typechecks against near-api-js 7.4.0 (`JsonRpcProvider.callFunction`, same call shape as the signed-test kit); no live RPC call was made
 ```ts
 // File: app/lib/near.ts
 // Read-only access to the core contract. near-api-js 7.4.0: JsonRpcProvider.callFunction (same call shape as the signed-tests kit).
@@ -5771,7 +5777,7 @@ export const getPosition = (id: string, holder: string) => view<Record<string, u
 export const requiredDeposit = (params: Record<string, unknown>) => view<string>('required_deposit', { params });
 ```
 
-[UNVERIFIED] — typechecks against wallet-selector 10.1.4; popup behaviour not exercised
+[UNVERIFIED] - typechecks against wallet-selector 10.1.4; popup behaviour not exercised
 ```ts
 // File: app/lib/wallet.ts
 // Wallet adapter. The ONLY file that talks to a wallet, so a different wallet library is a one-file change.
@@ -5817,7 +5823,7 @@ export const commit = (launchId: string, amountMicro: string) =>
   call(CONFIG.usdc, 'ft_transfer_call', { receiver_id: CONFIG.core, amount: amountMicro, msg: JSON.stringify({ v: 1, op: 'contribute', launch_id: launchId }) }, '1');
 ```
 
-[UNVERIFIED] — `next build` succeeds; not opened in a browser
+[UNVERIFIED] - `next build` succeeds; not opened in a browser
 ```tsx
 // File: app/app/layout.tsx
 import type { ReactNode } from 'react';
@@ -5842,7 +5848,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
 }
 ```
 
-[UNVERIFIED] — not viewed
+[UNVERIFIED] - not viewed
 ```css
 // File: app/app/globals.css
 :root { --bg: #0b0d10; --fg: #e8eaed; --muted: #8b93a1; --line: #232830; --accent: #7cf0c9; --bad: #ff6b6b; --ok: #7cf0c9; }
@@ -5863,7 +5869,7 @@ label { display: block; margin: 12px 0 4px; color: var(--muted); font-size: 14px
 table { width: 100%; border-collapse: collapse; } td, th { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
 ```
 
-[UNVERIFIED] — `next build` succeeds; not opened in a browser
+[UNVERIFIED] - `next build` succeeds; not opened in a browser
 ```tsx
 // File: app/app/page.tsx
 import Link from 'next/link';
@@ -5890,7 +5896,7 @@ export default function Landing() {
 }
 ```
 
-[UNVERIFIED] — `next build` succeeds; not opened in a browser
+[UNVERIFIED] - `next build` succeeds; not opened in a browser
 ```tsx
 // File: app/app/create/page.tsx
 'use client';
@@ -5943,7 +5949,7 @@ export default function Create() {
 }
 ```
 
-[UNVERIFIED] — `next build` succeeds; not opened in a browser
+[UNVERIFIED] - `next build` succeeds; not opened in a browser
 ```tsx
 // File: app/app/launch/[id]/page.tsx
 'use client';
@@ -6011,7 +6017,7 @@ export default function Trial() {
 }
 ```
 
-[UNVERIFIED] — `next build` succeeds; not opened in a browser
+[UNVERIFIED] - `next build` succeeds; not opened in a browser
 ```tsx
 // File: app/app/demo/page.tsx
 'use client';
@@ -6079,7 +6085,11 @@ The demo page computes in the browser from the same rules; it needs no wallet an
 
 ---
 
+> **Sync 2026-11-10 (4.9).** The embedded Wave 1 app listed four routes including `/demo`. The built app has no `/demo` and no `/proof` (ruled: Kruxa is a real launchpad, not a judge showcase); the tamper toggle lives at `/launch/[id]/verify`. Routes today: `/` (Discover; `/launches` redirects to it), `/create`, `/launch/[id]`, `/launch/[id]/verify`, `/token/[id]`, `/portfolio`, `/creator`, `/charter`, `/docs/[slug]`, `/insights`, `/ops-log`, `/search`, `/settings`, `/status`, `/u/[account]`, `/legal/*`, plus `llms.txt` and `AGENTS.md`. `app/lib/config.ts` reads more variables than the 4.9 `.env.example` shows: `NEXT_PUBLIC_NEAR_NETWORK`, `NEXT_PUBLIC_NEAR_RPC`, `NEXT_PUBLIC_CORE_ACCOUNT`, `NEXT_PUBLIC_MARKET_ACCOUNT`, `NEXT_PUBLIC_INSTANT_ACCOUNT`, `NEXT_PUBLIC_USDC_ACCOUNT`, `NEXT_PUBLIC_USDC_TOKEN_ID`, `NEXT_PUBLIC_INTENTS_ACCOUNT`, `NEXT_PUBLIC_FACTORY_ACCOUNT`, `NEXT_PUBLIC_KRUXA_API`, `NEXT_PUBLIC_RELAYER_URL`, `NEXT_PUBLIC_DEMO_CORE_ACCOUNT`, `NEXT_PUBLIC_DEMO_LAUNCHES`, `NEXT_PUBLIC_INSTANT_MODE`, `NEXT_PUBLIC_MAINNET_CONFIRMED` (the file is the source).
+
 # Section 5: Later waves at interface level
+
+> **Status of 5.1 to 5.5, 2026-11-10.** Everything in 5.1 to 5.5 except 5.4 (Verdict Rail) is now built; the sketches below are NOT the shipped ABI. Differences: (5.1) the shipped market is `docs/interfaces/MARKET-ABI.md` 1.1.2 (Market-lite M-A): the holder slice and the referral slice are redirected to LP until the Hold Vault and referral lots exist, `quote_buy` takes an optional `now_ns`, `solvency_report(token_id)` takes a token, terms ride on the USDC leg with `creator` and `mode`, and `open_market` returns `u8`, not `Promise`; Hold Vault, referral lots, ratchets and payees (M-B) are NOT built. (5.2) `commit_genesis` takes `g_pub: String` (hex) and `build_root_page` takes `Vec<(String, U64)>`, not byte arrays; `release_lp_seed` does not exist (R-46); `reopen_genesis` was added. (5.3) the Squads reserve and Jito distributor ran on devnet only. (5.5) the F0 policy gate is now contract code: `register_f0_message` plus `sign_genesis` (see 5.15); the sketch's "signs only if the message equals compile()" is enforced as "signs only a message whose sha256 equals the registered hash", and that the registered hash equals compile() is checked by verify C17, not by the contract.
 
 Everything here is **design, not code**: types, method signatures, storage layout, data flow. The Rust blocks are valid declarations (traits and structs) but were **not compiled** (`UNVERIFIED-COMPILE`); their header path starts with `(interface, wave N)` so the extractor skips them. Nothing in this section is described as built. Each wave is tagged.
 
@@ -6092,7 +6102,7 @@ After PASS the launch token trades against USDC in a pool owned by `market.kruxa
 
 ### Handoff from core (new in Wave 3, replaces `release_lp_seed` for the full product)
 
-[UNVERIFIED] — interface sketch, not compiled (UNVERIFIED-COMPILE); S1-C 3.2 as amended by RECONCILED 2.1 and 6.C.
+[UNVERIFIED] - interface sketch, not compiled (UNVERIFIED-COMPILE); S1-C 3.2 as amended by RECONCILED 2.1 and 6.C.
 ```rust
 // File: (interface, wave 3) contracts/core/src/market_link.rs
 pub trait OpenMarket {
@@ -6116,7 +6126,7 @@ pub struct FeeTerms { pub total_fee_bps: u16, pub creator_bps: u16, pub platform
 
 ### Market state and methods
 
-[UNVERIFIED] — interface sketch, not compiled (UNVERIFIED-COMPILE); S1-C 2.5, 3.3, 3.4, 3.6 rebased to 6-decimal USDC per RECONCILED 6.C.
+[UNVERIFIED] - interface sketch, not compiled (UNVERIFIED-COMPILE); S1-C 2.5, 3.3, 3.4, 3.6 rebased to 6-decimal USDC per RECONCILED 6.C.
 ```rust
 // File: (interface, wave 3) contracts/market/src/lib.rs
 pub const FEE_DENOM_PPM: u128 = 1_000_000;
@@ -6152,7 +6162,7 @@ pub trait Market {
 ### Invariants and data flow
 Per swap, asserted inline (S1-C 3.4): five fee slices plus dust sum to `fee_total`; `creator_slice * 10_000 <= q_leg * max_creator_take_bps + 10_000`; `k_after >= k_before`; custody delta equals the amount moved. Fee is always denominated in USDC (fee on input for buys, on the gross output leg for sells). The opening-fee surcharge (decaying from at most 10% to the base rate within 120 minutes) goes 100% to the LP slice. If staked supply is below `MIN_ELIGIBLE_BPS` of supply, the holder slice is redirected to LP.
 
-[UNVERIFIED] — interface sketch, not compiled (UNVERIFIED-COMPILE); sequence from RECONCILED 2.1.
+[UNVERIFIED] - interface sketch, not compiled (UNVERIFIED-COMPILE); sequence from RECONCILED 2.1.
 ```
 # File: (diagram) wave 3 handoff sequence
 settle (PASS, promise-free) -> settle_positions_page* -> sweep_residue -> consolidate -> pay_launch_fee
@@ -6168,7 +6178,7 @@ Only on PASS does the token exist on Solana (RULING in the winner brief). A one-
 
 ### Core additions (storage layout and methods)
 
-[UNVERIFIED] — interface sketch, not compiled (UNVERIFIED-COMPILE); RECONCILED 3.3 and 4 (rows `commit_genesis` .. `pause_genesis`), S1-D 2.
+[UNVERIFIED] - interface sketch, not compiled (UNVERIFIED-COMPILE); RECONCILED 3.3 and 4 (rows `commit_genesis` .. `pause_genesis`), S1-D 2.
 ```rust
 // File: (interface, wave 2) contracts/core/src/genesis.rs
 pub struct GenesisPlan {                      // inside the Charter: static intent
@@ -6202,7 +6212,7 @@ Supply model (lock-mirror, RECONCILED 3.3): the NEAR FT is minted in full to cor
 
 ### Genesis transactions (S1-D 2.5)
 
-[UNVERIFIED] — interface sketch, not compiled (UNVERIFIED-COMPILE); instruction list from S1-D 2.5, Jito encodings still UNVERIFIED until its devnet test T-G3.
+[UNVERIFIED] - interface sketch, not compiled (UNVERIFIED-COMPILE); instruction list from S1-D 2.5, Jito encodings still UNVERIFIED until its devnet test T-G3.
 ```
 # File: (diagram) genesis ceremony
 tx1 create:  ComputeBudget limit(+price) | System CreateAccountWithSeed(G -> M, owner Tokenkeg, space 82)  [or Transfer+AllocateWithSeed+AssignWithSeed if M was pre-funded]
@@ -6223,7 +6233,7 @@ Genesis Round (track G, DECISIONS 2026-11-07 YES, capped and labelled): the bran
 
 ## 5.4 Wave 4: Verdict Rail (SAS attestation)
 
-[UNVERIFIED] — interface sketch, not compiled (UNVERIFIED-COMPILE); S1-D 8.
+[UNVERIFIED] - interface sketch, not compiled (UNVERIFIED-COMPILE); S1-D 8.
 ```
 # File: (diagram) verdict rail
 SAS program 22zoJMtdu4tQc2PzL74ZUT7FrwgB1Udec8DdW4yw4BdG   credential authority = platform Squads (2-of-3), authorized signer = ATTEST key (KMS)
@@ -6237,7 +6247,7 @@ Disclosure (verbatim from S1-D 8.5): the attestation is signed by a platform-hel
 
 ## 5.5 Wave 4: F0 (Chain Signatures mint), only if the dust test passes
 
-[UNVERIFIED] — interface sketch, not compiled (UNVERIFIED-COMPILE); call shapes copied from the signed-test kit (`warroom/signed-tests/src/lib/mpc.ts`, `contract/src/lib.rs`), which is PREPARED, NOT RUN: secondary-sourced until step T1p executes.
+[UNVERIFIED] - interface sketch, not compiled (UNVERIFIED-COMPILE); call shapes copied from the signed-test kit (`warroom/signed-tests/src/lib/mpc.ts`, `contract/src/lib.rs`), which is PREPARED, NOT RUN: secondary-sourced until step T1p executes.
 ```
 # File: (diagram) f0 sign request
 v1.signer.sign({ "request": { "payload_v2": { "Eddsa": "<hex of message bytes>" }, "path": "<derivation path>", "domain_id": 1 } })
@@ -6249,6 +6259,8 @@ F0 changes the claim from "no later Solana action" to "the NEAR contract signs o
 
 ## 5.6 Wave 1b: gaps inside the core, with the exact design
 
+> **Status 2026-11-10.** Built: `check_solvency` and `reconcile_intents` with the held counters (`solvency.rs`, 30 s rate limit, informational, see 5.15), in-claim token registration (`claim_tokens`, `token_claims.rs`), `burn_mode` with `Hold` as the default and `Burn` refused because the factory token has no `ft_burn`, creator allocation claim, `sweep_tokens`. Not built: typed views (the core still uses `serde_json::Value` views; the wasm is 675,007 bytes against the 700,000 byte budget, see 5.15).
+
 | Item | Design | Why not in Wave 1 |
 |---|---|---|
 | `check_solvency` async anchor | `promise_and(usdc.ft_balance_of(core), intents.mt_balance_of(core, usdc_token_id))` then a callback comparing `usdc_balance >= native_liability` and `intents_balance >= intents_liability`, where `native_liability = sum over launches of (open_native + due_native + inflight_native + spent_native + consolidated - fee_paid - fee_inflight - stream_drawn - stream_inflight)` and `intents_liability = sum of (open_intents + due_intents + inflight_intents + spent_intents - consolidated - consolidating) + (relay_fee_total - relay_fee_paid)`; emits `solvency_report{ok}`. Needs two global counters (`held_native`, `held_intents`) so the sum is O(1) | every mutation site must maintain the counters; scheduled right after the Wave 1 gate |
@@ -6259,7 +6271,9 @@ F0 changes the claim from "no later Solana action" to "the NEAR contract signs o
 
 ## 5.7 Wave 3: indexer, agent layer and keeper service (C13, C14, C15)
 
-[UNVERIFIED] — interface sketch, not compiled (UNVERIFIED-COMPILE); PRD 2.2 and ROUTE-ARCHITECTURE.
+> **Status 2026-11-10.** Built: `services/indexer` folds the core, market and launcher events (EVENTS.md lists them) and replays the contract's rolling `book_hash`; the API reports `fold_ok` from that replay (the sketch below names it `fold_check`). Sources are neardata with an RPC block-scan fallback (`services/indexer/README.md`). `/llms.txt` and `AGENTS.md` are served by the app; there is no `/agents` route and no MCP server. The keeper is `scripts/keeper.sh` (one recorded run per launch in `evidence/testnet-core3/keeper-*.log`); a keeper service is not built.
+
+[UNVERIFIED] - interface sketch, not compiled (UNVERIFIED-COMPILE); PRD 2.2 and ROUTE-ARCHITECTURE.
 ```rust
 // File: (interface, wave 3) services/indexer/src/model.rs
 /// Read model built from NEP-297 `EVENT_JSON` logs of core (standard "kruxa", version 1.0.0). Nothing here is authoritative:
@@ -6337,6 +6351,8 @@ Switch triggers: (1) mint rejected, or no pool after about one day of debugging;
 
 ## 5.11 CO-3: indexer, candles and API (interface level)
 
+> **Status 2026-11-10.** The endpoint outline below is superseded by `docs/interfaces/api.openapi.yaml` 1.3.0: `/api/health`, `/api/stats`, `/api/launches`, `/api/launch/{id}`, `/api/launch/{id}/custody`, `/api/launch/{id}/genesis`, `/api/token/{id}` with `/candles`, `/trades`, `/holders`, `/depth`, `/api/creator/{account}`, `/api/portfolio/{account}`, `/api/verify/{id}`, `/api/ops-log`, `/api/ops/status`, `/api/ops/upgrades`, `/api/ops/halts`, `/api/ops/force-resolves`, `/api/ops/solvency`, `/api/ops/owed`, `/api/stream`, and CSV exports. `GET /api/check` was CUT with the Launch Check (CO-6 E-2) and does not exist.
+
 [UNVERIFIED] interface sketch. Extends 5.7 (`services/indexer`, `services/api`).
 ```
 // File: (interface, co-3) services/api/openapi-outline
@@ -6364,7 +6380,7 @@ Ingest: `EventSource` with `neardata` (mainnet HTTP 200 after redirect on 2026-1
 
 ## 5.13 CO-3: Wave 1 delta register (where existing code is touched or untouched)
 
-Sections 4.1 to 4.9 (the embedded, compiled Wave 1 code) are NOT edited by CHANGE-ORDER-3; the document round trip in Section 17 still holds. The build applies the following additive patches when it works the planned Wave 2 core files, and the full Wave 1 suite (25 native, 19 sandbox, 3 app tests) is re-run as a regression gate (GR-1).
+Sections 4.1 to 4.9 (the embedded, compiled Wave 1 code) are NOT edited by CHANGE-ORDER-3; the document round trip in Section 17 still holds. The build applies the following additive patches when it works the planned Wave 2 core files, and the full Wave 1 suite (25 native, 19 sandbox, 3 app tests) is re-run as a regression gate (GR-1). [SYNC 2026-11-10: those were the Phase 0 counts; the repo now has 33 sandbox test files (322 test attributes by grep) and 381 app test cases (audit count, 2026-11-09)].
 | Delta | What | Where | Why |
 |---|---|---|---|
 | D-1 | `Config.creator_gate` (owner-only until `open_beta`), rule code `R_CREATOR_GATE` in `create_trial`, one-way `open_beta` in `admin.rs` | `lifecycle.rs`, `admin.rs`, `kruxa-logic::rules` (new code only) | Without it any account could create a mainnet token before $KRUXA; the ruling was process-enforced only |
@@ -6385,7 +6401,7 @@ Untouched: verdict, allocation, settlement, Walk, refunds, claims, stream-lite, 
 | agentkit (X1) | `agentkit/` | TypeScript, Node 24 | `policy.ts` (rule codes `P_BUDGET, P_PER_COMMIT, P_CHECK_NOT_ALLOW, P_VERIFY_NONZERO, P_STALE_CHECK, P_UNKNOWN_LAUNCH, P_MAX_OPEN`), `llm.ts` (modes `live`, `replay`, `scripted`; model `Qwen/Qwen3.8-27B` via NEAR AI Cloud, `x-no-aliasing: true`), `receipt.ts` (hash-chained, ed25519-signed receipts), `verify_receipts.ts`, `tee-attest.sh` | `npm test -w agentkit`; `make receipts-verify` prints `RECEIPTS OK n=<N> level=L1` |
 | agent vault (X2) | `contracts/agent-vault/` | near-sdk-rs | state `owner, attestor, core, usdc, budget, spent, in_flight, per_commit_max, paused, allowed, receipt_pubkey`; agent methods `commit`, `walk` (the contract attaches the 1 yoctoNEAR a function-call key cannot); attestor `allow_launch`, `revoke_launch`; owner `pause`, `unpause`, `set_limits`, `owner_withdraw`, `rotate_agent_key`; codes `V_NOT_AGENT, V_PAUSED, V_LAUNCH_NOT_ALLOWED, V_ALLOW_EXPIRED, V_PER_COMMIT, V_BUDGET, V_NOT_OWNER, V_NOT_ATTESTOR, V_BAD_CORE`; events NEP-297 `kruxa-vault` 1.0.0. No method sends funds to any account but the owner; none changes core or usdc after `new` | `cargo test -p kruxa-tests --test vault` (one test per code plus `commit_then_walk_refunds_to_vault`). Testnet only; unreviewed |
 | Launch Check and guard | `services/check/`, `guard/` | TypeScript | `GET /api/check?launch_id=&network=` returns `{decision, reasons[], verify_exit, charter_hash, checked_at}` from signals S1 to S10; guard refuses `block`, asks a human on `warn`; the Check service key is the vault attestor | `make guard-demo` prints `BLOCKED launch=<id> reasons=[...]` |
-| Attack gallery and injection harness | `attacks/` | TypeScript | 13 scripted attacks A1 to A13 with rule code and tx hash; 12 injection payloads, N=20 live runs, replayable; page `/security` | `make attack-gallery` prints `GALLERY 13/13 blocked or bounded`; `make inject-report` |
+| Attack gallery and injection harness | `attacks/` | TypeScript | 13 scripted attacks A1 to A13 with rule code and tx hash [SYNC 2026-11-10: built as a 100-attack gallery with ids A, G, C, M and I in `evidence/attack-gallery/`; 81 refused with a rule code, 14 ran with no effect, 5 bounded, 0 failed, 10 not done; sandbox hashes only; `docs/ATTACK-GALLERY.md`]; 12 injection payloads, N=20 live runs, replayable; page `/security` | `make attack-gallery` prints `GALLERY 13/13 blocked or bounded`; `make inject-report` |
 | Swarm simulator | `tools/swarm-sim/`, `swarm/` | Rust (reads `kruxa-math`, `kruxa-logic`; no duplicate arithmetic), TypeScript for recording and testnet | 20 agents (7 scripted, 4 model-driven, 9 adversaries), 24 rounds, invariants L1, L3, L4, I2, I5 plus caps asserted every round; `RULES.md` written first; page `/swarm` | `make swarm` prints 24 `INV OK` lines and `SWARM GREEN rounds=24 invariants=24/24` |
 | Market simulation and mechanics | `tools/market-sim`, `app/components/market/MechanicsPanel` | Rust, TypeScript | supply and unlock, opening-fee curve, epoch table, `BOUND OK creator_controlled <= 80% of fee` | `make sim` prints three tables, `BOUND OK`, `SIM sha256` |
 | Intents funds strip | `app/components/FundsStrip`, `scripts/intents-status.sh` | TypeScript | renders all seven 1Click statuses from fixtures and the real Test 1 statuses; page `/proof` | `make market-demo` prints `SLICES OK` |
@@ -6395,6 +6411,87 @@ Untouched: verdict, allocation, settlement, Walk, refunds, claims, stream-lite, 
 Separation of duties (the spine): the model proposes; a deterministic policy engine decides in code; the independent Launch Check plus `verify.sh --scope open` is the only party that can allow a launch on the vault; the vault enforces budget and recipient on chain; the human owner holds funds and limits. A hijacked or prompt-injected model can at worst propose; it cannot pay anyone. Claim levels for model evidence: L0 decision recorded; L1 response signature verified against a recorded attestation signer; L2 TDX quote verified with a DCAP verifier plus nonce and signer binding (the README states the level actually reached, never higher). Every model-driven step has an offline replay path (`--mode replay`, labelled RECORDED, never LIVE). New routes are in ROUTE-ARCHITECTURE.
 
 Credentials these modules need (names only, values never in the repo): `NEARAI_API_KEY`, `GOOGLE_APPLICATION_CREDENTIALS`, `BQ_PROJECT`, `ONECLICK_JWT` (see `.env.example`).
+
+## 5.15 Final core surface, 2026-11-10
+
+**Date:** 2026-11-10 | **Status:** Current (supersedes the Wave 1b and Wave 2 sketches in 5.1, 5.2, 5.5 and 5.6 wherever they differ; numbered 5.15 because 5.14 is the CO-4 and CO-5 track-modules section). The method-by-method reference is `docs/interfaces/CORE-ABI.md`; events are in `docs/interfaces/EVENTS.md`.
+
+### Purpose
+The core that ships is the Wave 1 trial lifecycle plus the surface Dami ruled "all built" in the sixteenth block of DECISIONS-PACK1 (2026-11-09) and the 700 KB wasm budget of the seventeenth block (2026-11-10). This section records what that surface is, what it does and does not guarantee, and which statements elsewhere in this document it corrects.
+
+### Deployed state (testnet only, play money)
+| Item | Value | Proof |
+|---|---|---|
+| Core account | `core3.kxi-root-1108.testnet`, profile `demo` (short clock) | `evidence/testnet-core3/deploy.json` |
+| Core wasm | sha256 `e85198ed37c2aa1d6cd5f18571f5e023eed391108ca8f22edc8599ac390e65ac`, 675,007 bytes, local non-reproducible build | `view_code` read from testnet RPC on 2026-11-10; `artifacts/SHA256SUMS`; redeploy row in `evidence/testnet-core3/txlog.jsonl` |
+| Size budget | 700,000 bytes (`scripts/lint.sh`, Dami, 2026-11-10); supersedes D-13 (570 KB) | DECISIONS-PACK1 seventeenth block |
+| Reproducible candidate | `d362ffa2...`, 655,251 bytes, built before the R_GAS change; NOT what core3 runs | `artifacts/SHA256SUMS.reproducible`, `rehearsal/LOG.md` A-4 and R2-5 |
+| Market | `market3.kxi-root-1108.testnet`, market ABI 1.1.2 | `evidence/testnet-core3/deploy.json` |
+| Mainnet | nothing deployed | none |
+
+### Components (new since Wave 1)
+| Component | Location | Responsibility | Depends on |
+|---|---|---|---|
+| Genesis F0 gate | `genesis.rs` (`register_f0_message`, `sign_genesis`, `reopen_genesis`) | the relayer registers the sha256 of each genesis transaction message; the contract asks the MPC signer to sign only a message with that hash, once, on the path `kruxa:genesis:<id>` | MPC signer `v1.signer-prod.testnet`, relayer |
+| Solvency anchor | `solvency.rs` (`check_solvency`, `reconcile_intents`, `solvency_report`) | held counters maintained at `save_state`; async balance read against USDC and Intents; `intents_alert` | USDC, `intents.near` |
+| Token custody | `token_claims.rs` (`claim_creator_alloc`, `sweep_tokens`, `set_burn_mode`, in-claim registration) | creator allocation (cliff then linear), unclaimed-supply sweep to `burn_mode` | launch token (NEP-141 and NEP-145) |
+| Governance | `govern.rs` (`queue_upgrade`, `cancel_upgrade`, `upgrade_core`, `migrate`, `halt_launch`, `resume_launch`, `force_resolve_op`, `withdraw_owed`) | public timelocked upgrade, per-launch halt, two-step stuck-leg resolution, owed NEAR | owner, guardian |
+| Refund conveniences | `refunds.rs` (`claim_refund_batch`, `set_refund_route`) | keeper batch of up to 25, holder route to an Intents account | USDC, `intents.near` |
+| Stream | `stream.rs` (`lengthen_stream`) | creator can only slow the stream | none |
+| Orphan credit | `s4.rs` (`claim_orphan_credit`) | credits an Intents deposit that arrived with no credit | `intents.near` |
+
+### Data flow: F0 genesis through the gate
+1. Settle returns PASS; the relayer calls `commit_genesis` and `build_root_page` (Merkle root complete).
+2. The relayer compiles the two Solana transactions from the committed spec, a blockhash and a price, and calls `register_f0_message(launch_id, i, sha256(message))` for i = 0 and 1. Each registration is an event anyone can recompute.
+3. The relayer calls `sign_genesis(launch_id, i, message_hex)`. The contract checks `sha256(message)` equals the registered hash, marks the slot spent, and forwards the request to the MPC signer with the fixed path and domain 1 (Ed25519).
+4. The relayer submits both transactions to Solana, then calls `confirm_genesis`. A failure before confirm: `abort_genesis`, then the OWNER calls `reopen_genesis` for a fresh attempt (the guardian cannot reopen).
+5. `verify.sh` check C17 compares the on-chain transaction bytes with `compile(spec, blockhash, price)`. The contract gate cannot prove that equality; C17 can.
+
+### Key decisions
+| Decision | Chosen | Rejected | Rationale |
+|---|---|---|---|
+| F0 policy gate | in the contract (register then sign) | relayer-only check; reword the claim | Dami ruled "all built"; the gate stops the relayer signing anything it did not register in public |
+| Solvency | informational report; can pause only NEW Intents commits | block all flows on a shortfall | a timing artefact must never trap exits (R-02) |
+| Counters | updated at the single write choke point `save_state` | per-mutation-site arithmetic | one place to get right; `get_invariants` L6 compares counters with a recomputation |
+| `burn_mode` | `Hold` default, `Sink` allowed (not a Kruxa-controlled account), `Burn` refused | `Burn` by default | the factory token has no `ft_burn` (`evidence/factory-probe.txt`) |
+| Upgrade | 7-day public queue, guardian can cancel | immediate owner deploy | public notice; but the full-access key still bypasses it (see ARCHITECTURE 10) |
+| `halt_launch` | stops new commits and creator-side payouts of one launch; exits stay open | a halt that blocks refunds | a halt may only turn a launch toward FAIL, never trap money |
+| `force_resolve_op` | owner, two steps, 48 h apart, only what is in flight, token legs excluded | any owner payout | it cannot move money to a new destination or touch a verdict |
+| `create_trial` gas | refuse under 250 Tgas (`R_GAS`); attach 300 | document 150 Tgas | at 150 the creation callback starved and a launch stuck in `Creating` (rehearsal/ROUND2.md finding 1) |
+| `create_token` gas | 110 Tgas | 80 | the real factory fails at 80 and needs 91 to 95 (`evidence/testnet-core3/real-factory-probe.json`) |
+| Wasm budget | 700,000 bytes | shrink to 570 KB | shrinking saved about 400 bytes; the build is already `opt-level z` with LTO |
+| Solana claim rent | the relay fee covers it (`get_token_custody.solana_claim_rent = relay_fee_covers`) | buyer-funded 0.004 SOL deposit | not implemented; decided and disclosed |
+
+### State layout and `migrate`
+`Contract` gained `x: Extra`; `Config` gained `burn_mode` and `burn_mode_locked`; `LaunchState` gained `halted`; the solvency counters use the raw keys `kruxa:held` and `kruxa:last_check`. State from core2 is not readable by this wasm, so core3 is a fresh `new` deploy. `migrate` is the identity (`#[init(ignore_state)]`, reads the state back); a layout change needs its own `migrate`. The two redeploys over core3 kept the layout. A migration from core2 was not attempted [UNVERIFIED].
+
+### Limits that remain (honest)
+- The owner holds one full-access key on the testnet core (verify KEYS line), so the upgrade queue is a public commitment, not a barrier. On the `demo` profile (core3) the queue delay is 60 s and the force-resolve delay is 60 s, not 7 days and 48 hours.
+- The solvency report is a reading, not a proof of solvency, and its two reads can race a refund or a consolidation.
+- The F0 gate binds the signature to a registered hash; only verify C17 ties that hash to the compiled transaction.
+- The core is not independently audited. Mainnet is not deployed.
+- The deployed core3 wasm is a local build whose hash differs from the reproducible candidate; the candidate was built before the `R_GAS` guard and would need a rebuild and a redeploy to become the deployed binary.
+
+### Register of statements corrected by the 2026-11-10 sync
+1. 1.2, 2.1, 4.7, 5.13: sandbox test counts (19, 25, 34) are the Phase 0 and Phase 1 figures; now 33 files, 322 test attributes by grep.
+2. 2.1: market, venue, indexer, API, relayer, Squads are BUILT, not planned; `services/check` and `agents/backer` do not exist; `tools/sas` is not built.
+3. 2.3 and W1-DC-8: the real hash-pinned `intents.near` wasm runs in `tests/tests/real_intents.rs` (6 tests).
+4. 3.3 W1-DC-4: `get_invariants` returns l1, l3, l4, l6, i2, i3, i4, i5 and l7 (the I2 to I5 fields are built).
+5. Section 3 row 9: `claim_tokens` registers the holder in the claim; default stream is 30 days in Studio.
+6. 4.4: the public-method list is the Wave 1 list; added methods are in CORE-ABI.md.
+7. 4.6: exit 65 on `validate`; C1 to C34 coverage; skipped checks named; CODE line needs `build-artifacts.sh --local` after a redeploy.
+8. 4.9, 17: no `/demo`, no `/proof`; routes and env variables listed in the 4.9 sync note.
+9. 5.1: shipped market differs from the sketch (holder and referral to LP, optional `now_ns`, `solvency_report(token_id)`, `open_market -> u8`).
+10. 5.2: `commit_genesis` and `build_root_page` take hex strings; `release_lp_seed` does not exist.
+11. 5.5: the F0 gate is contract code (register then sign); C17 ties the hash to the compiled bytes.
+12. 5.6: solvency anchor, in-claim registration, `burn_mode` are built; typed views are not.
+13. 5.7 and 5.11: `fold_ok` is computed by replaying the book hash; neardata plus an RPC fallback; no `/agents`, no MCP, no `/api/check`; `llms.txt` and `AGENTS.md` exist; endpoint list in OpenAPI 1.3.0.
+14. 5.14 and 8: the attack gallery is 100 attacks (81 refused, 14 no effect, 5 bounded, 0 failed), not 13.
+15. 10 item 2: the upgrade queue exists but the full-access key bypasses it.
+16. 11.3: `claim_tokens` payable (0.00125 NEAR + 1 yocto, 150 to 200 Tgas); `create_trial` 300 Tgas with a 250 floor; `create_token` 110 Tgas.
+17. 11.4: the app reads more environment variables than the short list.
+18. Wasm size: 456,999 and 462,222 bytes (4.8, 17) and the 570 KB acceptance (D-13) are history; the deployed core is 675,007 bytes against a 700,000 byte budget.
+19. 17c: Phase 0 hashes are history; the final hash is in the Deployed state table above.
 
 # Section 6: Domain Knowledge File spec
 
@@ -6430,7 +6527,7 @@ Source mapping: each row cites the spec section above; `build` copies definition
 
 Created in the package phase, not in build.
 
-[VERIFIED] — structure from the hackathon-forge Phase 2 template and near.md section 11 (package guidance).
+[VERIFIED] - structure from the hackathon-forge Phase 2 template and near.md section 11 (package guidance).
 ```
 # File: (tree) submission directory plan
 submission/
@@ -6458,7 +6555,7 @@ The form takes one or more track ids and one preferred track. The authoritative 
 | Track | Tier | Architectural component | What a judge verifies |
 |---|---|---|---|
 | memecoins | A | trial, Walk, verdict gating (`lifecycle.rs`, `payout.rs`); market fee router and opening-fee decay (5.8) | `make sim` 60-day table; trial page event log |
-| security | A | `verify.sh` tamper, stream cap, pause that cannot trap exits (`s4.rs`, `parse_msg`), Launch Check and guard (5.12), agent vault and 13-attack gallery (5.14) | `./verify.sh 1 --tamper-all` exit 2; `make attack-gallery` 13/13 blocked or bounded; `make guard-demo` BLOCKED |
+| security | A | `verify.sh` tamper, stream cap, pause that cannot trap exits (`s4.rs`, `parse_msg`), Launch Check and guard (5.12), agent vault (CUT) and the 100-attack gallery (5.14 [SYNC 2026-11-10: 13-attack was the design figure; 100 attacks ran]) | `./verify.sh 1 --tamper-all` exit 2; `make attack-gallery` [SYNC 2026-11-10: 100 attacks run: 81 refused, 14 no effect, 5 bounded, 0 failed; the earlier 13/13 figure is retired] was: 13/13 blocked or bounded; `make guard-demo` BLOCKED |
 | open | A | the whole platform: NEAR verdict as sole judge of second-chain existence | full README run |
 | defi | B | Market-lite pool and fee router (5.8), Intents intake (`intake.rs`, `ext.rs`) | `make market-demo` SLICES OK; dry quote 201 |
 | swarms | B | `tools/swarm-sim/` simulator (20 agents: scripted, model-driven, adversarial) against `kruxa-logic`, optional testnet sub-accounts (5.14) | `make swarm` SWARM GREEN 24/24 |
@@ -6506,7 +6603,7 @@ build scaffolds `SECURITY.md` from this skeleton and fills the File column with 
 ## Not defended against
 
 1. **Sybil wallets.** Nothing here proves that committed money comes from distinct people; `min_funders` counts accounts. No sybil-resistance claim is made.
-2. **Upgrade authority.** Wave 1 has no upgrade path and the deployer holds a full-access key on testnet (phase P0, disclosed). The multisig + 7-day timelock plan (S1-A 10.4) is Wave 2+; until then a key holder can replace the code.
+2. **Upgrade authority.** Wave 1 has no upgrade path and the deployer holds a full-access key on testnet (phase P0, disclosed). The multisig + 7-day timelock plan (S1-A 10.4) is Wave 2+; until then a key holder can replace the code. [SYNC 2026-11-10: a 7-day public upgrade queue now exists in core (`queue_upgrade`, `cancel_upgrade` by owner or guardian, `upgrade_core`), but the owner still holds a full-access key on testnet (`verify` KEYS line: 1 full-access key), and a full-access key can redeploy at once without the queue. The queue is a public commitment, not a technical barrier, until that key is deleted or replaced by a multisig. On the `demo` profile (core3) the queue delay is 60 s, not 7 days]
 3. **The Intents Verifier and its DAO.** Money held in `intents.near` is exposed to its force-withdraw and lock powers (S1-B X23); time in Intents is minimised by `consolidate`, not eliminated.
 4. **The launch-token factory.** `token.primitives` instances adopt code from a global contract whose owner holds one full-access key. The platform cannot detect a code swap on-chain; detection is off-chain (hash comparison in `verify`, Wave 2). Own-FT-by-hash is the mitigation and is not approved.
 5. **No independent review.** No audit has covered this code. The Genesis Round, if run, runs with that gap disclosed.
@@ -6523,7 +6620,7 @@ build scaffolds `SECURITY.md` from this skeleton and fills the File column with 
 
 ## 11.1 Contract initialisation (`new`)
 
-[VERIFIED] — `contracts/core/src/lib.rs`; used by the sandbox harness with the `demo` profile.
+[VERIFIED] - `contracts/core/src/lib.rs`; used by the sandbox harness with the `demo` profile.
 
 | Argument | Meaning | Testnet value | Mainnet value |
 |---|---|---|---|
@@ -6538,7 +6635,7 @@ build scaffolds `SECURITY.md` from this skeleton and fills the File column with 
 
 ## 11.2 Rule constants (the `Rules::ladder()` snapshot stored in every Charter)
 
-[VERIFIED] — `crates/kruxa-logic/src/rules.rs`.
+[VERIFIED] - `crates/kruxa-logic/src/rules.rs`.
 
 | Field | Value | Meaning |
 |---|---|---|
@@ -6569,9 +6666,11 @@ build scaffolds `SECURITY.md` from this skeleton and fills the File column with 
 | feature `relayer-intake` | does not exist (trusted relayer S1 is NOT built) |
 | `GAS_OUT` / `GAS_CB` | 20 / 25 Tgas static gas on outbound legs and callbacks (estimates; the sandbox suite passes with them; measure with the gas bench in Wave 1b) |
 | S4 forward / consolidate | 150 / 100 Tgas |
-| attach on calls | `walk`, `claim_tokens`: exactly 1 yocto; `create_trial`: `required_deposit` view |
+| attach on calls | `walk`: exactly 1 yocto; `create_trial`: `required_deposit` view and at least 250 Tgas (refused with `R_GAS` below it; attach 300) [SYNC 2026-11-10: `claim_tokens`, `claim_creator_alloc` and `sweep_tokens` are payable: 1 yocto when the receiver is registered on the launch token, 0.00125 NEAR + 1 yocto when not (the rest is refunded), about 150 to 200 Tgas (the app attaches 200); `create_token` to the factory is sent with 110 Tgas (80 fails on the real factory, which needs 91 to 95); `GAS_OUT` 20 and `GAS_CB` 25 Tgas are unchanged] |
 
 ## 11.4 App environment (`app/.env.example`)
+
+> [SYNC 2026-11-10: `app/lib/config.ts` also reads the variables listed in the 4.9 sync note above; `app/.env.example` and its test (`env-example.test.ts`) are the source, not the short list below.]
 
 | Variable | Default | Notes |
 |---|---|---|
@@ -6600,7 +6699,7 @@ build scaffolds `SECURITY.md` from this skeleton and fills the File column with 
 
 # Section 12: Testing Strategy
 
-[VERIFIED] — counts are from the run recorded in Section 17.
+[VERIFIED] - counts are from the run recorded in Section 17.
 
 | Layer | What | Count | Command |
 |---|---|---|---|
@@ -6751,3 +6850,20 @@ Everything below was run on 2026-11-07 on this machine unless it says otherwise.
 | `curl -X POST https://rpc.mainnet.near.org` method `status` | version 2.14.0, rustc 1.95.0, protocol_version 88, chain mainnet |
 | `curl -sL https://mainnet.neardata.xyz/v0/last_block/final` | HTTP 200 after a redirect to `/v0/block/223569501` (a block JSON); the testnet host also redirected (302) and was not followed |
 | Not run | any Meteora call, any market code, any indexer, near-connect, Lightweight Charts: all CO-3 sections 5.8 to 5.13 are interface level and [UNVERIFIED-COMPILE] |
+
+
+## 17d. Final-build ledger (2026-11-10, testnet and devnet only)
+
+Every row cites a committed file; nothing here is a mainnet result.
+
+| Check | Result | Evidence |
+|---|---|---|
+| Core wasm on core3 | sha256 `e85198ed...`, 675,007 bytes, equal to `artifacts/SHA256SUMS`; read from testnet RPC `view_code` | `artifacts/SHA256SUMS`, `evidence/testnet-core3/txlog.jsonl` |
+| F0 rehearsals through the contract gate | 3 of 3 on wasm `7d7b0da2...` (launches 2, 5, 6), then a 4th on wasm `e338f84d...` (launch 8, create_trial at 300 Tgas); `verify.sh` exit 0 each. The 4th ran before the `R_GAS` guard, so no F0 run exists on the exact deployed `e85198ed...` | `evidence/genesis/core3-f0-devnet-launch*.json`, `rehearsal/ROUND2.md` |
+| F1 | launch 4 on core3 passes, C16 now passes (genesis key swept to 890,880 lamports) | `evidence/testnet-core3/verify-4-f1.txt` |
+| verify tamper and dead RPC | `--tamper-all` exit 2 with MISMATCH lines; dead RPC exit 4 | `verify-8-tamper-all.txt`, `verify-2-dead-rpc.txt` |
+| gate-g2 | GREEN 9 of 9 on core3 (G2-01 reads the Nov 8 gate-g1 logs, not a re-run) | `evidence/testnet-core3/gate-g2-round2.txt` |
+| gate-g3 | NO-GO as last recorded; blockers GR-3, 7, 8, 9, 11, 13, 14, 17 (Dami-side or unrecorded) | `evidence/testnet-core3/gate-g3.txt` |
+| Real factory | `create_token` at 80 Tgas fails, 110 Tgas succeeds; a repeated `storage_deposit` is refunded (N-04 closed for the real factory) | `evidence/testnet-core3/real-factory-probe.json`, `docs/KNOWN-FINDINGS.md` |
+| Attack gallery | 100 attacks, 81 refused, 14 no effect, 5 bounded, 0 failed, 10 not done; sandbox hashes | `evidence/attack-gallery/`, `docs/ATTACK-GALLERY.md` |
+| Fast judge run | 19 of 19 steps GREEN in 553 s on git `b4b4c8a`; the full run (about 2,454 s) has no committed record | `evidence/judge-fast-run.txt` |
