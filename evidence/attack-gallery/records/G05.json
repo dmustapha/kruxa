@@ -22,12 +22,17 @@
         "i4_ok": true,
         "i5_err": null,
         "i5_ok": true,
+        "intents_alert": false,
         "l1_err": null,
         "l1_ok": true,
         "l3_err": null,
         "l3_ok": true,
         "l4_err": null,
-        "l4_ok": true
+        "l4_ok": true,
+        "l6_err": null,
+        "l6_ok": true,
+        "l7_err": null,
+        "l7_ok": true
       },
       "launch_id": 1
     }
@@ -45,7 +50,7 @@
       "role": "support",
       "rule_code": null,
       "status": "succeeded",
-      "tx": "7gvZWW56KgUtSW5WYyv4wDonzdejAix4AWW3dR3pA1wo"
+      "tx": "BFm7qH4EGey8EYGEkjBre1Rgy3SaHGVyEnjK8DKg9KfU"
     },
     {
       "expected_rule_code": "R_GENESIS_STATE",
@@ -54,7 +59,7 @@
       "role": "attack",
       "rule_code": "R_GENESIS_STATE",
       "status": "failed",
-      "tx": "4iMXYfjmJvXipyVWFasACtkiKrNuTJw4i27bvB4rHHhK"
+      "tx": "779RN3eRXMaSJLdwpi3VFkssSxaMEdkvmUgH28NUQwWn"
     },
     {
       "expected_rule_code": null,
@@ -63,7 +68,7 @@
       "role": "support",
       "rule_code": null,
       "status": "succeeded",
-      "tx": "JC3n6vLJHbKxVh2xL82ukXhSG6UAPsz9MdvEeWq9FSeq"
+      "tx": "ExV1KbabiYKHN6vKTSgKMGZZUDJQuQsyMAtjVZBM6end"
     },
     {
       "expected_rule_code": "R_GENESIS_ARG",
@@ -72,7 +77,7 @@
       "role": "attack",
       "rule_code": "R_GENESIS_ARG",
       "status": "failed",
-      "tx": "5oRiiUnuXbSKNPehS1ctTvAFpMeHFW57i89qFk5V9EQP"
+      "tx": "FK1rez6cM3386e4qqDg4ctMoW92pcAXTMTnZy7UEN5f1"
     },
     {
       "expected_rule_code": null,
@@ -81,7 +86,7 @@
       "role": "support",
       "rule_code": null,
       "status": "succeeded",
-      "tx": "C5EfBUWeGysGCSdXzFYtv8wy7QyRM2NEcFM7BXmjGpa"
+      "tx": "5jQrfP1gQrKnGRajKa2Ep8UWPcFq19mx8qfLUqgjde9x"
     },
     {
       "expected_rule_code": "R_GENESIS_STATE",
@@ -90,7 +95,7 @@
       "role": "attack",
       "rule_code": "R_GENESIS_STATE",
       "status": "failed",
-      "tx": "GNfi45AqoWcQAftiqDJZ5WbCY6pjtEixufqkHoYSAvQe"
+      "tx": "5dd4D31GipRP2R2YQ8qvGVS3GDFSLDe13WPnWXM6Bo76"
     },
     {
       "expected_rule_code": "R_GENESIS_STATE",
@@ -99,7 +104,7 @@
       "role": "attack",
       "rule_code": "R_GENESIS_STATE",
       "status": "failed",
-      "tx": "D57ULU52UqVfRwCUbVMBKFEqXdkA82vqUv5WfuoW64XZ"
+      "tx": "Em5qN6FsrriwRsL9R6y5zv3WDV1i7ZVVnCZBQg6Q5YXT"
     },
     {
       "expected_rule_code": "R_GENESIS_STATE",
@@ -108,7 +113,7 @@
       "role": "attack",
       "rule_code": "R_GENESIS_STATE",
       "status": "failed",
-      "tx": "2BzzTGXJVfJfbDcrDTRPZFYa6mJ5zXWxcPQuzD6dg1nd"
+      "tx": "8iWNd8Y1V6HMbVEcgKtRsqBs3WCmRrZyjcSYjEWZmk63"
     },
     {
       "expected_rule_code": "R_GENESIS_STATE",
@@ -117,7 +122,7 @@
       "role": "attack",
       "rule_code": "R_GENESIS_STATE",
       "status": "failed",
-      "tx": "273JZUdpbgNx5dRTsNcHa8Jt3R1QkPUowmQoAc5FGD3s"
+      "tx": "5jQecmvkR22V7HUnhAuuEBpUsauMSW6XSPnmBmjGM9y1"
     }
   ]
 }

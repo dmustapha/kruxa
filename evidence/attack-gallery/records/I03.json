@@ -56,7 +56,7 @@
       "role": "attack",
       "rule_code": "R_SYMBOL",
       "status": "failed",
-      "tx": "BJQybw3sbhvEcjzvAXT95CeRRgVDnnjH9kyXHexPp8eB"
+      "tx": "Favf6wjnHP1tosfAQy61BczyTJKqX9JYjiRQohy6rh6A"
     },
     {
       "expected_rule_code": "R_SYMBOL",
@@ -65,7 +65,7 @@
       "role": "attack",
       "rule_code": "R_SYMBOL",
       "status": "failed",
-      "tx": "Dy8xsJdpz5BuWvcHvrWXuzLCKEjZzebJ9YsYknUpi6Rz"
+      "tx": "3UJQpgVobqwzbWHQmTyEyWnjf7bXm2o43hSFZHv8X9Qr"
     }
   ]
 }

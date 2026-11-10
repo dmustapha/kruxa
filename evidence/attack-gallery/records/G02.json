@@ -22,12 +22,17 @@
         "i4_ok": true,
         "i5_err": null,
         "i5_ok": true,
+        "intents_alert": false,
         "l1_err": null,
         "l1_ok": true,
         "l3_err": null,
         "l3_ok": true,
         "l4_err": null,
-        "l4_ok": true
+        "l4_ok": true,
+        "l6_err": null,
+        "l6_ok": true,
+        "l7_err": null,
+        "l7_ok": true
       },
       "launch_id": 1
     }
@@ -45,7 +50,7 @@
       "role": "attack",
       "rule_code": "R_NOT_AUTHORIZED",
       "status": "failed",
-      "tx": "Bb3o3UhzE4C5XvuXtCngq3oCZmZPKknWxjqTHqZ3EQR7"
+      "tx": "6ZDeqDeJRiTZV3n9mnkZMjcgUNv5aaX7UmqWqmHrHAdW"
     },
     {
       "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -54,7 +59,7 @@
       "role": "attack",
       "rule_code": "R_NOT_AUTHORIZED",
       "status": "failed",
-      "tx": "EMyqCFnCbL6MuYGW26NznY1wFsZ9dxzNpMqwkWueS65Y"
+      "tx": "7JYqKxE6bk6CFPYnJeQE3i1yGP7GC8QoeX4xRijndLDb"
     },
     {
       "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -63,7 +68,7 @@
       "role": "attack",
       "rule_code": "R_NOT_AUTHORIZED",
       "status": "failed",
-      "tx": "G5hbXkJRCCigjcw62kmD9RVLt6TJHRQgNM3Xt5Fj71Sm"
+      "tx": "85N6X39QdjgBGYhnNQpTjg2o3H9EXie75qiq8J4pZUpv"
     },
     {
       "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -72,7 +77,7 @@
       "role": "attack",
       "rule_code": "R_NOT_AUTHORIZED",
       "status": "failed",
-      "tx": "Bork8PR8smFSJ4eghfFHZcaGDrnx8SzdmJumJLfp9gpr"
+      "tx": "F2sM8HAXMK6kp7rAo8R8KfuCvGMZYKugPu6dWYtG63if"
     },
     {
       "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -81,7 +86,7 @@
       "role": "attack",
       "rule_code": "R_NOT_AUTHORIZED",
       "status": "failed",
-      "tx": "518VEJiEnRoNpF8zL9zf5bD4B56gEpw7Da99FiiUpsLv"
+      "tx": "Ag7SgwzKks9QMoLGccJg83famNpjZNeqmmMoP4Br7BS4"
     },
     {
       "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -90,7 +95,7 @@
       "role": "attack",
       "rule_code": "R_NOT_AUTHORIZED",
       "status": "failed",
-      "tx": "AgPDpBSWrK8EVrZ63yaRMA7aTRHE1DYiyohC9vQLS6rn"
+      "tx": "6amV7yyWyzjXLVW2PD3trdkp7cb9qEPdc7tRxaQR78zL"
     },
     {
       "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -99,7 +104,7 @@
       "role": "attack",
       "rule_code": "R_NOT_AUTHORIZED",
       "status": "failed",
-      "tx": "4QtGcmeLmYThAHrQQUBwAAFAtAhge3ZvdLEtnqJXLzZr"
+      "tx": "D66bDAZA9pTb9pXUPiczBbitdcY9gUiKZ7XHpoTRYLTg"
     },
     {
       "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -108,7 +113,7 @@
       "role": "attack",
       "rule_code": "R_NOT_AUTHORIZED",
       "status": "failed",
-      "tx": "7tcZFNQDwcASbmvngqrfQJ1v1bGD17sqdKt9CfsrJ6TM"
+      "tx": "BFbcMB22CMY3MzNuGHNMbE4wJ9GimLk3rtLy2xtF91Xj"
     },
     {
       "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -117,7 +122,7 @@
       "role": "attack",
       "rule_code": "R_NOT_AUTHORIZED",
       "status": "failed",
-      "tx": "7JJtR82yjJxjcRtxYWaG3oVdpsotXB2edqFKqHQ2Hzei"
+      "tx": "DA8CAtPMwQFR8imaLB978ZbrmfnSPsmbTrcTZZJ7bfwn"
     },
     {
       "expected_rule_code": "R_NOT_AUTHORIZED",
@@ -126,7 +131,7 @@
       "role": "attack",
       "rule_code": "R_NOT_AUTHORIZED",
       "status": "failed",
-      "tx": "GhbKFirGJawNXCCSXxQfKrzLYCA4aj6Xkko9zU7YfAiy"
+      "tx": "3G5Hn6t2UCairnxJ3ftXroxRwvSTu3bsdAHYF39MmoE1"
     }
   ]
 }

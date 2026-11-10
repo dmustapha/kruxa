@@ -1,0 +1,148 @@
+{
+  "attempt": "The stream can only be made slower. The creator asks for a shorter and for the same duration; the payee, a stranger and a second creator try to change the schedule; 366 days is asked for; the second creator lengthens a launch that has no stream yet; then the payee draws the whole stream.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "the cap is still the original 30 day line (never above it)"
+    },
+    {
+      "ok": true,
+      "what": "the stream total did not move"
+    }
+  ],
+  "co4": "",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_LENGTHEN_ONLY",
+  "id": "C18",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "intents_alert": false,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true,
+        "l6_err": null,
+        "l6_ok": true,
+        "l7_err": null,
+        "l7_ok": true
+      },
+      "launch_id": 1
+    },
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "intents_alert": false,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true,
+        "l6_err": null,
+        "l6_ok": true,
+        "l7_err": null,
+        "l7_ok": true
+      },
+      "launch_id": 2
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "core",
+  "title": "lengthen_stream used to speed the stream up: a shorter or equal duration, a non-creator, beyond 365 days, before PASS",
+  "transactions": [
+    {
+      "expected_rule_code": "R_LENGTHEN_ONLY",
+      "label": "creator asks for 10 days (shorter than 30)",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_LENGTHEN_ONLY",
+      "status": "failed",
+      "tx": "AhTJcGHf4zGr6tSZozf4eLMecWNhT2A3AJg6j1yhaBPk"
+    },
+    {
+      "expected_rule_code": "R_LENGTHEN_ONLY",
+      "label": "creator asks for the same 30 days",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_LENGTHEN_ONLY",
+      "status": "failed",
+      "tx": "54FLiEzxcc34GTufG8ftwFSk2vF6zpW3esrMSKQf29fe"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "payee lengthens",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "5BZzncmhL8AbbNS1qd3Ux42f7N4mnWqQnSjPLPBZYCKF"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "stranger lengthens",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "9BBXUjtwnc7ndBjS9zR5Yr9kwv4a1XgD1Vm7t8Pd223K"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "another creator lengthens this stream",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "6WKYqKjkhXPpPsSN163ohMbQECAjnWfJ1GHiwzL49DfH"
+    },
+    {
+      "expected_rule_code": "R_STREAM",
+      "label": "366 days",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_STREAM",
+      "status": "failed",
+      "tx": "7f6mt1RzMCXFNkfLVXXRETuoGpuvD1zL7UYKe8g7peZi"
+    },
+    {
+      "expected_rule_code": "R_WRONG_PHASE",
+      "label": "lengthen a launch with no stream yet",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_WRONG_PHASE",
+      "status": "failed",
+      "tx": "H1XroSC2vnDYjNsFw79vdnSwHY2kYvYPXgwVonysZqbr"
+    },
+    {
+      "expected_rule_code": "STREAM_CAP",
+      "label": "payee draws the whole stream after the refused lengthenings",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "STREAM_CAP",
+      "status": "failed",
+      "tx": "A1n5qR4miHD8XxBRqH8MHg78zZni1NQgWLo9LLBu549e"
+    }
+  ]
+}

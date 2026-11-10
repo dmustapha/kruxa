@@ -24,7 +24,7 @@
       "role": "attack",
       "rule_code": "R_GENESIS_AUTH",
       "status": "failed",
-      "tx": "D1mbqna5txUSLzQFp9tfK1HeL8MFPM9jbatuYzZU3cHC"
+      "tx": "Ag9vvCDmEwo3zF7vL6SGkojtV1xbLBEk2ZyYECd36ASK"
     },
     {
       "expected_rule_code": "R_GENESIS_AUTH",
@@ -33,7 +33,7 @@
       "role": "attack",
       "rule_code": "R_GENESIS_AUTH",
       "status": "failed",
-      "tx": "BvctkjBkH63kt9dioApCN9kw1F7QmrVG4UFrKVnZwrxg"
+      "tx": "AGRjwY1eiT1KXGjzWF2EWokdjcXjXYRuXGgkWWp2saKd"
     },
     {
       "expected_rule_code": "R_GENESIS_AUTH",
@@ -42,7 +42,7 @@
       "role": "attack",
       "rule_code": "R_GENESIS_AUTH",
       "status": "failed",
-      "tx": "Q5Ko2z9QH8eAGq9ZREkre9D3rMQRZhpaEpo8igrgshM"
+      "tx": "25aYDgRUniyNGwvXEf6Jk7aLen8S7Z69ewvZQxTWW6iq"
     },
     {
       "expected_rule_code": "R_GENESIS_ARG",
@@ -51,7 +51,7 @@
       "role": "attack",
       "rule_code": "R_GENESIS_ARG",
       "status": "failed",
-      "tx": "93CSSCHxgVKSUQ931F7bi2TqQWoWP27tvvZypVy7ocQs"
+      "tx": "FfYGgJ7QgcuuGLGQdNorvkg6atrAzkgBNSjEyJLL2N6K"
     },
     {
       "expected_rule_code": "R_GENESIS_ARG",
@@ -60,7 +60,7 @@
       "role": "attack",
       "rule_code": "R_GENESIS_ARG",
       "status": "failed",
-      "tx": "14nrZduEcoS8g9kYq748jW38qwcGULDoJKbrVr1s82t3"
+      "tx": "Ce8YxrRyFMcYrBVCnj6phfeM7cN28c8XSpkA8NUurcBi"
     },
     {
       "expected_rule_code": "R_GENESIS_ARG",
@@ -69,7 +69,7 @@
       "role": "attack",
       "rule_code": "R_GENESIS_ARG",
       "status": "failed",
-      "tx": "Abe1k4TbFRrMTMqsX1rjJQ9rFPW98nHxWXT3ABpNm9d4"
+      "tx": "FSeYk1fexow76zBmY2XRvYiuvHEV6VfXdneHQ7sJdEYN"
     }
   ]
 }

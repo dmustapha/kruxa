@@ -1,0 +1,159 @@
+{
+  "attempt": "One holder's refund is stuck in flight. The guardian, the creator and a stranger call force_resolve_op; a compromised owner then names the attacker as the holder, asks for more than is in flight, for every other kind of leg, for zero and for a launch that does not exist. None of these may queue anything or move money.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "the victim's leg is still in flight, untouched"
+    },
+    {
+      "ok": true,
+      "what": "nobody was paid: attacker, owner and creator hold no USDC"
+    }
+  ],
+  "co4": "",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_NOT_AUTHORIZED",
+  "id": "C14",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "intents_alert": false,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true,
+        "l6_err": null,
+        "l6_ok": true,
+        "l7_err": null,
+        "l7_ok": true
+      },
+      "launch_id": 1
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "core",
+  "title": "force_resolve_op: a non-owner, a destination of the attacker's choice, an amount above what is in flight, a bucket with nothing in flight",
+  "transactions": [
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "force_resolve_op by the guardian",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "EPB4BpzdErbfLkaGBKLeYrw2nGc87yNoZLRmjfRCtXHk"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "force_resolve_op by the creator",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "9WCGw87WwMxYVNHD7v5oXZrJUi4hZWHnUN3Fan8zyNJ3"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "force_resolve_op by the stranger",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "BLJUpqtVFPiRy5zzKvd1cKYsyKhqxXvapUTYEjUz466w"
+    },
+    {
+      "expected_rule_code": "R_NOTHING",
+      "label": "RefundNative naming the attacker as the holder",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOTHING",
+      "status": "failed",
+      "tx": "GFGh36Ua1HitEQAj4xWS6kADefd6h8c7Xbqj9y4oo5Ac"
+    },
+    {
+      "expected_rule_code": "R_NOTHING",
+      "label": "RefundNative for the victim, double the in-flight amount",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOTHING",
+      "status": "failed",
+      "tx": "EoysD1mRiifzj5G4VYAkyvV685c4MFzt7cktqwXAUnK3"
+    },
+    {
+      "expected_rule_code": "R_NOTHING",
+      "label": "RefundNative for the victim, zero",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOTHING",
+      "status": "failed",
+      "tx": "3Vg9jDfiJdLdZCsgsgkf7PZ6DKYac6Frr8BTRST5BHj3"
+    },
+    {
+      "expected_rule_code": "R_NOTHING",
+      "label": "RefundIntents for the victim (nothing in flight there)",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOTHING",
+      "status": "failed",
+      "tx": "CjUUMysVNsJMBYoHVrA6qVn4YvMwZZXN4PEy5BnLuLc2"
+    },
+    {
+      "expected_rule_code": "R_NOTHING",
+      "label": "LaunchFee with the attacker as the holder",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOTHING",
+      "status": "failed",
+      "tx": "CvDQKYCNKdnUQo6Sws2cLEyBV3UEJtXxpne2UK9YnXMw"
+    },
+    {
+      "expected_rule_code": "R_NOTHING",
+      "label": "Stream",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOTHING",
+      "status": "failed",
+      "tx": "7CJ9AJTzrq4TydpiQeEJhPFsbsaduAMVdHHj1sH9M5Vg"
+    },
+    {
+      "expected_rule_code": "R_NOTHING",
+      "label": "Consolidate",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOTHING",
+      "status": "failed",
+      "tx": "8xZv6jxGEVhGpcbRA6QWhshianx4nUG7Dy2dX7iuML3x"
+    },
+    {
+      "expected_rule_code": "R_NOTHING",
+      "label": "Claim (token legs cannot be resolved from here)",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOTHING",
+      "status": "failed",
+      "tx": "AC7KqLAN5KJPtzD4dJ5mZUwcKKiPLUp1J1cNc3ukjaie"
+    },
+    {
+      "expected_rule_code": "R_NO_LAUNCH",
+      "label": "a launch that does not exist",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NO_LAUNCH",
+      "status": "failed",
+      "tx": "wSCPDXzWotGJuVodSAmXMaNoiVNiqtwjUviYVErWYuP"
+    }
+  ]
+}

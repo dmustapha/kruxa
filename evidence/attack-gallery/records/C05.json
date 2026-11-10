@@ -1,0 +1,163 @@
+{
+  "attempt": "One check is served; then three accounts call check_solvency and reconcile_intents back to back inside the 30 second cooldown, and keep trying after the keeper's turn would have come.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "the stored report is the one the first check wrote (refused calls wrote nothing)"
+    },
+    {
+      "ok": true,
+      "what": "counters still equal the recomputation"
+    },
+    {
+      "ok": true,
+      "what": "spam did not extend or hold the cooldown: the keeper is served"
+    }
+  ],
+  "co4": "",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_TOO_EARLY",
+  "id": "C05",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "intents_alert": false,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true,
+        "l6_err": null,
+        "l6_ok": true,
+        "l7_err": null,
+        "l7_ok": true
+      },
+      "launch_id": 1
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "core",
+  "title": "check_solvency spam: many callers, both entry points, to starve the keeper or bloat the logs",
+  "transactions": [
+    {
+      "expected_rule_code": null,
+      "label": "first check_solvency (served)",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "C2GcvphMw4vkS3LmhHCL7PBuRH1BXnq5skxkuzEWxxcH"
+    },
+    {
+      "expected_rule_code": "R_TOO_EARLY",
+      "label": "check_solvency spam #0",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_TOO_EARLY",
+      "status": "failed",
+      "tx": "7sHqiRRaLvnhk1m4YHzaKqd21qt9weSwqPWjmWesFdP9"
+    },
+    {
+      "expected_rule_code": "R_TOO_EARLY",
+      "label": "check_solvency spam #1",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_TOO_EARLY",
+      "status": "failed",
+      "tx": "G5JaAX5ZNJL9edcf52ZR5HWoE3SwEKEA5Xg5VQsUL2vL"
+    },
+    {
+      "expected_rule_code": "R_TOO_EARLY",
+      "label": "check_solvency spam #2",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_TOO_EARLY",
+      "status": "failed",
+      "tx": "GGwNsbrLLzhCHb4iP39x3npK8bpDuLTfmjjZm4tJEo7G"
+    },
+    {
+      "expected_rule_code": "R_TOO_EARLY",
+      "label": "check_solvency spam #3",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_TOO_EARLY",
+      "status": "failed",
+      "tx": "HzveTawig5ujTupxFMq9cP1fGuXsP1dUK27ntFGpwbPZ"
+    },
+    {
+      "expected_rule_code": "R_TOO_EARLY",
+      "label": "check_solvency spam #4",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_TOO_EARLY",
+      "status": "failed",
+      "tx": "9KFPdqzupYPfGc8B8bRZPC8A81PY8nkELa55wxPHNq6R"
+    },
+    {
+      "expected_rule_code": "R_TOO_EARLY",
+      "label": "check_solvency spam #5",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_TOO_EARLY",
+      "status": "failed",
+      "tx": "jMQ7aFDAdsgt2vndU6yinKzQR3nLGA3LEGFx3Pdfbsq"
+    },
+    {
+      "expected_rule_code": "R_TOO_EARLY",
+      "label": "check_solvency spam #6",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_TOO_EARLY",
+      "status": "failed",
+      "tx": "FhLQNJXCepdneipm5vPRAc44LKJ9ucgG8moAjkMfVfDS"
+    },
+    {
+      "expected_rule_code": "R_TOO_EARLY",
+      "label": "check_solvency spam #7",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_TOO_EARLY",
+      "status": "failed",
+      "tx": "5dNEZrgKkS8U92uQPNy7Mj8crVz77kp6DKybMiLF1g33"
+    },
+    {
+      "expected_rule_code": "R_TOO_EARLY",
+      "label": "check_solvency spam #8",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_TOO_EARLY",
+      "status": "failed",
+      "tx": "BfrMUh88B8433sedk5rASesvMSieU8uieR5aWcKTBw28"
+    },
+    {
+      "expected_rule_code": "R_TOO_EARLY",
+      "label": "reconcile_intents inside the cooldown (shared limiter)",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_TOO_EARLY",
+      "status": "failed",
+      "tx": "89x5CAPZxMm4rSgPHZD64xJPoXaZRXDRycLwDTwL4qA3"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "the keeper's check after the cooldown",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "EBM3FDib8oJkXJdENobJnQQN7bP5D19vKqMoaeQgPFmv"
+    }
+  ]
+}

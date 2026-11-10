@@ -1,0 +1,180 @@
+{
+  "attempt": "The guardian halts one launch. A new commit, the creator's pay_launch_fee, consolidate and draw are tried while halted (refused); the creator and a stranger try to halt; the guardian tries to resume. Walk, the verdict, the position pages and a holder's claim_tokens must still work.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "the refused commit went straight back"
+    },
+    {
+      "ok": true,
+      "what": "Walk refunded in full while halted"
+    },
+    {
+      "ok": true,
+      "what": "the verdict is not held back (PASS: 12 funders, 360 USDC)"
+    },
+    {
+      "ok": true,
+      "what": "the holder got tokens: token claims are exits and stay open"
+    },
+    {
+      "ok": true,
+      "what": "a halt never changes a verdict"
+    }
+  ],
+  "co4": "",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_HALTED",
+  "id": "C13",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "intents_alert": false,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true,
+        "l6_err": null,
+        "l6_ok": true,
+        "l7_err": null,
+        "l7_ok": true
+      },
+      "launch_id": 1
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "core",
+  "title": "halt_launch: commit into a halted launch, creator payouts while halted, and halt or resume by the wrong account",
+  "transactions": [
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "halt_launch by the creator",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "82ZTZTyG2SU2RrmGpGXpS75VRZRNK2Ndia7dzQCgWzZx"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "halt_launch by a stranger",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "8SF8RCBLoFyHok3iWCD4YimGuntDJfiQUAZeKZArJVBF"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "guardian halt_launch",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "ELbc9QUNStPc2yJPdXJnVETsJEFdyi4Vgg4v77Vsirz8"
+    },
+    {
+      "expected_rule_code": "R_HALTED",
+      "label": "a new commit into the halted launch",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_HALTED",
+      "status": "succeeded",
+      "tx": "EwrBu5UBkMzanRaCuDgyfGruaA2Aa74xfnxfHUu9KGLA"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "Walk while halted",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "HyVF7ERpFWfHPgcwqEtKkkTMiztzX4QZ8MDqm1QXhooB"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "settle while halted",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "9jw3kyFhG5dsodE9Kmng9pxnSwfbsLeqV4mxR4K5JvdP"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "settle_positions_page while halted",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "BYD9ED4GPVyQfsFUBqsogPW2ycRPgAfms84vtD4AdPCL"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "sweep_residue while halted",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "9UbACTWX78N551sE92gqLHq8oegNmpyLw1eHnExRcWx1"
+    },
+    {
+      "expected_rule_code": "R_HALTED",
+      "label": "pay_launch_fee by the creator while halted",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_HALTED",
+      "status": "failed",
+      "tx": "CNS6R12WA2f5iQrEXoLE6R8o9Zm5cxF59nC9EJuvjTbn"
+    },
+    {
+      "expected_rule_code": "R_HALTED",
+      "label": "consolidate by the creator while halted",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_HALTED",
+      "status": "failed",
+      "tx": "7XdHFK9mHquEonkAYXwfA4PERNtedGyR2PJ49rPrK8TJ"
+    },
+    {
+      "expected_rule_code": "R_HALTED",
+      "label": "draw by the creator while halted",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_HALTED",
+      "status": "failed",
+      "tx": "7ijJaEuSLuwd4ScZn5TrJAHnJQGDQLXz5cVVwjfrEsrb"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "a holder's claim_tokens while halted",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "HfccwssuSth6dVUbKLF5v5j7EvdimJgHnrMCgcMJCezz"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "resume_launch by the guardian",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "DZ999FvphiDn64qwYp96bbR8g49yt3YTWVmWJraBttNN"
+    }
+  ]
+}

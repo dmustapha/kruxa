@@ -1,0 +1,96 @@
+{
+  "attempt": "There is no argument that names another holder: the route always spends the caller's own position. A stranger with no position names themselves as the destination; a holder who was already refunded tries again; and after a freeze a holder with a refund due tries to route it.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "the victim's refund is untouched by the stranger's attempt"
+    },
+    {
+      "ok": true,
+      "what": "the attacker received nothing"
+    }
+  ],
+  "co4": "",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_NO_POSITION",
+  "id": "C17",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "intents_alert": false,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true,
+        "l6_err": null,
+        "l6_ok": true,
+        "l7_err": null,
+        "l7_ok": true
+      },
+      "launch_id": 1
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "core",
+  "title": "set_refund_route: route a victim's refund to the attacker, route twice, route while FROZEN",
+  "transactions": [
+    {
+      "expected_rule_code": "R_NO_POSITION",
+      "label": "a stranger routes (no position of their own)",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NO_POSITION",
+      "status": "failed",
+      "tx": "97NZYVujLZAAGbCHDV1vSqA391jMdjHdQbJuoR4Ey5ub"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "holder 1 claims the normal refund",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "AcfBezzHZokPDgweqTnYQbWGbFSb93Hs2wNtDUCFYApR"
+    },
+    {
+      "expected_rule_code": "R_NO_POSITION",
+      "label": "holder 1 routes after being paid (position deleted)",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NO_POSITION",
+      "status": "failed",
+      "tx": "35oFTTR1ipyzYzAFZKeozSVjg3KqKRUxbF2aFdoSiBYy"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "guardian freeze",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "He3gA1oy1DxdZvt3j1YDbzRTtqMb2CYsGoNwWehTx8o8"
+    },
+    {
+      "expected_rule_code": "R_FROZEN",
+      "label": "holder 0 routes while FROZEN",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_FROZEN",
+      "status": "failed",
+      "tx": "FvrmTyA4MKy7Zuwhs3N7XZnSLStuGYm23F69vXJp8x8"
+    }
+  ]
+}

@@ -34,7 +34,7 @@
       "role": "attack",
       "rule_code": "R_FEE_TOTAL",
       "status": "failed",
-      "tx": "J7gdknmXvG2617NRcP7FW2FtSnM4Ek6EWg8E2VTdW1md"
+      "tx": "DsADCRFXEkoMuuh2py4yzmfo58HDfyrUs8GbiZL6Lprg"
     },
     {
       "expected_rule_code": "R_FEE_TOTAL",
@@ -43,7 +43,7 @@
       "role": "attack",
       "rule_code": "R_FEE_TOTAL",
       "status": "failed",
-      "tx": "4Srd2cCX1YvVJAiUc3wzSJtgiMKisj7Q3hdWSk22towH"
+      "tx": "DKjaP4bhhQgczXeyAuDAFZUFbQwMGrc2cpKnM16crrUg"
     },
     {
       "expected_rule_code": "R_CREATOR_SHARE",
@@ -52,7 +52,7 @@
       "role": "attack",
       "rule_code": "R_CREATOR_SHARE",
       "status": "failed",
-      "tx": "4Ci4dDQDWfioJjxFuS15SFa3JZhdScwrPHXc8WApXXMz"
+      "tx": "G5E1kHCFiAsWHW7RG47sW8qYF9166FvpjuunqSBJRUBC"
     },
     {
       "expected_rule_code": "R_CREATOR_TAKE",
@@ -61,7 +61,7 @@
       "role": "attack",
       "rule_code": "R_CREATOR_TAKE",
       "status": "failed",
-      "tx": "NS4D2Dgqb4WcZas4KWT9BHedNq5CVqRQCkyHYN9SRqo"
+      "tx": "C4k7fkaLiRHTfu5N3zTLr9WMTL6K3tH12oWUQ3Gdms6E"
     },
     {
       "expected_rule_code": "R_PLATFORM_FLOOR",
@@ -70,7 +70,7 @@
       "role": "attack",
       "rule_code": "R_PLATFORM_FLOOR",
       "status": "failed",
-      "tx": "AfKTCtw6YKRkrwvfsxQ8hrUkh7YekaPz9Ax28hL2NEtc"
+      "tx": "9LC8ZjdsABZ8ETsiCCkQy18eeeUAvGnHiN6h8CygfzUt"
     },
     {
       "expected_rule_code": "R_PLATFORM_FIXED",
@@ -79,7 +79,7 @@
       "role": "attack",
       "rule_code": "R_PLATFORM_FIXED",
       "status": "failed",
-      "tx": "DRFh8ac6QEV8JHrE9dF8Zen6KatuXe9QfURbCgcF7FrX"
+      "tx": "8JWuYkQ2feX5kUzPHTNiE5urxvNj75D6vo2qJVAe1eBA"
     },
     {
       "expected_rule_code": "R_HOLDER_RANGE",
@@ -88,7 +88,7 @@
       "role": "attack",
       "rule_code": "R_HOLDER_RANGE",
       "status": "failed",
-      "tx": "2xxVpAtmtb1M4cMYJshwWvF7Vtd3FJHZjKdHQd2FWqGh"
+      "tx": "F3EvWU7BUjiUVquvr6ZagKAWeR2iDtykuwFgZ8oxzhkw"
     },
     {
       "expected_rule_code": "R_LP_RANGE",
@@ -97,7 +97,7 @@
       "role": "attack",
       "rule_code": "R_LP_RANGE",
       "status": "failed",
-      "tx": "6KSXkmNNaq5p2Uqyr6895a1jV4rnNLMr6ioBEzEGcBtg"
+      "tx": "6UDAVWHE1cHoacC73z7vLFXXtXoGWuqKpbj8Ba3iqgwQ"
     },
     {
       "expected_rule_code": "R_REFERRAL",
@@ -106,7 +106,7 @@
       "role": "attack",
       "rule_code": "R_REFERRAL",
       "status": "failed",
-      "tx": "CYkbUNcoSK2kewDZNV75uzi5qhMGV9M7fm7sLPkw9gax"
+      "tx": "31WmSaD9Mp24d2EoJpPzoyAAkf1S41j458JB4eAPeJrh"
     },
     {
       "expected_rule_code": "R_SPLIT_SUM",
@@ -115,7 +115,7 @@
       "role": "attack",
       "rule_code": "R_SPLIT_SUM",
       "status": "failed",
-      "tx": "AuUTfwTkmB8LkPBvjwu9dKMoiUa1CxKFJhike9GrpBi1"
+      "tx": "44isE678Qa94LiHsGrBKgY7cWa8RQnRR8G6xsnQ7Led2"
     },
     {
       "expected_rule_code": "R_FEE_VEST",
@@ -124,7 +124,7 @@
       "role": "attack",
       "rule_code": "R_FEE_VEST",
       "status": "failed",
-      "tx": "85Eg4jQMmBwzTf4bdWnvN8peyTMeWTyQFbA96mi4tdmn"
+      "tx": "BBhBCqy2Lwh4R7TLeh81xdFmsNgENXnCqos7WAHYCBio"
     },
     {
       "expected_rule_code": "R_OPENING",
@@ -133,7 +133,7 @@
       "role": "attack",
       "rule_code": "R_OPENING",
       "status": "failed",
-      "tx": "AC3q1gpFEd9P9yzgE5U3vJWdpfVsAnCL1nxz6PLSEyGJ"
+      "tx": "Byyd9WSBrF9qVWxdptTJeMb95rV4DHJFREejNkRHUskf"
     }
   ]
 }

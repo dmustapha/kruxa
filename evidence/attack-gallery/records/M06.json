@@ -46,7 +46,7 @@
       "role": "support",
       "rule_code": null,
       "status": "succeeded",
-      "tx": "DX5DnKJinBTK854uHxKHxADQ3xykBQ61KVn2gwhCA9uB"
+      "tx": "Hr6duQ8TB8qfTc9wJ12C7MTBi8BXBHGxgQVMFtpW37qP"
     },
     {
       "expected_rule_code": "R_MIN_OUT",
@@ -55,7 +55,7 @@
       "role": "attack",
       "rule_code": "R_MIN_OUT",
       "status": "succeeded",
-      "tx": "9N7tzms2nk3cBWbKWzWKxzsYSXMBqzLG3W7JzoQBxHjz"
+      "tx": "7RerJs42aLsHra8x5JhYXaegfhbaRyRb6bhRyFTo4UxN"
     },
     {
       "expected_rule_code": "R_MIN_OUT",
@@ -64,7 +64,7 @@
       "role": "attack",
       "rule_code": "R_MIN_OUT",
       "status": "succeeded",
-      "tx": "375tVPdGT7TaVomNWHwhYKYkWzbsZU8RqUKP2LefuTLb"
+      "tx": "8aP9CF6frNkxBs2eLuyGDrvXUE8EvpmSxRs7UsuNU5TQ"
     },
     {
       "expected_rule_code": "R_MIN_OUT",
@@ -73,7 +73,7 @@
       "role": "attack",
       "rule_code": "R_MIN_OUT",
       "status": "succeeded",
-      "tx": "8dvJfsg8W9G4FV7D5cVP78qozk5PdVhKXZTR6aSmP7PE"
+      "tx": "41y7pyULzaZ3gENJcaUSYAuStrVMXSX5HWGdtBSQ83wv"
     }
   ]
 }

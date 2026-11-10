@@ -38,7 +38,7 @@
       "role": "attack",
       "rule_code": "R_CREATOR_GATE",
       "status": "failed",
-      "tx": "Ft9cCDrEhVzxrG3ger3kVQRoinoeYMgLLUD63nm246s3"
+      "tx": "3YrXqmwir7Y8pyxueosQWeSownr6yPJ3nkEvZJM8BE7C"
     },
     {
       "expected_rule_code": "R_CREATOR_GATE",
@@ -47,7 +47,7 @@
       "role": "attack",
       "rule_code": "R_CREATOR_GATE",
       "status": "failed",
-      "tx": "7Z9v6vKQvoaCTQ6yNWw9ZksDXdLwaD9JDtg4y9Dwj6DB"
+      "tx": "Z8qjVWbNh3WiUxUkJDGhqybgtGRdjA9NvL9coxGhBnr"
     }
   ]
 }

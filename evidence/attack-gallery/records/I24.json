@@ -42,7 +42,7 @@
       "role": "attack",
       "rule_code": "R_LAUNCHER_LOCKED",
       "status": "failed",
-      "tx": "4RK3ja1zUVbej2iVmSWfsjXzivurfDSHzsnM5bmrRrPj"
+      "tx": "W76tgQ5yUUV9kR2z8w1Yg9QmeiooQ3SDT2q2sqsKe2Y"
     },
     {
       "expected_rule_code": "R_LAUNCHER_LOCKED",
@@ -51,7 +51,7 @@
       "role": "attack",
       "rule_code": "R_LAUNCHER_LOCKED",
       "status": "failed",
-      "tx": "Ct677BvASj1JmAUctzuU2BTLpG6c1MECL5VAqituJWML"
+      "tx": "33kbwT1wMkgepEccgdi4cGKkciVWf9FjSjXEqRo4ACyh"
     }
   ]
 }

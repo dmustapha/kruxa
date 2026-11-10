@@ -1,0 +1,159 @@
+{
+  "attempt": "A stranger and the guardian set the burn mode; the owner (or a key thief acting as the owner) points the sink at the owner, guardian, treasury, relay-fee, or core accounts, asks for burn, and tries to change the mode again once it is locked.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "still the default and unlocked after every refusal"
+    },
+    {
+      "ok": true,
+      "what": "the sink is the public one and locked"
+    }
+  ],
+  "co4": "",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_NOT_AUTHORIZED",
+  "id": "C10",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "intents_alert": false,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true,
+        "l6_err": null,
+        "l6_ok": true,
+        "l7_err": null,
+        "l7_ok": true
+      },
+      "launch_id": 1
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "core",
+  "title": "set_burn_mode: by a non-owner, to a Kruxa-controlled sink, to burn, and again after the lock",
+  "transactions": [
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "set_burn_mode by a stranger",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "23FB84DAqAmEmLyPSAvgh4bRST9n9e8cssbXo5QWGVaR"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "set_burn_mode by the guardian",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "5Muxcw2h7p53grAHLpSj5zBLkmocK6eLLNWaGkdS3iSM"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "sink:owner.test.near",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "4AGjc93udBBMSo9vJFBPZ6B9MF7YGLCogSYteayr8Hdo"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "sink:guardian.test.near",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "GLginkg1CVmyMSNCTLoqWDiCTDSTNrT67bKRSxW5GjKp"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "sink:treasury.test.near",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "CkexeR8hQY9pe6pZeJNLq9sXXL3CHxQ4RGyH1iZSLhC8"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "sink:relayfees.test.near",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "Hoqv5VxpApBWmVji4eZ2avWS136qnB8PuwY6vMpt1oKH"
+    },
+    {
+      "expected_rule_code": "R_NOT_AUTHORIZED",
+      "label": "sink:core.test.near",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOT_AUTHORIZED",
+      "status": "failed",
+      "tx": "EzPqFu7KtpPXtaEfzdD9bgcnEembZVa367nwqP829owF"
+    },
+    {
+      "expected_rule_code": "R_BURN_UNSUPPORTED",
+      "label": "mode burn (the factory token has no ft_burn)",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_BURN_UNSUPPORTED",
+      "status": "failed",
+      "tx": "5Z9dDPbEnJxXRL3KGCwabx1qRH9tSaJcAM5K7XC9SvAj"
+    },
+    {
+      "expected_rule_code": "R_NOTHING",
+      "label": "an unparsable mode",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOTHING",
+      "status": "failed",
+      "tx": "4bEfkV6jZRDukcjHmAFjTFEZkBiBnhAxrc8LwuH7at7y"
+    },
+    {
+      "expected_rule_code": null,
+      "label": "owner sets a public sink (legitimate, locks)",
+      "network": "SANDBOX",
+      "role": "support",
+      "rule_code": null,
+      "status": "succeeded",
+      "tx": "6QwAKLiRD8HnY31UHbZJe7JdgEMdqtr799TGBQ6p3mA2"
+    },
+    {
+      "expected_rule_code": "R_NOTHING",
+      "label": "owner changes the mode after the lock",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOTHING",
+      "status": "failed",
+      "tx": "4U2bEqJ2pCnh9aXpjLgqtqYQ7MRL5fm6tAeVsuKFYiG3"
+    },
+    {
+      "expected_rule_code": "R_NOTHING",
+      "label": "owner re-points the sink after the lock",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOTHING",
+      "status": "failed",
+      "tx": "FcSLMFb4729vDpEqcjyNcRM14JvPmXzJbLKZnpL97kd"
+    }
+  ]
+}

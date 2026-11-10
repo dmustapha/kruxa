@@ -1,5 +1,5 @@
 //! Known findings: reproductions of the issues in the independent review (REVIEW-INSTANT-LAUNCH.md) against the CURRENT code.
-//! These are NOT part of the 81-attack gallery counts. Each test records what actually happened:
+//! These are NOT part of the 100-attack gallery counts. Each test records what actually happened:
 //!   EXPLOITABLE  the weakness reproduced (pre-fix evidence; the test still passes, it records the truth),
 //!   NOT_EXPLOITABLE  the weakness did not reproduce (after a fix this is the regression result),
 //!   NOT_REPRODUCED  the harness could not exercise it (the record says why).

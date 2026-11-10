@@ -60,7 +60,7 @@
       "role": "attack",
       "rule_code": "R_INSTANT_STATE",
       "status": "succeeded",
-      "tx": "F2ALKFLAwtZ8qtyBZGyHkonb2ZFd8ZospbBocerCj77R"
+      "tx": "8HHpZpoCJeC71LRafdSacMLfZN3MQkwhbMT4MH6tEx6A"
     },
     {
       "expected_rule_code": "R_INSTANT_STATE",
@@ -69,7 +69,7 @@
       "role": "attack",
       "rule_code": "R_INSTANT_STATE",
       "status": "succeeded",
-      "tx": "6TbZ2rfsTiZzWTVbNXQjt1sFk3ZQLHzwnAvW11it1do5"
+      "tx": "5kHPM7hKh1g6mnkojnRhBxFxAY9JjBh5qgR1pjxLDVQ9"
     },
     {
       "expected_rule_code": "R_INSTANT_STATE",
@@ -78,7 +78,7 @@
       "role": "attack",
       "rule_code": "R_INSTANT_STATE",
       "status": "succeeded",
-      "tx": "7EQjeU6oQv1JY2k4Zr8uhNckhyr1LaD26MVEi3JDww3S"
+      "tx": "7J9ckZPzQp9Qk7WsAw9ktiwx4sGjPMwf843aKbnzgxKb"
     },
     {
       "expected_rule_code": "R_BAD_MSG",
@@ -87,7 +87,7 @@
       "role": "attack",
       "rule_code": "R_BAD_MSG",
       "status": "succeeded",
-      "tx": "HcMTj9DL5zmGJkN477H4yaFURkdbWPQhtgW6hebogXNn"
+      "tx": "Ck4JnMXChLzVufrPgTFZ9yvZr8RaYbMwNKzLwBMCdZfx"
     }
   ]
 }

@@ -22,12 +22,17 @@
         "i4_ok": true,
         "i5_err": null,
         "i5_ok": true,
+        "intents_alert": false,
         "l1_err": null,
         "l1_ok": true,
         "l3_err": null,
         "l3_ok": true,
         "l4_err": null,
-        "l4_ok": true
+        "l4_ok": true,
+        "l6_err": null,
+        "l6_ok": true,
+        "l7_err": null,
+        "l7_ok": true
       },
       "launch_id": 1
     }
@@ -45,7 +50,7 @@
       "role": "attack",
       "rule_code": "R_TOO_EARLY",
       "status": "failed",
-      "tx": "6hpfLAm6hpVP8QaPGmNGw3n9AeunYoSurCft95mKVRg8"
+      "tx": "HQJQDw5GsQBpUw78BKQ5YyiszNHJ5eA7igjMYKMLfy2L"
     },
     {
       "expected_rule_code": "R_TOO_EARLY",
@@ -54,7 +59,7 @@
       "role": "attack",
       "rule_code": "R_TOO_EARLY",
       "status": "failed",
-      "tx": "DogcEJuiNgr4kNSmGJecAUN3rBed9xnpVv9H2W12TACw"
+      "tx": "8JB3z9whtmMABqPpfAsLCHMMwXf5jhxqadt5iGZwVXWs"
     }
   ]
 }

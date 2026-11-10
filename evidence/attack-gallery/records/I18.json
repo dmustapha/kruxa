@@ -52,7 +52,7 @@
       "role": "attack",
       "rule_code": "R_INSTANT_STATE",
       "status": "failed",
-      "tx": "J8AvVST2hVTqcVxcsEoYVsSJe6xPmDzkf1NHd5mLHqoW"
+      "tx": "Bn5QZoMcDN4ctK5sS2CpXZdv4M9ktdwpkYrPcY5NCq7Z"
     },
     {
       "expected_rule_code": "R_INSTANT_STATE",
@@ -61,7 +61,7 @@
       "role": "attack",
       "rule_code": "R_INSTANT_STATE",
       "status": "failed",
-      "tx": "JDcULALjBbM8kjjaL8D8b8EHYLob6fs6QVLj68p3jBB7"
+      "tx": "8tePVkUQoGw6VyKkP4Yn7ArWnfLdBSTBwyKPqcXapWL3"
     }
   ]
 }

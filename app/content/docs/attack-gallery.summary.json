@@ -2,24 +2,24 @@
  "schema": "kruxa.attack-gallery.summary/1",
  "source": "evidence/attack-gallery/attack-gallery.json",
  "network": "SANDBOX",
- "generated_at": "2026-11-08T16:28:44Z",
- "git_head": "29a629cef1306d2ebb1546f39a7a8442c01ed864",
+ "generated_at": "2026-11-10T00:45:17Z",
+ "git_head": "037a26336782908e2cf1845fd249822d298db719",
  "counts": {
-  "total": 81,
-  "tests_listed": 81,
-  "refused": 64,
-  "no_effect": 12,
+  "total": 100,
+  "tests_listed": 100,
+  "refused": 81,
+  "no_effect": 14,
   "bounded": 5,
   "failed": 0,
   "succeeded_unexpectedly": 0,
   "by_group": {
-   "core_and_genesis": 34,
+   "core_and_genesis": 53,
    "market": 9,
    "instant_launcher_and_market_1_1": 38
   },
-  "invariants_held": 81,
-  "with_rule_code": 69,
-  "attack_transactions": 233
+  "invariants_held": 100,
+  "with_rule_code": 87,
+  "attack_transactions": 360
  },
  "attacks": [
   {
@@ -171,6 +171,120 @@
    "title": "Creator opens a second trial while one is active",
    "result": "REFUSED",
    "expected_rule_code": "R_ACTIVE_TRIAL"
+  },
+  {
+   "id": "C01",
+   "title": "reopen_genesis by the relayer, guardian, creator or a stranger, and outside an aborted genesis",
+   "result": "REFUSED",
+   "expected_rule_code": "R_NOT_AUTHORIZED"
+  },
+  {
+   "id": "C02",
+   "title": "Re-commit after a guardian abort, and a stale ceremony replayed after the owner reopens",
+   "result": "REFUSED",
+   "expected_rule_code": "R_GENESIS_ALREADY"
+  },
+  {
+   "id": "C03",
+   "title": "F0 policy gate: sign_genesis with an unregistered hash, a mismatched message, the wrong slot, a stranger, or the wrong MPC key",
+   "result": "REFUSED",
+   "expected_rule_code": "R_GENESIS_ARG"
+  },
+  {
+   "id": "C04",
+   "title": "F0 policy gate: a second signature, a swap after signing, signing while paused or aborted, and a registration that survives the reopen",
+   "result": "REFUSED",
+   "expected_rule_code": "R_GENESIS_STATE"
+  },
+  {
+   "id": "C05",
+   "title": "check_solvency spam: many callers, both entry points, to starve the keeper or bloat the logs",
+   "result": "REFUSED",
+   "expected_rule_code": "R_TOO_EARLY"
+  },
+  {
+   "id": "C06",
+   "title": "Forged on_solvency_checked and a fake shortfall to raise the Intents alert (griefing the Intents commit path)",
+   "result": "REFUSED",
+   "expected_rule_code": "PRIVATE_METHOD"
+  },
+  {
+   "id": "C07",
+   "title": "claim_tokens: re-entry from inside the token transfer, a second claim at once, and a stranger's claim",
+   "result": "NO_EFFECT",
+   "expected_rule_code": ""
+  },
+  {
+   "id": "C08",
+   "title": "claim_creator_alloc by a stranger, by the creator who is not the payout recipient, early, or without a deposit",
+   "result": "REFUSED",
+   "expected_rule_code": "R_NOT_AUTHORIZED"
+  },
+  {
+   "id": "C09",
+   "title": "sweep_tokens early: on a PASSED launch inside the bonus window, on an Open launch, on an unknown launch",
+   "result": "REFUSED",
+   "expected_rule_code": "R_NOTHING"
+  },
+  {
+   "id": "C10",
+   "title": "set_burn_mode: by a non-owner, to a Kruxa-controlled sink, to burn, and again after the lock",
+   "result": "REFUSED",
+   "expected_rule_code": "R_NOT_AUTHORIZED"
+  },
+  {
+   "id": "C11",
+   "title": "Upgrade queue: queued by the guardian or a stranger, with a malformed hash, deployed by a non-owner, or deployed before the 7 day delay",
+   "result": "REFUSED",
+   "expected_rule_code": "R_NOT_AUTHORIZED"
+  },
+  {
+   "id": "C12",
+   "title": "Upgrade bait and switch: deploy a wasm that is not the queued hash after the delay, deploy as the guardian after the delay, or re-queue and deploy at the old time",
+   "result": "REFUSED",
+   "expected_rule_code": "R_UPGRADE_HASH"
+  },
+  {
+   "id": "C13",
+   "title": "halt_launch: commit into a halted launch, creator payouts while halted, and halt or resume by the wrong account",
+   "result": "REFUSED",
+   "expected_rule_code": "R_HALTED"
+  },
+  {
+   "id": "C14",
+   "title": "force_resolve_op: a non-owner, a destination of the attacker's choice, an amount above what is in flight, a bucket with nothing in flight",
+   "result": "REFUSED",
+   "expected_rule_code": "R_NOT_AUTHORIZED"
+  },
+  {
+   "id": "C15",
+   "title": "claim_refund_batch: oversize and empty batches, a malformed holder, an unknown launch, and a batch while FROZEN",
+   "result": "REFUSED",
+   "expected_rule_code": "R_BATCH_SIZE"
+  },
+  {
+   "id": "C16",
+   "title": "claim_refund_batch: duplicate holders, repeated batches, and the batch caller's own account in the list",
+   "result": "NO_EFFECT",
+   "expected_rule_code": ""
+  },
+  {
+   "id": "C17",
+   "title": "set_refund_route: route a victim's refund to the attacker, route twice, route while FROZEN",
+   "result": "REFUSED",
+   "expected_rule_code": "R_NO_POSITION"
+  },
+  {
+   "id": "C18",
+   "title": "lengthen_stream used to speed the stream up: a shorter or equal duration, a non-creator, beyond 365 days, before PASS",
+   "result": "REFUSED",
+   "expected_rule_code": "R_LENGTHEN_ONLY"
+  },
+  {
+   "id": "C19",
+   "title": "claim_orphan_credit: the same payload twice, the S4 path after the claim, and a payload that reuses a spent nonce",
+   "result": "REFUSED",
+   "expected_rule_code": "R_NOTHING"
   },
   {
    "id": "G01",
@@ -542,8 +656,8 @@
   },
   {
    "id": "GENESIS-F0-SIGN",
-   "what": "F0 genesis (MPC child key) attacks and Solana-side checks",
-   "why": "sign_genesis (Task 4.6) is not built; NEAR cannot see Solana, so confirm_genesis is a signed claim audited by verify.sh (detected, not prevented). The gallery attacks only the contract-side state machine, leaves and plan."
+   "what": "the real MPC signature on Solana, and Solana-side checks",
+   "why": "The contract-side F0 policy gate (register_f0_message, sign_genesis, reopen_genesis) is attacked in C02 to C04. The sandbox has no MPC signer, so the signer leg itself and everything on Solana are not attacked here. NEAR cannot see Solana, so confirm_genesis is a signed claim audited by verify.sh (detected, not prevented)."
   },
   {
    "id": "INSTANT-REAL-FACTORY",
@@ -553,7 +667,7 @@
   {
    "id": "INSTANT-SEVEN-DAY-CLOCKS",
    "what": "freeze auto-expiry and the 7-day cap timelock by waiting",
-   "why": "Both are 7 real days even on the demo profile (only the launcher's day unit is 10 s). A sandbox wait would need about 2 million blocks. I36 and I38 assert the bound with the pure kruxa_logic functions and the queued effective_at instead."
+   "why": "Both are 7 real days even on the demo profile (only the launcher's day unit is 10 s). A sandbox wait would need about 2 million blocks. I36 and I38 assert the bound with the pure kruxa_logic functions and the queued effective_at instead. The core's own FROZEN expiry (D-15) is not a gallery row; tests/tests/negative_paths.rs proves it by rewriting frozen_until in the sandbox state, and A16 asserts the bound with the pure function."
   },
   {
    "id": "INSTANT-ANNOUNCED-OPEN",

@@ -22,6 +22,8 @@ pub struct MockFt {
     fail_storage_deposit: bool,
     /// Test hook: every `ft_transfer` panics, to exercise the re-credit after a failed outbound transfer.
     fail_transfer: bool,
+    /// Test hook (N-04): a token that keeps the deposit of a `storage_deposit` for an already registered account instead of refunding it.
+    keep_storage_deposit: bool,
 }
 
 /// NEP-145 bounds of the testnet factory token (min = max, probed): a registration needs at least this much, the excess is refunded.
@@ -38,6 +40,7 @@ impl MockFt {
             reenter: None,
             fail_storage_deposit: false,
             fail_transfer: false,
+            keep_storage_deposit: false,
         };
         s.balances.insert(owner_id.clone(), total_supply.0);
         s.registered.insert(owner_id, true);
@@ -59,7 +62,9 @@ impl MockFt {
         require!(attached >= STORAGE_MIN_YOCTO, "attached deposit is less than the minimum storage balance");
         let who = account_id.unwrap_or_else(env::predecessor_account_id);
         if self.registered.get(&who).copied().unwrap_or(false) {
-            let _ = Promise::new(env::predecessor_account_id()).transfer(NearToken::from_yoctonear(attached));
+            if !self.keep_storage_deposit {
+                let _ = Promise::new(env::predecessor_account_id()).transfer(NearToken::from_yoctonear(attached));
+            }
         } else if attached > STORAGE_MIN_YOCTO {
             let _ = Promise::new(env::predecessor_account_id()).transfer(NearToken::from_yoctonear(attached - STORAGE_MIN_YOCTO));
         }
@@ -152,6 +157,11 @@ impl MockFt {
     /// Test helper: make every later `storage_deposit` panic (true) or work again (false).
     pub fn set_fail_storage_deposit(&mut self, fail: bool) {
         self.fail_storage_deposit = fail;
+    }
+
+    /// Test helper (N-04): keep (true) or refund (false) the deposit of a repeat `storage_deposit` for a registered account.
+    pub fn set_keep_storage_deposit(&mut self, keep: bool) {
+        self.keep_storage_deposit = keep;
     }
 
     /// Test helper: drop an account's registration, to make an outbound ft_transfer fail.

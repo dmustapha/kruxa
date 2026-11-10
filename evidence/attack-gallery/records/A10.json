@@ -22,12 +22,17 @@
         "i4_ok": true,
         "i5_err": null,
         "i5_ok": true,
+        "intents_alert": false,
         "l1_err": null,
         "l1_ok": true,
         "l3_err": null,
         "l3_ok": true,
         "l4_err": null,
-        "l4_ok": true
+        "l4_ok": true,
+        "l6_err": null,
+        "l6_ok": true,
+        "l7_err": null,
+        "l7_ok": true
       },
       "launch_id": 1
     }
@@ -45,7 +50,7 @@
       "role": "attack",
       "rule_code": "R_NOT_AUTHORIZED",
       "status": "failed",
-      "tx": "FwTqHMCStVsqe5npnVAtnbJAgrHntCZvy2LDWmPMA6pQ"
+      "tx": "31Zm2FwxUMYUZ5si4Y7FQYTwCGL9QmqvTpPN7VHRu3nq"
     },
     {
       "expected_rule_code": "PRIVATE_METHOD",
@@ -54,7 +59,7 @@
       "role": "attack",
       "rule_code": "PRIVATE_METHOD",
       "status": "failed",
-      "tx": "BvACsthAfuKvDmZPnVAxNN5JPiCQLie2rt52PmEfX8T9"
+      "tx": "9f2UyrG8MoUUwiRaz9HF2P6E3rBh7MYrmX3gBypMaXbA"
     },
     {
       "expected_rule_code": "R_UNEXPECTED_TOKEN",
@@ -63,7 +68,7 @@
       "role": "attack",
       "rule_code": "R_UNEXPECTED_TOKEN",
       "status": "succeeded",
-      "tx": "243qUazfgRoe3tAdKFESPPhsPhhGPwjirWrSLQbuBUW1"
+      "tx": "DBXpS49FrFYe75edVnLaCZDL3NYMrbhmXv2A1VnT8pqD"
     }
   ]
 }

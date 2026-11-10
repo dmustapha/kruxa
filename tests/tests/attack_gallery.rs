@@ -1136,10 +1136,15 @@ impl GRound {
 
 /// PASSED launch with 9 NEAR buyers and 3 Solana buyers (30 USDC each), settled and swept; the owner named `relayer`.
 async fn genesis_round(sym: &str) -> anyhow::Result<GRound> {
+    genesis_round_plan(sym, Value::Null).await
+}
+
+/// Same, with a genesis plan (an F0 plan names the MPC child key the relayer must commit).
+async fn genesis_round_plan(sym: &str, plan: Value) -> anyhow::Result<GRound> {
     let env = Env::new().await?;
     let relayer = env.user("relayer", 0).await?;
     env.owner.call(env.core.id(), "set_genesis_relayer").args_json(json!({ "account": relayer.id() })).transact().await?.into_result()?;
-    let id = env.create_launch(&params(sym)).await?;
+    let id = env.create_launch_with_plan(&env.creator, &params(sym), None, plan).await?;
     for i in 0..9 {
         let u = env.user(&format!("n{i}"), 1_000 * USDC).await?;
         env.commit_native(&u, id, 30 * USDC, None).await.into_result()?;
@@ -2578,6 +2583,884 @@ async fn i38_seed_cap_raise_without_the_seven_day_timelock() -> anyhow::Result<(
             && ic::n(&ix.view("get_config", json!({})).await["seed_max"]) == 1_000 * IUSDC,
     );
     let (inv, ok) = inst_inv(&ix, &[], false).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+// ================================================================ C: the core's newer surface (ids C01 and up)
+// Genesis reopen and the F0 gate, the solvency anchor, token claims, governance with a delay, and the exit conveniences.
+
+fn sha256_hex(bytes: &[u8]) -> String {
+    use sha2::{Digest, Sha256};
+    kruxa_logic::hex(&Sha256::digest(bytes))
+}
+
+fn core_wasm() -> Vec<u8> {
+    std::fs::read(format!("{}/../target/near/kruxa_core/kruxa_core.wasm", env!("CARGO_MANIFEST_DIR"))).expect("core wasm")
+}
+
+/// The same program with one extra custom section: a different hash, identical behaviour (and it has `migrate`).
+fn core_wasm_v2() -> Vec<u8> {
+    let mut code = core_wasm();
+    code.extend_from_slice(&[0, 5, 2, b'k', b'x', b'v', b'2']);
+    code
+}
+
+async fn upgrade_call(env: &Env, who: &Account, code: Vec<u8>) -> ExecutionFinalResult {
+    who.call(env.core.id(), "upgrade_core").args(code).gas(GAS).transact().await.unwrap()
+}
+
+async fn wait_secs(env: &Env, secs: u64) {
+    let start = env.worker.view_block().await.unwrap().timestamp();
+    while env.worker.view_block().await.unwrap().timestamp() - start < secs * 1_000_000_000 {
+        env.worker.fast_forward(20).await.unwrap();
+    }
+}
+
+fn key_of(a: &Account) -> String {
+    format!("near:{}", a.id())
+}
+
+fn num_of(v: &Value, k: &str) -> u128 {
+    v[k].as_str().unwrap().parse().unwrap()
+}
+
+fn mint_of(r: &GRound) -> String {
+    kruxa_logic::hex(&kruxa_logic::genesis::mint_address(&[5u8; 32], &r.id.to_string(), &kruxa_logic::genesis::TOKEN_PROGRAM))
+}
+
+#[tokio::test]
+async fn c01_reopen_genesis_by_anyone_but_the_owner_or_outside_an_aborted_genesis() -> anyhow::Result<()> {
+    let r = genesis_round("C01").await?;
+    let eve = stranger(&r.env, "eve").await?;
+    let mut a = Attack::new("C01", "", "reopen_genesis by the relayer, guardian, creator or a stranger, and outside an aborted genesis", "core", Expect::Refused, "R_NOT_AUTHORIZED")
+        .attempt("The relayer, the guardian, the creator and a stranger try to reopen an aborted genesis (to re-run the ceremony with a key of their choice); the owner's reopen is tried before any commit, while committed, and after a confirm, where it must be refused.");
+    a.attack("owner reopen before any commit", &r.call(&r.env.owner, "reopen_genesis", lid(r.id)).await, "R_GENESIS_STATE");
+    a.step("commit_genesis (legitimate)", &r.call(&r.relayer, "commit_genesis", r.commit()).await);
+    a.attack("owner reopen while committed (not aborted)", &r.call(&r.env.owner, "reopen_genesis", lid(r.id)).await, "R_GENESIS_STATE");
+    let abort = json!({ "launch_id": r.id.to_string(), "reason": "relayer host compromised" });
+    a.step("guardian abort_genesis", &r.call(&r.env.guardian, "abort_genesis", abort).await);
+    for (who, label) in [(&r.relayer, "relayer"), (&r.env.guardian, "guardian"), (&r.env.creator, "creator"), (&eve, "stranger")] {
+        a.attack(&format!("reopen_genesis by the {label}"), &r.call(who, "reopen_genesis", lid(r.id)).await, "R_NOT_AUTHORIZED");
+    }
+    a.check("the guardian's abort is still final", r.genesis().await["status"] == "Aborted");
+    a.step("owner reopen_genesis (legitimate)", &r.call(&r.env.owner, "reopen_genesis", lid(r.id)).await);
+    a.step("commit_genesis again", &r.call(&r.relayer, "commit_genesis", r.commit()).await);
+    a.step("all leaves", &r.call(&r.relayer, "build_root_page", r.page(&r.leaves)).await);
+    a.step("confirm_genesis", &r.call(&r.relayer, "confirm_genesis", r.confirm(&mint_of(&r))).await);
+    let root = r.genesis().await["merkle_root"].clone();
+    a.attack("owner reopen after confirm", &r.call(&r.env.owner, "reopen_genesis", lid(r.id)).await, "R_GENESIS_STATE");
+    a.attack("relayer reopen after confirm", &r.call(&r.relayer, "reopen_genesis", lid(r.id)).await, "R_NOT_AUTHORIZED");
+    let g = r.genesis().await;
+    a.check("a confirmed genesis keeps its status and root", g["status"] == "Confirmed" && g["merkle_root"] == root);
+    let (inv, ok) = core_inv(&r.env).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn c02_commit_after_a_guardian_abort_and_a_stale_ceremony_after_the_reopen() -> anyhow::Result<()> {
+    let r = genesis_round("C02").await?;
+    let mut a = Attack::new("C02", "", "Re-commit after a guardian abort, and a stale ceremony replayed after the owner reopens", "core", Expect::Refused, "R_GENESIS_ALREADY")
+        .attempt("After the guardian aborts a committed genesis the relayer commits again (same key, fresh key), pages and confirms, and the guardian itself commits. After the owner reopens, a confirm that names the OLD attempt's mint is sent against the NEW commit.");
+    a.step("commit_genesis (legitimate)", &r.call(&r.relayer, "commit_genesis", r.commit()).await);
+    let old_mint = mint_of(&r);
+    a.step(
+        "guardian abort_genesis",
+        &r.call(&r.env.guardian, "abort_genesis", json!({ "launch_id": r.id.to_string(), "reason": "drill" })).await,
+    );
+    a.attack(
+        "commit_genesis with the same key after the abort",
+        &r.call(&r.relayer, "commit_genesis", r.commit()).await,
+        "R_GENESIS_ALREADY",
+    );
+    let fresh = json!({ "launch_id": r.id.to_string(), "g_pub": kruxa_logic::hex(&[8u8; 32]) });
+    a.attack(
+        "commit_genesis with a fresh key after the abort",
+        &r.call(&r.relayer, "commit_genesis", fresh.clone()).await,
+        "R_GENESIS_ALREADY",
+    );
+    a.attack("build_root_page after the abort", &r.call(&r.relayer, "build_root_page", r.page(&r.leaves)).await, "R_GENESIS_STATE");
+    a.attack("confirm_genesis after the abort", &r.call(&r.relayer, "confirm_genesis", r.confirm(&old_mint)).await, "R_GENESIS_STATE");
+    a.attack("the guardian commits", &r.call(&r.env.guardian, "commit_genesis", fresh.clone()).await, "R_NOT_AUTHORIZED");
+    a.check("status stays Aborted", r.genesis().await["status"] == "Aborted");
+    a.step("owner reopen_genesis", &r.call(&r.env.owner, "reopen_genesis", lid(r.id)).await);
+    let g = r.genesis().await;
+    a.check(
+        "the reopened genesis starts clean: no key, no mint, no root, no leaves",
+        g["status"] == "None" && g["g_pub"].is_null() && g["mint_address"].is_null() && g["root_ready"] == false && g["leaf_count"] == 0,
+    );
+    a.attack(
+        "confirm_genesis before the new commit",
+        &r.call(&r.relayer, "confirm_genesis", r.confirm(&old_mint)).await,
+        "R_GENESIS_STATE",
+    );
+    a.step("commit_genesis with the fresh key", &r.call(&r.relayer, "commit_genesis", fresh).await);
+    a.step("all leaves", &r.call(&r.relayer, "build_root_page", r.page(&r.leaves)).await);
+    a.attack("confirm naming the old attempt's mint", &r.call(&r.relayer, "confirm_genesis", r.confirm(&old_mint)).await, "R_GENESIS_ARG");
+    a.check("the new commit is still unconfirmed", r.genesis().await["status"] == "Committed");
+    let (inv, ok) = core_inv(&r.env).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+fn f0_plan() -> Value {
+    json!({ "mode": "F0", "mint_pubkey_f0": kruxa_logic::hex(&[5u8; 32]) })
+}
+
+fn sign_args(id: u64, index: u8, message: &[u8]) -> Value {
+    json!({ "launch_id": id.to_string(), "tx_index": index, "message_hex": kruxa_logic::hex(message) })
+}
+
+fn register_args(id: u64, index: u8, message: &[u8]) -> Value {
+    json!({ "launch_id": id.to_string(), "tx_index": index, "message_sha256": sha256_hex(message) })
+}
+
+#[tokio::test]
+async fn c03_f0_sign_genesis_with_an_unregistered_or_mismatched_message() -> anyhow::Result<()> {
+    let r = genesis_round_plan("C03", f0_plan()).await?;
+    let eve = stranger(&r.env, "eve").await?;
+    let (msg_a, msg_b) = (b"tx1 message as compiled".to_vec(), b"a transaction that drains the mint".to_vec());
+    let mut a = Attack::new("C03", "", "F0 policy gate: sign_genesis with an unregistered hash, a mismatched message, the wrong slot, a stranger, or the wrong MPC key", "core", Expect::Refused, "R_GENESIS_ARG")
+        .attempt("On an F0 launch the relayer asks the MPC signer to sign a message nobody registered, then a different message than the registered one, then the tx1 message as tx2, an oversize packet; strangers register and sign; and commit_genesis names a key other than the MPC child key.");
+    let other_key = json!({ "launch_id": r.id.to_string(), "g_pub": kruxa_logic::hex(&[6u8; 32]) });
+    a.attack(
+        "commit_genesis with a key other than the plan's MPC child key",
+        &r.call(&r.relayer, "commit_genesis", other_key).await,
+        "R_GENESIS_ARG",
+    );
+    a.attack("sign_genesis before any commit", &r.call(&r.relayer, "sign_genesis", sign_args(r.id, 0, &msg_a)).await, "R_GENESIS_STATE");
+    a.step("commit_genesis with the MPC child key", &r.call(&r.relayer, "commit_genesis", r.commit()).await);
+    a.step("all leaves (the gate opens once the root is complete)", &r.call(&r.relayer, "build_root_page", r.page(&r.leaves)).await);
+    for (who, label) in [(&eve, "stranger"), (&r.env.owner, "owner"), (&r.env.guardian, "guardian"), (&r.env.creator, "creator")] {
+        a.attack(
+            &format!("register_f0_message by the {label}"),
+            &r.call(who, "register_f0_message", register_args(r.id, 0, &msg_a)).await,
+            "R_NOT_AUTHORIZED",
+        );
+        a.attack(
+            &format!("sign_genesis by the {label}"),
+            &r.call(who, "sign_genesis", sign_args(r.id, 0, &msg_a)).await,
+            "R_NOT_AUTHORIZED",
+        );
+    }
+    a.attack(
+        "register_f0_message for tx index 2",
+        &r.call(&r.relayer, "register_f0_message", register_args(r.id, 2, &msg_a)).await,
+        "R_GENESIS_STATE",
+    );
+    a.attack(
+        "sign_genesis with nothing registered",
+        &r.call(&r.relayer, "sign_genesis", sign_args(r.id, 0, &msg_a)).await,
+        "R_GENESIS_ARG",
+    );
+    a.step("register_f0_message (tx1)", &r.call(&r.relayer, "register_f0_message", register_args(r.id, 0, &msg_a)).await);
+    a.attack(
+        "sign_genesis with a different message",
+        &r.call(&r.relayer, "sign_genesis", sign_args(r.id, 0, &msg_b)).await,
+        "R_GENESIS_ARG",
+    );
+    a.attack("sign the tx1 message as tx2", &r.call(&r.relayer, "sign_genesis", sign_args(r.id, 1, &msg_a)).await, "R_GENESIS_ARG");
+    let huge = vec![7u8; 1233];
+    a.step("register an oversize packet for tx2", &r.call(&r.relayer, "register_f0_message", register_args(r.id, 1, &huge)).await);
+    a.attack(
+        "sign_genesis with a message over one packet",
+        &r.call(&r.relayer, "sign_genesis", sign_args(r.id, 1, &huge)).await,
+        "R_GENESIS_ARG",
+    );
+    let g = r.genesis().await;
+    a.check("nothing was signed", g["f0_gate"]["signed"] == json!([false, false]));
+    a.check("the registered hash for tx1 is still the honest one", g["f0_gate"]["registered"][0] == sha256_hex(&msg_a));
+    let (inv, ok) = core_inv(&r.env).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn c04_f0_double_sign_swap_after_sign_and_a_gate_that_does_not_survive_the_reopen() -> anyhow::Result<()> {
+    let r = genesis_round_plan("C04", f0_plan()).await?;
+    let (msg_a, msg_b) = (b"tx1 message as compiled".to_vec(), b"a replacement message".to_vec());
+    let mut a = Attack::new("C04", "", "F0 policy gate: a second signature, a swap after signing, signing while paused or aborted, and a registration that survives the reopen", "core", Expect::Refused, "R_GENESIS_STATE")
+        .attempt("After one legitimate signature request for tx1 the relayer asks again with the same message, re-registers a replacement message on the spent slot, and signs while the ceremony is paused and after it is aborted; after the owner reopens, the old registration must be gone.");
+    a.step("commit_genesis", &r.call(&r.relayer, "commit_genesis", r.commit()).await);
+    a.step("all leaves (the gate opens once the root is complete)", &r.call(&r.relayer, "build_root_page", r.page(&r.leaves)).await);
+    a.step("register_f0_message (tx1)", &r.call(&r.relayer, "register_f0_message", register_args(r.id, 0, &msg_a)).await);
+    a.step("sign_genesis (legitimate, one per registration)", &r.call(&r.relayer, "sign_genesis", sign_args(r.id, 0, &msg_a)).await);
+    a.check("the slot is spent", r.genesis().await["f0_gate"]["signed"] == json!([true, false]));
+    a.attack(
+        "sign_genesis a second time with the same message",
+        &r.call(&r.relayer, "sign_genesis", sign_args(r.id, 0, &msg_a)).await,
+        "R_GENESIS_STATE",
+    );
+    a.attack(
+        "re-register a replacement message on the signed slot",
+        &r.call(&r.relayer, "register_f0_message", register_args(r.id, 0, &msg_b)).await,
+        "R_GENESIS_STATE",
+    );
+    a.attack("sign the replacement message", &r.call(&r.relayer, "sign_genesis", sign_args(r.id, 0, &msg_b)).await, "R_GENESIS_ARG");
+    a.step("register_f0_message (tx2)", &r.call(&r.relayer, "register_f0_message", register_args(r.id, 1, &msg_b)).await);
+    a.step("guardian pause_genesis", &r.call(&r.env.guardian, "pause_genesis", json!({})).await);
+    a.attack(
+        "sign_genesis (tx2) while genesis is paused",
+        &r.call(&r.relayer, "sign_genesis", sign_args(r.id, 1, &msg_b)).await,
+        "R_PAUSED",
+    );
+    a.step("owner resume_genesis", &r.call(&r.env.owner, "resume_genesis", json!({})).await);
+    a.step(
+        "guardian abort_genesis",
+        &r.call(&r.env.guardian, "abort_genesis", json!({ "launch_id": r.id.to_string(), "reason": "drill" })).await,
+    );
+    a.attack(
+        "sign_genesis (tx2) after the abort",
+        &r.call(&r.relayer, "sign_genesis", sign_args(r.id, 1, &msg_b)).await,
+        "R_GENESIS_STATE",
+    );
+    a.step("owner reopen_genesis", &r.call(&r.env.owner, "reopen_genesis", lid(r.id)).await);
+    let g = r.genesis().await;
+    a.check(
+        "the reopened gate is empty and unsigned",
+        g["f0_gate"]["registered"] == json!([null, null]) && g["f0_gate"]["signed"] == json!([false, false]),
+    );
+    a.attack(
+        "sign_genesis with the old registration after the reopen",
+        &r.call(&r.relayer, "sign_genesis", sign_args(r.id, 1, &msg_b)).await,
+        "R_GENESIS_STATE",
+    );
+    let (inv, ok) = core_inv(&r.env).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+async fn solvency_check(env: &Env, who: &Account) -> ExecutionFinalResult {
+    who.call(env.core.id(), "check_solvency").gas(GAS).transact().await.unwrap()
+}
+
+#[tokio::test]
+async fn c05_check_solvency_spam_is_rate_limited_and_cannot_hold_the_cooldown() -> anyhow::Result<()> {
+    let env = Env::new().await?;
+    let id = env.create_launch(&params("C05")).await?;
+    buyers(&env, id, 3, 40 * USDC).await?;
+    let spammers = [stranger(&env, "eve").await?, stranger(&env, "mallory").await?, env.creator.clone()];
+    let mut a = Attack::new("C05", "", "check_solvency spam: many callers, both entry points, to starve the keeper or bloat the logs", "core", Expect::Refused, "R_TOO_EARLY")
+        .attempt("One check is served; then three accounts call check_solvency and reconcile_intents back to back inside the 30 second cooldown, and keep trying after the keeper's turn would have come.");
+    a.step("first check_solvency (served)", &solvency_check(&env, &spammers[0]).await);
+    let served = env.view("solvency_report", json!({})).await["last_check"].clone();
+    for i in 0..9 {
+        let who = &spammers[i % 3];
+        a.attack(&format!("check_solvency spam #{i}"), &solvency_check(&env, who).await, "R_TOO_EARLY");
+    }
+    let recon = spammers[1].call(env.core.id(), "reconcile_intents").gas(GAS).transact().await?;
+    a.attack("reconcile_intents inside the cooldown (shared limiter)", &recon, "R_TOO_EARLY");
+    let after = env.view("solvency_report", json!({})).await;
+    a.check("the stored report is the one the first check wrote (refused calls wrote nothing)", after["last_check"] == served);
+    a.check("counters still equal the recomputation", after["counters_ok"] == true);
+    env.worker.fast_forward(100).await?;
+    let keeper = stranger(&env, "keeper").await?;
+    let turn = solvency_check(&env, &keeper).await;
+    a.step("the keeper's check after the cooldown", &turn);
+    a.check("spam did not extend or hold the cooldown: the keeper is served", turn.is_success());
+    let (inv, ok) = core_inv(&env).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn c06_forged_solvency_callback_and_attempts_to_raise_the_intents_alert() -> anyhow::Result<()> {
+    let env = Env::new().await?;
+    let id = env.create_launch(&params("C06S")).await?;
+    let eve = stranger(&env, "eve").await?;
+    let mut a = Attack::new("C06", "", "Forged on_solvency_checked and a fake shortfall to raise the Intents alert (griefing the Intents commit path)", "core", Expect::Refused, "PRIVATE_METHOD")
+        .attempt("A stranger calls the private solvency callback directly with a huge pre-call Intents liability, to make core report a shortfall and refuse every Intents commit; a donation to core's balance is also tried to disturb the counters.");
+    let forged = json!({ "pre_native": "0", "pre_intents": "999999999999999", "with_native": false });
+    a.attack("direct on_solvency_checked", &env.worker_call(&eve, env.core.id(), "on_solvency_checked", forged).await, "PRIVATE_METHOD");
+    env.usdc
+        .call("mint")
+        .args_json(json!({ "account_id": env.core.id(), "amount": (25 * USDC).to_string() }))
+        .transact()
+        .await?
+        .into_result()?;
+    a.step("honest check_solvency after a 25 USDC donation to core", &solvency_check(&env, &eve).await);
+    let rep = env.view("solvency_report", json!({})).await;
+    a.check("no alert was raised", rep["intents_alert"] == false);
+    a.check("counters equal the recomputation after the donation", rep["counters_ok"] == true);
+    let h = sol_holder(61);
+    env.fund_intents(&h.hex, 40 * USDC).await?;
+    let commit = env.commit_s3(&h, id, 30 * USDC, 0).await;
+    a.step("an Intents commit still goes through", &commit);
+    a.check("the Intents commit was credited", env.view("get_ledger", lid(id)).await["open_intents"] == (30 * USDC).to_string());
+    let (inv, ok) = core_inv(&env).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn c07_claim_tokens_reentry_and_double_claim() -> anyhow::Result<()> {
+    let env = Env::new().await?;
+    let (id, users) = passed_launch(&env, "C07").await?;
+    let holder = &users[0];
+    env.register_on_token("C07", holder.id()).await?;
+    let eve = stranger(&env, "eve").await?;
+    let token = env.token_id("C07");
+    let reenter = json!({ "account": env.core.id(), "method": "claim_tokens", "args": lid(id).to_string() });
+    env.owner.call(&token, "set_reenter").args_json(reenter).transact().await?.into_result()?;
+    let mut a = Attack::new("C07", "", "claim_tokens: re-entry from inside the token transfer, a second claim at once, and a stranger's claim", "core", Expect::NoEffect, "")
+        .attempt("The launch token (made hostile for this test) calls claim_tokens again from inside ft_transfer, before core's callback ran; the holder then claims a second time immediately; a stranger with no position claims.");
+    let first = env.call(holder, "claim_tokens", lid(id), ONE).await;
+    a.attack("claim_tokens with a reentering token", &first, "");
+    let got = env.token_balance("C07", holder.id()).await;
+    let pos = env.view("get_position", json!({ "launch_id": id.to_string(), "holder": key_of(holder) })).await;
+    let entitled = num_of(&pos, "tokens_entitled") + num_of(&pos, "bonus_entitled");
+    a.check("the holder received tokens once, equal to the position's claimed counter", got > 0 && got == num_of(&pos, "claimed"));
+    a.check("never more than the entitlement", got <= entitled);
+    env.owner
+        .call(&token, "set_reenter")
+        .args_json(json!({ "account": env.core.id(), "method": "", "args": "" }))
+        .transact()
+        .await?
+        .into_result()?;
+    let second = env.call(holder, "claim_tokens", lid(id), ONE).await;
+    a.attack("second claim_tokens straight after (linear bonus only)", &second, "");
+    let pos2 = env.view("get_position", json!({ "launch_id": id.to_string(), "holder": key_of(holder) })).await;
+    a.check(
+        "the second claim added only what vested since (a few seconds of linear bonus), never the sale share again",
+        env.token_balance("C07", holder.id()).await - got < entitled / 100 && num_of(&pos2, "claimed") <= entitled,
+    );
+    a.attack("claim_tokens by a stranger", &env.call(&eve, "claim_tokens", lid(id), ONE).await, "R_NO_POSITION");
+    a.check("the stranger received nothing", env.token_balance("C07", eve.id()).await == 0);
+    let cust = env.view("get_token_custody", lid(id)).await;
+    a.check("claimed_total equals what the holder holds", num_of(&cust, "claimed_total") == env.token_balance("C07", holder.id()).await);
+    let (inv, ok) = core_inv(&env).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn c08_claim_creator_alloc_by_a_stranger_the_creator_or_before_the_cliff() -> anyhow::Result<()> {
+    let env = Env::new().await?;
+    let payee = stranger(&env, "payee").await?;
+    let eve = stranger(&env, "eve").await?;
+    let id = env.create_launch_to(&env.creator, &params("C08"), Some(payee.id())).await?;
+    buyers(&env, id, 12, 40 * USDC).await?;
+    let mut a = Attack::new("C08", "", "claim_creator_alloc by a stranger, by the creator who is not the payout recipient, early, or without a deposit", "core", Expect::Refused, "R_NOT_AUTHORIZED")
+        .attempt("The creator allocation belongs to the payout recipient. A stranger and the creator (a different account) claim it; the recipient claims before PASS, with no deposit, and at the cliff.");
+    a.attack("recipient claims on an Open launch", &env.call(&payee, "claim_creator_alloc", lid(id), ONE).await, "R_WRONG_PHASE");
+    env.advance_to(id, "Ready").await;
+    env.call(&env.creator, "settle", lid(id), ZERO).await.into_result()?;
+    a.attack("stranger claims", &env.call(&eve, "claim_creator_alloc", lid(id), ONE).await, "R_NOT_AUTHORIZED");
+    a.attack(
+        "the creator (not the recipient) claims",
+        &env.call(&env.creator, "claim_creator_alloc", lid(id), ONE).await,
+        "R_NOT_AUTHORIZED",
+    );
+    a.attack("recipient claims with no attached deposit", &env.call(&payee, "claim_creator_alloc", lid(id), ZERO).await, "R_DEPOSIT");
+    a.attack("recipient claims at the cliff, nothing vested", &env.call(&payee, "claim_creator_alloc", lid(id), ONE).await, "R_NOTHING");
+    let cust = env.view("get_token_custody", lid(id)).await;
+    a.check("nothing was claimed", num_of(&cust, "alloc_claimed") == 0);
+    a.check(
+        "no wallet received launch tokens",
+        env.token_balance("C08", payee.id()).await == 0 && env.token_balance("C08", eve.id()).await == 0,
+    );
+    let (inv, ok) = core_inv(&env).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn c09_sweep_tokens_before_the_vest_and_window_end() -> anyhow::Result<()> {
+    let env = Env::new().await?;
+    let (id, _) = passed_launch(&env, "C09").await?;
+    let other = env.user("creator2", 0).await?;
+    let open_id = env.create_launch_as(&other, &params("C09B")).await?;
+    let eve = stranger(&env, "eve").await?;
+    let mut a = Attack::new("C09", "", "sweep_tokens early: on a PASSED launch inside the bonus window, on an Open launch, on an unknown launch", "core", Expect::Refused, "R_NOTHING")
+        .attempt("A stranger calls sweep_tokens to pull unclaimed supply to the burn sink before the bonus vest and the sweep window ended, on a launch with no verdict, and on a launch that does not exist.");
+    let deposit = NearToken::from_millinear(10);
+    a.attack("sweep_tokens on a PASSED launch inside the window", &env.call(&eve, "sweep_tokens", lid(id), deposit).await, "R_NOTHING");
+    a.attack("sweep_tokens on an Open launch", &env.call(&eve, "sweep_tokens", lid(open_id), deposit).await, "R_NOTHING");
+    a.attack("sweep_tokens on an unknown launch", &env.call(&eve, "sweep_tokens", lid(99), deposit).await, "R_NO_LAUNCH");
+    let cust = env.view("get_token_custody", lid(id)).await;
+    a.check("nothing was swept and nothing is sweepable yet", num_of(&cust, "swept") == 0 && num_of(&cust, "sweepable_now") == 0);
+    a.check("burn_mode is still unlocked (a refused sweep must not lock it)", cust["burn_mode_locked"] == false);
+    let (inv, ok) = core_inv(&env).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn c10_set_burn_mode_to_a_reserved_account_by_a_non_owner_and_after_the_lock() -> anyhow::Result<()> {
+    let env = Env::new().await?;
+    let id = env.create_launch(&params("C10")).await?;
+    let eve = stranger(&env, "eve").await?;
+    let graveyard = stranger(&env, "graveyard").await?;
+    let mut a = Attack::new("C10", "", "set_burn_mode: by a non-owner, to a Kruxa-controlled sink, to burn, and again after the lock", "core", Expect::Refused, "R_NOT_AUTHORIZED")
+        .attempt("A stranger and the guardian set the burn mode; the owner (or a key thief acting as the owner) points the sink at the owner, guardian, treasury, relay-fee, or core accounts, asks for burn, and tries to change the mode again once it is locked.");
+    a.attack("set_burn_mode by a stranger", &env.call(&eve, "set_burn_mode", json!({ "mode": "hold" }), ZERO).await, "R_NOT_AUTHORIZED");
+    a.attack(
+        "set_burn_mode by the guardian",
+        &env.call(&env.guardian, "set_burn_mode", json!({ "mode": "hold" }), ZERO).await,
+        "R_NOT_AUTHORIZED",
+    );
+    for reserved in [env.owner.id(), env.guardian.id(), env.treasury.id(), env.relay_fees.id(), env.core.id()] {
+        let r = env.call(&env.owner, "set_burn_mode", json!({ "mode": format!("sink:{reserved}") }), ZERO).await;
+        a.attack(&format!("sink:{reserved}"), &r, "R_NOT_AUTHORIZED");
+    }
+    a.attack(
+        "mode burn (the factory token has no ft_burn)",
+        &env.call(&env.owner, "set_burn_mode", json!({ "mode": "burn" }), ZERO).await,
+        "R_BURN_UNSUPPORTED",
+    );
+    a.attack("an unparsable mode", &env.call(&env.owner, "set_burn_mode", json!({ "mode": "garbage" }), ZERO).await, "R_NOTHING");
+    let before = env.view("get_token_custody", lid(id)).await;
+    a.check("still the default and unlocked after every refusal", before["burn_mode"] == "hold" && before["burn_mode_locked"] == false);
+    let sink = format!("sink:{}", graveyard.id());
+    a.step("owner sets a public sink (legitimate, locks)", &env.call(&env.owner, "set_burn_mode", json!({ "mode": sink }), ZERO).await);
+    a.attack(
+        "owner changes the mode after the lock",
+        &env.call(&env.owner, "set_burn_mode", json!({ "mode": "hold" }), ZERO).await,
+        "R_NOTHING",
+    );
+    a.attack(
+        "owner re-points the sink after the lock",
+        &env.call(&env.owner, "set_burn_mode", json!({ "mode": format!("sink:{}", eve.id()) }), ZERO).await,
+        "R_NOTHING",
+    );
+    let after = env.view("get_token_custody", lid(id)).await;
+    a.check("the sink is the public one and locked", after["burn_mode"] == sink.as_str() && after["burn_mode_locked"] == true);
+    let (inv, ok) = core_inv(&env).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn c11_upgrade_queue_by_the_guardian_with_a_bad_hash_or_before_the_seven_day_delay() -> anyhow::Result<()> {
+    let env = Env::new_with_profile("testnet").await?;
+    let eve = stranger(&env, "eve").await?;
+    let v2 = core_wasm_v2();
+    let h = sha256_hex(&v2);
+    let before = sha256_hex(&env.worker.view_code(env.core.id()).await?);
+    let mut a = Attack::new("C11", "", "Upgrade queue: queued by the guardian or a stranger, with a malformed hash, deployed by a non-owner, or deployed before the 7 day delay", "core", Expect::Refused, "R_NOT_AUTHORIZED")
+        .attempt("A compromised guardian and a stranger queue a code hash; the owner's queue is tried with malformed hashes; a guardian and a stranger deploy a queued wasm; the owner deploys the queued wasm at once and after a few minutes, on the profile that uses the real 7 day delay.");
+    for (who, label) in [(&env.guardian, "guardian"), (&eve, "stranger"), (&env.creator, "creator")] {
+        a.attack(
+            &format!("queue_upgrade by the {label}"),
+            &env.call(who, "queue_upgrade", json!({ "code_hash": h }), ZERO).await,
+            "R_NOT_AUTHORIZED",
+        );
+    }
+    for bad in ["", "abc", &h.to_uppercase(), &format!("{h}0")] {
+        a.attack(
+            &format!("queue_upgrade with hash {:?}", &bad[..bad.len().min(8)]),
+            &env.call(&env.owner, "queue_upgrade", json!({ "code_hash": bad }), ZERO).await,
+            "R_UPGRADE_HASH",
+        );
+    }
+    a.attack("upgrade_core with nothing queued", &upgrade_call(&env, &env.owner, v2.clone()).await, "R_NOTHING");
+    let queued = env.call(&env.owner, "queue_upgrade", json!({ "code_hash": h }), ZERO).await;
+    a.step("owner queue_upgrade (legitimate)", &queued);
+    a.attack("upgrade_core by the guardian", &upgrade_call(&env, &env.guardian, v2.clone()).await, "R_NOT_AUTHORIZED");
+    a.attack("upgrade_core by a stranger", &upgrade_call(&env, &eve, v2.clone()).await, "R_NOT_AUTHORIZED");
+    a.attack("upgrade_core by the owner immediately", &upgrade_call(&env, &env.owner, v2.clone()).await, "R_NOT_YET");
+    env.worker.fast_forward(300).await?;
+    a.attack("upgrade_core by the owner a few minutes later", &upgrade_call(&env, &env.owner, v2).await, "R_NOT_YET");
+    a.attack("cancel_upgrade by a stranger", &env.call(&eve, "cancel_upgrade", json!({}), ZERO).await, "R_NOT_AUTHORIZED");
+    let pending = env.view("get_ops_state", json!({})).await["pending_upgrade"].clone();
+    let eff: u64 = pending["effective_at"].as_str().unwrap().parse()?;
+    let now = env.worker.view_block().await?.timestamp();
+    a.check(
+        "the queued deploy is more than 6.9 days away (real days, not demo seconds)",
+        eff.saturating_sub(now) > 6 * 86_400 * 1_000_000_000 + 20 * 3_600 * 1_000_000_000,
+    );
+    a.check("the deployed code is unchanged", sha256_hex(&env.worker.view_code(env.core.id()).await?) == before);
+    let (inv, ok) = core_inv(&env).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn c12_upgrade_with_a_different_wasm_after_the_delay_and_a_requeue_that_restarts_the_clock() -> anyhow::Result<()> {
+    let env = Env::new().await?;
+    let v2 = core_wasm_v2();
+    let h = sha256_hex(&v2);
+    let before = sha256_hex(&env.worker.view_code(env.core.id()).await?);
+    let mut a = Attack::new("C12", "", "Upgrade bait and switch: deploy a wasm that is not the queued hash after the delay, deploy as the guardian after the delay, or re-queue and deploy at the old time", "core", Expect::Refused, "R_UPGRADE_HASH")
+        .attempt("The delay on the demo clock is 60 seconds. After it, a different wasm (the unmodified build) is supplied against the queued hash, the guardian tries to deploy the right wasm, and the owner re-queues and deploys at the old time.");
+    a.step("owner queue_upgrade", &env.call(&env.owner, "queue_upgrade", json!({ "code_hash": h }), ZERO).await);
+    wait_secs(&env, 61).await;
+    a.attack("deploy a wasm that is not the queued one", &upgrade_call(&env, &env.owner, core_wasm()).await, "R_UPGRADE_HASH");
+    a.attack(
+        "the guardian deploys the right wasm after the delay",
+        &upgrade_call(&env, &env.guardian, v2.clone()).await,
+        "R_NOT_AUTHORIZED",
+    );
+    a.step("owner re-queues the same hash", &env.call(&env.owner, "queue_upgrade", json!({ "code_hash": h }), ZERO).await);
+    a.attack("deploy at the old time after the re-queue", &upgrade_call(&env, &env.owner, v2).await, "R_NOT_YET");
+    a.check("the deployed code is still the original", sha256_hex(&env.worker.view_code(env.core.id()).await?) == before);
+    let (inv, ok) = core_inv(&env).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn c13_halt_launch_then_commit_is_refused_while_walk_refund_verdict_and_claims_still_work() -> anyhow::Result<()> {
+    let env = Env::new().await?;
+    let id = env.create_launch(&params("C13")).await?;
+    let mut users = Vec::new();
+    for i in 0..13 {
+        let u = env.user(&format!("h{i}"), 1_000 * USDC).await?;
+        assert!(env.commit_native(&u, id, 30 * USDC, None).await.is_success());
+        users.push(u);
+    }
+    let outsider = env.user("outsider", 1_000 * USDC).await?;
+    let mut a = Attack::new("C13", "", "halt_launch: commit into a halted launch, creator payouts while halted, and halt or resume by the wrong account", "core", Expect::Refused, "R_HALTED")
+        .attempt("The guardian halts one launch. A new commit, the creator's pay_launch_fee, consolidate and draw are tried while halted (refused); the creator and a stranger try to halt; the guardian tries to resume. Walk, the verdict, the position pages and a holder's claim_tokens must still work.");
+    a.attack(
+        "halt_launch by the creator",
+        &env.call(&env.creator, "halt_launch", json!({ "launch_id": id.to_string(), "reason": "x" }), ZERO).await,
+        "R_NOT_AUTHORIZED",
+    );
+    a.attack(
+        "halt_launch by a stranger",
+        &env.call(&outsider, "halt_launch", json!({ "launch_id": id.to_string(), "reason": "x" }), ZERO).await,
+        "R_NOT_AUTHORIZED",
+    );
+    a.step(
+        "guardian halt_launch",
+        &env.call(&env.guardian, "halt_launch", json!({ "launch_id": id.to_string(), "reason": "exploit report" }), ZERO).await,
+    );
+    a.attack("a new commit into the halted launch", &env.commit_native(&outsider, id, 30 * USDC, None).await, "R_HALTED");
+    a.check("the refused commit went straight back", env.usdc_balance(outsider.id()).await == 1_000 * USDC);
+    let walk = env.call(&users[0], "walk", lid(id), ONE).await;
+    a.step("Walk while halted", &walk);
+    a.check("Walk refunded in full while halted", env.usdc_balance(users[0].id()).await == 1_000 * USDC);
+    env.advance_to(id, "Ready").await;
+    let settled = env.call(&outsider, "settle", lid(id), ZERO).await;
+    a.step("settle while halted", &settled);
+    a.check("the verdict is not held back (PASS: 12 funders, 360 USDC)", settled.json::<bool>().unwrap_or(false));
+    let hash = env.view("get_settlement", lid(id)).await["inputs_hash"].clone();
+    let page = json!({ "launch_id": id.to_string(), "from_seq": 0, "limit": 25 });
+    a.step("settle_positions_page while halted", &env.call(&outsider, "settle_positions_page", page, ZERO).await);
+    a.step("sweep_residue while halted", &env.call(&outsider, "sweep_residue", lid(id), ZERO).await);
+    for m in ["pay_launch_fee", "consolidate"] {
+        a.attack(&format!("{m} by the creator while halted"), &env.call(&env.creator, m, lid(id), ZERO).await, "R_HALTED");
+    }
+    a.attack(
+        "draw by the creator while halted",
+        &env.call(&env.creator, "draw", json!({ "launch_id": id.to_string(), "amount": "1" }), ZERO).await,
+        "R_HALTED",
+    );
+    env.register_on_token("C13", users[1].id()).await?;
+    a.step("a holder's claim_tokens while halted", &env.call(&users[1], "claim_tokens", lid(id), ONE).await);
+    a.check("the holder got tokens: token claims are exits and stay open", env.token_balance("C13", users[1].id()).await > 0);
+    a.attack("resume_launch by the guardian", &env.call(&env.guardian, "resume_launch", lid(id), ZERO).await, "R_NOT_AUTHORIZED");
+    a.check("a halt never changes a verdict", env.view("get_settlement", lid(id)).await["inputs_hash"] == hash);
+    let (inv, ok) = core_inv(&env).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+// ---- force_resolve_op: the only way to move a stuck leg, with no destination argument.
+
+fn u128_at(v: &[u8], o: usize) -> u128 {
+    u128::from_le_bytes(v[o..o + 16].try_into().unwrap())
+}
+
+fn put_u128(v: &mut [u8], o: usize, x: u128) {
+    v[o..o + 16].copy_from_slice(&x.to_le_bytes());
+}
+
+/// Offset of `Ledger.credited` inside a borsh `LaunchState` of a FAILED launch (same math as tests/force_resolve.rs).
+fn ledger_offset(v: &[u8]) -> usize {
+    let mut o = 32;
+    o += if v[o] == 4 { 2 } else { 1 };
+    o += 2;
+    o += if v[o] == 1 { 1 + 4 + u32::from_le_bytes(v[o + 1..o + 5].try_into().unwrap()) as usize } else { 1 };
+    o + 16 + 4 * 4 + 1 + 16 + 1 + 32
+}
+
+/// Two buyers fail the soft cap; the first buyer's 30 USDC refund is turned into an in-flight leg (state patch).
+async fn stuck_leg(env: &Env, symbol: &str) -> anyhow::Result<(u64, Vec<Account>)> {
+    let moved = 30 * USDC;
+    let id = env.create_launch(&params(symbol)).await?;
+    let mut users = Vec::new();
+    for i in 0..2 {
+        let u = env.user(&format!("f{i}"), 1_000 * USDC).await?;
+        assert!(env.commit_native(&u, id, moved, None).await.is_success());
+        users.push(u);
+    }
+    env.advance_to(id, "Ready").await;
+    env.call(&env.creator, "settle", lid(id), ZERO).await.into_result()?;
+    env.call(&env.creator, "settle_positions_page", json!({ "launch_id": id.to_string(), "from_seq": 0, "limit": 25 }), ZERO)
+        .await
+        .into_result()?;
+    let state = env.worker.view_state(env.core.id()).await?;
+    let mut pkey = vec![2u8];
+    pkey.extend_from_slice(&id.to_le_bytes());
+    pkey.push(0);
+    let name = users[0].id().as_str();
+    pkey.extend_from_slice(&(name.len() as u32).to_le_bytes());
+    pkey.extend_from_slice(name.as_bytes());
+    let mut pos = state.get(&pkey).expect("position record").clone();
+    let o = 4 + 1 + 4 + name.len() + 1 + 16 * 3;
+    assert_eq!(u128_at(&pos, o), moved, "due_native is where the offset math says");
+    put_u128(&mut pos, o, 0);
+    put_u128(&mut pos, o + 32, moved);
+    env.worker.patch_state(env.core.id(), &pkey, &pos).await?;
+    let mut skey = vec![1u8];
+    skey.extend_from_slice(&id.to_le_bytes());
+    let mut st = state.get(&skey).expect("launch state").clone();
+    let l = ledger_offset(&st);
+    assert_eq!(u128_at(&st, l + 3 * 16), 2 * moved, "ledger.due_native");
+    put_u128(&mut st, l + 3 * 16, moved);
+    put_u128(&mut st, l + 5 * 16, moved);
+    env.worker.patch_state(env.core.id(), &skey, &st).await?;
+    Ok((id, users))
+}
+
+fn force_args(id: u64, kind: &str, holder: Option<String>, amount: u128, ok: bool) -> Value {
+    json!({ "launch_id": id.to_string(), "kind": kind, "holder": holder, "amount": amount.to_string(), "ok": ok, "evidence": "receipt 4xYz: ft_transfer failed" })
+}
+
+#[tokio::test]
+async fn c14_force_resolve_op_cannot_redirect_inflate_or_be_called_by_others() -> anyhow::Result<()> {
+    let env = Env::new().await?;
+    let (id, users) = stuck_leg(&env, "C14").await?;
+    let moved = 30 * USDC;
+    let eve = stranger(&env, "eve").await?;
+    let victim = key_of(&users[0]);
+    let mut a = Attack::new("C14", "", "force_resolve_op: a non-owner, a destination of the attacker's choice, an amount above what is in flight, a bucket with nothing in flight", "core", Expect::Refused, "R_NOT_AUTHORIZED")
+        .attempt("One holder's refund is stuck in flight. The guardian, the creator and a stranger call force_resolve_op; a compromised owner then names the attacker as the holder, asks for more than is in flight, for every other kind of leg, for zero and for a launch that does not exist. None of these may queue anything or move money.");
+    let legit = force_args(id, "RefundNative", Some(victim.clone()), moved, false);
+    for (who, label) in [(&env.guardian, "guardian"), (&env.creator, "creator"), (&eve, "stranger")] {
+        a.attack(
+            &format!("force_resolve_op by the {label}"),
+            &env.call(who, "force_resolve_op", legit.clone(), ZERO).await,
+            "R_NOT_AUTHORIZED",
+        );
+    }
+    let owner_try = |kind: &str, holder: Option<String>, amount: u128| force_args(id, kind, holder, amount, true);
+    let cases: Vec<(&str, Value, &str)> = vec![
+        ("RefundNative naming the attacker as the holder", owner_try("RefundNative", Some(key_of(&eve)), moved), "R_NOTHING"),
+        (
+            "RefundNative for the victim, double the in-flight amount",
+            owner_try("RefundNative", Some(victim.clone()), 2 * moved),
+            "R_NOTHING",
+        ),
+        ("RefundNative for the victim, zero", owner_try("RefundNative", Some(victim.clone()), 0), "R_NOTHING"),
+        ("RefundIntents for the victim (nothing in flight there)", owner_try("RefundIntents", Some(victim.clone()), moved), "R_NOTHING"),
+        ("LaunchFee with the attacker as the holder", owner_try("LaunchFee", Some(key_of(&eve)), moved), "R_NOTHING"),
+        ("Stream", owner_try("Stream", None, moved), "R_NOTHING"),
+        ("Consolidate", owner_try("Consolidate", None, moved), "R_NOTHING"),
+        ("Claim (token legs cannot be resolved from here)", owner_try("Claim", Some(victim.clone()), moved), "R_NOTHING"),
+        ("a launch that does not exist", force_args(99, "RefundNative", Some(victim.clone()), moved, true), "R_NO_LAUNCH"),
+    ];
+    for (label, args, code) in cases {
+        a.attack(label, &env.call(&env.owner, "force_resolve_op", args, ZERO).await, code);
+    }
+    let pos = env.view("get_position", json!({ "launch_id": id.to_string(), "holder": victim })).await;
+    a.check("the victim's leg is still in flight, untouched", pos["inflight"] == moved.to_string() && num_of(&pos, "refunded") == 0);
+    a.check(
+        "nobody was paid: attacker, owner and creator hold no USDC",
+        env.usdc_balance(eve.id()).await == 0 && env.usdc_balance(env.owner.id()).await == 0,
+    );
+    let (inv, ok) = core_inv(&env).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn c15_claim_refund_batch_size_input_and_frozen_refusals() -> anyhow::Result<()> {
+    let env = Env::new().await?;
+    let (id, users) = failed_launch(&env, "C15").await?;
+    let eve = stranger(&env, "eve").await?;
+    let mut a = Attack::new("C15", "", "claim_refund_batch: oversize and empty batches, a malformed holder, an unknown launch, and a batch while FROZEN", "core", Expect::Refused, "R_BATCH_SIZE")
+        .attempt("A stranger sends a 26 holder batch, an empty batch, a holder that is not near:<account> or sol:<key>, a batch for a launch that does not exist, and (after a guardian freeze) a valid batch.");
+    let batch = |holders: Vec<String>| json!({ "launch_id": id.to_string(), "holders": holders });
+    let too_many: Vec<String> = (0..26).map(|i| format!("near:nobody{i}.test.near")).collect();
+    a.attack("26 holders", &env.call(&eve, "claim_refund_batch", batch(too_many), ZERO).await, "R_BATCH_SIZE");
+    a.attack("0 holders", &env.call(&eve, "claim_refund_batch", batch(vec![]), ZERO).await, "R_BATCH_SIZE");
+    a.attack(
+        "a holder that is not near:<account> or sol:<key>",
+        &env.call(&eve, "claim_refund_batch", batch(vec!["eve".into()]), ZERO).await,
+        "R_NO_POSITION",
+    );
+    let unknown = json!({ "launch_id": "99", "holders": [key_of(&users[0])] });
+    a.attack("a launch that does not exist", &env.call(&eve, "claim_refund_batch", unknown, ZERO).await, "R_NO_LAUNCH");
+    a.step("guardian freeze", &env.call(&env.guardian, "freeze", json!({}), ZERO).await);
+    a.attack("a valid batch while FROZEN", &env.call(&eve, "claim_refund_batch", batch(vec![key_of(&users[0])]), ZERO).await, "R_FROZEN");
+    a.check(
+        "nobody was paid by any refused batch",
+        env.view("get_ledger", lid(id)).await["refunded"] == "0" && env.usdc_balance(eve.id()).await == 0,
+    );
+    let (inv, ok) = core_inv(&env).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn c16_claim_refund_batch_duplicates_and_repeats_pay_each_holder_once_to_the_holder() -> anyhow::Result<()> {
+    let env = Env::new().await?;
+    let (id, users) = failed_launch(&env, "C16").await?;
+    let eve = stranger(&env, "eve").await?;
+    let mut a = Attack::new("C16", "", "claim_refund_batch: duplicate holders, repeated batches, and the batch caller's own account in the list", "core", Expect::NoEffect, "")
+        .attempt("A stranger sends batches that name two holders several times each, repeats the batch four times, and adds their own account. Each named holder may be paid once, to their own account; the stranger gains nothing.");
+    // One call handles about two holders (120 Tgas each of the 300 attached), so the two named holders come first.
+    let list = vec![key_of(&users[0]), key_of(&users[1]), key_of(&users[0]), key_of(&users[1]), key_of(&users[0]), key_of(&eve)];
+    for i in 0..4 {
+        let r = env.call(&eve, "claim_refund_batch", json!({ "launch_id": id.to_string(), "holders": list }), ZERO).await;
+        a.attack(&format!("batch #{i} with duplicates"), &r, "");
+    }
+    a.check(
+        "each named holder was refunded exactly once, to their own account",
+        env.usdc_balance(users[0].id()).await == 1_000 * USDC && env.usdc_balance(users[1].id()).await == 1_000 * USDC,
+    );
+    a.check("the stranger gained nothing", env.usdc_balance(eve.id()).await == 0);
+    a.check(
+        "the ledger paid two refunds of 30 USDC, not more",
+        env.view("get_ledger", lid(id)).await["refunded"] == (60 * USDC).to_string(),
+    );
+    a.check("the holders who were not named still hold their claim", env.usdc_balance(users[2].id()).await == 970 * USDC);
+    let (inv, ok) = core_inv(&env).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn c17_set_refund_route_for_another_account_a_paid_holder_or_while_frozen() -> anyhow::Result<()> {
+    let env = Env::new().await?;
+    let (id, users) = failed_launch(&env, "C17").await?;
+    let eve = stranger(&env, "eve").await?;
+    let route = |to: &Account| json!({ "launch_id": id.to_string(), "intents_account": to.id() });
+    let mut a = Attack::new("C17", "", "set_refund_route: route a victim's refund to the attacker, route twice, route while FROZEN", "core", Expect::Refused, "R_NO_POSITION")
+        .attempt("There is no argument that names another holder: the route always spends the caller's own position. A stranger with no position names themselves as the destination; a holder who was already refunded tries again; and after a freeze a holder with a refund due tries to route it.");
+    a.attack("a stranger routes (no position of their own)", &env.call(&eve, "set_refund_route", route(&eve), ZERO).await, "R_NO_POSITION");
+    a.step(
+        "holder 1 claims the normal refund",
+        &env.call(&users[1], "claim_refund", json!({ "launch_id": id.to_string(), "holder": null }), ZERO).await,
+    );
+    a.attack(
+        "holder 1 routes after being paid (position deleted)",
+        &env.call(&users[1], "set_refund_route", route(&users[1]), ZERO).await,
+        "R_NO_POSITION",
+    );
+    let pos = env.view("get_position", json!({ "launch_id": id.to_string(), "holder": key_of(&users[0]) })).await;
+    a.check(
+        "the victim's refund is untouched by the stranger's attempt",
+        num_of(&pos, "due_native") + num_of(&pos, "open_native") == 30 * USDC,
+    );
+    a.step("guardian freeze", &env.call(&env.guardian, "freeze", json!({}), ZERO).await);
+    a.attack("holder 0 routes while FROZEN", &env.call(&users[0], "set_refund_route", route(&users[0]), ZERO).await, "R_FROZEN");
+    a.check("the attacker received nothing", env.usdc_balance(eve.id()).await == 0);
+    let (inv, ok) = core_inv(&env).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+#[tokio::test]
+async fn c18_lengthen_stream_cannot_speed_the_stream_up_and_only_the_creator_may_touch_it() -> anyhow::Result<()> {
+    let env = Env::new().await?;
+    let payee = stranger(&env, "payee").await?;
+    let eve = stranger(&env, "eve").await?;
+    let other = env.user("creator2", 0).await?;
+    let open_id = env.create_launch_as(&other, &params("C18B")).await?;
+    let id = env.create_launch_to(&env.creator, &params("C18"), Some(payee.id())).await?;
+    buyers(&env, id, 12, 40 * USDC).await?;
+    env.advance_to(id, "Ready").await;
+    env.call(&env.creator, "settle", lid(id), ZERO).await.into_result()?;
+    env.call(&env.creator, "settle_positions_page", json!({ "launch_id": id.to_string(), "from_seq": 0, "limit": 25 }), ZERO)
+        .await
+        .into_result()?;
+    env.call(&env.creator, "sweep_residue", lid(id), ZERO).await.into_result()?;
+    let lengthen = |id: u64, days: u32| json!({ "launch_id": id.to_string(), "new_duration_days": days });
+    let total = num_of(&env.view("get_ledger", lid(id)).await, "stream_total");
+    let mut a = Attack::new("C18", "", "lengthen_stream used to speed the stream up: a shorter or equal duration, a non-creator, beyond 365 days, before PASS", "core", Expect::Refused, "R_LENGTHEN_ONLY")
+        .attempt("The stream can only be made slower. The creator asks for a shorter and for the same duration; the payee, a stranger and a second creator try to change the schedule; 366 days is asked for; the second creator lengthens a launch that has no stream yet; then the payee draws the whole stream.");
+    a.attack(
+        "creator asks for 10 days (shorter than 30)",
+        &env.call(&env.creator, "lengthen_stream", lengthen(id, 10), ZERO).await,
+        "R_LENGTHEN_ONLY",
+    );
+    a.attack(
+        "creator asks for the same 30 days",
+        &env.call(&env.creator, "lengthen_stream", lengthen(id, 30), ZERO).await,
+        "R_LENGTHEN_ONLY",
+    );
+    a.attack("payee lengthens", &env.call(&payee, "lengthen_stream", lengthen(id, 90), ZERO).await, "R_NOT_AUTHORIZED");
+    a.attack("stranger lengthens", &env.call(&eve, "lengthen_stream", lengthen(id, 90), ZERO).await, "R_NOT_AUTHORIZED");
+    a.attack(
+        "another creator lengthens this stream",
+        &env.call(&other, "lengthen_stream", lengthen(id, 90), ZERO).await,
+        "R_NOT_AUTHORIZED",
+    );
+    a.attack("366 days", &env.call(&env.creator, "lengthen_stream", lengthen(id, 366), ZERO).await, "R_STREAM");
+    a.attack(
+        "lengthen a launch with no stream yet",
+        &env.call(&other, "lengthen_stream", lengthen(open_id, 90), ZERO).await,
+        "R_WRONG_PHASE",
+    );
+    let draw_all = payee
+        .call(env.core.id(), "draw")
+        .args_json(json!({ "launch_id": id.to_string(), "amount": total.to_string() }))
+        .gas(GAS)
+        .transact()
+        .await?;
+    a.attack("payee draws the whole stream after the refused lengthenings", &draw_all, "STREAM_CAP");
+    let s = env.view("stream_status", lid(id)).await;
+    let settled_at = num_of(&env.view("get_settlement", lid(id)).await, "settled_at");
+    let now = u128::from(env.worker.view_block().await?.timestamp());
+    a.check(
+        "the cap is still the original 30 day line (never above it)",
+        num_of(&s, "cap") <= total * (now - settled_at) / u128::from(30 * kruxa_logic::DAY_NS) + 1,
+    );
+    a.check("the stream total did not move", num_of(&env.view("get_ledger", lid(id)).await, "stream_total") == total);
+    let (inv, ok) = core_inv(&env).await;
+    a.finish(inv, ok);
+    Ok(())
+}
+
+// ---- claim_orphan_credit
+
+fn orphan_signed(env: &Env, h: &SolHolder, id: u64, amount: u128, nonce_seed: u8, receiver: &str) -> Value {
+    use base64::Engine as _;
+    let memo = format!("kruxa:v1:t={};d={};fee=0", id, h.key());
+    let intent = json!({ "intent": "transfer", "receiver_id": receiver, "tokens": { format!("nep141:{}", env.usdc.id()): amount.to_string() }, "memo": memo });
+    let nonce = base64::engine::general_purpose::STANDARD.encode([nonce_seed; 32]);
+    let payload = json!({ "signer_id": h.hex, "verifying_contract": env.intents.id(), "deadline": "2099-01-01T00:00:00.000Z", "nonce": nonce, "intents": [intent] }).to_string();
+    json!({ "standard": "raw_ed25519", "payload": payload, "public_key": format!("ed25519:{}", h.b58), "signature": format!("ed25519:{}", h.sign(&payload)) })
+}
+
+#[tokio::test]
+async fn c19_claim_orphan_credit_with_a_replayed_nonce_or_a_second_claim() -> anyhow::Result<()> {
+    let env = Env::new_real_intents().await?;
+    let id = env.create_launch(&params("C19")).await?;
+    let h = sol_holder(71);
+    env.deposit_real_intents(&h.hex, 500 * USDC).await?;
+    let core = env.core.id().to_string();
+    let keeper = stranger(&env, "keeper").await?;
+    let claim = |s: &Value| {
+        let (c, k, s) = (env.core.id().clone(), keeper.clone(), s.clone());
+        async move { k.call(&c, "claim_orphan_credit").args_json(json!({ "signed": s })).gas(GAS).transact().await.unwrap() }
+    };
+    let mut a = Attack::new("C19", "", "claim_orphan_credit: the same payload twice, the S4 path after the claim, and a payload that reuses a spent nonce", "core", Expect::Refused, "R_NOTHING")
+        .attempt("A payload executed by someone else at the Verifier is credited once through claim_orphan_credit. The same claim is then replayed, the plain S4 path is tried on it, and a second payload (30 USDC) signed with the same nonce, which the Verifier never executed, is claimed to credit money that never arrived.");
+    let first = orphan_signed(&env, &h, id, 40 * USDC, 1, &core);
+    let exec = env.worker_call(&env.owner, env.intents.id(), "execute_intents", json!({ "signed": [first] })).await;
+    a.step("somebody executes the payload at the Verifier (an orphan)", &exec);
+    a.step("claim_orphan_credit (legitimate, credits the signer once)", &claim(&first).await);
+    let ledger = env.view("get_ledger", lid(id)).await["open_intents"].clone();
+    a.check("credited exactly 40 USDC", ledger == (40 * USDC).to_string());
+    a.attack("the same claim again", &claim(&first).await, "R_NOTHING");
+    let s4 = env.call(&env.owner, "contribute_via_intents", json!({ "signed": first }), ZERO).await;
+    a.attack("the S4 path on the already-credited payload", &s4, "R_NOTHING");
+    let replay = orphan_signed(&env, &h, id, 30 * USDC, 1, &core);
+    let r = claim(&replay).await;
+    a.attack("a different payload (30 USDC) reusing the spent nonce", &r, "");
+    a.check(
+        "core refused it in the callback: the Verifier's nonce was already spent",
+        r.logs().iter().any(|l| l.contains("orphan_credit_refused")),
+    );
+    a.check("the ledger still shows only the real 40 USDC", env.view("get_ledger", lid(id)).await["open_intents"] == ledger);
+    a.check("core's Intents balance is the 40 USDC that really arrived", env.intents_balance(&core).await == 40 * USDC);
+    let (inv, ok) = core_inv(&env).await;
     a.finish(inv, ok);
     Ok(())
 }

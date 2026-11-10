@@ -1,0 +1,103 @@
+{
+  "attempt": "A stranger calls sweep_tokens to pull unclaimed supply to the burn sink before the bonus vest and the sweep window ended, on a launch with no verdict, and on a launch that does not exist.",
+  "checks": [
+    {
+      "ok": true,
+      "what": "nothing was swept and nothing is sweepable yet"
+    },
+    {
+      "ok": true,
+      "what": "burn_mode is still unlocked (a refused sweep must not lock it)"
+    }
+  ],
+  "co4": "",
+  "expected_result": "REFUSED",
+  "expected_rule_code": "R_NOTHING",
+  "id": "C09",
+  "invariants_after": [
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "intents_alert": false,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true,
+        "l6_err": null,
+        "l6_ok": true,
+        "l7_err": null,
+        "l7_ok": true
+      },
+      "launch_id": 1
+    },
+    {
+      "get_invariants": {
+        "all_ok": true,
+        "i2_err": null,
+        "i2_ok": true,
+        "i3_err": null,
+        "i3_ok": true,
+        "i4_err": null,
+        "i4_ok": true,
+        "i5_err": null,
+        "i5_ok": true,
+        "intents_alert": false,
+        "l1_err": null,
+        "l1_ok": true,
+        "l3_err": null,
+        "l3_ok": true,
+        "l4_err": null,
+        "l4_ok": true,
+        "l6_err": null,
+        "l6_ok": true,
+        "l7_err": null,
+        "l7_ok": true
+      },
+      "launch_id": 2
+    }
+  ],
+  "invariants_ok": true,
+  "network": "SANDBOX",
+  "result": "REFUSED",
+  "target": "core",
+  "title": "sweep_tokens early: on a PASSED launch inside the bonus window, on an Open launch, on an unknown launch",
+  "transactions": [
+    {
+      "expected_rule_code": "R_NOTHING",
+      "label": "sweep_tokens on a PASSED launch inside the window",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOTHING",
+      "status": "failed",
+      "tx": "6dLzxu3QzEAxpbYHPeCmthWieMCAnsCykqDXo4jxpzRp"
+    },
+    {
+      "expected_rule_code": "R_NOTHING",
+      "label": "sweep_tokens on an Open launch",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NOTHING",
+      "status": "failed",
+      "tx": "yiLP2DMALpsgd561x7bL1RsBdWQ1p6HRH8FrRTrexmi"
+    },
+    {
+      "expected_rule_code": "R_NO_LAUNCH",
+      "label": "sweep_tokens on an unknown launch",
+      "network": "SANDBOX",
+      "role": "attack",
+      "rule_code": "R_NO_LAUNCH",
+      "status": "failed",
+      "tx": "H62WK2KEy83pN5xwqnTZskvjMrPjXkzTiVUUU7QYGaLC"
+    }
+  ]
+}
