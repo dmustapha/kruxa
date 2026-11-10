@@ -37,7 +37,9 @@ impl TokenProvider for FactoryPrimitives {
             "create_token".to_string(),
             args.to_string().into_bytes(),
             NearToken::from_yoctonear(deposit),
-            Gas::from_tgas(80),
+            // The real token.primitives factory needs 91 to 95 Tgas for create_token (measured on testnet, evidence/instant-testnet);
+            // 80 ended in an out-of-gas CreationFailed. 110 leaves margin, unused gas is refunded.
+            Gas::from_tgas(110),
         )
     }
 }

@@ -23,6 +23,8 @@ impl MockFactory {
     #[payable]
     pub fn create_token(&mut self, args: Value) {
         require!(!self.fail, "factory refuses");
+        // The real factory needs 91 to 95 Tgas (measured on testnet); a caller that sends less must fail here too.
+        require!(env::prepaid_gas() >= near_sdk::Gas::from_tgas(95), "create_token needs at least 95 Tgas prepaid");
         require!(args.get("total_supply").is_some() && args.get("owner_id").is_some(), "args.total_supply / args.owner_id missing");
         require!(env::attached_deposit().as_yoctonear() > 0, "deposit required");
     }
