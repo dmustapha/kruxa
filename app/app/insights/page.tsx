@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { StatsSection } from '@/components/features/insights/StatsSection';
 import { ThesisSection } from '@/components/features/insights/ThesisSection';
+import { RecordedFundsStrip } from '@/components/features/funds/RecordedFundsStrip';
 
 export const metadata: Metadata = { title: 'Insights', description: 'Kruxa numbers from indexed events, and a recorded study of NEAR Intents activity.' };
 
@@ -14,6 +15,7 @@ export default function InsightsPage() {
       </header>
       <StatsSection />
       <ThesisSection />
+      <RecordedFundsStrip />
     </>
   );
 }

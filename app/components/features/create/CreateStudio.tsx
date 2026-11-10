@@ -250,7 +250,7 @@ export function CreateStudio() {
           <p className="hint">Computed in your browser with the same integer rules as the contract. A model of your terms, not a forecast.</p>
           <details>
             <summary style={{ cursor: 'pointer', minHeight: 44, display: 'flex', alignItems: 'center' }}>Test your terms against a simulated crowd</summary>
-            <p>Planned: replay a recorded, scripted crowd (snipers, whales, a sybil ring, a walk-flipper) against your terms. No recorded run is committed yet, so nothing is shown here and no result is implied.</p>
+            <p>Three recorded, scripted crowd runs are committed (snipers, whales, a sybil ring, a walk-flipper; see docs/interfaces/swarm-crowd-test.json). Replaying them against your own terms is not built yet, so no result for your terms is shown here and none is implied.</p>
           </details>
         </section>
 
