@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Kruxa indexer read API
-  version: 1.2.0
+  version: 1.3.0
   description: |
     Read-only JSON API over the Kruxa indexer (workstream I). Nothing here is authoritative:
     every number is a convenience view folded from NEP-297 `EVENT_JSON` logs (standard `kruxa`,
@@ -38,6 +38,14 @@ info:
       (instant_creating, instant_pending_seed, instant_pending_open), join `trading` (instant_open) and join `failed` (instant_failed). `tab=all` lists every launch except
       instant_failed ones, which CO-7 keeps out of the default feed; pass `include_failed=true` or `tab=failed` to see them. `launch_type=all|trial|instant` (alias `mode`) filters
       by launch type; with `launch_type=trial` every tab and count is exactly what 1.1.0 returned.
+    - Operations and custody (1.3.0, additive only; every 1.2.0 field and path is unchanged): `/api/ops/*` expose the operating state, the 7-day upgrade queue, launch halts,
+      force-resolves, solvency reports and owed balances folded from the core events listed in EVENTS.md "Operations and custody"; `/api/launch/{id}/custody` and
+      `/api/launch/{id}/genesis` expose launch token custody and the genesis attempt history. `LaunchSummary.halted` is new. `Genesis` gained ceremony fields.
+      `VerifyData.fold_ok` is now a boolean once a book event is indexed (the indexer replays the contract's rolling `book_hash` from the events alone); it still does not
+      compare with `get_state`. Every state in `/api/ops/status` carries `observed`: false means no event of that kind was indexed, not that the contract was read.
+    - Snapshot mode (1.3.0): `node services/api/src/snapshot.ts serve <dir>` serves pages baked by `snapshot.ts bake` at the same paths (no query string except
+      `interval` on candles), read-only, with header `x-kruxa-data: snapshot` and `GET /api/health` returning `status: "snapshot"`. A page that was not baked answers
+      404 `not_in_snapshot`; `/api/stream` answers 404 `snapshot_no_stream`. Label such data RECORDED in the app.
     - Candle price is quote (USDC) per whole token, a decimal number; `v` is quote volume in whole USDC.
       Candle shape is TradingView-datafeed compatible (`t,o,h,l,c,v`, `t` in unix seconds, bucket start, UTC).
 servers:
@@ -296,8 +304,8 @@ paths:
   /api/ops-log:
     get:
       tags: [ops]
-      summary: Pause, freeze, cap and config-change events, newest first
-      description: From indexed core and market events only (core `paused`, `frozen`, `unpaused`, `global_cap_*`, `launch_cap_*`; market `market_paused`, `platform_withdrawn`). It is a record of what the contracts logged, not a moderation list.
+      summary: Operator and operations events, newest first
+      description: From indexed core, market and launcher events only. Pause and freeze, caps, config changes, launch halts, the upgrade queue, force-resolves, solvency reports, owed balances, token custody, refund routing and genesis ceremony events (list in EVENTS.md). It is a record of what the contracts logged, not a moderation list.
       parameters:
         - name: limit
           in: query
@@ -309,12 +317,128 @@ paths:
         - name: scope
           in: query
           schema: { type: string, enum: [core, market, launcher] }
+        - name: category
+          in: query
+          description: 1.3.0
+          schema: { type: string, enum: [pause, caps, config, halt, upgrade, force_resolve, solvency, owed, custody, refunds, genesis, treasury] }
+        - name: launch_id
+          in: query
+          description: 1.3.0; only events whose data names this launch
+          schema: { type: string, pattern: '^[0-9]+$' }
       responses:
         '200':
           description: log entries
           content:
             application/json:
               schema: { $ref: '#/components/schemas/OpsLog' }
+  /api/ops/status:
+    get:
+      tags: [ops]
+      summary: Operating state in one read (status page, operator strip)
+      description: |
+        Core and launcher pause state (a freeze reads as `paused` after `until`), market pause, genesis pause and relayer, the market account, the creator gate, the cap state with any
+        queued raise, the pending upgrade, halted launches, queued force-resolves, owed NEAR and the latest solvency report with its age. Folded from events only; `observed: false` means
+        no event of that kind was indexed.
+      responses:
+        '200':
+          description: operating state
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OpsStatus' }
+  /api/ops/upgrades:
+    get:
+      tags: [ops]
+      summary: Core upgrade queue (7-day timelock)
+      description: Newest first. `status` is queued, cancelled, applied or superseded (a new queue call replaces the pending one without an event). `pending` is the queued entry, if any.
+      parameters: [ { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 200, default: 50 } } ]
+      responses:
+        '200':
+          description: upgrades
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UpgradeList' }
+  /api/ops/halts:
+    get:
+      tags: [ops]
+      summary: Launch halts and resumes
+      parameters:
+        - { name: active, in: query, schema: { type: string, enum: ['true', 'false'] } }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 200, default: 50 } }
+      responses:
+        '200':
+          description: halts
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HaltList' }
+        '400': { $ref: '#/components/responses/Error' }
+  /api/ops/force-resolves:
+    get:
+      tags: [ops]
+      summary: Force-resolves of stuck outbound legs (2-day timelock)
+      description: The event names the launch, amount and ok flag but not the leg kind or holder, so an execution closes the oldest queued entry with the same three values.
+      parameters:
+        - { name: state, in: query, schema: { type: string, enum: [queued, executed] } }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 200, default: 50 } }
+      responses:
+        '200':
+          description: force-resolves
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ForceResolveList' }
+        '400': { $ref: '#/components/responses/Error' }
+  /api/ops/solvency:
+    get:
+      tags: [ops]
+      summary: Solvency reports logged by core `check_solvency`
+      parameters: [ { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 200, default: 20 } } ]
+      responses:
+        '200':
+          description: reports, newest first
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SolvencyList' }
+  /api/ops/owed:
+    get:
+      tags: [ops]
+      summary: Owed balances (failed outbound pushes waiting to be claimed)
+      description: Core owed NEAR (`token` NEAR) and market or launcher owed tokens. `balance` is credited minus claimed; zero balances are hidden unless `outstanding=false`.
+      parameters:
+        - { name: scope, in: query, schema: { type: string, enum: [core, market, launcher] } }
+        - { name: account, in: query, schema: { type: string } }
+        - { name: outstanding, in: query, schema: { type: string, enum: ['true', 'false'], default: 'true' } }
+      responses:
+        '200':
+          description: owed balances
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OwedList' }
+        '400': { $ref: '#/components/responses/Error' }
+  /api/launch/{id}/custody:
+    get:
+      tags: [feed]
+      summary: Launch token custody and refund routing
+      description: Creator allocation claimed (net of failed legs), sweeps with the burn mode, delivery refusals and failed legs, the stream including any lengthening, refund batches and Intents-routed refunds, refused orphan credits. Token balances at rest come from core views, not from here.
+      parameters: [ { $ref: '#/components/parameters/LaunchId' } ]
+      responses:
+        '200':
+          description: custody
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LaunchCustody' }
+        '404': { $ref: '#/components/responses/Error' }
+  /api/launch/{id}/genesis:
+    get:
+      tags: [feed]
+      summary: Genesis state with the full attempt history
+      description: The `Genesis` object plus `history`, every genesis_committed, genesis_confirmed, genesis_aborted, genesis_reopened, f0_* and attest_log event in order. 404 for instant launches.
+      parameters: [ { $ref: '#/components/parameters/LaunchId' } ]
+      responses:
+        '200':
+          description: genesis
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LaunchGenesis' }
+        '404': { $ref: '#/components/responses/Error' }
   /api/export/launches.csv:
     get:
       tags: [feed]
@@ -441,6 +565,7 @@ components:
         progress_bps: { type: integer, nullable: true, description: 'total_active over soft_cap in basis points, capped at 20000' }
         verdict: { type: string, enum: [PASS, FAIL], nullable: true }
         has_market: { type: boolean }
+        halted: { type: boolean, description: 'true while a `halted` event is not yet followed by `resumed` for this launch (1.3.0)' }
         last_price: { type: number, nullable: true }
         volume_24h: { type: number, description: 'quote volume in whole USDC over the last 24 h' }
         last_block: { type: integer }
@@ -655,6 +780,17 @@ components:
             inputs_hash: { type: string, nullable: true }
             verdict: { type: string, enum: [PASS, FAIL], nullable: true }
         updated_at: { type: integer, nullable: true }
+        max_total_claim: { type: string, nullable: true, description: 'from genesis_committed (1.3.0)' }
+        reopen_count: { type: integer, description: 'how many times the owner reopened an aborted genesis (genesis_reopened); the record resets to pending each time (1.3.0)' }
+        reopened_at: { type: integer, nullable: true }
+        abort: { type: object, nullable: true, description: 'set while the genesis stands aborted', properties: { reason: { type: string }, by: { type: string } } }
+        f0:
+          type: object
+          description: F0 ceremony data from f0_message_registered and f0_sign_requested for the current attempt
+          properties:
+            messages: { type: array, items: { type: object, properties: { tx_index: { type: integer }, message_sha256: { type: string } } } }
+            sign_requests: { type: array, items: { type: integer } }
+        attestations: { type: array, items: { type: string }, description: 'attest_log hashes for the current attempt' }
         source: { $ref: '#/components/schemas/Source' }
     Stats:
       type: object
@@ -737,6 +873,8 @@ components:
             required: [event, scope, contract, summary, data, block_height, receipt_id, time, source]
             properties:
               event: { type: string, example: paused }
+              category: { type: string, enum: [pause, caps, config, halt, upgrade, force_resolve, solvency, owed, custody, refunds, genesis, treasury], description: '1.3.0' }
+              launch_id: { type: string, nullable: true, description: 'from the event data when it names a launch (1.3.0)' }
               scope: { type: string, enum: [core, market, launcher] }
               contract: { type: string }
               summary: { type: string }
@@ -985,6 +1123,178 @@ components:
               receipt_id: { type: string }
         as_of: { $ref: '#/components/schemas/AsOf' }
         source: { $ref: '#/components/schemas/Source' }
+    PauseState:
+      type: object
+      properties:
+        state: { type: string, enum: [live, paused, frozen] }
+        effective_state: { type: string, enum: [live, paused, frozen], description: 'a freeze past `until` reads as paused' }
+        observed: { type: boolean }
+        by: { type: string, nullable: true }
+        until: { type: integer, nullable: true }
+        since: { type: integer, nullable: true }
+    CapState:
+      type: object
+      properties:
+        value: { allOf: [ { $ref: '#/components/schemas/Amount' } ], nullable: true, description: 'last applied or lowered value seen' }
+        queued: { type: object, nullable: true, properties: { value: { $ref: '#/components/schemas/Amount' }, effective_at: { type: integer, nullable: true }, queued_at: { type: integer } } }
+        changed_at: { type: integer, nullable: true }
+        observed: { type: boolean }
+    SolvencyReport:
+      type: object
+      properties:
+        at: { type: integer, nullable: true, description: 'report time from the event' }
+        time: { type: integer, description: 'block time' }
+        ok: { type: boolean }
+        intents_alert: { type: boolean }
+        native: { type: object, nullable: true, properties: { balance: { $ref: '#/components/schemas/Amount' }, liability: { $ref: '#/components/schemas/Amount' }, ok: { type: boolean } } }
+        intents: { type: object, nullable: true, properties: { balance: { $ref: '#/components/schemas/Amount' }, liability: { $ref: '#/components/schemas/Amount' }, ok: { type: boolean } } }
+        age_s: { type: integer, description: 'only in /api/ops/status' }
+        block_height: { type: integer }
+        receipt_id: { type: string }
+        source: { $ref: '#/components/schemas/Source' }
+    Upgrade:
+      type: object
+      properties:
+        code_hash: { type: string }
+        status: { type: string, enum: [queued, cancelled, applied, superseded] }
+        queued_at: { type: integer }
+        effective_at: { type: integer, nullable: true }
+        resolved_at: { type: integer, nullable: true }
+        resolved_by: { type: string, nullable: true }
+        block_height: { type: integer }
+        source: { $ref: '#/components/schemas/Source' }
+    OpsStatus:
+      type: object
+      properties:
+        core: { $ref: '#/components/schemas/PauseState' }
+        launcher: { $ref: '#/components/schemas/PauseState' }
+        market: { type: object, properties: { paused: { type: boolean }, observed: { type: boolean }, by: { type: string, nullable: true }, since: { type: integer, nullable: true } } }
+        genesis: { type: object, properties: { paused: { type: boolean }, relayer: { type: string, nullable: true } } }
+        market_account: { type: object, properties: { core: { type: string, nullable: true }, launcher: { type: string, nullable: true } } }
+        creator_gate: { type: object, properties: { core_open: { type: boolean }, launcher_open: { type: boolean } } }
+        caps: { type: object, properties: { global: { $ref: '#/components/schemas/CapState' }, launch: { $ref: '#/components/schemas/CapState' } } }
+        pending_upgrade: { allOf: [ { $ref: '#/components/schemas/Upgrade' } ], nullable: true }
+        halted_launches: { type: array, items: { type: string } }
+        force_resolves_queued: { type: integer }
+        owed: { type: object, properties: { near_total_yocto: { type: string }, open_balances: { type: integer } } }
+        solvency: { allOf: [ { $ref: '#/components/schemas/SolvencyReport' } ], nullable: true }
+        since_block: { type: integer, nullable: true }
+        basis: { type: string }
+        as_of: { $ref: '#/components/schemas/AsOf' }
+        source: { $ref: '#/components/schemas/Source' }
+    UpgradeList:
+      type: object
+      properties:
+        pending: { allOf: [ { $ref: '#/components/schemas/Upgrade' } ], nullable: true }
+        items: { type: array, items: { $ref: '#/components/schemas/Upgrade' } }
+        as_of: { $ref: '#/components/schemas/AsOf' }
+        source: { $ref: '#/components/schemas/Source' }
+    HaltList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              launch_id: { type: string }
+              halted: { type: boolean }
+              reason: { type: string, nullable: true }
+              halted_by: { type: string, nullable: true }
+              halted_at: { type: integer, nullable: true }
+              resumed_at: { type: integer, nullable: true }
+              halt_count: { type: integer }
+              source: { $ref: '#/components/schemas/Source' }
+        as_of: { $ref: '#/components/schemas/AsOf' }
+        source: { $ref: '#/components/schemas/Source' }
+    ForceResolveList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              launch_id: { type: string }
+              amount: { $ref: '#/components/schemas/Amount' }
+              ok: { type: boolean }
+              state: { type: string, enum: [queued, executed] }
+              queued_at: { type: integer, nullable: true }
+              effective_at: { type: integer, nullable: true }
+              executed_at: { type: integer, nullable: true }
+              evidence: { type: string, nullable: true }
+              block_height: { type: integer }
+              source: { $ref: '#/components/schemas/Source' }
+        basis: { type: string }
+        as_of: { $ref: '#/components/schemas/AsOf' }
+        source: { $ref: '#/components/schemas/Source' }
+    SolvencyList:
+      type: object
+      properties:
+        latest: { allOf: [ { $ref: '#/components/schemas/SolvencyReport' } ], nullable: true }
+        failing: { type: integer, description: 'reports with ok=false in this page' }
+        items: { type: array, items: { $ref: '#/components/schemas/SolvencyReport' } }
+        as_of: { $ref: '#/components/schemas/AsOf' }
+        source: { $ref: '#/components/schemas/Source' }
+    OwedList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              scope: { type: string, enum: [core, market, launcher] }
+              account: { type: string }
+              token: { type: string, description: 'NEAR for core owed NEAR, otherwise the token account' }
+              credited: { $ref: '#/components/schemas/Amount' }
+              claimed: { $ref: '#/components/schemas/Amount' }
+              balance: { $ref: '#/components/schemas/Amount' }
+              updated_at: { type: integer }
+              source: { $ref: '#/components/schemas/Source' }
+        as_of: { $ref: '#/components/schemas/AsOf' }
+        source: { $ref: '#/components/schemas/Source' }
+    LaunchCustody:
+      type: object
+      properties:
+        launch_id: { type: string }
+        mode: { type: string, enum: [trial, instant] }
+        token: { type: string, nullable: true }
+        payout_recipient: { type: string }
+        status: { type: string }
+        halted: { type: boolean }
+        creator_allocation: { type: object, properties: { claimed: { $ref: '#/components/schemas/Amount' }, recipient: { type: string } } }
+        sweep: { type: object, properties: { swept: { $ref: '#/components/schemas/Amount' }, mode: { type: string, nullable: true, description: 'burn mode logged with the sweep: hold, sink:<account>' } } }
+        stream:
+          type: object
+          properties:
+            total: { $ref: '#/components/schemas/Amount' }
+            drawn: { $ref: '#/components/schemas/Amount' }
+            planned_days: { type: integer, nullable: true }
+            lengthened: { type: integer }
+            end_at: { type: integer, nullable: true }
+            unlocked_at_change: { allOf: [ { $ref: '#/components/schemas/Amount' } ], nullable: true }
+            changed_at: { type: integer, nullable: true }
+        deliveries:
+          type: object
+          properties:
+            refused: { type: integer }
+            failed_legs: { type: array, items: { type: object, properties: { kind: { type: string }, amount: { $ref: '#/components/schemas/Amount' }, time: { type: integer }, receipt_id: { type: string } } } }
+        refunds: { type: object, properties: { batches: { type: integer }, handled: { type: integer }, paid: { type: integer }, routed_to_intents: { type: integer } } }
+        orphan_credits_refused: { type: integer }
+        deposits_refused_refundable: { type: integer }
+        events: { type: array, items: { type: object, additionalProperties: true } }
+        basis: { type: string }
+        as_of: { $ref: '#/components/schemas/AsOf' }
+        source: { $ref: '#/components/schemas/Source' }
+    LaunchGenesis:
+      allOf:
+        - { $ref: '#/components/schemas/Genesis' }
+        - type: object
+          properties:
+            launch_id: { type: string }
+            history: { type: array, items: { type: object, additionalProperties: true, description: 'EventRef plus the raw event data' } }
+            as_of: { $ref: '#/components/schemas/AsOf' }
     VerifyData:
       type: object
       required: [launch_id, fold_ok, ledger_consistent, events, as_of, source]
@@ -994,7 +1304,10 @@ components:
         inputs_hash: { type: string, nullable: true }
         book_hash_folded: { type: string }
         book_hash_stored: { type: string, nullable: true, description: 'hash from a chain get_state view, null until such a comparison runs' }
-        fold_ok: { type: boolean, nullable: true, description: 'null until a chain view comparison runs; the indexer does not recompute the book hash' }
+        book_hash_recomputed: { type: string, nullable: true, description: 'rolling book hash replayed by the indexer from contributed and walked events (null before the first one) (1.3.0)' }
+        fold_ok: { type: boolean, nullable: true, description: 'true when the replayed hash equals the logged hash at every book event, false from the first disagreement, null when no book event is indexed or the launch is instant. Not a comparison with get_state (1.3.0)' }
+        fold_events: { type: integer, description: 'book events replayed (1.3.0)' }
+        fold_first_mismatch_block: { type: integer, nullable: true, description: 'block height of the first disagreement (1.3.0)' }
         fold_note: { type: string }
         mode: { type: string, enum: [trial, instant] }
         ledger_consistent: { type: boolean, nullable: true, description: 'null for instant launches (no book); otherwise indexed positions sum to total_active and the active holder count equals funders' }
