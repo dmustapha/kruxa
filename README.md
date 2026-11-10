@@ -140,12 +140,12 @@ The tracks listed for this submission are the GREEN rows of `make judge`, copied
 - **Memecoins With Mechanics.** The mechanic is verdict-gated existence: Walk, a deterministic verdict, pro rata refunds and a capped creator stream. Steps V1, C1, M1, M2, M3, U1.
 - **AI Security & Defense.** Tamper detection with distinct exit codes, and an attack gallery in which our own scripted attackers try the contracts and every attack is refused, harmless or a disclosed bound. The attackers are tests, not AI agents, and this is our red team, not an independent audit. Steps T1 to T5, A1.
 - **AI Swarms.** An offline crowd simulator with honest and adversarial agents, invariants checked every round, recorded runs that reproduce byte for byte. The agents are scripted, not language models. Step W1.
+- **Investment Thesis.** A pre-stated hypothesis about NEAR Intents activity, tested on public BigQuery data with committed queries and a deterministic rebuild (`make thesis`). The verdict is reported as it came out: not supported, with a narrower descriptive finding that survives. Step H1.
 - **Open Innovation.** The whole platform end to end in one command, `make judge`, with `make tour` inside it. Every step.
 
 ### Not claimed
 
 - **Unstoppable DeFi.** The dry quote needs a live Intents endpoint, and the evidence files for the live Intents tests are not committed. Live Intents behaviour, including solver latency, is not evidenced in this repository. Not claimed.
-- **Investment Thesis.** The thesis pack is not in this repository and no command here checks it.
 - **Agent Economy.** Cut. No agent module is built.
 - Privacy & Private AI, Autonomous Business, Real-World Money, Games With Real Economies, NFTs That Do Something, Social Money: no module exists.
 
