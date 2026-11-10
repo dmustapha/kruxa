@@ -20,7 +20,9 @@ export const commitNear = (launchId: string, amountMicro: bigint): SignAndSendIn
 export const walkNear = (launchId: string): SignAndSendInput => fc(CONFIG.core, 'walk', { launch_id: launchId }, 100, '1');
 export const settleNear = (launchId: string): SignAndSendInput => fc(CONFIG.core, 'settle', { launch_id: launchId }, 150, '0');
 export const claimRefundNear = (launchId: string): SignAndSendInput => fc(CONFIG.core, 'claim_refund', { launch_id: launchId, holder: null }, 100, '0');
-export const claimTokensNear = (launchId: string): SignAndSendInput => fc(CONFIG.core, 'claim_tokens', { launch_id: launchId }, 100, '1');
+/** Payable: an account not yet registered on the launch token pays the 0.00125 NEAR registration from this deposit; the core refunds the rest (and everything but 1 yocto when already registered). Needs about 150 Tgas. */
+export const CLAIM_TOKENS_DEPOSIT_YOCTO = (BigInt('1250000000000000000000') + 1n).toString();
+export const claimTokensNear = (launchId: string): SignAndSendInput => fc(CONFIG.core, 'claim_tokens', { launch_id: launchId }, 200, CLAIM_TOKENS_DEPOSIT_YOCTO);
 export const registerOnToken = (tokenAccount: string, accountId: string): SignAndSendInput =>
   fc(tokenAccount, 'storage_deposit', { account_id: accountId, registration_only: true }, 30, STORAGE_DEPOSIT_YOCTO);
 /** Draw from the stream. `amount` null asks for everything drawable; anything above the cap reverts with STREAM_CAP. */
@@ -44,7 +46,7 @@ export const createInstantNear = (params: Record<string, unknown>, payoutRecipie
 export const seedInstantNear = (launchId: string, seedMicro: bigint): SignAndSendInput =>
   fc(CONFIG.usdc, 'ft_transfer_call', { receiver_id: CONFIG.instant, amount: seedMicro.toString(), msg: JSON.stringify({ v: 1, op: 'seed_instant', launch_id: launchId }) }, 100, '1');
 /** Step 3 (any caller): hands the seed, then the pool bucket, to the market. A retry sends only what is missing. */
-/** Gas attached to open_instant, in Tgas. The launcher's measured minimum is being set; the app attaches this and shows it. */
+/** Gas attached to open_instant, in Tgas. The launcher refuses below 255 (MIN_OPEN_GAS); 300 leaves margin and unused gas is refunded. */
 export const OPEN_INSTANT_GAS_TGAS = 300;
 export const openInstantNear = (launchId: string): SignAndSendInput => fc(CONFIG.instant, 'open_instant', { launch_id: launchId }, OPEN_INSTANT_GAS_TGAS, '0');
 /** Ends an unseeded launch: the creator at any time, anyone else after one unit. (The contract has no `cancel_instant`.) */
