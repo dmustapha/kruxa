@@ -1,0 +1,6 @@
+== NEAR recompute (C31-C34, kruxa-sim)
+infrastructure error: rpc http://127.0.0.1:9: http://127.0.0.1:9/: Connection Failed: Connect error: Connection refused (os error 61)
+== operator lines (VX-2)
+infrastructure error: rpc http://127.0.0.1:9: <urlopen error [Errno 61] Connection refused>
+== Solana genesis (C3-C28)
+infrastructure error: rpc http://127.0.0.1:9 getAccountInfo: <urlopen error [Errno 61] Connection refused>

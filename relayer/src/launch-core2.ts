@@ -40,7 +40,7 @@ async function main(): Promise<void> {
   };
   if (mode === "F0") {
     const rootPk = await view<string>(TESTNET_SIGNER, "public_key", { domain_id: 1 });
-    plan.mint_pubkey_f0 = Buffer.from(derivedKeyBytes(rootPk, loadNearKey().account_id, `kruxa:genesis:${id}`)).toString("hex");
+    plan.mint_pubkey_f0 = Buffer.from(derivedKeyBytes(rootPk, arg("--f0-predecessor", "core") === "relayer" ? loadNearKey().account_id : core, `kruxa:genesis:${id}`)).toString("hex");
   }
   const params = {
     symbol, name: `${symbol} Rehearsal`, total_supply_whole: 1_000_000_000, sale_bps: 6000, lp_bps: 2500, creator_bps: 1000, backer_bps: 500,

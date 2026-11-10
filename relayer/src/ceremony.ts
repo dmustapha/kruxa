@@ -112,7 +112,7 @@ export async function runCeremony(i: CeremonyInput): Promise<CeremonyResult> {
     await assertCluster(conn, i.cluster);
     const f = await freshCompile(conn, specBytes, params, i.priceMicroLamports);
     const msg = f.compiled[which];
-    signer.expect?.([msg]);
+    await signer.expect?.([msg], which === "tx1" ? 0 : 1);
     const sig = await sendSigned(conn, msg, signer, f.blockhash, f.lastValidBlockHeight, signMs);
     log(`${which} ${which === "tx1" ? "create" : "seal"}: ${sig}`);
     sigs.push(sig);

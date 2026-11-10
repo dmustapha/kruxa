@@ -103,6 +103,13 @@
           "bonus_sweep_after_secs": 30
         }
       }
+    },
+    "market": {
+      "account": "market3.kxi-root-1108.testnet",
+      "wasm": "kruxa_market_contract",
+      "bytes": 261077,
+      "sha256": "c80560d63663fe71526f88de9ebbf5c8c16979c00ed32d1eb11b13c087ae2b26",
+      "core_set_market_tx": "2VFn6YH9KubGwi1MoXJh3PNXqf7CojBjp3Fhk5MPzp8Y"
     }
   }
 }

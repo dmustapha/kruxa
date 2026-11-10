@@ -1,0 +1,38 @@
+== NEAR recompute (C31-C34, kruxa-sim)
+recomputed outcome=PASS inputs_hash=3675c28d58403d8a159e80d706b279948fa376dcc1fba2466b1189e0b1c68d5d
+stored     pass=true inputs_hash=3675c28d58403d8a159e80d706b279948fa376dcc1fba2466b1189e0b1c68d5d
+MATCH
+== operator lines (VX-2)
+KEYS: 1 full-access key(s): ed25519:2LXB3AWpWCYEgypBA7KFP9WGX6ZNK3ByZ6XJohvXwTVq; 0 function-call key(s)
+NOTE: a full-access key is present, so its owner can redeploy this contract.
+CODE: view_code sha256 7d7b0da22dcba27b8609c49ca96871ac029f42199948a8556603e11110d6b689; reproducible build sha256 7d7b0da22dcba27b8609c49ca96871ac029f42199948a8556603e11110d6b689; MATCH
+== Solana genesis (C3-C28)
+PASS C5 mint == createWithSeed(g_pub, seed 2, Tokenkeg): no private key exists
+PASS C3 spec re-hash 4a50ae247dcbf300 (sha256 of the committed borsh GenesisSpec)
+PASS C4 mint 2zWMDU327nSd1SqUGvqcLHatquLN6jPdbEJJdRAtANC8 owner Tokenkeg space 82 (no extensions: C8)
+PASS C7 mint_authority=None freeze_authority=None
+PASS C6 decimals 6 supply 649999999999992 == sum of buckets
+PASS C9 metadata is_mutable=false, name/symbol/uri == spec, fee 0, no creators
+PASS C11 reserve bucket 0, distributor vault holds the unclaimed rest
+PASS C13 distributor 9XYvBt root/max_total_claim/max_num_nodes/timestamps/clawback receiver match, admin NULL (1nc1nera)
+SKIP C12 (no --charter given)
+PASS C14 G holds no token accounts
+PASS C15 G history is the ceremony only (3 signatures)
+PASS C16 G lamports 890880 <= 895880 (rent-exempt floor 890,880 + 5,000; a system account cannot be left lower without a sweep)
+PASS C17 on-chain tx1 and tx2 message bytes == compile(spec, blockhash, price)
+PASS C18 program allowlist holds
+PASS C19 SetAuthority(MintTokens, None) is the last token instruction, after every MintTo
+PASS C20 rebuilt merkle root == spec == on-chain; sum 649999999999992, leaves 12
+PASS C21 all 12 proofs verify against the root
+PASS C27 g_pub == derive(core3.kxi-root-1108.testnet, kruxa:genesis:2)
+SKIP C28 (single RPC; pass --rpc2)
+SKIP C1 (needs core genesis views (Task 4.4))
+SKIP C2 (needs core ledger views (Task 4.4))
+SKIP C10 (needs the hosted metadata JSON)
+SKIP C22 (no creator allocation in this record)
+SKIP C23 (needs core genesis events)
+SKIP C24 (needs core PASS block time)
+SKIP C25 (no Verdict Rail attestation in this record)
+SKIP C26 (needs core ceremony hash view)
+SKIP C30 (PASS launch (FAIL path is a core check))
+ALL CHECKS OK (17 passed, 11 skipped)

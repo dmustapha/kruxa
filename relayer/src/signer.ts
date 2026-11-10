@@ -7,7 +7,7 @@ export interface GenesisSigner {
   sign(message: Uint8Array): Promise<Uint8Array>;
   destroy(): void;
   /** F0 policy gate: register the only messages this signer may sign (the compile() output). */
-  expect?(messages: Uint8Array[]): void;
+  expect?(messages: Uint8Array[], txIndex?: number): void | Promise<void>;
 }
 
 export class F1Signer implements GenesisSigner {

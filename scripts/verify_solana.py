@@ -3,8 +3,12 @@
 Solana RPC. Standard library only. Exit codes follow the E-4 contract (ARCHITECTURE 4.6):
   0 every check ok | 2 ONLY a MISMATCH (always with a `MISMATCH <field>` line) | 3 pending (no mint recorded)
   4 infrastructure (RPC down, non-JSON, two RPCs disagree) | 64 usage | 1 --tamper-all found an undetected tamper
-Checks that need the NEAR core genesis views (C1 C2 C23 C24 C26 C30) or off-chain content (C10, C22, C25) print SKIP with the reason.
+With --near-rpc URL --contract ACCOUNT --launch ID the checks that read the NEAR core's views run too: C1 (genesis Confirmed, mint == M), C2 (stored
+verdict PASS and, when --near-verdict MATCH is passed by verify.sh, equal to the independent kruxa-sim recompute), C24 (tx1 block time >= the
+NEAR settle time and within 24 h of it), C26 (the core's ceremony hash == sha256(spec_hash | tx1 sig | tx2 sig) recomputed from the record).
+C23 (event enumeration), C10, C22, C25 and C30 (a FAIL launch has no record, verify.sh prints the no-mint line) stay SKIP with the reason.
 usage: verify_solana.py --record FILE --rpc URL [--rpc2 URL] [--charter FILE] [--commitment finalized|confirmed] [--production]
+                        [--near-rpc URL --contract ACCOUNT --launch ID [--near-verdict MATCH]]
                         [--tamper [FIELD] | --tamper-all] [--evidence-out FILE | --evidence FILE]"""
 import base64, copy, dataclasses, hashlib, json, os, struct, sys, urllib.request
 
@@ -20,9 +24,11 @@ PRODUCTION_TIME_LOCK = 172_800
 G_DUST_MAX = 890_880 + 5_000
 TAMPER_FIELDS = ["mint", "g_pub", "launch_id", "name", "symbol", "decimals", "reserve_amount", "max_total_claim", "max_num_nodes",
                  "merkle_root", "reserve_owner", "spec_hash"]
-SKIPS = {"C1": "needs core genesis views (Task 4.4)", "C2": "needs core ledger views (Task 4.4)", "C10": "needs the hosted metadata JSON",
-         "C22": "no creator allocation in this record", "C23": "needs core genesis events", "C24": "needs core PASS block time",
-         "C25": "no Verdict Rail attestation in this record", "C26": "needs core ceremony hash view", "C30": "PASS launch (FAIL path is a core check)"}
+SKIPS = {"C1": "needs core genesis views (pass --near-rpc --contract --launch)", "C2": "needs core ledger views (pass --near-rpc --contract --launch)",
+         "C10": "needs the hosted metadata JSON", "C22": "no creator allocation in this record",
+         "C23": "needs the core's genesis_committed/genesis_confirmed events (plain RPC cannot enumerate a contract's events; the views show one confirmed mint, see C1)",
+         "C24": "needs core PASS block time (pass --near-rpc --contract --launch)", "C25": "no Verdict Rail attestation in this record",
+         "C26": "needs core ceremony hash view (pass --near-rpc --contract --launch)", "C30": "PASS launch (FAIL path is a core check)"}
 
 
 class Infra(Exception):
@@ -349,7 +355,53 @@ def c_f0(rec, r):
         r.ok("C27", "g_pub == derive(%s, %s)" % (f["predecessor"], f["path"])) if want == got else r.bad("C27", "g_pub", want, got)
 
 
-def run_checks(rpc, rec, charter, production):
+def near_view(near, method, args):
+    """One NEAR view call over JSON-RPC (stdlib). Infra on any transport or contract error; a missing launch answers null."""
+    body = json.dumps({"jsonrpc": "2.0", "id": 1, "method": "query", "params": {"request_type": "call_function", "finality": "final",
+                       "account_id": near["contract"], "method_name": method, "args_base64": base64.b64encode(json.dumps(args).encode()).decode()}}).encode()
+    try:
+        j = json.loads(urllib.request.urlopen(urllib.request.Request(near["rpc"], body, {"content-type": "application/json"}), timeout=30).read())
+    except Exception as e:
+        raise Infra("near rpc %s %s: %s" % (near["rpc"], method, e))
+    if "result" not in j or "error" in j.get("result", {}):
+        raise Infra("near view %s: %s" % (method, str(j.get("error", j))[:160]))
+    return json.loads(bytes(j["result"]["result"]).decode() or "null")
+
+
+def c_near(rpc, rec, near, r):
+    """C1, C2, C24, C26 from the core's views (S1-D 7.2). The core is NEAR testnet or mainnet depending on the RPC the caller gave."""
+    args = {"launch_id": near["launch"]}
+    gen, st, sett = near_view(near, "get_genesis", args), near_view(near, "get_state", args), near_view(near, "get_settlement", args)
+    mint_hex = sol.b58d(rec["mint"]).hex()
+    if not gen or gen.get("status") != "Confirmed" or not st or st.get("status") != "Passed":
+        r.bad("C1", "genesis_status", "Confirmed (launch Passed)", "%s (launch %s)" % (gen and gen.get("status"), st and st.get("status")))
+    elif gen["mint_address"] != mint_hex or list(gen["tx_sigs"]) != list(rec["sigs"]):
+        r.bad("C1", "mint", "core mint %s and sigs" % sol.b58e(bytes.fromhex(gen["mint_address"])), "record %s" % rec["mint"])
+    else:
+        r.ok("C1", "core launch %s is Passed and genesis Confirmed with mint == M and the two ceremony signatures" % near["launch"])
+    if not sett or not sett.get("pass"):
+        r.bad("C2", "verdict", "PASS", sett)
+    elif near.get("verdict") == "MATCH":
+        r.ok("C2", "stored verdict PASS == the independent kruxa-sim recompute (inputs_hash MATCH, section NEAR recompute above)")
+    else:
+        r.skip("C2", "stored verdict is PASS but no kruxa-sim recompute result was passed (use verify.sh, or --near-verdict MATCH)")
+    if sett and gen and gen.get("tx_sigs"):
+        t = rpc.call("getBlockTime", [rpc.call("getTransaction", [rec["sigs"][0], {"encoding": "base64", "maxSupportedTransactionVersion": 0, "commitment": rpc.commitment}])["slot"]])
+        passed_s = int(sett["settled_at"]) // 10**9
+        if t < passed_s:
+            r.bad("C24", "mint_time", ">= PASS time %d" % passed_s, t)
+        elif t - passed_s > 86400:
+            r.bad("C24", "tx1_delay", "<= 24 h after PASS", "%d s" % (t - passed_s))
+        else:
+            r.ok("C24", "tx1 block time %d is %d s after the NEAR settle at %d (>= 0, <= 24 h; the commit time is not readable by a view, so settle is the anchor)" % (t, t - passed_s, passed_s))
+    want = hashlib.sha256(bytes.fromhex(rec["spec_hash"]) + sol.b58d(rec["sigs"][0]) + sol.b58d(rec["sigs"][1])).hexdigest()
+    if gen and gen.get("ceremony_hash") == want:
+        r.ok("C26", "core ceremony_hash %s == sha256(spec_hash | tx1 | tx2) recomputed from the record" % want[:16])
+    else:
+        r.bad("C26", "ceremony_hash", want, gen and gen.get("ceremony_hash"))
+
+
+def run_checks(rpc, rec, charter, production, near=None):
     r = Report()
     raw, spec, params = load_spec(rec)
     out = c_derivations(rec, raw, spec, params, r)
@@ -363,8 +415,11 @@ def run_checks(rpc, rec, charter, production):
     c_merkle(rec, spec, r)
     c_f0(rec, r)
     r.ok("C28", "two-RPC agreement enforced on every read (2 RPCs)") if len(rpc.urls) == 2 else r.skip("C28", "single RPC; pass --rpc2")
+    if near:
+        c_near(rpc, rec, near, r)
     for c, why in SKIPS.items():
-        r.skip(c, why)
+        if not (near and c in ("C1", "C2", "C24", "C26")):
+            r.skip(c, why)
     return r
 
 
@@ -402,7 +457,7 @@ def tamper(rec, field):
 
 def parse_args(argv):
     spec = {"--record": 1, "--rpc": 1, "--rpc2": 1, "--charter": 1, "--commitment": 1, "--evidence-out": 1, "--evidence": 1,
-            "--production": 0, "--tamper": "opt", "--tamper-all": 0}
+            "--production": 0, "--tamper": "opt", "--tamper-all": 0, "--near-rpc": 1, "--contract": 1, "--launch": 1, "--near-verdict": 1, "--c30": 0}
     a, i = {}, 0
     while i < len(argv):
         k = argv[i]
@@ -419,7 +474,11 @@ def parse_args(argv):
             a[k], i = True, i + 1
     if "--tamper" in a and "--tamper-all" in a:
         raise Usage("--tamper and --tamper-all are exclusive")
-    if "--evidence" not in a and ("--record" not in a or "--rpc" not in a):
+    if any(k in a for k in ("--near-rpc", "--contract", "--launch")) and not all(k in a for k in ("--near-rpc", "--contract", "--launch")):
+        raise Usage("--near-rpc, --contract and --launch go together")
+    if "--c30" in a and not all(k in a for k in ("--near-rpc", "--contract", "--launch")):
+        raise Usage("--c30 needs --near-rpc, --contract and --launch")
+    if "--c30" not in a and "--evidence" not in a and ("--record" not in a or "--rpc" not in a):
         raise Usage("need --record FILE and --rpc URL (or --evidence FILE)")
     if a.get("--tamper") and a["--tamper"] not in TAMPER_FIELDS:
         raise Usage("unknown tamper field; one of: " + " ".join(TAMPER_FIELDS))
@@ -433,9 +492,25 @@ def load_json(path):
         raise Usage("cannot read %s: %s" % (path, e))
 
 
+def c30(near):
+    """FAIL launch: no genesis was ever committed (genesis status None, no g_pub, no mint) and nothing accrued to creator or platform."""
+    args = {"launch_id": near["launch"]}
+    gen, sett = near_view(near, "get_genesis", args), near_view(near, "get_settlement", args)
+    if not sett or sett.get("pass"):
+        print("MISMATCH verdict C=C30 expected=FAIL actual=%s" % (sett and sett.get("pass"))); return 2
+    bad = [k for k, v in (("genesis_status", (gen or {}).get("status") not in (None, "None")), ("g_pub", (gen or {}).get("g_pub")), ("mint", (gen or {}).get("mint_address")),
+                         ("launch_fee", sett.get("launch_fee") != "0"), ("stream", sett.get("stream") != "0")) if v]
+    if bad:
+        print("MISMATCH %s C=C30" % ",".join(bad)); return 2
+    print("PASS C30 FAIL launch %s: no genesis committed (status None, no g_pub, no mint), launch_fee 0, creator stream 0" % near["launch"])
+    return 0
+
+
 def main(argv):
     try:
         a = parse_args(argv)
+        if "--c30" in a:
+            return c30({"rpc": a["--near-rpc"], "contract": a["--contract"], "launch": a["--launch"]})
         charter = load_json(a["--charter"]) if "--charter" in a else None
         if "--evidence" in a:
             ev = load_json(a["--evidence"])
@@ -446,17 +521,18 @@ def main(argv):
             rec = load_json(a["--record"])
             urls = [a["--rpc"]] + ([a["--rpc2"]] if "--rpc2" in a else [])
             rpc = Rpc(urls, a.get("--commitment", "finalized"))
+        near = {"rpc": a["--near-rpc"], "contract": a["--contract"], "launch": a["--launch"], "verdict": a.get("--near-verdict")} if "--near-rpc" in a and "--evidence" not in a else None
         if not rec.get("mint"):
             print("PENDING: no mint recorded (genesis not confirmed)")
             return 3
         try:
-            base = run_checks(rpc, rec, charter, "--production" in a)
+            base = run_checks(rpc, rec, charter, "--production" in a, near)
         except ValueError as e:
             print("MISMATCH spec (%s)" % e)
             return 2
         if "--evidence-out" in a:
             json.dump({"record": rec, "charter": charter, "commitment": rpc.commitment, "responses": rpc.log}, open(a["--evidence-out"], "w"))
-        return finish(a, rpc, rec, charter, base)
+        return finish(a, rpc, rec, charter, base, near)
     except Usage as e:
         print("usage error: %s\n%s" % (e, __doc__.split("usage:")[1].strip()), file=sys.stderr)
         return 64
@@ -465,7 +541,7 @@ def main(argv):
         return 4
 
 
-def finish(a, rpc, rec, charter, base):
+def finish(a, rpc, rec, charter, base, near=None):
     print("\n".join(base.lines))
     if base.mismatch:
         return 2
@@ -474,7 +550,7 @@ def finish(a, rpc, rec, charter, base):
         undetected = False
         for f in fields:
             try:
-                rep = run_checks(rpc, tamper(rec, f), charter, "--production" in a)
+                rep = run_checks(rpc, tamper(rec, f), charter, "--production" in a, near)
             except (ValueError, KeyError, IndexError):
                 rep = Report(); rep.bad("parse", f, "valid", "unparsable")
             hit = f in rep.mismatch

@@ -1,0 +1,31 @@
+{
+  "launch_id": "2",
+  "core": "core3.kxi-root-1108.testnet",
+  "keeper": "keeper.kxi-root-1108.testnet",
+  "at": "2026-11-10T00:21:37.310Z",
+  "calls": [
+    {
+      "method": "consolidate",
+      "tx": "9zyAPWSasc9uL7vZNVFX9XQ7KFVX24au5qUWsaL7e37U",
+      "success": true,
+      "rule_codes": []
+    },
+    {
+      "method": "pay_launch_fee",
+      "tx": "F3jHqhfngdpkvZTyzW5hGRGeDUpyLKkwZL8sTYvy33Uf",
+      "success": true,
+      "rule_codes": []
+    },
+    {
+      "method": "pay_relay_fees",
+      "tx": "6KaXvxynyJSzWQHSLZgYvK9KMgTE8Shs2W67cxV9LX6i",
+      "success": false,
+      "rule_codes": [
+        "R_NOTHING_FREE"
+      ]
+    }
+  ],
+  "final_status": "Passed",
+  "positions_unsettled": 0,
+  "residue_swept": true
+}
