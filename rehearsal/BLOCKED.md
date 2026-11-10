@@ -22,3 +22,7 @@
 | Caller gas for create_trial | finding | 150 Tgas (documented in docs/runbooks/testnet-core2.md and used by seed.mjs until now) starves the creation callback since create_token takes 110. Launch stays Creating until `finalize_creation` after 10 minutes. 300 Tgas works. Any frontend or doc that says 150 is stale; this needs a decision on the minimum to publish (suggest 300, or a require! on prepaid gas in create_trial so it fails loudly instead of leaving a Creating launch and a locked creator). |
 | Launch 7 | open record | KXCG (creator-b) was brought to Open/Ready by finalize_creation but has 0 funders and a past commit window; it is a dead launch. creator-b has an active trial until it is settled (FAIL) and cleaned up. Not needed for any gate. |
 | gate-g1 / sandbox suites | not re-run | G2-01 reads the Nov 8 target/gate-g1 logs; the shared machine rule forbids the sandbox suites. |
+
+## Round 3 (2026-11-10, deployed wasm e85198ed)
+
+Nothing blocked. PD-18 closed for testnet (rehearsal/ROUND3.md). Still not covered: core `create_trial` against the REAL token factory end to end (see Round 2), reproducible wasm on core3 (core3 runs the local build `e85198ed...`), sandbox suites on the final wasm (PD-20).

@@ -31,7 +31,7 @@ genesis() { # id mode
   cp "evidence/genesis/core3-$(echo "$2" | tr 'A-Z' 'a-z')-devnet-launch$1.json" "evidence/genesis/core3/genesis-$1.json"
 }
 case "${1:-}" in
-  A|B|C|D|E|F|G|H) node "$CT/seed.mjs" "$1" ;;
+  A|B|C|D|E|F|G|H|I) node "$CT/seed.mjs" "$1" ;;
   settle) ./scripts/keeper.sh "${2:?launch id}" --yes ;;
   genesis) genesis "${2:?launch id}" "${3:?F0 or F1}" ;;
   market) node "$CT/market-flow.mjs" "${2:?launch id}" ;;

@@ -1,0 +1,16 @@
+{
+  "creator": "creator-a.kxi-root-1108.testnet",
+  "symbol": "KXCI",
+  "tgas": 150,
+  "deposit_yocto": "421250000000000000000000",
+  "tx": "2CpPLzn8QrWhNur3cx84ZtKwr7WjGyYUWcmwJ8vNstJs",
+  "success": false,
+  "rule_codes": [
+    "R_GAS"
+  ],
+  "error": "{\"index\":0,\"kind\":{\"index\":0,\"kind\":{\"FunctionCallError\":{\"ExecutionError\":\"Smart contract panicked: R_GAS: attach at least 250 Tgas to create_trial\"}}}}",
+  "next_free_launch_id_before": 9,
+  "next_free_launch_id_after": 9,
+  "creator_near_before": 0.8155564901015661,
+  "creator_near_after": 0.8153407548403432
+}

@@ -24,6 +24,7 @@ const SPECS = {
   F: { sym: 'KXCF', mode: 'F1', creator: 'creator-b', buyers: 12, amount: 30n, note: 'F1 rehearsal (sweep fix, verify C16)' },
   G: { sym: 'KXCG', mode: 'F0', creator: 'creator-b', buyers: 12, amount: 30n, note: 'F0 run on the final wasm e338f84d (round 2)' },
   H: { sym: 'KXCH', mode: 'F0', creator: 'creator-a', buyers: 12, amount: 30n, note: 'F0 run on the final wasm e338f84d (round 2, create_trial with 300 Tgas)' },
+  I: { sym: 'KXCI', mode: 'F0', creator: 'creator-a', buyers: 12, amount: 30n, note: 'F0 run on the FINAL wasm e85198ed with the R_GAS guard (round 3, PD-18)' },
 };
 
 const b58 = (buf) => {
