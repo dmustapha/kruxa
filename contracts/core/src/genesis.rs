@@ -64,7 +64,7 @@ fn unhex32(s: &str) -> [u8; 32] {
 
 /// Lowercase or uppercase hex of 1 to 1232 bytes (one Solana packet).
 fn unhex(s: &str) -> Vec<u8> {
-    let ok = s.len() % 2 == 0 && !s.is_empty() && s.len() <= 2 * F0_MESSAGE_MAX && s.bytes().all(|b| b.is_ascii_hexdigit());
+    let ok = s.len().is_multiple_of(2) && !s.is_empty() && s.len() <= 2 * F0_MESSAGE_MAX && s.bytes().all(|b| b.is_ascii_hexdigit());
     if !ok {
         fail(RuleCode::RGenesisArg, "message must be hex of 1 to 1232 bytes");
     }
