@@ -393,5 +393,91 @@
       "holder_count": 12,
       "phase": "Open"
     }
+  },
+  "G_gas150": {
+    "id": 7,
+    "name": "G_gas150",
+    "note": "round 2 first attempt: create_trial sent with 150 Tgas, callback ran out of gas, launch stays Creating (finalize_creation after 10 min); commits R_WRONG_PHASE",
+    "symbol": "KXCG",
+    "mode": "F0",
+    "token": "kxcg.factory.kxi-root-0811.testnet",
+    "creator": "creator-b.kxi-root-1108.testnet",
+    "core": "core3.kxi-root-1108.testnet",
+    "holders_file_local": "~/.kruxa-secrets/genesis/holders-core3-7.json",
+    "txs": {
+      "mint_to_intents": "DExPEC5rkpfLTWkpyzfpqdhTv1o5D6hYamf6CKkYaBsY",
+      "create_trial": "86wtzFWARfj8LpU4JYFWTGwsrmVKiov2dc3rUfYtDuuW"
+    },
+    "buyers": [
+      {
+        "holder": "sol:DmGeUX2uMYGgcLuVbERDD37pZjfSnfcGwPebedcAaRoY",
+        "tx": "BLcbvqEQgjRhgKMYbmnHEaNYFTei5iVozev2Cn11Cbrz",
+        "success": true
+      },
+      {
+        "holder": "sol:8jonBLzjNf8kau98cqwbgHb8nF5pj5Ujz87Mo1PNJgFT",
+        "tx": "9AHo29C7NrWHEnpgkr5Z5Ge8kWqaBZH1SYSownU75sCA",
+        "success": true
+      },
+      {
+        "holder": "sol:39hdCLFpxb3ytovxkrVfTr56KsvQSqr9KA5iy5nwRXV9",
+        "tx": "8oxBaQH6A27DM42rAfNhP11M59rcnXi2khBDVThPhDwB",
+        "success": true
+      },
+      {
+        "holder": "sol:7FGtB6CksPiy5FdK3XZjfHTHzB3jT6ZPtD9XkDmvAMrp",
+        "tx": "HU4wdN6PBMWPeoohGBpdVcQZobLf4TShtzoEzneWdQTF",
+        "success": true
+      },
+      {
+        "holder": "sol:ApAJ1hsL4HajM8JRNBDdTQsDR8bGrKUdJgWT7jwa4rrF",
+        "tx": "8msb8AzrPH7ERQpdNA1GiSf11wxD1sV7pDutXipAcWHz",
+        "success": true
+      },
+      {
+        "holder": "sol:GLmpujuvautqrV1wrHPgvp2ba9nEMn9Ew9EKjma2ebg",
+        "tx": "5gHdJw9DYa4DrTDQKbLwnphWFBMetfcSrEpcH99UYsj7",
+        "success": true
+      },
+      {
+        "holder": "sol:GqzkGudc1ddKsnnEEDxHCj2t2KBNxJ2NarRxreK8p4Mj",
+        "tx": "D16FfZnjg59tXyGc1YTmb4nybBGKntstj26Gxk2mZXY6",
+        "success": true
+      },
+      {
+        "holder": "sol:FWo7vhGNPuH6S93RPhQYyBy78rGqjTDBaPCqtXfsefPP",
+        "tx": "5DgJ9CcZppnYrLnFia6r75tBXDNkTDekmTApS2rhgp2u",
+        "success": true
+      },
+      {
+        "holder": "sol:8B5bMfdbnx9XjhHNbAruWoR3MtsJZBefoLEC9shGZZqt",
+        "tx": "DL4hzNLRUtbsxMJZXTnotWSNC2W7jE58J5RZ2wiLPyzy",
+        "success": true
+      },
+      {
+        "holder": "sol:Efwq43ZMYNH6GcWxj9eCGfVZpzA7a2jVs4jDXo3cdv72",
+        "tx": "2d9VDeixyUEHRqmbSE4hmXREEuQSMHyqquM68VF3tXvF",
+        "success": true
+      },
+      {
+        "holder": "sol:5iJXKxQn9t2QEG5WxbzJ5SeAA3Lb1FcEHgFF7jSiWJJC",
+        "tx": "AjXwg1ezai7ktoxY6JjY3QfM8aq5Qjnt4DU3yjbnnfED",
+        "success": true
+      },
+      {
+        "holder": "sol:Abv6JRLA5Tb93BWyBE8CLE89CLyFVcLYESAaLagyHr2T",
+        "tx": "BRZyRbDh9kC7maVPYzD2sVSPBsAp5esYy2gqAREFDtfw",
+        "success": true
+      }
+    ],
+    "create_success": false,
+    "create_codes": [],
+    "created_at": "2026-11-10T02:12:06.559Z",
+    "after_commit": {
+      "total_active": "0",
+      "active_funders": 0,
+      "holder_count": 0,
+      "phase": "Open"
+    }
   }
 }

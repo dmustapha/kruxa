@@ -11,7 +11,7 @@ import { execFileSync } from 'child_process';
 import { L, A, REPO, ONE_NEAR, wasmPath, writeJson, readJson } from './common.mjs';
 
 const USDC_ = 1_000_000n;
-const RESERVE_NEAR = 2;
+const RESERVE_NEAR = Number(process.env.KXI_RESERVE_NEAR || 2);
 const SQUADS = 'CneX72zHFJsd71BBZ39xAuBH8zBySsWo6RedYr6j6A1Z'; // devnet Squads vault of the earlier genesis rehearsals
 const ALPHA = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
 
@@ -22,6 +22,8 @@ const SPECS = {
   D: { sym: 'KXCD', mode: 'F0', creator: 'creator-b', buyers: 12, amount: 30n, note: 'F0 rehearsal 2' },
   E: { sym: 'KXCE', mode: 'F0', creator: 'creator-a', buyers: 12, amount: 30n, note: 'F0 rehearsal 3' },
   F: { sym: 'KXCF', mode: 'F1', creator: 'creator-b', buyers: 12, amount: 30n, note: 'F1 rehearsal (sweep fix, verify C16)' },
+  G: { sym: 'KXCG', mode: 'F0', creator: 'creator-b', buyers: 12, amount: 30n, note: 'F0 run on the final wasm e338f84d (round 2)' },
+  H: { sym: 'KXCH', mode: 'F0', creator: 'creator-a', buyers: 12, amount: 30n, note: 'F0 run on the final wasm e338f84d (round 2, create_trial with 300 Tgas)' },
 };
 
 const b58 = (buf) => {
@@ -136,7 +138,7 @@ const p = params(spec.sym, commitSecs);
 const plan = genesisPlan(spec, id);
 const need = await L.view(A.core, 'required_deposit', { params: p });
 await rootGuard(0);
-const created = await L.call(`${which}: create_trial ${spec.sym} (${spec.mode})`, creator, A.core, 'create_trial', { params: p, stream_recipient: null, genesis: plan }, { gas: L.tgas(150), deposit: need });
+const created = await L.call(`${which}: create_trial ${spec.sym} (${spec.mode})`, creator, A.core, 'create_trial', { params: p, stream_recipient: null, genesis: plan }, { gas: L.tgas(300), deposit: need }); // 150 no longer enough since create_token takes 110 Tgas: the callback starves and the launch stays Creating
 rec.txs.create_trial = created.tx; rec.create_success = created.success; rec.create_codes = created.rule_codes;
 for (let i = 0; i < 40; i++) { const st = await L.view(A.core, 'get_state', { launch_id: String(id) }); if (st && st.status === 'Open') break; if (st && st.status === 'CreationFailed') throw new Error('creation failed'); await L.sleep(3); }
 rec.created_at = new Date().toISOString();
