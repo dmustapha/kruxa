@@ -11,6 +11,9 @@ export const CORE_EVENTS = new Set([
   "paused", "frozen", "unpaused", "global_cap_lowered", "global_cap_queued", "global_cap_applied", "launch_cap_queued", "launch_cap_applied",
   "beta_opened", "market_set", "market_handoff", "market_leg_resolved", "market_opened", "genesis_relayer_set", "genesis_paused", "genesis_resumed",
   "genesis_committed", "genesis_confirmed", "genesis_aborted", "attest_log", "external_pool",
+  "genesis_reopened", "f0_message_registered", "f0_sign_requested", "halted", "resumed", "upgrade_queued", "upgrade_cancelled", "upgraded",
+  "force_resolve_queued", "op_force_resolved", "solvency_report", "owed_near_credited", "owed_near_withdrawn", "refund_batch", "refund_route_set",
+  "orphan_credit_refused", "token_delivery_refused", "creator_alloc_claimed", "tokens_swept", "stream_lengthened",
 ]);
 
 /** Events the instant launcher emits (INSTANT-ABI section 9). `paused`, `frozen`, `unpaused` and `platform_withdrawn` share names with core and market; the contract kind tells them apart. */

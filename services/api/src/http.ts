@@ -3,6 +3,7 @@ import type { IncomingMessage, Server, ServerResponse } from "node:http";
 import { ApiError, candleJson, launchSummary, one, tradeJson } from "./common.ts";
 import type { Ctx, Json } from "./common.ts";
 import { creatorClaimsCsv, creatorDesk, launchesCsv, portfolio, tradesCsv, verify } from "./desk.ts";
+import { launchCustody, launchGenesis, opsForceResolves, opsHalts, opsOwed, opsSolvency, opsStatus, opsUpgrades } from "./ops.ts";
 import * as q from "./queries.ts";
 import type { Change } from "../../indexer/src/types.ts";
 
@@ -13,7 +14,15 @@ const ROUTES: Array<[RegExp, Handler]> = [
   [/^\/api\/stats$/, (c) => q.stats(c)],
   [/^\/api\/ops-log$/, (c, _m, s) => q.opsLog(c, s)],
   [/^\/api\/launches$/, (c, _m, s) => q.launches(c, s)],
+  [/^\/api\/ops\/status$/, (c) => opsStatus(c)],
+  [/^\/api\/ops\/upgrades$/, (c, _m, s) => opsUpgrades(c, s)],
+  [/^\/api\/ops\/halts$/, (c, _m, s) => opsHalts(c, s)],
+  [/^\/api\/ops\/force-resolves$/, (c, _m, s) => opsForceResolves(c, s)],
+  [/^\/api\/ops\/solvency$/, (c, _m, s) => opsSolvency(c, s)],
+  [/^\/api\/ops\/owed$/, (c, _m, s) => opsOwed(c, s)],
   [/^\/api\/launch\/([^/]+)$/, (c, m) => q.launchDetail(c, m[1] as string)],
+  [/^\/api\/launch\/([^/]+)\/custody$/, (c, m) => launchCustody(c, m[1] as string)],
+  [/^\/api\/launch\/([^/]+)\/genesis$/, (c, m) => launchGenesis(c, m[1] as string)],
   [/^\/api\/token\/([^/]+)$/, (c, m) => q.tokenPage(c, m[1] as string)],
   [/^\/api\/token\/([^/]+)\/candles$/, (c, m, s) => q.candles(c, m[1] as string, s)],
   [/^\/api\/token\/([^/]+)\/trades$/, (c, m, s) => q.trades(c, m[1] as string, s)],

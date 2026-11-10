@@ -1,52 +1,19 @@
 import type { DatabaseSync, SQLInputValue } from "node:sqlite";
 import { DEFAULT_TOKEN_DECIMALS, bucketStart, priceE12 } from "./price.ts";
 import { INSTANT_ID_BASE, INTERVALS } from "./types.ts";
-import type { PendingChange, StoredEvent } from "./types.ts";
-
-type Row = Record<string, unknown>;
-type Emit = (c: PendingChange) => void;
-
-const ZERO = "0";
-
-function big(v: unknown, field: string): bigint {
-  if (typeof v === "string" && /^-?[0-9]+$/.test(v)) return BigInt(v);
-  if (typeof v === "number" && Number.isSafeInteger(v)) return BigInt(v);
-  throw new Error(`bad amount in ${field}`);
-}
-
-function optBig(v: unknown): bigint | null {
-  return typeof v === "string" && /^[0-9]+$/.test(v) ? BigInt(v) : null;
-}
-
-function launchId(d: Row): number {
-  const v = d.launch_id;
-  const n = typeof v === "string" ? Number(v) : v;
-  if (typeof n !== "number" || !Number.isSafeInteger(n) || n < 0) throw new Error("bad launch_id");
-  return n;
-}
-
-function str(v: unknown, fallback = ""): string {
-  return typeof v === "string" ? v : fallback;
-}
-
-function nsToSec(v: unknown): number | null {
-  return typeof v === "string" && /^[0-9]+$/.test(v) ? Number(BigInt(v) / 1_000_000_000n) : null;
-}
-
-function intOrNull(v: unknown): number | null {
-  const n = typeof v === "string" ? Number(v) : v;
-  return typeof n === "number" && Number.isSafeInteger(n) ? n : null;
-}
-
-function mixSource(a: unknown, b: string): string {
-  return a === "fixture" || b === "fixture" ? "fixture" : "chain";
-}
+import type { StoredEvent } from "./types.ts";
+import { bookNext, ZERO_BOOK_HASH } from "./book.ts";
+import { OpsFolder } from "./fold-ops.ts";
+import { ZERO, big, intOrNull, launchId, mixSource, nsToSec, optBig, str } from "./fold-util.ts";
+import type { Emit, Row } from "./fold-util.ts";
 
 /** Applies one event to the derived tables. Must be a pure function of (state, event) so replays agree. */
 export class Folder {
   readonly db: DatabaseSync;
+  private readonly ops: OpsFolder;
   constructor(db: DatabaseSync) {
     this.db = db;
+    this.ops = new OpsFolder(db, (id, e) => this.touchLaunch(id, e));
   }
 
   private get(sql: string, ...p: SQLInputValue[]): Row | undefined {
@@ -73,12 +40,13 @@ export class Folder {
       case "genesis_committed": return this.genesis(e, "committed", emit);
       case "genesis_confirmed": return this.genesis(e, "confirmed", emit);
       case "genesis_aborted": return this.genesis(e, "aborted", emit);
+      case "genesis_reopened": case "f0_message_registered": case "f0_sign_requested": case "attest_log": return this.ops.genesisSide(e, emit);
       case "external_pool": return this.externalPool(e);
       case "pool_opened": return this.poolOpened(e, emit);
       case "swap": return this.swap(e, emit);
       case "creator_claimed": return this.creatorClaimed(e);
       case "market_paused": return this.marketPaused(e);
-      default: return;
+      default: return this.ops.apply(e, emit);
     }
   }
 
@@ -136,6 +104,7 @@ export class Folder {
     const amount = big(kind === "contributed" ? d.net : d.amount, kind);
     const col = kind === "contributed" ? "contributed" : "walked";
     const pos = this.get("SELECT * FROM positions WHERE launch_id = ? AND holder = ?", id, holder);
+    const open = BigInt(String(pos?.contributed ?? ZERO)) - BigInt(String(pos?.walked ?? ZERO));
     const next = BigInt(String(pos?.[col] ?? ZERO)) + amount;
     this.run(
       `INSERT INTO positions (launch_id, holder, contributed, walked, tokens_claimed, source) VALUES (?, ?, '0', '0', '0', ?)
@@ -147,7 +116,21 @@ export class Folder {
     this.run(`UPDATE launches SET ${totalCol} = ?, total_active = ?, funders = ?, book_hash = ? WHERE launch_id = ?`,
       (BigInt(String(l[totalCol])) + amount).toString(), big(d.total_active, "total_active").toString(),
       intOrNull(d.funders) ?? 0, str(d.book_hash), id);
+    this.foldBook(e, l, kind, holder, amount, open);
     emit({ type: "launch", launchId: id });
+  }
+
+  /** Replays the contract's rolling book hash from the events alone and records the first height where the logged hash disagrees. */
+  private foldBook(e: StoredEvent, l: Row, kind: "contributed" | "walked", holder: string, amount: bigint, openBefore: bigint): void {
+    const contributed = kind === "contributed";
+    const total = BigInt(String(l.contributed_total)) - BigInt(String(l.walked_total)) + (contributed ? amount : -amount);
+    const funders = Math.max(0, Number(l.book_funders) + (contributed ? (openBefore === 0n ? 1 : 0) : -1));
+    const prev = String(l.book_hash_recomputed) || ZERO_BOOK_HASH;
+    const hash = bookNext(prev, contributed ? 1 : 2, holder, amount, total < 0n ? 0n : total, funders);
+    const logged = str(e.data.book_hash);
+    const bad = logged !== "" && logged !== hash && l.book_mismatch_at === null;
+    this.run("UPDATE launches SET book_hash_recomputed = ?, book_events = book_events + 1, book_funders = ?, book_mismatch_at = COALESCE(book_mismatch_at, ?) WHERE launch_id = ?",
+      hash, funders, bad ? e.blockHeight : null, Number(l.launch_id));
   }
 
   private verdict(e: StoredEvent, emit: Emit): void {
@@ -182,6 +165,7 @@ export class Folder {
     const ok = d.ok === true;
     this.run("INSERT OR REPLACE INTO payouts VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       id, e.blockHeight, e.ord, e.logIndex, e.receiptId, e.time, kind, amount.toString(), ok ? 1 : 0, str(l.payout_recipient), e.source);
+    this.ops.payoutResolved(id, kind, ok, amount, e);
     if (kind === "Stream" && ok) {
       this.run("UPDATE launches SET stream_drawn = ? WHERE launch_id = ?", (BigInt(String(l.stream_drawn)) + amount).toString(), id);
     }
@@ -317,6 +301,7 @@ export class Folder {
       JSON.stringify(list("sigs", cur?.signatures)), keep("slot", text("slot") ?? (typeof d.slot === "number" ? String(d.slot) : null)),
       keep("ceremony_hash", text("ceremony_hash")), intOrNull(d.leaf_count) ?? ((cur?.leaf_count as number | null | undefined) ?? null),
     );
+    this.ops.genesisExtras(id, stage, d, cur);
     emit({ type: "launch", launchId: id });
   }
 
@@ -355,7 +340,7 @@ export class Folder {
       case "instant_aborted": return this.instantFail(e, "aborted", emit);
       case "alloc_claimed": return this.allocClaimed(e, emit);
       case "fee_credited": return this.feeCredited(e);
-      default: return;
+      default: return this.ops.apply(e, emit);
     }
   }
 
@@ -447,6 +432,7 @@ export class Folder {
 
   private marketPaused(e: StoredEvent): void {
     const paused = e.data.paused === false ? 0 : 1;
+    this.ops.marketState(e);
     if (e.data.launch_id === undefined) {
       this.run("DELETE FROM flags WHERE k = 'market_paused_global'");
       if (paused) this.run("INSERT INTO flags VALUES ('market_paused_global', '1')");

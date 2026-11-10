@@ -179,7 +179,7 @@ export function launchSummary(ctx: Ctx, l: Row): Json {
     launch_id: String(id), symbol: l.symbol, name: l.name, mode, creator: l.creator, payout_recipient: l.payout_recipient, status: l.status, stage: stageOf({ ...l, mode }, now), phase, tab: tabOf(phase),
     created_at: l.created_at, opens_at: l.opens_at, commit_end: l.commit_end, walk_end: l.walk_end,
     total_active: l.total_active, funders: l.funders, soft_cap: l.soft_cap, min_funders: l.min_funders, progress_bps: progress,
-    verdict: l.verdict, has_market: hasMarket,
+    verdict: l.verdict, has_market: hasMarket, halted: one(ctx.store, "SELECT halted FROM halts WHERE launch_id = ? AND halted = 1", id) !== undefined,
     last_price: lastPrice(ctx.store, id), volume_24h: volume(ctx.store, id, now - WINDOW_24H).quote, last_block: l.last_block, source: l.source,
   };
 }

@@ -12,11 +12,11 @@ Written by workstream I from `contracts/core/src/*.rs` on main (the section was 
 |---|---|---|
 | `charter_created` | `launch_id, creator, symbol, name, charter_hash, soft_cap, min_funders, stream_days, total_supply, payout_recipient, token_decimals` | `create_trial` accepted, token creation started. `payout_recipient` equals the Charter `stream_recipient` (D-2), `token_decimals` is the rule-set decimals (6), `total_supply` is `derived.n_total` in base units |
 | `trial_opened` | `launch_id, opens_at, commit_end, walk_end` | token created, trial open |
-| `contributed` | `launch_id, holder, net, relay_fee, custody ("Native"/"Intents"), total_active, funders, book_hash` | a commit landed; `total_active`, `funders`, `book_hash` are the launch totals after it |
+| `contributed` | `launch_id, holder, net, relay_fee, custody ("Native"/"Intents"), total_active, funders, book_hash` | a commit landed; `total_active`, `funders`, `book_hash` are the launch totals after it. `book_hash` is the rolling hash of `crates/kruxa-logic/src/verdict.rs` (`book_next`); the indexer replays it from these events and reports `fold_ok` in `/api/verify/{id}` |
 | `walked` | `launch_id, holder, amount, total_active, funders, book_hash` | walk (exit) accepted; totals after it |
 | `verdict` | PASS: `launch_id, outcome:"PASS", inputs_hash, total_active, funders`. FAIL: `launch_id, outcome:"FAIL", reasons[], total_active, funders` | `settle` decided the launch |
 | `pass_allocated` | `launch_id, accepted, launch_fee, lp_quote, stream, excess_pool` | right after a PASS verdict |
-| `payout_resolved` | `launch_id, kind ("RefundNative","RefundIntents","LaunchFee","Stream","RelayFee","Consolidate","Claim"), amount, ok` | an outbound payout callback resolved; `ok=false` is retryable. A Stream draw is `kind:"Stream"` |
+| `payout_resolved` | `launch_id, kind ("RefundNative","RefundIntents","LaunchFee","Stream","RelayFee","Consolidate","Claim","AllocClaim","Sweep"), amount, ok` | an outbound payout callback resolved; `ok=false` is retryable. A Stream draw is `kind:"Stream"`. `AllocClaim` and `Sweep` are the token legs of `creator_alloc_claimed` and `tokens_swept`; `ok=false` re-credits what the debit took |
 | `tokens_claimed` | `launch_id, holder, amount` | a PASS backer claimed launch tokens |
 | `residue_swept` | `launch_id, amount` | leftover dust swept |
 | `dissolved` | `launch_id` | FAIL path finished, every refund cleared |
@@ -43,8 +43,25 @@ Written by workstream I from `contracts/core/src/*.rs` on main (the section was 
 | `genesis_confirmed` | `launch_id, mint, sigs[], slot, ceremony_hash` | relayer confirmed (a signed claim, audited by verify.sh) |
 | `genesis_aborted` | `launch_id, by, reason` | aborted before confirm |
 | `attest_log` | `launch_id, attestation_hash` | Verdict Rail attestation hash appended |
+| `genesis_reopened` | `launch_id, by` | the owner put an aborted genesis back to its default state; the earlier attempt stays in the `genesis_committed` and `genesis_aborted` events |
+| `f0_message_registered` | `launch_id, tx_index, message_sha256` | an F0 genesis transaction message was registered (tx_index 0 or 1) |
+| `f0_sign_requested` | `launch_id, tx_index` | the creator asked for the F0 signature of that transaction |
+| `halted` / `resumed` | `launch_id, by, reason` / `launch_id` | owner or guardian halted or resumed one launch |
+| `upgrade_queued` / `upgrade_cancelled` / `upgraded` | `code_hash, effective_at` / `code_hash, by` / `code_hash` | the public 7-day upgrade queue (hash is lowercase hex sha256 of the wasm). A new queue call replaces a pending one without a cancel event |
+| `force_resolve_queued` / `op_force_resolved` | `launch_id, amount, ok, effective_at` / `launch_id, amount, ok, evidence` | two-step owner resolution of one stuck outbound leg; the events do not name the leg kind or holder |
+| `solvency_report` | `at, native, intents, ok, intents_alert` | `check_solvency` result. `native` and `intents` are `{balance, liability, ok}` or `null` when that leg could not be read |
+| `owed_near_credited` / `owed_near_withdrawn` | `account, amount` | a failed NEAR push was credited as owed / the account pulled it with `withdraw_owed` (yoctoNEAR) |
+| `creator_alloc_claimed` | `launch_id, recipient, amount` | the creator allocation claim was debited; delivery resolves in a `payout_resolved` of kind `AllocClaim` |
+| `tokens_swept` | `launch_id, amount, mode, payer` | `sweep_tokens` released unclaimed supply to the burn mode (`hold` or `sink:<account>`); a Sink delivery resolves as `payout_resolved` kind `Sweep` |
+| `token_delivery_refused` | `launch_id, kind, receiver, reason` | a token delivery could not proceed (undone and refunded; a `payout_resolved` with `ok:false` accompanies it) |
+| `stream_lengthened` | `launch_id, end_ns, unlocked_at_change` | the creator moved the stream end later; the cap is continuous at the change |
+| `refund_batch` | `launch_id, handled, paid` | a permissionless refund batch ran |
+| `refund_route_set` | `launch_id, holder, amount, intents_account` | a holder routed their native refund to an Intents account |
+| `orphan_credit_refused` | `launch_id, holder, nonce_spent` | an orphan Intents credit was refused (nonce unspent, or no free balance) |
 
-`external_pool` is still proposed and not emitted by core. Until `genesis_confirmed` exists for a launch the API should report genesis `stage:"pending"`.
+`external_pool` is still proposed and not emitted by core. Until `genesis_confirmed` exists for a launch the API reports genesis `stage:"pending"` (after `genesis_reopened` the stage is `pending` again and `reopen_count` rises).
+
+`set_burn_mode` emits no event; the mode in force is read from the `mode` field of `tokens_swept`. The indexer's projections for these events (halts, upgrades, force_resolves, solvency_reports, owed, launch_custody, flags) and the endpoints that serve them are listed in `services/indexer/README.md`.
 <!-- END CORE EVENTS -->
 
 <!-- BEGIN MARKET EVENTS (owner: workstream M) -->

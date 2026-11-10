@@ -6,7 +6,7 @@
   "description": "Kruxa read-only REST + SSE API over the indexer store. Node 24, zero runtime dependencies.",
   "engines": { "node": ">=24" },
   "scripts": {
-    "test": "node --test --test-concurrency=1 test/",
+    "test": "node --test --test-concurrency=1 test/*.test.ts",
     "typecheck": "tsc --noEmit -p .",
     "start": "node src/main.ts"
   },
