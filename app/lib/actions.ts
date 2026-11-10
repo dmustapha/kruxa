@@ -23,6 +23,10 @@ export const claimRefundNear = (launchId: string): SignAndSendInput => fc(CONFIG
 /** Payable: an account not yet registered on the launch token pays the 0.00125 NEAR registration from this deposit; the core refunds the rest (and everything but 1 yocto when already registered). Needs about 150 Tgas. */
 export const CLAIM_TOKENS_DEPOSIT_YOCTO = (BigInt('1250000000000000000000') + 1n).toString();
 export const claimTokensNear = (launchId: string): SignAndSendInput => fc(CONFIG.core, 'claim_tokens', { launch_id: launchId }, 200, CLAIM_TOKENS_DEPOSIT_YOCTO);
+/** Trial launches, payout recipient only, after PASS: claims the vested creator allocation. Same payable shape and gas as claim_tokens; the core refunds what the registration did not need. */
+export const claimCreatorAllocNear = (launchId: string): SignAndSendInput => fc(CONFIG.core, 'claim_creator_alloc', { launch_id: launchId }, 200, CLAIM_TOKENS_DEPOSIT_YOCTO);
+/** Anyone: releases supply nobody is owed to the owner-chosen burn mode (Hold by default, which moves nothing and refunds the deposit). The attached deposit is only used when the mode is a sink account that still needs registering. */
+export const sweepTokensNear = (launchId: string): SignAndSendInput => fc(CONFIG.core, 'sweep_tokens', { launch_id: launchId }, 200, CLAIM_TOKENS_DEPOSIT_YOCTO);
 export const registerOnToken = (tokenAccount: string, accountId: string): SignAndSendInput =>
   fc(tokenAccount, 'storage_deposit', { account_id: accountId, registration_only: true }, 30, STORAGE_DEPOSIT_YOCTO);
 /** Draw from the stream. `amount` null asks for everything drawable; anything above the cap reverts with STREAM_CAP. */

@@ -15,6 +15,7 @@ import { fmtDate, titleCase } from '@/lib/format';
 import { creatorStatus, usdcRegistered } from '@/lib/near';
 import { useTx } from '@/lib/useTx';
 import { StreamPanel } from './StreamPanel';
+import { AllocPanel } from './AllocPanel';
 import { VestPanel } from '../instant/VestPanel';
 import { ModeBadge } from '@/components/ui/PhaseBadge';
 
@@ -76,6 +77,12 @@ function LaunchDesk({ c, account }: { c: CreatorLaunch; account: string }) {
       )}
       <h3>2. Trading-fee share</h3>
       <FeesPanel c={c} canAct={canAct} />
+      {c.launch.mode !== 'instant' && c.launch.verdict === 'PASS' && (
+        <>
+          <h3>3. Creator allocation</h3>
+          <AllocPanel launchId={c.launch.launch_id} symbol={c.launch.symbol} canAct={canAct} />
+        </>
+      )}
     </article>
   );
 }

@@ -63,7 +63,11 @@ describe('FACTS.gallery match the committed evidence file', () => {
       succeeded_unexpectedly: g.succeededUnexpectedly, attack_transactions: g.attackTransactions,
     });
     expect(g.refused + g.noEffect + g.bounded + g.failed).toBe(g.total);
+    // The two limits the prose names must be among the bounded rows, and the count must equal the rows in the file.
     const bounded = d.attacks.filter((a: { result: string }) => a.result === 'BOUNDED').map((a: { id: string }) => a.id).sort();
-    expect(bounded).toEqual(['A16', 'A19']);
+    expect(bounded.length).toBe(g.bounded);
+    expect(bounded).toEqual(expect.arrayContaining(['A16', 'A19']));
+    expect(d.attacks.length).toBe(g.total);
+    expect(g.refused + g.noEffect + g.bounded + g.failed).toBe(g.total);
   });
 });

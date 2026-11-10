@@ -1,5 +1,6 @@
 // Typed reads of the indexer API. Every function throws ApiError with a stable `kind` so the UI can render honest states.
 import { MARKET_CONFIG } from './config';
+import { readSnapshot } from '../api/snapshot';
 import type { VerifyData, CandleSeries, CreatorDesk, LaunchDetail, HolderList, Interval, PoolDepth, TokenPageData, TradeList } from './types';
 
 export type ApiErrorKind = 'not_found' | 'unavailable' | 'bad_response';
@@ -14,6 +15,9 @@ async function getJson<T>(path: string, f: Fetcher, signal?: AbortSignal): Promi
   try { res = await f(`${MARKET_CONFIG.apiBase}${path}`, { signal, headers: { accept: 'application/json' } }); }
   catch (e) {
     if ((e as Error)?.name === 'AbortError') throw e;
+    const [p, qs] = path.split('?');
+    const recorded = await readSnapshot(p!, new URLSearchParams(qs ?? ''));
+    if (recorded !== null) return recorded as T;
     throw new ApiError('unavailable', 'The indexer API did not answer.');
   }
   if (res.status === 404) throw new ApiError('not_found', 'No such launch.', 404);

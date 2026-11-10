@@ -13,7 +13,9 @@ import type { LaunchSummary } from '@/lib/api/types';
 export const launchLabel = (l: Pick<LaunchSummary, 'name' | 'symbol'>): string => (l.name && l.name !== l.symbol ? `${l.name} ${l.symbol}` : l.symbol);
 
 /** One launch as a card. The whole card is one link (stretched title); Verify is a second, raised link. */
-export function LaunchCard({ launch: l, now, frozenClock }: { launch: LaunchSummary; now: number; frozenClock?: boolean }) {
+export interface CardLocal { watched: boolean; onWatch(id: string): void; onHide(id: string): void }
+
+export function LaunchCard({ launch: l, now, frozenClock, local }: { launch: LaunchSummary; now: number; frozenClock?: boolean; local?: CardLocal }) {
   const phase = phaseOf(l, now);
   const next = nextDeadline(l, now);
   const instant = l.mode === 'instant';
@@ -43,7 +45,10 @@ export function LaunchCard({ launch: l, now, frozenClock }: { launch: LaunchSumm
         )}
       <div className="lc-foot">
         {next && !instant ? <span className="sub"><Countdown label={next.label} at={next.at} now={now} frozen={frozenClock} /></span> : <span className="sub">{instant ? 'no backers: instant launch' : `${l.funders} backers`}</span>}
-        <span className="row"><SourceBadge source={l.source} /><Link href={`/launch/${l.launch_id}/verify`} className="lc-verify">Verify</Link></span>
+        <span className="row"><SourceBadge source={l.source} />
+          {local && <button type="button" className="lc-verify btn-quiet" aria-pressed={local.watched} aria-label={`${local.watched ? 'Stop watching' : 'Watch'} ${l.symbol}`} onClick={() => local.onWatch(l.launch_id)}>{local.watched ? 'Watching' : 'Watch'}</button>}
+          {local && <button type="button" className="lc-verify btn-quiet" aria-label={`Hide ${l.symbol} from my feed`} onClick={() => local.onHide(l.launch_id)}>Hide</button>}
+          <Link href={`/launch/${l.launch_id}/verify`} className="lc-verify">Verify</Link></span>
       </div>
     </article>
   );

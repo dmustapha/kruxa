@@ -12,7 +12,7 @@ export const privacy: Page = {
     p('The Kruxa project, damilolamustaphaa@gmail.com. No legal entity is named in this draft.'),
     h2('What the app stores on your device'),
     ul(
-      'Preferences only, in your browser\'s local storage: slippage, preset amounts, RPC overrides, time display and similar settings. You can clear them in Settings.',
+      'Preferences only, in your browser\'s local storage: slippage, preset amounts, RPC overrides, time display, your watchlist and the launches you chose to hide from your own feed. None of this is sent to us. You can clear it in Settings.',
       'There are no accounts, no passwords and no email sign-up.',
       'If your browser blocks storage, the app still works without remembering settings.',
     ),
@@ -24,6 +24,7 @@ export const privacy: Page = {
       ['Wallet manifest and wallet code hosts (raw.githubusercontent.com and jsdelivr, through near-connect)', 'The wallet chooser loads its list and wallet code, in sandboxed frames, when you open it', 'Your IP address and that you requested the files. The wallet code runs in your browser.'],
       ['NEAR and Solana RPC providers', 'Reading chain state and sending the transactions you sign', 'Your IP address and the addresses and transactions you query or send'],
       ['1Click API (NEAR Intents)', 'Quotes for Solana-origin deposits', 'The quote request, including the addresses you supply'],
+      ['The Kruxa data service (indexer API)', 'Feeds, launch pages, positions and statistics. A lookup for an account sends that account to the service.', 'Your IP address and the launch ids, symbols and account addresses you search for or open'],
       ['Your wallet', 'Signing', 'Whatever you choose to sign. Read each prompt.'],
     ),
     h2('What a creator publishes'),
@@ -33,6 +34,7 @@ export const privacy: Page = {
     h2('Your choices'),
     ul(
       'Run the verifier or your own RPC to avoid relying on our site.',
+      'If the data service is unreachable, the app may show a recorded snapshot served by the same host. It is labelled RECORDED and carries no data about you.',
       'Set your own RPC endpoints in Settings.',
       'Use a fresh wallet if you do not want activity linked to an existing one.',
     ),

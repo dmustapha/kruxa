@@ -16,13 +16,14 @@ export type GateDecision =
   | { status: 'needs-near'; message: string }
   | { status: 'blocked'; message: string };
 
-export const ACTION_LABEL: Record<WalletAction, string> = { create: 'Create', commit: 'Commit', walk: 'Walk', claim: 'Claim' };
+export const ACTION_LABEL: Record<WalletAction, string> = { create: 'Create', commit: 'Commit', walk: 'Walk', claim: 'Claim', trade: 'Trade' };
 
+const NEEDS_NEAR_TRADE = 'Trading on the NEAR pool needs a NEAR wallet. A launch token cannot be traded across chains here.';
 const NEEDS_NEAR_CREATE = 'Creating a launch needs a NEAR account. Your Solana wallet can back a launch, but it cannot create one. Connect a NEAR wallet to continue.';
 
 /** Which chains may sign each action. Create is NEAR only. Buyer actions accept both (Solana goes through the Intents path). */
 export function allowedChains(action: WalletAction): Chain[] {
-  return action === 'create' ? ['near'] : ['near', 'solana'];
+  return action === 'create' || action === 'trade' ? ['near'] : ['near', 'solana'];
 }
 
 export function gateAction(action: WalletAction, sessions: SessionSet, guard: NetworkGuard): GateDecision {
@@ -35,6 +36,10 @@ export function gateAction(action: WalletAction, sessions: SessionSet, guard: Ne
     if (sessions.solana) return { status: 'needs-near', message: NEEDS_NEAR_CREATE };
     return { status: 'connect', chains: ['near'], message: `Connect a NEAR wallet to ${label.toLowerCase()} a launch.` };
   }
+  if (action === 'trade') {
+    if (sessions.solana) return { status: 'needs-near', message: NEEDS_NEAR_TRADE };
+    return { status: 'connect', chains: ['near'], message: 'Connect a NEAR wallet to trade.' };
+  }
   if (sessions.solana) return { status: 'ready', path: 'solana-intents', session: sessions.solana };
   return { status: 'connect', chains: ['near', 'solana'], message: `Connect a wallet to ${label.toLowerCase()}.` };
 }
@@ -46,5 +51,6 @@ export function intentsPathNote(action: WalletAction): string {
     case 'walk': return 'You are connected with Solana only. You sign one Walk message in your wallet; anyone can submit it and the refund lands in your Intents account.';
     case 'claim': return 'You are connected with Solana only. Refunds land in your Intents account; token claims for Solana holders use the Solana distributor.';
     case 'create': return NEEDS_NEAR_CREATE;
+    case 'trade': return NEEDS_NEAR_TRADE;
   }
 }

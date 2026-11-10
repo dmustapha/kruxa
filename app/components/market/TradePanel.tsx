@@ -14,6 +14,7 @@ import { openingWindow } from '@/lib/market/math';
 import { computeQuote, parseReserves, parseSlippagePct, type Side } from '@/lib/market/quote';
 import { buildTradeTx, describeSignError } from '@/lib/market/tx';
 import { TRADE_ACTION } from '@/lib/market/wallet-bridge';
+import { useSettings } from '@/lib/useSettings';
 import type { TokenPageData } from '@/lib/market/types';
 import { Panel } from './shared';
 import { QuoteSummary, SlippageControl } from './TradeParts';
@@ -30,13 +31,16 @@ interface Props {
 }
 type Phase = { s: 'idle' } | { s: 'signing' } | { s: 'sent'; txHash?: string } | { s: 'error'; message: string };
 
-const BUY_QUICK = ['5', '25', '100'];
 
 export function TradePanel({ page, facts, reserves, nowSec, onSubmitted, initialSide, instant }: Props) {
   const { guard, sessions, adapters, openChooser } = useWallet();
   const [side, setSide] = useState<Side>(initialSide ?? 'buy');
   const [amount, setAmount] = useState('');
+  const [prefs] = useSettings();
+  const BUY_QUICK = prefs.buyPresets.map(String);
   const [slip, setSlip] = useState('1');
+  const [slipTouched, setSlipTouched] = useState(false);
+  useEffect(() => { if (!slipTouched) setSlip(prefs.slippagePct); }, [prefs.slippagePct, slipTouched]);
   const [phase, setPhase] = useState<Phase>({ s: 'idle' });
   const [balance, setBalance] = useState<string | null>(null);
   const amountId = useId();
@@ -123,7 +127,7 @@ export function TradePanel({ page, facts, reserves, nowSec, onSubmitted, initial
               : balance !== null && [25, 50, 100].map((p) => <button key={p} type="button" onClick={() => setAmount(fmtUnits((BigInt(balance) * BigInt(p)) / 100n, 6, 6).replace(/,/g, ''))}>{p}%</button>)}
           </div>
         </div>
-        <SlippageControl value={slip} onChange={setSlip} />
+        <SlippageControl value={slip} onChange={(v) => { setSlipTouched(true); setSlip(v); }} />
         <div id="mkt-quote-note"><QuoteSummary side={side} view={view} openingNote={openingNote} /></div>
         {view.status === 'ok' && view.highImpact && <div className="mkt-alert" data-tone="warn" role="status"><strong>High price impact</strong>This trade moves the pool price by {(view.quote.priceImpactBps / 100).toFixed(1)}%. Consider a smaller amount.</div>}
         {blockedReason && <div className="mkt-alert" data-tone={guard.signingEnabled ? 'warn' : 'bad'} role="status">{blockedReason}</div>}

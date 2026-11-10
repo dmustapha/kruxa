@@ -7,7 +7,7 @@ export type Chain = 'near' | 'solana';
 export type KruxaEnv = 'testnet' | 'mainnet';
 
 /** Actions that need a signature. Browsing and verifying are not actions and never ask for a wallet. */
-export type WalletAction = 'create' | 'commit' | 'walk' | 'claim';
+export type WalletAction = 'create' | 'commit' | 'walk' | 'claim' | 'trade';
 
 export interface WalletOption {
   /** Stable id inside the chain's registry (near-connect manifest id, or a lowercase wallet-standard name). */

@@ -10,7 +10,7 @@ const TABS = [
   { href: '/portfolio', label: 'Portfolio', d: 'M3 7h18v13H3zM8 7V4h8v3' },
 ];
 export const MORE = [
-  { href: '/creator', label: 'Creator desk' }, { href: '/docs', label: 'Docs and help' }, { href: '/docs/faq', label: 'FAQ' }, { href: '/docs/security', label: 'Security and threat model' },
+  { href: '/creator', label: 'Creator desk' }, { href: '/insights', label: 'Insights' }, { href: '/ops-log', label: 'Operations log' }, { href: '/status', label: 'Status' }, { href: '/settings', label: 'Settings' }, { href: '/docs', label: 'Docs and help' }, { href: '/docs/faq', label: 'FAQ' }, { href: '/docs/security', label: 'Security and threat model' },
   { href: '/charter', label: 'Disclosures' }, { href: '/legal/terms', label: 'Terms' }, { href: '/legal/privacy', label: 'Privacy' }, { href: '/legal/risk', label: 'Risk disclosures' },
 ];
 

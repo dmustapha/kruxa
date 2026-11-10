@@ -8,8 +8,9 @@ import { security } from './pages/security';
 import { charter } from './pages/charter';
 import { faq } from './pages/faq';
 import { glossary } from './pages/glossary';
+import { api } from './pages/api';
 
-export const DOC_PAGES: Page[] = [howItWorks, creators, buyers, fees, verify, security, charter, faq, glossary];
+export const DOC_PAGES: Page[] = [howItWorks, creators, buyers, fees, verify, security, charter, faq, glossary, api];
 
 export const docBySlug = (slug: string): Page | undefined => DOC_PAGES.find((p) => p.slug === slug);
 
