@@ -1,0 +1,269 @@
+{
+  "schema": "kruxa.swarm.crowd-test/1",
+  "label": "SCRIPTED, RECORDED",
+  "note": "Our own 16 scripted agents against the real verdict and allocation functions. Not a chain run, not model-driven. Sybil splitting and walk-to-flip are bounded, not blocked.",
+  "runs": [
+    {
+      "source": "swarm/runs/run-1.json",
+      "source_sha256": "f6c0d1a5fb4936525c1d0614e6aebe02c010acb57afab61f31941b2cfc93e28c",
+      "seed": 1,
+      "preset": "warm crowd, comfortable pass",
+      "label": "SCRIPTED, RECORDED (offline simulation against the real kruxa-logic verdict and allocation functions)",
+      "trial": {
+        "soft_cap": "600000000",
+        "hard_cap": "1000000000",
+        "min_funders": 10,
+        "wallet_cap": "100000000",
+        "rounds": 24
+      },
+      "verdict": "PASS",
+      "total_committed": "1207000000",
+      "funders": 15,
+      "margin_usdc": "607000000",
+      "oversubscription_bps": 12070,
+      "invariants_held": true,
+      "rounds_checked": 24,
+      "price_parity": true,
+      "adversaries_beat_honest": false,
+      "blocked_by_rule": [
+        {
+          "count": 2,
+          "group": "sniper",
+          "rule_code": "R_WRONG_PHASE"
+        },
+        {
+          "count": 1,
+          "group": "sybil",
+          "rule_code": "R_CAP_ACCOUNT"
+        },
+        {
+          "count": 6,
+          "group": "whale",
+          "rule_code": "R_CAP_ACCOUNT"
+        }
+      ],
+      "bounded_not_blocked": [
+        {
+          "attack": "sybil_split",
+          "outcome": "BOUNDED",
+          "note": "accounts are unlinkable on chain, so the ring holds up to 4x the per-wallet cap; it pays the same uniform price and is diluted pro-rata"
+        },
+        {
+          "attack": "walk_flip",
+          "outcome": "BOUNDED",
+          "note": "a last-round Walk flips PASS to FAIL only when the pass margin is smaller than one position (at most the wallet cap); all other buyers are refunded in full"
+        }
+      ],
+      "groups": [
+        {
+          "group": "honest",
+          "agents": 7,
+          "committed": "407000000",
+          "fill_bps": 8285
+        },
+        {
+          "group": "whale",
+          "agents": 2,
+          "committed": "200000000",
+          "fill_bps": 8285
+        },
+        {
+          "group": "sniper",
+          "agents": 2,
+          "committed": "100000000",
+          "fill_bps": 8285
+        },
+        {
+          "group": "sybil",
+          "agents": 4,
+          "committed": "400000000",
+          "fill_bps": 8285
+        },
+        {
+          "group": "flipper",
+          "agents": 1,
+          "committed": "100000000",
+          "fill_bps": 8285
+        }
+      ]
+    },
+    {
+      "source": "swarm/runs/run-2.json",
+      "source_sha256": "43e6d6d1761fa5bd13f6fa4ce65ab384f8b6d179ef05313d489dbf5d6df958d2",
+      "seed": 2,
+      "preset": "thin margin, soft cap near the crowd",
+      "label": "SCRIPTED, RECORDED (offline simulation against the real kruxa-logic verdict and allocation functions)",
+      "trial": {
+        "soft_cap": "1000000000",
+        "hard_cap": "1000000000",
+        "min_funders": 10,
+        "wallet_cap": "100000000",
+        "rounds": 24
+      },
+      "verdict": "FAIL(BELOW_SOFT_CAP)",
+      "total_committed": "954000000",
+      "funders": 13,
+      "margin_usdc": "-46000000",
+      "oversubscription_bps": 9540,
+      "invariants_held": true,
+      "rounds_checked": 24,
+      "price_parity": true,
+      "adversaries_beat_honest": false,
+      "blocked_by_rule": [
+        {
+          "count": 1,
+          "group": "honest",
+          "rule_code": "R_MIN_CONTRIBUTION"
+        },
+        {
+          "count": 2,
+          "group": "sniper",
+          "rule_code": "R_WRONG_PHASE"
+        },
+        {
+          "count": 1,
+          "group": "sybil",
+          "rule_code": "R_CAP_ACCOUNT"
+        },
+        {
+          "count": 6,
+          "group": "whale",
+          "rule_code": "R_CAP_ACCOUNT"
+        }
+      ],
+      "bounded_not_blocked": [
+        {
+          "attack": "sybil_split",
+          "outcome": "BOUNDED",
+          "note": "accounts are unlinkable on chain, so the ring holds up to 4x the per-wallet cap; it pays the same uniform price and is diluted pro-rata"
+        },
+        {
+          "attack": "walk_flip",
+          "outcome": "BOUNDED",
+          "note": "a last-round Walk flips PASS to FAIL only when the pass margin is smaller than one position (at most the wallet cap); all other buyers are refunded in full"
+        }
+      ],
+      "groups": [
+        {
+          "group": "honest",
+          "agents": 7,
+          "committed": "154000000",
+          "fill_bps": 0
+        },
+        {
+          "group": "whale",
+          "agents": 2,
+          "committed": "200000000",
+          "fill_bps": 0
+        },
+        {
+          "group": "sniper",
+          "agents": 2,
+          "committed": "200000000",
+          "fill_bps": 0
+        },
+        {
+          "group": "sybil",
+          "agents": 4,
+          "committed": "400000000",
+          "fill_bps": 0
+        },
+        {
+          "group": "flipper",
+          "agents": 1,
+          "committed": "0",
+          "fill_bps": 0
+        }
+      ]
+    },
+    {
+      "source": "swarm/runs/run-3.json",
+      "source_sha256": "e10c91a0d2411fbc2a110884615539600fe5e511954f2acb4b6558965054e76a",
+      "seed": 3,
+      "preset": "cold crowd, soft cap too high",
+      "label": "SCRIPTED, RECORDED (offline simulation against the real kruxa-logic verdict and allocation functions)",
+      "trial": {
+        "soft_cap": "1000000000",
+        "hard_cap": "1000000000",
+        "min_funders": 10,
+        "wallet_cap": "100000000",
+        "rounds": 24
+      },
+      "verdict": "FAIL(BELOW_SOFT_CAP)",
+      "total_committed": "939000000",
+      "funders": 14,
+      "margin_usdc": "-61000000",
+      "oversubscription_bps": 9390,
+      "invariants_held": true,
+      "rounds_checked": 24,
+      "price_parity": true,
+      "adversaries_beat_honest": false,
+      "blocked_by_rule": [
+        {
+          "count": 1,
+          "group": "honest",
+          "rule_code": "R_MIN_CONTRIBUTION"
+        },
+        {
+          "count": 2,
+          "group": "sniper",
+          "rule_code": "R_WRONG_PHASE"
+        },
+        {
+          "count": 1,
+          "group": "sybil",
+          "rule_code": "R_CAP_ACCOUNT"
+        },
+        {
+          "count": 6,
+          "group": "whale",
+          "rule_code": "R_CAP_ACCOUNT"
+        }
+      ],
+      "bounded_not_blocked": [
+        {
+          "attack": "sybil_split",
+          "outcome": "BOUNDED",
+          "note": "accounts are unlinkable on chain, so the ring holds up to 4x the per-wallet cap; it pays the same uniform price and is diluted pro-rata"
+        },
+        {
+          "attack": "walk_flip",
+          "outcome": "BOUNDED",
+          "note": "a last-round Walk flips PASS to FAIL only when the pass margin is smaller than one position (at most the wallet cap); all other buyers are refunded in full"
+        }
+      ],
+      "groups": [
+        {
+          "group": "honest",
+          "agents": 7,
+          "committed": "139000000",
+          "fill_bps": 0
+        },
+        {
+          "group": "whale",
+          "agents": 2,
+          "committed": "200000000",
+          "fill_bps": 0
+        },
+        {
+          "group": "sniper",
+          "agents": 2,
+          "committed": "100000000",
+          "fill_bps": 0
+        },
+        {
+          "group": "sybil",
+          "agents": 4,
+          "committed": "400000000",
+          "fill_bps": 0
+        },
+        {
+          "group": "flipper",
+          "agents": 1,
+          "committed": "100000000",
+          "fill_bps": 0
+        }
+      ]
+    }
+  ]
+}

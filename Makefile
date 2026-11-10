@@ -3,9 +3,9 @@
 test-unit:
 	cargo test -p kruxa-math -p kruxa-logic
 
+# Memecoins track step: three volume scenarios, the supply table, BOUND OK and a SIM sha256 line (evidence/sim.txt).
 sim:
-	./scripts/verify.sh golden
-	cargo run -q -p market-sim -- table 60
+	cargo run -q -p market-sim -- sim 60
 
 build:
 	./scripts/build.sh

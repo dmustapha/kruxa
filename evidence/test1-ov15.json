@@ -1,0 +1,21 @@
+{
+  "id": "test1-ov15",
+  "title": "OV15: intents.near ft_withdraw to a fresh Solana address (Test 1, mainnet)",
+  "label": "RECORDED",
+  "network": "mainnet (throwaway wallets, far under the 1 USD test cap)",
+  "date": "2026-11-08",
+  "result": "PASS",
+  "source": "warroom/specs/DECISIONS-PACK1.md, block TEST 1 RESULT; kruxa/CHANGE-ORDER-6.md item 7a. The landing was checked independently with Solana RPC getTokenAccountsByOwner.",
+  "contract": "intents.near",
+  "method": "ft_withdraw",
+  "token": "USDC (omft)",
+  "withdrawn_micro_usdc": 60000,
+  "memo_shape": "WITHDRAW_TO:<fresh Solana address>",
+  "near_tx_hash": "3KLVemdjr387BsqJiuuV9By9VXzeri6GRFwy3HMRT6ko",
+  "landed_micro_usdc": 30000,
+  "bridge_fee_micro_usdc": 30000,
+  "bridge_fee_note": "The bridge's Solana-USDC withdrawal fee is FIXED at 30000 micro-USDC (0.03 USDC). A first attempt of exactly 30000 netted zero and lost 0.03 USDC to the fee.",
+  "consequence": "Any Walk or refund to a Solana address is net of the fixed fee or self-submitted, never platform-paid (0.15% at the 20 USD minimum).",
+  "not_proven": "OV3 (Phantom raw_ed25519 byte-exactness) is NOT proven by Test 1.",
+  "scrub": "No key, seed, wallet address or account id is stored in this file. The destination Solana address was a throwaway and is left out."
+}

@@ -12,6 +12,11 @@ swarm-test:
 swarm-record:
 	@./scripts/swarm-record.sh
 
-# NOT IMPLEMENTED. Documented stub: needs the core contract deployed on testnet. Exits 2 on purpose.
+# SW-2: plan-only by default; `ARGS=--yes` with NEAR_ENV=testnet replays a recorded run as real testnet calls (ops agent runs it).
 swarm-testnet:
-	@./scripts/swarm-testnet.sh
+	@./scripts/swarm-testnet.sh $(ARGS)
+
+# Digest of the three committed runs for the app's crowd-test panel: docs/interfaces/swarm-crowd-test.json (`ARGS=--check` verifies it is current).
+.PHONY: swarm-crowd-test
+swarm-crowd-test:
+	@python3 -I tools/swarm-sim/export-crowd-test.py $(ARGS)
