@@ -47,7 +47,7 @@ Take `fixtures/standard.json` and set the symbol, name and windows:
 Optional third argument of `create_trial`: `genesis` (plan). Omit it for F1 with defaults. For F0 pass `{"mode":"F0","mint_pubkey_f0":"<64 hex>"}` and later call `commit_genesis` with that same key. `required_deposit(params)` (view) returns 421,250,000,000,000,000,000,000 yocto (0.42125 NEAR) for this preset; attach at least that to `create_trial`.
 
 ## Steps to a PASS launch
-1. `create_trial {params, stream_recipient: null, genesis: null}` from any funded account, 0.42125 NEAR attached, 150 Tgas. `get_state` shows `status Open`, `token` set.
+1. `create_trial {params, stream_recipient: null, genesis: null}` from any funded account, 0.42125 NEAR attached, 300 Tgas (the core refuses under 250 with R_GAS). `get_state` shows `status Open`, `token` set.
 2. Money: `usdc.mint {account_id, amount}` is unrestricted (mock). Register each buyer on USDC with `usdc.storage_deposit {account_id}` (any attached amount). Commit with `usdc.ft_transfer_call {receiver_id: core2, amount, msg}` (1 yoctoNEAR, 100 Tgas), `msg = {"v":1,"op":"contribute","launch_id":"2"}`.
 3. PASS needs at least 10 funders and total at least $350: 12 buyers x 30,000,000 (30 USDC) works. Minimum per commit $20.
 4. Solana buyers (needed for genesis leaves) come through the mock Intents: `usdc.mint {account_id: intents.kxa1-owner-1203.testnet, amount}` to back the balance, `intents.mt_deposit {account_id: "<64 hex pubkey>", token_id: "nep141:usdc.kxa1-owner-1203.testnet", amount}`, then anyone calls `intents.execute_intents {signed: [ {"standard":"raw_ed25519","payload":"<json string>","public_key":"ed25519:<b58>","signature":"ed25519:1"} ]}` with payload `{"signer_id":"<64 hex>","verifying_contract":"intents.kxa1-owner-1203.testnet","deadline":"2099-01-01T00:00:00.000Z","nonce":"AAAA","intents":[{"intent":"transfer","receiver_id":"core2.kxa1-owner-1203.testnet","tokens":{"nep141:usdc.kxa1-owner-1203.testnet":"30000000"},"msg":"{\"v\":1,\"op\":\"contribute\",\"launch_id\":\"2\",\"deliver\":\"sol:<b58 pubkey>\",\"relay_fee\":\"0\"}","min_gas":"50000000000000"}]}`. The mock does not check signatures. Example in code: `tests/src/lib.rs` (`s3_payload`, `commit_s3`).
@@ -58,4 +58,4 @@ Optional third argument of `create_trial`: `genesis` (plan). Omit it for F1 with
 ## Notes
 - `open_market` is not wired here (no market account set); the handoff is exercised in the sandbox suite.
 - The testnet clock is real time: the sandbox `fast_forward` does not exist here, so a launch takes about 2 minutes to reach `Ready`.
-- Gas: every call above fits in 100 Tgas except `create_trial` (150 Tgas recommended). Measured costs are in `docs/benchmarks.md`.
+- Gas: every call above fits in 100 Tgas except `create_trial` (300 Tgas; the core refuses under 250). Measured costs are in `docs/benchmarks.md`.
