@@ -16,6 +16,7 @@ export KXI_ROOT="${KXI_ROOT:-kxi-root-1108.testnet}"
 [[ "$KXI_ROOT" == *.testnet ]] || { echo "refusing: KXI_ROOT must be a .testnet account"; exit 1; }
 export NEAR_ENV=testnet KRUXA_CORE="core3.$KXI_ROOT" KRUXA_KEEPER="keeper.$KXI_ROOT" KRUXA_CONTRACT="core3.$KXI_ROOT"
 export JITO_PROGRAM="${JITO_PROGRAM:-9XYvBtToi9VafC6AvGL5UKp6Du2htBhAr2XL6UDptfCs}" # patched rehearsal copy of the Jito distributor on devnet
+export KRUXA_GENESIS_PREFIX=evidence/genesis/core3/genesis-
 SQUADS="${SQUADS_MULTISIG:-CneX72zHFJsd71BBZ39xAuBH8zBySsWo6RedYr6j6A1Z}"
 CT=scripts/core-testnet
 
@@ -26,6 +27,8 @@ genesis() { # id mode
   ./scripts/genesis-devnet.sh --launch "$1" --mode "$2" --cluster devnet --core "$KRUXA_CORE" --squads-multisig "$SQUADS" \
     --record "evidence/genesis/core3-$(echo "$2" | tr 'A-Z' 'a-z')-devnet-launch$1.json" --holders-file "$HOME/.kruxa-secrets/genesis/holders-core3-$1.json" \
     | tee "evidence/genesis/core3-$(echo "$2" | tr 'A-Z' 'a-z')-devnet-launch$1.log"
+  mkdir -p evidence/genesis/core3 # verify.sh <id> reads $KRUXA_GENESIS_PREFIX<id>.json
+  cp "evidence/genesis/core3-$(echo "$2" | tr 'A-Z' 'a-z')-devnet-launch$1.json" "evidence/genesis/core3/genesis-$1.json"
 }
 case "${1:-}" in
   A|B|C|D|E|F) node "$CT/seed.mjs" "$1" ;;

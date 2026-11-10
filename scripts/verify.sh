@@ -7,7 +7,7 @@
 #   optional on chain: --rpc2 <url> reads every view from a second RPC too; disagreement is an infrastructure error
 #   ./scripts/verify.sh <launch_id> [--tamper-all] [--rpc2 <url>] [--charter FILE] [--production]
 #        full judge run: NEAR recompute (C31-C34 via kruxa-sim), the KEYS and CODE lines, and the Solana checks C3-C28 from
-#        evidence/genesis-<id>.json (or $KRUXA_GENESIS_RECORD). Env: KRUXA_NEAR_RPC (testnet default), KRUXA_CONTRACT (core.kruxa.testnet), SOL_DEVNET_RPC.
+#        evidence/genesis-<id>.json (or $KRUXA_GENESIS_PREFIX<id>.json). Env: KRUXA_NEAR_RPC (testnet default), KRUXA_CONTRACT (core.kruxa.testnet), SOL_DEVNET_RPC.
 #   ./scripts/verify.sh solana --record FILE --rpc URL ...     Solana checks only (scripts/verify_solana.py --help text)
 #   ./scripts/verify.sh near-ops --rpc URL --contract ACCOUNT  the KEYS: and CODE: lines only (VX-2, CO-6 E-5)
 #   ./scripts/verify.sh --evidence FILE [--tamper-all]         replay recorded Solana responses; prints "RECORDED, not live"
@@ -36,7 +36,7 @@ full_run() {
     *) echo "usage: $0 <launch_id> [--tamper-all] [--rpc2 <url>] [--charter FILE] [--production]" >&2; exit 64 ;;
   esac; shift; done
   local near="${KRUXA_NEAR_RPC:-https://test.rpc.fastnear.com}" contract="${KRUXA_CONTRACT:-core.kruxa.testnet}"
-  local sol="${SOL_DEVNET_RPC:-https://api.devnet.solana.com}" rec="${KRUXA_GENESIS_RECORD:-evidence/genesis-$id.json}"
+  local sol="${SOL_DEVNET_RPC:-https://api.devnet.solana.com}" rec="${KRUXA_GENESIS_PREFIX:-evidence/genesis-}$id.json"
   local c_near c_ops c_sol
   echo "== NEAR recompute (C31-C34, kruxa-sim)"
   set +e

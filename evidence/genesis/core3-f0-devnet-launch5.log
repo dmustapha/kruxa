@@ -39,3 +39,7 @@ F0_SIGN {"tx":"5kPq9SvddV4uUhjPdJZh1JzmAo2DZTR29t9W35kbuysp","ms":7183,"response
 F0_SIGN {"tx":"8kiUEGLfwRWpa1ssdhdRUsjP3usbAj7FeiUZBxegGtkd","ms":8000,"response":"{\"scheme\":\"Ed25519\",\"signature\":[220,108,56,51,215,224,145,183,154,84,168,61,151,171,181,129,97,87,174,193,243,246,86,19,156,192,204,252,251,212,159,57,154,19,92,55,200,163,139,184,34,229,116,222,0,0,239,180,189,139,189,207,29,108,226,3,56,81,134,173,219,81,116,13]}","gas_burnt_tgas":28.304734237207,"near_burnt":"0.001325"}
 signature verified against the derived key (offline, before broadcast)
 confirm_genesis ok
+merkle root matches core
+claim ok: 54166666666666
+distributor admin: NULL
+record: evidence/genesis/core3-f0-devnet-launch5.json

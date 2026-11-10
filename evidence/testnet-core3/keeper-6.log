@@ -1,0 +1,9 @@
+topped up keeper tx=AydhhGreVMDwAesxLP3xjzwMKVD7eXRB4qitGGktmoNT
+waiting for the walk tail to end (phase Open)
+OK   keeper 6: settle tx=Q83YpRtygxzRs4XoVWBdQeD3KL3JE8ckqmcnMtCrmmc codes=
+OK   keeper 6: settle_positions_page tx=CFT3WFFBYhnA14M6gbSH82Nk7rXSUnreGQq8ZU5xzDyQ codes=
+OK   keeper 6: sweep_residue tx=F7CafgVYtpQemcznf8R7LLwrfw8oWBnLpqazaCQSzGTr codes=
+OK   keeper 6: consolidate tx=5z7tzJ2UEmktLJCyojtSMoNwEr74pRUzV8d6RCrQJAFL codes=
+OK   keeper 6: pay_launch_fee tx=GYTwNeRCAUbTa6NCXo6f3b3grurFnHtXJ1exnU4L35ES codes=
+FAIL keeper 6: pay_relay_fees tx=C6PDAU4GeNPabjWDCS7oGoxqmrvddDxaCatVyRYtGZie codes=R_NOTHING_FREE
+final status Passed, positions_unsettled 0, residue_swept true
