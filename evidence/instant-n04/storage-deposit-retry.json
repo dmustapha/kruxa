@@ -1,0 +1,27 @@
+{
+  "finding": "A retry costs the launcher 0.00125 NEAR only when the token keeps the storage deposit of an already registered market; the sender of the retry burns about the same amount in gas against a stub market and more against the real one, so draining is griefing at cost parity, never a profit. A retry exists only after a refused token leg.",
+  "first_attempt_includes_the_real_registration": true,
+  "gas_price_yocto_per_gas": "100000000",
+  "id": "N-04",
+  "keeping_token_extra_loss_near": [
+    0.00125,
+    0.00125,
+    0.00125
+  ],
+  "keeping_token_launcher_delta_near": [
+    -0.00125,
+    -0.00125,
+    -0.00125
+  ],
+  "network": "SANDBOX",
+  "refunding_token_launcher_delta_near": [
+    -1.0000000000000001e-24,
+    -1.0000000000000001e-24
+  ],
+  "sender_gas_cost_near_per_retry": [
+    0.0013506143725482002,
+    0.0013523011760137,
+    0.0013539881440304002
+  ],
+  "token_leg_registration_yocto": "1250000000000000000000"
+}
