@@ -1,6 +1,6 @@
 /** SQLite schema. Derived tables are rebuilt from `events`; `events` and `blocks` are the only inputs. */
 /** Bump when a derived table changes; the store drops derived tables and refolds the kept events on open. */
-export const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 4;
 
 export const SCHEMA = `
 CREATE TABLE IF NOT EXISTS meta (k TEXT PRIMARY KEY, v TEXT NOT NULL);
@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS launches (
   launch_id INTEGER PRIMARY KEY, creator TEXT NOT NULL, payout_recipient TEXT NOT NULL, symbol TEXT NOT NULL, name TEXT, total_supply TEXT, mode TEXT NOT NULL DEFAULT 'trial',
   charter_hash TEXT NOT NULL, status TEXT NOT NULL, created_at INTEGER, opens_at INTEGER, commit_end INTEGER, walk_end INTEGER,
   total_active TEXT NOT NULL, funders INTEGER NOT NULL, soft_cap TEXT, min_funders INTEGER, stream_days INTEGER, token_decimals INTEGER NOT NULL,
-  book_hash TEXT NOT NULL, verdict TEXT, inputs_hash TEXT, reasons TEXT NOT NULL, allocation TEXT, settled_at INTEGER,
+  book_hash TEXT NOT NULL, book_hash_recomputed TEXT NOT NULL DEFAULT '', book_events INTEGER NOT NULL DEFAULT 0, book_funders INTEGER NOT NULL DEFAULT 0, book_mismatch_at INTEGER, verdict TEXT, inputs_hash TEXT, reasons TEXT NOT NULL, allocation TEXT, settled_at INTEGER,
   contributed_total TEXT NOT NULL, walked_total TEXT NOT NULL, stream_total TEXT NOT NULL, stream_drawn TEXT NOT NULL,
   last_block INTEGER NOT NULL, source TEXT NOT NULL
 );
@@ -53,7 +53,9 @@ CREATE TABLE IF NOT EXISTS payouts (
 CREATE TABLE IF NOT EXISTS genesis (
   launch_id INTEGER PRIMARY KEY, stage TEXT NOT NULL, network TEXT, path TEXT, spec_hash TEXT, mint TEXT, tx_create TEXT, tx_authority TEXT,
   distributor TEXT, root TEXT, mint_authority TEXT NOT NULL, freeze_authority TEXT NOT NULL, checks TEXT NOT NULL, updated_at INTEGER, source TEXT NOT NULL,
-  signatures TEXT NOT NULL DEFAULT '[]', slot TEXT, ceremony_hash TEXT, leaf_count INTEGER
+  signatures TEXT NOT NULL DEFAULT '[]', slot TEXT, ceremony_hash TEXT, leaf_count INTEGER,
+  reopen_count INTEGER NOT NULL DEFAULT 0, reopened_at INTEGER, abort_reason TEXT, abort_by TEXT, max_total_claim TEXT,
+  f0_messages TEXT NOT NULL DEFAULT '[]', f0_sign_requests TEXT NOT NULL DEFAULT '[]', attestations TEXT NOT NULL DEFAULT '[]'
 );
 CREATE TABLE IF NOT EXISTS instants (
   launch_id INTEGER PRIMARY KEY, token TEXT, creator_alloc TEXT NOT NULL, pool_tokens TEXT NOT NULL, cliff_days INTEGER NOT NULL, vest_days INTEGER NOT NULL,
@@ -62,9 +64,36 @@ CREATE TABLE IF NOT EXISTS instants (
 );
 CREATE TABLE IF NOT EXISTS external_pools (launch_id INTEGER NOT NULL, venue TEXT NOT NULL, pool TEXT NOT NULL, url TEXT NOT NULL, source TEXT NOT NULL, PRIMARY KEY (launch_id, venue, pool));
 CREATE TABLE IF NOT EXISTS flags (k TEXT PRIMARY KEY, v TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS halts (
+  launch_id INTEGER PRIMARY KEY, halted INTEGER NOT NULL, halted_by TEXT, reason TEXT, halted_at INTEGER, resumed_at INTEGER, halt_count INTEGER NOT NULL, source TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS upgrades (
+  block_height INTEGER NOT NULL, ord INTEGER NOT NULL, log_index INTEGER NOT NULL, code_hash TEXT NOT NULL, status TEXT NOT NULL,
+  queued_at INTEGER NOT NULL, effective_at INTEGER, resolved_at INTEGER, resolved_by TEXT, source TEXT NOT NULL,
+  PRIMARY KEY (block_height, ord, log_index)
+);
+CREATE TABLE IF NOT EXISTS force_resolves (
+  block_height INTEGER NOT NULL, ord INTEGER NOT NULL, log_index INTEGER NOT NULL, launch_id INTEGER NOT NULL, amount TEXT NOT NULL, ok INTEGER NOT NULL,
+  state TEXT NOT NULL, queued_at INTEGER, effective_at INTEGER, executed_at INTEGER, evidence TEXT, source TEXT NOT NULL,
+  PRIMARY KEY (block_height, ord, log_index)
+);
+CREATE TABLE IF NOT EXISTS solvency_reports (
+  block_height INTEGER NOT NULL, ord INTEGER NOT NULL, log_index INTEGER NOT NULL, time INTEGER NOT NULL, at INTEGER, ok INTEGER NOT NULL, intents_alert INTEGER NOT NULL,
+  native_balance TEXT, native_liability TEXT, native_ok INTEGER, intents_balance TEXT, intents_liability TEXT, intents_ok INTEGER, receipt_id TEXT NOT NULL, source TEXT NOT NULL,
+  PRIMARY KEY (block_height, ord, log_index)
+);
+CREATE TABLE IF NOT EXISTS owed (
+  scope TEXT NOT NULL, account TEXT NOT NULL, token TEXT NOT NULL, credited TEXT NOT NULL, claimed TEXT NOT NULL, updated_at INTEGER NOT NULL, source TEXT NOT NULL,
+  PRIMARY KEY (scope, account, token)
+);
+CREATE TABLE IF NOT EXISTS launch_custody (
+  launch_id INTEGER PRIMARY KEY, alloc_claimed TEXT NOT NULL, swept TEXT NOT NULL, sweep_mode TEXT, stream_end_ns TEXT, stream_unlocked_at_change TEXT, stream_lengthened INTEGER NOT NULL,
+  refund_batches INTEGER NOT NULL, refund_handled INTEGER NOT NULL, refund_paid INTEGER NOT NULL, refund_routes INTEGER NOT NULL,
+  delivery_refusals INTEGER NOT NULL, orphan_refusals INTEGER NOT NULL, rejected_refundable INTEGER NOT NULL, source TEXT NOT NULL, stream_changed_at INTEGER
+);
 `;
 
-export const DERIVED_TABLES = ["launches", "positions", "balances", "pools", "trades", "candles", "payouts", "genesis", "instants", "external_pools", "flags"] as const;
+export const DERIVED_TABLES = ["launches", "positions", "balances", "pools", "trades", "candles", "payouts", "genesis", "instants", "external_pools", "flags", "halts", "upgrades", "force_resolves", "solvency_reports", "owed", "launch_custody"] as const;
 
 /** Hash order and row order for the canonical state dump. */
 export const HASH_ORDER: Record<string, string> = {
@@ -79,5 +108,11 @@ export const HASH_ORDER: Record<string, string> = {
   instants: "launch_id",
   external_pools: "launch_id, venue, pool",
   flags: "k",
+  halts: "launch_id",
+  upgrades: "block_height, ord, log_index",
+  force_resolves: "block_height, ord, log_index",
+  solvency_reports: "block_height, ord, log_index",
+  owed: "scope, account, token",
+  launch_custody: "launch_id",
   events: "block_height, ord, log_index",
 };

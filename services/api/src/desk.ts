@@ -12,8 +12,26 @@ function checkAccount(account: string): string {
   return bare(account);
 }
 
-function streamMeter(l: Row, now: number): Json | null {
+/** After `stream_lengthened` the cap is the unlocked amount at the change plus a slower line to the new end (core `stream_cap`). */
+function lengthenedMeter(l: Row, c: Row, now: number): Json {
+  const total = BigInt(String(l.stream_total));
+  const drawn = BigInt(String(l.stream_drawn));
+  const base = BigInt(String(c.stream_unlocked_at_change));
+  const from = Number(c.stream_changed_at);
+  const end = Number(BigInt(String(c.stream_end_ns)) / 1_000_000_000n);
+  const dur = Math.max(1, end - from);
+  const el = Math.max(0, Math.min(now - from, dur));
+  const unlocked = base + ((total - base) * BigInt(el)) / BigInt(dur);
+  return {
+    recipient: l.payout_recipient, total: total.toString(), drawn: drawn.toString(), unlocked: unlocked.toString(), drawable_estimate: (unlocked > drawn ? unlocked - drawn : 0n).toString(),
+    starts_at: Number(l.settled_at), ends_at: end, progress_bps: total === 0n ? null : Number((unlocked * 10_000n) / total), lengthened: Number(c.stream_lengthened),
+  };
+}
+
+function streamMeter(ctx: Ctx, l: Row, now: number): Json | null {
   if (l.verdict !== "PASS" || l.settled_at === null) return null;
+  const c = one(ctx.store, "SELECT * FROM launch_custody WHERE launch_id = ? AND stream_end_ns IS NOT NULL", Number(l.launch_id));
+  if (c) return lengthenedMeter(l, c, now);
   const total = BigInt(String(l.stream_total));
   const drawn = BigInt(String(l.stream_drawn));
   const start = Number(l.settled_at);
@@ -32,9 +50,9 @@ function streamMeter(l: Row, now: number): Json | null {
 
 function claimsFor(ctx: Ctx, ids: number[]): Json[] {
   if (ids.length === 0) return [];
-  const rows = all(ctx.store, `SELECT * FROM payouts WHERE launch_id IN (${ids.map(() => "?").join(",")}) AND ok = 1 AND kind IN ('Stream', 'creator_claimed', 'alloc_claimed') ORDER BY block_height, ord, log_index`, ...ids);
+  const rows = all(ctx.store, `SELECT * FROM payouts WHERE launch_id IN (${ids.map(() => "?").join(",")}) AND ok = 1 AND kind IN ('Stream', 'creator_claimed', 'alloc_claimed', 'AllocClaim') ORDER BY block_height, ord, log_index`, ...ids);
   return rows.map((r) => ({
-    launch_id: String(r.launch_id), kind: r.kind === "Stream" ? "stream_draw" : r.kind === "alloc_claimed" ? "alloc_claim" : "creator_claimed", amount: r.amount,
+    launch_id: String(r.launch_id), kind: r.kind === "Stream" ? "stream_draw" : r.kind === "alloc_claimed" || r.kind === "AllocClaim" ? "alloc_claim" : "creator_claimed", amount: r.amount,
     block_height: Number(r.block_height), receipt_id: r.receipt_id, time: Number(r.time), source: r.source,
   }));
 }
@@ -54,7 +72,7 @@ export function creatorDesk(ctx: Ctx, rawAccount: string): Json {
     drawn += sd; fees += f; claimed += c; allocClaimed += ac;
     const role = l.creator === account && l.payout_recipient === account ? "both" : l.creator === account ? "creator" : "payout_recipient";
     return {
-      launch: launchSummary(ctx, l), role, stream: streamMeter(l, now), allocation: inst ? vestingOf(ctx, l) : null,
+      launch: launchSummary(ctx, l), role, stream: streamMeter(ctx, l, now), allocation: inst ? vestingOf(ctx, l) : null,
       earnings: { market_fees_creator_slice: f.toString(), claimed: c.toString(), claimable_estimate: (f > c ? f - c : 0n).toString(), stream_drawn: sd.toString(), alloc_claimed: ac.toString() },
     };
   });
@@ -106,6 +124,15 @@ export function portfolio(ctx: Ctx, rawAccount: string): Json {
   return { account, positions, funds_in_motion: motion, as_of: asOf(ctx.store), source: sourceOf(ctx.store, [...pos, ...bals, ...ids.map((i) => one(ctx.store, "SELECT source FROM launches WHERE launch_id = ?", i) as Row)]) };
 }
 
+/** Result of the indexer's own replay of the rolling book hash (fold_check): null until a book event exists, false from the first disagreement. */
+function bookFold(l: Row): Json {
+  const events = Number(l.book_events);
+  return {
+    book_hash_recomputed: events === 0 ? null : l.book_hash_recomputed, fold_ok: events === 0 ? null : l.book_mismatch_at === null,
+    fold_events: events, fold_first_mismatch_block: l.book_mismatch_at ?? null,
+  };
+}
+
 /** Internal consistency of the indexed book: sum of (contributed - walked) equals total_active and active holder count equals funders. */
 function ledgerConsistent(ctx: Ctx, l: Row): boolean {
   const ps = all(ctx.store, "SELECT contributed, walked FROM positions WHERE launch_id = ?", Number(l.launch_id));
@@ -131,8 +158,8 @@ export function verify(ctx: Ctx, rawId: string): Json {
   const bookEvents = Number(one(ctx.store, "SELECT COUNT(*) AS n FROM events WHERE json_extract(data, '$.launch_id') = ? AND event IN ('contributed', 'walked')", String(id))?.n);
   return {
     launch_id: String(id), mode: "trial", charter_hash: l.charter_hash, inputs_hash: l.inputs_hash, book_hash_folded: l.book_hash,
-    book_hash_stored: null, fold_ok: null,
-    fold_note: "book_hash_folded is the hash the contract logged on its latest book event; it is not recomputed here and not compared with get_state. fold_ok stays null until a chain view comparison runs. Use scripts/verify.sh for the independent check.",
+    book_hash_stored: null, ...bookFold(l),
+    fold_note: "book_hash_folded is the hash the contract logged on its latest book event. book_hash_recomputed is the same rolling hash replayed here from the contributed and walked events alone; fold_ok says the two agree at every event. It is not compared with get_state (the indexer makes no view calls): scripts/verify.sh is the independent check against the contract.",
     ledger_consistent: ledgerConsistent(ctx, l), book_events: bookEvents, verdict: l.verdict, event_count: ev.length, events: ev.map(eventRef),
     recompute: `./scripts/verify.sh ${id}`, as_of: asOf(ctx.store), source: sourceOf(ctx.store, [l]),
   };

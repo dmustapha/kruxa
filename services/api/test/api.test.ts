@@ -117,7 +117,10 @@ test("creator desk, portfolio and verify", async () => {
   assert.equal(hal.positions[0].status, "walked");
   const v = (await get("/api/verify/1")).body;
   assert.equal(v.ledger_consistent, true);
-  assert.equal(v.fold_ok, null);
+  assert.equal(v.fold_ok, true);
+  assert.equal(v.book_hash_recomputed, v.book_hash_folded);
+  assert.equal(v.fold_events, 6);
+  assert.equal((await get("/api/verify/1000000000")).body.fold_ok, null);
   assert.equal((await get("/api/verify/2")).body.verdict, "FAIL");
 });
 

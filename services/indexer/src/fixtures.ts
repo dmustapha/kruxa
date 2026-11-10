@@ -1,3 +1,5 @@
+import { ZERO_BOOK_HASH, bookNext } from "./book.ts";
+import { opsScenario } from "./fixtures-ops.ts";
 import { cpOut } from "./price.ts";
 import type { ContractSet, NearBlock } from "./types.ts";
 
@@ -23,7 +25,7 @@ function mulberry32(seed: number): () => number {
 type Log = { contract: string; event: string; data: Record<string, unknown>; status?: unknown };
 
 /** Collects timed log groups, sorts them by time (stable), then numbers blocks and receipts in that order. */
-class Builder {
+export class Builder {
   private entries: Array<{ time: number; logs: Log[] }> = [];
 
   push(timeSec: number, logs: Log[]): void {
@@ -74,6 +76,16 @@ const TOTAL_SUPPLY = "2000000000000";
  * Instant (ids from 1e9): ECHO opens, trades and has a vesting claim; FOXX is abandoned; ZETA fails at token creation; PEND waits for its seed.
  */
 export function generateFixtureBlocks(seed = 7, trades = 240): NearBlock[] {
+  return buildFixture(seed, trades, false);
+}
+
+/** The base fixture plus the operations, custody and governance events (fixtures-ops.ts). `KRUXA_NETWORK=fixture` serves this one. */
+export function generateFullFixtureBlocks(seed = 7, trades = 240): NearBlock[] {
+  return buildFixture(seed, trades, true);
+}
+
+function buildFixture(seed: number, trades: number, withOps: boolean): NearBlock[] {
+  books.clear();
   const rnd = mulberry32(seed);
   const b = new Builder();
   const t = FIXTURE_BASE_TIME;
@@ -91,7 +103,7 @@ export function generateFixtureBlocks(seed = 7, trades = 240): NearBlock[] {
   const alpha = contribute(b, rnd, 1, ["dan", "erin", "fay", "gus", "hal"], t + 100, 20_000_000);
   const halNet = alpha[4] as number;
   const alphaTotal = sum(alpha) - halNet;
-  b.push(t + 200, [{ contract: core, event: "walked", data: { launch_id: "1", holder: "near:hal.testnet", amount: String(halNet), total_active: String(alphaTotal), funders: 4, book_hash: "bk1w".padEnd(64, "0") } }]);
+  b.push(t + 200, [walkLog(1, "hal", halNet)]);
   const bravo = contribute(b, rnd, 2, ["ivy", "jon"], t + 300, 5_000_000);
   const delta = contribute(b, rnd, 4, ["kim", "lee", "max"], t + 400, 20_000_000);
   const settle = t + 3 * day + 60;
@@ -114,7 +126,8 @@ export function generateFixtureBlocks(seed = 7, trades = 240): NearBlock[] {
   b.push(end, [{ contract: market, event: "creator_claimed", data: { launch_id: "1", recipient: "alice.testnet", amount: "100000", paid_creator: "100000" } }]);
   b.push(end + 20, [{ contract: market, event: "platform_withdrawn", data: { to: "treasury.testnet", amount: "50000" } }]);
   b.push(end + 30, [{ contract: core, event: "payout_resolved", data: { launch_id: "1", kind: "Stream", amount: "250000", ok: true } }]);
-  b.push(end + 90, [contribLog(3, "dan", 8_000_000, 8_000_000, 1)]);
+  b.push(end + 90, [contribLog(3, "dan", 8_000_000)]);
+  if (withOps) opsScenario(b, core, end + 120);
   return b.build();
 }
 
@@ -122,19 +135,44 @@ function sum(xs: number[]): number {
   return xs.reduce((a, x) => a + x, 0);
 }
 
-function contribLog(id: number, who: string, net: number, total: number, funders: number): Log {
-  return { contract: core, event: "contributed", data: { launch_id: String(id), holder: `near:${who}.testnet`, net: String(net), relay_fee: "0", custody: "Native", total_active: String(total), funders, book_hash: `bk${id}-${funders}`.padEnd(64, "0") } };
+interface BookState { hash: string; total: bigint; funders: number; open: Map<string, bigint> }
+const books = new Map<number, BookState>();
+
+function bookOf(id: number): BookState {
+  const cur = books.get(id) ?? { hash: ZERO_BOOK_HASH, total: 0n, funders: 0, open: new Map<string, bigint>() };
+  books.set(id, cur);
+  return cur;
+}
+
+/** Real rolling book hash (the contract's `book_next`), so the indexer fold check passes on fixture data. */
+function contribLog(id: number, who: string, net: number): Log {
+  const b = bookOf(id);
+  const holder = `near:${who}.testnet`;
+  const was = b.open.get(holder) ?? 0n;
+  b.open.set(holder, was + BigInt(net));
+  b.total += BigInt(net);
+  if (was === 0n) b.funders++;
+  b.hash = bookNext(b.hash, 1, holder, BigInt(net), b.total, b.funders);
+  return { contract: core, event: "contributed", data: { launch_id: String(id), holder, net: String(net), relay_fee: "0", custody: "Native", total_active: b.total.toString(), funders: b.funders, book_hash: b.hash } };
+}
+
+function walkLog(id: number, who: string, amount: number): Log {
+  const b = bookOf(id);
+  const holder = `near:${who}.testnet`;
+  b.open.set(holder, 0n);
+  b.total -= BigInt(amount);
+  b.funders--;
+  b.hash = bookNext(b.hash, 2, holder, BigInt(amount), b.total, b.funders);
+  return { contract: core, event: "walked", data: { launch_id: String(id), holder, amount: String(amount), total_active: b.total.toString(), funders: b.funders, book_hash: b.hash } };
 }
 
 /** Contributions one after another; returns each backer's net so callers can walk or refund exactly. */
 function contribute(b: Builder, rnd: () => number, id: number, who: string[], at: number, unit: number): number[] {
   const nets: number[] = [];
-  let total = 0;
   who.forEach((w, i) => {
     const net = unit + Math.floor(rnd() * 5) * 1_000_000;
-    total += net;
     nets.push(net);
-    b.push(at + i * 20, [contribLog(id, w, net, total, i + 1)]);
+    b.push(at + i * 20, [contribLog(id, w, net)]);
   });
   return nets;
 }

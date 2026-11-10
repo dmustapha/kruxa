@@ -2,9 +2,11 @@ import { cpOut, e12ToNumber, priceE12, quoteToNumber } from "../../indexer/src/p
 import { INSTANT_ID_BASE, INTERVAL_SECONDS } from "../../indexer/src/types.ts";
 import { ApiError, WINDOW_24H, all, asOf, candleJson, decodeCursor, encodeCursor, intParam, intervalParam, lastPrice, launchSummary, one, parseId, sourceOf, storeSource, tradeJson, volume } from "./common.ts";
 import type { Ctx, Json, Row } from "./common.ts";
+import { OPS_CATEGORY, OPS_EVENT_NAMES, opsSummary } from "./ops-summary.ts";
 
 const STAGES = new Set(["all", "new", "open", "closing", "passed", "failed", "launching", "trading"]);
 const TABS = new Set(["all", "live", "walk", "launching", "trading", "passed", "failed"]);
+const CATEGORIES = new Set<string>(Object.values(OPS_CATEGORY));
 const TYPES = new Set(["all", "trial", "instant"]);
 const SORTS = new Set(["newest", "raised", "funders", "ending_soon", "volume_24h"]);
 
@@ -80,7 +82,7 @@ export function launchDetail(ctx: Ctx, rawId: string): Json {
   const soft = l.soft_cap === null ? null : BigInt(String(l.soft_cap));
   const total = BigInt(String(l.total_active));
   const events = all(ctx.store, "SELECT event, block_height, receipt_id, log_index, time, source FROM events WHERE json_extract(data, '$.launch_id') = ? ORDER BY block_height, ord, log_index LIMIT 500", String(id));
-  const summary = launchSummary(ctx, l);
+  const summary: Json = { ...launchSummary(ctx, l), halt: haltOf(ctx, id) };
   if (summary.mode === "instant") {
     return { ...summary, charter_hash: l.charter_hash, genesis: null, verdict_inputs: null, instant: instantInfo(ctx, l), verdict_reasons: [], allocation: null,
       walked_total: "0", contributed_total: "0", timeline: events.map(eventRef) };
@@ -95,6 +97,11 @@ export function launchDetail(ctx: Ctx, rawId: string): Json {
     verdict_reasons: JSON.parse(String(l.reasons)) as unknown, allocation: l.allocation ? (JSON.parse(String(l.allocation)) as unknown) : null,
     walked_total: l.walked_total, contributed_total: l.contributed_total, timeline: events.map(eventRef),
   };
+}
+
+function haltOf(ctx: Ctx, id: number): Json | null {
+  const h = one(ctx.store, "SELECT * FROM halts WHERE launch_id = ?", id);
+  return h ? { halted: Number(h.halted) === 1, reason: h.reason, halted_by: h.halted_by, halted_at: h.halted_at, resumed_at: h.resumed_at, halt_count: Number(h.halt_count) } : null;
 }
 
 export function eventRef(r: Row): Json {
@@ -344,6 +351,18 @@ function rung(side: string, amountIn: bigint, amountOut: bigint, avg: bigint | n
   return { side, amount_in: amountIn.toString(), amount_out: amountOut.toString(), avg_price: avg === null ? null : e12ToNumber(avg), price_impact_bps: impact };
 }
 
+/** Ceremony data the contract keeps beside the commit: signatures, abort reason, reopen count, F0 messages (1.3.0 additions, all optional for older clients). */
+function genesisDetail(g: Row | undefined, failed: boolean): Json {
+  const use = g !== undefined && !failed;
+  const list = (k: string): unknown => (use ? (JSON.parse(String(g[k])) as unknown) : []);
+  return {
+    leaf_count: use ? g.leaf_count : null, max_total_claim: use ? g.max_total_claim : null, slot: use ? g.slot : null, ceremony_hash: use ? g.ceremony_hash : null,
+    signatures: list("signatures"), reopen_count: use ? Number(g.reopen_count) : 0, reopened_at: use ? g.reopened_at : null,
+    abort: use && g.abort_reason !== null ? { reason: g.abort_reason, by: g.abort_by } : null,
+    f0: { messages: list("f0_messages"), sign_requests: list("f0_sign_requests") }, attestations: list("attestations"),
+  };
+}
+
 export function genesisOf(ctx: Ctx, l: Row): Json {
   const g = one(ctx.store, "SELECT * FROM genesis WHERE launch_id = ?", Number(l.launch_id));
   const verdictInputs = {
@@ -356,6 +375,7 @@ export function genesisOf(ctx: Ctx, l: Row): Json {
     stage, network: val("network"), path: val("path"), spec_hash: val("spec_hash"), mint: val("mint"), tx_create: val("tx_create"), tx_authority: val("tx_authority"),
     distributor: val("distributor"), root: val("root"), mint_authority: g && !failed ? g.mint_authority : "unknown", freeze_authority: g && !failed ? g.freeze_authority : "unknown",
     verified_checks: g && !failed ? (JSON.parse(String(g.checks)) as unknown) : [], verdict_inputs: verdictInputs, updated_at: val("updated_at"),
+    ...genesisDetail(g, failed),
     source: g ? sourceOf(ctx.store, [g, l]) : sourceOf(ctx.store, [l]),
   };
 }
@@ -454,51 +474,27 @@ export function stats(ctx: Ctx): Json {
   };
 }
 
-const OPS_EVENTS = ["paused", "frozen", "unpaused", "global_cap_lowered", "global_cap_queued", "global_cap_applied", "launch_cap_queued", "launch_cap_applied", "market_paused", "platform_withdrawn",
-  "beta_opened", "market_set", "genesis_relayer_set", "genesis_paused", "genesis_resumed", "cap_lowered", "cap_queued", "cap_applied", "symbol_reserved"];
-
-function opsSummary(event: string, d: Record<string, unknown>, kind: string): string {
-  const by = typeof d.by === "string" ? ` by ${d.by}` : "";
-  const when = (v: unknown): string => (typeof v === "string" && /^[0-9]+$/.test(v) ? new Date(Number(BigInt(v) / 1_000_000n)).toISOString() : "unknown time");
-  const who = kind === "launcher" ? "instant launcher" : "core";
-  switch (event) {
-    case "paused": return `${who} paused${by}`;
-    case "frozen": return `${who} frozen${by} until ${when(d.until)}`;
-    case "unpaused": return `${who} unpaused`;
-    case "beta_opened": return `${who} creator gate opened${by}`;
-    case "market_set": return `${who} market set to ${String(d.market)}`;
-    case "genesis_relayer_set": return `genesis relayer set to ${String(d.account)}`;
-    case "genesis_paused": return `genesis paused${by}`;
-    case "genesis_resumed": return "genesis resumed";
-    case "cap_lowered": return `instant ${String(d.kind)} seed cap lowered to ${String(d.value)}`;
-    case "cap_queued": return `instant ${String(d.kind)} seed cap raise to ${String(d.value)} queued, effective ${when(d.effective_at)}`;
-    case "cap_applied": return `instant ${String(d.kind)} seed cap set to ${String(d.value)}`;
-    case "symbol_reserved": return `symbol ${String(d.symbol)} reserved`;
-    case "global_cap_lowered": return `global cap lowered to ${String(d.value)}`;
-    case "global_cap_queued": return `global cap raise to ${String(d.value)} queued, effective ${when(d.effective_at)}`;
-    case "global_cap_applied": return `global cap set to ${String(d.value)}`;
-    case "launch_cap_queued": return `per-launch cap raise to ${String(d.value)} queued, effective ${when(d.effective_at)}`;
-    case "launch_cap_applied": return `per-launch cap set to ${String(d.value)}`;
-    case "market_paused": return `market ${d.paused === false ? "unpaused" : "paused"}${by}`;
-    default: return `platform withdrew ${String(d.amount)} to ${String(d.to)}`;
-  }
-}
-
 export function opsLog(ctx: Ctx, q: Q): Json {
   const limit = intParam(q.get("limit"), "limit", 1, 200, 50);
   const scope = q.get("scope");
   if (scope !== null && scope !== "core" && scope !== "market" && scope !== "launcher") throw new ApiError(400, "bad_scope", "scope must be core, market or launcher");
+  const category = q.get("category");
+  if (category !== null && !CATEGORIES.has(category)) throw new ApiError(400, "bad_category", `category must be one of ${[...CATEGORIES].join(", ")}`);
+  const launch = q.get("launch_id") === null ? null : String(parseId(String(q.get("launch_id"))));
+  const names = OPS_EVENT_NAMES.filter((n) => category === null || OPS_CATEGORY[n] === category);
   const cur = decodeCursor<{ h: number; o: number; l: number }>(q.get("before"));
-  const marks = OPS_EVENTS.map(() => "?").join(",");
   const rows = all(ctx.store,
-    `SELECT * FROM events WHERE event IN (${marks}) AND (? IS NULL OR kind = ?) AND (? IS NULL OR (block_height, ord, log_index) < (?, ?, ?))
-     ORDER BY block_height DESC, ord DESC, log_index DESC LIMIT ?`,
-    ...OPS_EVENTS, scope, scope, cur ? 1 : null, cur?.h ?? 0, cur?.o ?? 0, cur?.l ?? 0, limit + 1);
+    `SELECT * FROM events WHERE event IN (${names.map(() => "?").join(",")}) AND (? IS NULL OR kind = ?) AND (? IS NULL OR json_extract(data, '$.launch_id') = ?)
+     AND (? IS NULL OR (block_height, ord, log_index) < (?, ?, ?)) ORDER BY block_height DESC, ord DESC, log_index DESC LIMIT ?`,
+    ...names, scope, scope, launch, launch, cur ? 1 : null, cur?.h ?? 0, cur?.o ?? 0, cur?.l ?? 0, limit + 1);
   const page = rows.slice(0, limit);
   const last = page[page.length - 1];
   const items = page.map((r) => {
     const data = JSON.parse(String(r.data)) as Record<string, unknown>;
-    return { event: r.event, scope: r.kind, contract: r.contract, summary: opsSummary(String(r.event), data, String(r.kind)), data, block_height: Number(r.block_height), receipt_id: r.receipt_id, time: Number(r.time), source: r.source };
+    return {
+      event: r.event, category: OPS_CATEGORY[String(r.event)], scope: r.kind, contract: r.contract, launch_id: data.launch_id === undefined ? null : String(data.launch_id),
+      summary: opsSummary(String(r.event), data, String(r.kind)), data, block_height: Number(r.block_height), receipt_id: r.receipt_id, time: Number(r.time), source: r.source,
+    };
   });
   const next = rows.length > limit && last ? encodeCursor({ h: Number(last.block_height), o: Number(last.ord), l: Number(last.log_index) }) : null;
   return { items, next_cursor: next, as_of: asOf(ctx.store), source: sourceOf(ctx.store, page) };
