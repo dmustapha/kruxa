@@ -1,0 +1,18 @@
+waiting for the walk tail to end (phase Open)
+OK   keeper 3: settle tx=G1VNGBybsKVkYahr2cuqyozsmJjVZvUP33Q9t6jfGVRw codes=
+	Failure [core3.kxi-root-1108.testnet]: Error: {"index":0,"kind":{"index":0,"kind":{"FunctionCallError":{"ExecutionError":"Smart contract panicked: R_NOT_CLEAR: needs Passed, all positions settled, not yet swept"}}}}
+FAIL keeper 3: sweep_residue tx=Ag56F7c2WettesESY1PEq1ezq55Gx8ma6sZxyjuKX1BW codes=R_NOT_CLEAR
+	Failure [core3.kxi-root-1108.testnet]: Error: {"index":0,"kind":{"index":0,"kind":{"FunctionCallError":{"ExecutionError":"Smart contract panicked: R_NOT_CLEAR: needs Passed, every position settled and sweep_residue done"}}}}
+FAIL keeper 3: consolidate tx=B9CHz3xZp7FKReYP6WaV3MBmdUnNTNx93DSvCTFBFzA9 codes=R_NOT_CLEAR
+	Failure [core3.kxi-root-1108.testnet]: Error: {"index":0,"kind":{"index":0,"kind":{"FunctionCallError":{"ExecutionError":"Smart contract panicked: R_NOT_CLEAR: needs Passed, every position settled and sweep_residue done"}}}}
+FAIL keeper 3: pay_launch_fee tx=Cdko26bJyHyirz6TxDZsyZv6KsXV2TMGby5tBaMC8HWr codes=R_NOT_CLEAR
+	Failure [core3.kxi-root-1108.testnet]: Error: {"index":0,"kind":{"index":0,"kind":{"FunctionCallError":{"ExecutionError":"Smart contract panicked: R_NOTHING_FREE: no relay fees accrued"}}}}
+FAIL keeper 3: pay_relay_fees tx=GSkiUvjVsnBDbh31DJyKEoTruS9NBb9YpGVEAPHeDMaZ codes=R_NOTHING_FREE
+final status Failed(3), positions_unsettled 5, residue_swept false
+--- resume from settle_positions_page: the state read right after settle was stale (positions_unsettled read 0); keeper.mjs now waits 5 s
+OK   keeper 3: settle_positions_page tx=AmYY5cXFfbFdQ9TX4nDZbee3ocgTYtHAcKf2z38VJ4Sa codes=
+FAIL keeper 3: sweep_residue tx=57cyodAmyYnx2JiXGdoqJx73ANzvJja8f6KMnGLQgdX8 codes=R_NOT_CLEAR
+FAIL keeper 3: consolidate tx=DRd89u7AmWDKwNBuyBr5Xt3kBCo48tZTakYkt9CRzNKS codes=R_NOT_CLEAR
+FAIL keeper 3: pay_launch_fee tx=5Dm15hgXivFJWFwknrsiFb29jRF4L2zYXxTpeyf6MBCE codes=R_NOT_CLEAR
+FAIL keeper 3: pay_relay_fees tx=J8VdvD2PP6u8T9kAemPdoDfKJSUuYYtnF65vu5Cqg6hp codes=R_NOTHING_FREE
+final status Failed(3), positions_unsettled 0, residue_swept false

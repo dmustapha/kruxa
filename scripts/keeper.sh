@@ -6,8 +6,13 @@ set -euo pipefail
 CORE="${KRUXA_CORE:?set KRUXA_CORE}"; SIGNER="${KRUXA_KEEPER:?set KRUXA_KEEPER}"; ID="${1:?launch id}"
 if [ "${NEAR_ENV:-testnet}" = "mainnet" ] || [[ "$CORE" != *.testnet ]]; then echo "refusing: testnet only"; exit 1; fi
 RUN=false; [ "${2:-}" = "--yes" ] && [ "${NEAR_ENV:-}" = "testnet" ] && RUN=true
-call() { # method, json args
-  local cmd="near contract call-function as-transaction $CORE $1 json-args '$2' prepaid-gas '100 Tgas' attached-deposit '0 NEAR' sign-as $SIGNER network-config testnet sign-with-keychain send"
+# No near-cli-rs on this machine: run the same sequence with the node driver (signer keeper.<root>; the core is core3.<root>, see common.mjs).
+if ! command -v "${NEAR_BIN:-near}" > /dev/null 2>&1; then
+  exec node "$(dirname "$0")/core-testnet/keeper.mjs" "$ID" $($RUN || echo --dry-run)
+fi
+call() { # method, json args (consolidate needs about 250 Tgas: its ft_withdraw leg reserves 100 plus the callback; 100 fails with 'Exceeded the prepaid gas')
+  local GAS='100 Tgas'; [ "$1" = consolidate ] && GAS='250 Tgas'
+  local cmd="near contract call-function as-transaction $CORE $1 json-args '$2' prepaid-gas '$GAS' attached-deposit '0 NEAR' sign-as $SIGNER network-config testnet sign-with-keychain send"
   echo "$cmd"; if $RUN; then bash -c "$cmd"; fi
 }
 unsettled() { near contract call-function as-read-only "$CORE" get_state json-args "{\"launch_id\":\"$ID\"}" network-config testnet now \

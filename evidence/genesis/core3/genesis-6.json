@@ -1,0 +1,122 @@
+{
+  "format": "kruxa-genesis-record/2",
+  "cluster": "devnet",
+  "mode": "F0",
+  "launch_id": "6",
+  "core": "REAL core core3.kxi-root-1108.testnet (NEAR testnet)",
+  "mint": "7SBwmS2xLpQi6mY88jeUxeTYR6bgy2LbaVWGpRZxQb5D",
+  "g_pub": "6C1WzSWbjTv71wACJ4RXzUyWwfft5f42qjWfhBJQ9uR",
+  "spec_hex": "011100000067732d636f6d70696c65722f312e302e300d000000736f6c616e612d6465766e6574ce59db5080fc2c6d3bcf7ca90712d3c2e5e6c28f27f0dfbb9953bdb0894c03ab01000000361b000000636f7265332e6b78692d726f6f742d313130382e746573746e657476a18210000000000101545a13d8e46590270cd947c3ba14cdf2b681990218f44afe146ee6b19f66e801000000365f9a0437fe30573e9c1234f93d3e447aeef1df06b0f3c7edd62a67831a44984406ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a906f89f1aeb2b4f02000f0000004b584345205465737420546f6b656e040000004b5843458e15a2ef542fbfc3c3fb1baeb4cfb99b26c6ffb105d0ad6fc9a9c9c10b7e3f8600000000000000000000000000000000000000000000000000000000000000000101000100000001f89f1aeb2b4f0200af221d91d65dcf810a4002d662a9285c75d1bd84e31369d24efccfaf5d6c2fac00007bf9f835e33439be9834bb97eff430991f130eb2cc0535dbefb65e873129637ef89f1aeb2b4f02000c0000005a00",
+  "spec_hash": "88e54dc018fd5c6c45c270ea763f7240434d2e24c51bb3a0c9de6f3d4cec522c",
+  "params": {
+    "jito_program": "9XYvBtToi9VafC6AvGL5UKp6Du2htBhAr2XL6UDptfCs",
+    "metadata_uri": "https://kruxa.example/rehearsal/6.json",
+    "clock_ts": "1794272050"
+  },
+  "blockhash": "8cF5AaQRtxGwCCJLDfts6apdRyA9t6VegoA29sELvVy2",
+  "price": 1000,
+  "sigs": [
+    "3rw2HXYEWwBBr9hCYhGFqRc35e3H8cKUEnMeanVE5GVRJaAqwr9Vtqk28WzMvXo3F2JE8cs4xshyhoRr3zNSKhao",
+    "21XxDzZryRuyHPSnmjKVq6GbTxEDkr9aPT127qWBvDZyPM5VwbocdXWxBXdh1dVhHhemkrGQCcAD5NnEaPPNm8Tu"
+  ],
+  "slot": 520569083,
+  "ceremony_hash": "1a95b6e7ab05711593779c74c9e71d0467134219811106ed2452ac5a046fddcd",
+  "sign_ms": [
+    8117,
+    7357
+  ],
+  "leaves": [
+    {
+      "claimant": "A29HcTvrhLXYeHk3C9Bec5ya9QzyuDbcPwzEbVUyxvm",
+      "unlocked": "54166666666666",
+      "locked": "0"
+    },
+    {
+      "claimant": "mpxv5cekTTDkpiW5W8D7YgGEnqzDLRHgTspXuJ9Uk1w",
+      "unlocked": "54166666666666",
+      "locked": "0"
+    },
+    {
+      "claimant": "2QCTp5iWsA5iYvQvPdj4soeRDoz3mmas6dboDGQ5zqpG",
+      "unlocked": "54166666666666",
+      "locked": "0"
+    },
+    {
+      "claimant": "2tyVLP1abwAfHzNcgvmfcH5PsXzSxqKVmMEDjWcJx8GZ",
+      "unlocked": "54166666666666",
+      "locked": "0"
+    },
+    {
+      "claimant": "3t4LEPKBsxyr8vR3dN9RPT96AU7iadKrtWg5QECdLUJJ",
+      "unlocked": "54166666666666",
+      "locked": "0"
+    },
+    {
+      "claimant": "6dAMMPseidRD29EZUkwAb548esNjfHR2bvttzA2MYmhD",
+      "unlocked": "54166666666666",
+      "locked": "0"
+    },
+    {
+      "claimant": "6texasquPEbhD1cbnfrEATaEqD1fGxDiXZuKJ2kuC9qH",
+      "unlocked": "54166666666666",
+      "locked": "0"
+    },
+    {
+      "claimant": "7uCiqdeMGx94P3UUszWqhh4G6MaPR4iKXKjE9x9ohqjZ",
+      "unlocked": "54166666666666",
+      "locked": "0"
+    },
+    {
+      "claimant": "BcUiuasJ9f7DoVfRb7wWFSxidFEnyVwZCQmYtBGWZyvX",
+      "unlocked": "54166666666666",
+      "locked": "0"
+    },
+    {
+      "claimant": "CzbwZndUawAUqNSvmYmidCbG7DQwfdSFz2sLd7bH283t",
+      "unlocked": "54166666666666",
+      "locked": "0"
+    },
+    {
+      "claimant": "FZoPbMXiHUPd2oTEWpSn3ofWU223QP8cJw6gHSNg7cem",
+      "unlocked": "54166666666666",
+      "locked": "0"
+    },
+    {
+      "claimant": "Gwb5M4kfnsQsrtvsmirLrB3g9ESEa3b7vCp9G2LXWjMh",
+      "unlocked": "54166666666666",
+      "locked": "0"
+    }
+  ],
+  "squads": {
+    "multisig": "CneX72zHFJsd71BBZ39xAuBH8zBySsWo6RedYr6j6A1Z",
+    "members": [
+      "3foiPWxXqjY7wjLs66JnQpojKrEKXHPu66Gv3wTrxq4k",
+      "4aTU5yBGipNZogGWM17nGyGxZJoFC6bsPUY39mebd6Uk",
+      "5WwpmFpgqfYS7N6eGW1Q6REqrppaUaJwXxfvrRUjgrWS"
+    ],
+    "threshold": 2,
+    "time_lock": 172800
+  },
+  "f0": {
+    "signer_root": "ed25519:6vSEtQxrQj6txUMh33WC4ERyCWmNMRTdufDWAaDY3Un2",
+    "predecessor": "core3.kxi-root-1108.testnet",
+    "path": "kruxa:genesis:6",
+    "sign_log": [
+      {
+        "tx": "6kaufG3zwYMZVraPjsDUWXDemwNRXtr3H9ReZ7KhyLh6",
+        "ms": 8111,
+        "response": "{\"scheme\":\"Ed25519\",\"signature\":[143,23,203,229,167,206,47,140,73,7,201,166,27,116,93,134,183,58,240,11,87,171,155,139,88,38,119,18,71,244,198,111,181,173,239,191,185,58,89,202,36,201,71,35,110,83,244,161,18,34,36,255,130,69,11,187,232,97,162,171,158,151,75,8]}",
+        "gas_burnt_tgas": 28.580678309599,
+        "near_burnt": "0.001353"
+      },
+      {
+        "tx": "EVLk5LEttN8X2CM3aqZoCGgokoKjF2VXcrWbfrp9Ry58",
+        "ms": 7353,
+        "response": "{\"scheme\":\"Ed25519\",\"signature\":[50,122,42,17,77,220,74,235,105,87,182,97,144,246,22,81,186,132,10,142,254,158,78,64,72,173,44,127,196,41,237,190,133,23,49,156,63,53,77,78,142,209,97,126,87,101,65,241,61,40,235,118,155,242,92,49,96,86,100,97,224,204,198,4]}",
+        "gas_burnt_tgas": 28.304185036999,
+        "near_burnt": "0.001325"
+      }
+    ]
+  },
+  "spec_source": "REAL core core3.kxi-root-1108.testnet (NEAR testnet)"
+}

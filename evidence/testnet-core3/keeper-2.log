@@ -1,0 +1,25 @@
+created keeper.kxi-root-1108.testnet tx=DJ25cFs71AAmNhVoaJfVFFv7HAXSHeby3ZPXPbpGrcMV
+waiting for the walk tail to end (phase Open)
+OK   keeper 2: settle tx=JJz2ujdBDNocYE9TLYuWtwQAG1M3G1U9oXNanjkZoJ7 codes=
+OK   keeper 2: settle_positions_page tx=EdEM3dPMX3SNvVpWFq1X25EBQWEunnAE2yhL2hpmKej7 codes=
+OK   keeper 2: sweep_residue tx=JBdJ44UrVtqHVfmMVqwo3rvhk46FS1R1mbbCEyW6gC1m codes=
+FAIL keeper 2: consolidate tx=951xTKmnDTJPrD8nGndc18DhDhkA415BTY1wEctftDRq codes=
+	Failure [core3.kxi-root-1108.testnet]: Error: {"index":0,"kind":{"index":0,"kind":{"FunctionCallError":{"ExecutionError":"Smart contract panicked: R_NOTHING_FREE: no launch fee payable yet (consolidate first)"}}}}
+FAIL keeper 2: pay_launch_fee tx=HJ3Tnbnt2aSFdHU3GSVz8fSv4ehVMnf196Yqwvboj3L5 codes=R_NOTHING_FREE
+FAIL keeper 2: pay_relay_fees tx=HAYCYPGg9TbFPHEiihc7YicgbEvwgKKZXwtYxqrBEdEu codes=
+final status Passed, positions_unsettled 0, residue_swept true
+--- resume after the keeper ran out of NEAR for gas reservations (topped up): KEEPER_FROM=consolidate
+topped up keeper tx=HzK4ZEv8xEZgXnbTvoU7RwHoZccYXP51nZChJKsDwmbL
+	Failure [core3.kxi-root-1108.testnet]: Error: {"index":0,"kind":{"index":0,"kind":{"FunctionCallError":{"ExecutionError":"Exceeded the prepaid gas."}}}}
+FAIL keeper 2: consolidate tx=4sRipPrPqFLsHJU21V5rJzUG6AAMf4kmPqGRdKbjeLRY codes=
+	Failure [core3.kxi-root-1108.testnet]: Error: {"index":0,"kind":{"index":0,"kind":{"FunctionCallError":{"ExecutionError":"Smart contract panicked: R_NOTHING_FREE: no launch fee payable yet (consolidate first)"}}}}
+FAIL keeper 2: pay_launch_fee tx=3UTAkMy7QbZkTdNV54fTJ7X1vX6Q9SEhCa5xDahZ6j3f codes=R_NOTHING_FREE
+	Failure [core3.kxi-root-1108.testnet]: Error: {"index":0,"kind":{"index":0,"kind":{"FunctionCallError":{"ExecutionError":"Smart contract panicked: R_NOTHING_FREE: no relay fees accrued"}}}}
+FAIL keeper 2: pay_relay_fees tx=25GeKD9Ex1XcBEVyd3HqD4fHNxwZQE9FC1fKsKPCoFkT codes=R_NOTHING_FREE
+final status Passed, positions_unsettled 0, residue_swept true
+--- retry from consolidate at 250 Tgas (100 Tgas: Exceeded the prepaid gas)
+OK   keeper 2: consolidate tx=9zyAPWSasc9uL7vZNVFX9XQ7KFVX24au5qUWsaL7e37U codes=
+OK   keeper 2: pay_launch_fee tx=F3jHqhfngdpkvZTyzW5hGRGeDUpyLKkwZL8sTYvy33Uf codes=
+	Failure [core3.kxi-root-1108.testnet]: Error: {"index":0,"kind":{"index":0,"kind":{"FunctionCallError":{"ExecutionError":"Smart contract panicked: R_NOTHING_FREE: no relay fees accrued"}}}}
+FAIL keeper 2: pay_relay_fees tx=6KaXvxynyJSzWQHSLZgYvK9KMgTE8Shs2W67cxV9LX6i codes=R_NOTHING_FREE
+final status Passed, positions_unsettled 0, residue_swept true

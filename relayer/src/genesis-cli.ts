@@ -46,7 +46,7 @@ async function makeFunder(conn: Connection, cluster: Cluster): Promise<Keypair> 
   return kp;
 }
 
-const makeSigner = (mode: Args["mode"], launch: bigint): Promise<GenesisSigner> | GenesisSigner => (mode === "F1" ? new F1Signer() : F0Signer.fromEnv(launch));
+const makeSigner = (mode: Args["mode"], launch: bigint, core?: string): Promise<GenesisSigner> | GenesisSigner => (mode === "F1" ? new F1Signer() : F0Signer.fromEnv(launch, core));
 
 async function main(): Promise<void> {
   const a = parseArgs(process.argv.slice(2));
@@ -64,7 +64,7 @@ async function main(): Promise<void> {
   const core: CoreClient = real ?? new StandaloneCore({ verdicts: VERDICTS, mode: a.mode, multisig: new PublicKey(multisig).toBytes(), reserveAmount: 50_000_000_000n, metadataUri, leaves });
   if (VERDICTS[a.launch.toString()] !== "PASS" && !real) { console.log(await attemptRefused(core, a.launch, conn, null)); return; }
   if (real && process.argv.includes("--expect-refused")) { console.log(await attemptRefused(core, a.launch, conn, null)); return; }
-  const signer = await makeSigner(a.mode, a.launch);
+  const signer = await makeSigner(a.mode, a.launch, real ? a.core : undefined);
   const gPub = new PublicKey(signer.pub()).toBase58();
   const t0 = Date.now();
   const r = await runCeremony({ conn, cluster: a.cluster, core, signer, launchId: a.launch, funder, priceMicroLamports: 1000, jitoProgram: process.env.JITO_PROGRAM ?? JITO_MAINNET, metadataUri, priorTx1: a.priorTx1, log: console.log });

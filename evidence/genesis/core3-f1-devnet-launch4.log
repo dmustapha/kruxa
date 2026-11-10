@@ -1,0 +1,27 @@
+cluster: devnet (devnet) mode: F1 launch: 4
+Retrying transaction core3.kxi-root-1108.testnet:6Ab4o71FuKYEnNa4vQJhDeSEquztLZ9MGhgoGMdeHPUL with new nonce.
+Receipt: J7PAhLdro8nDGwA9gzRhend6NKHCVvXynykAxTBusRPC
+	Log [core3.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"genesis_committed","data":[{"launch_id":"4","g_pub":"e3a1d29d2ac01d305a73143f708f61c5c884ec8b28871c50790b2b9ace475d88","mint":"3f7dd579fc655a81f8164b0bfb6c75ecead24e4044309065357bcfc3fc6377fc","merkle_root":"bc71414f68525373bc4dadf593a5a2707381662f7e43b77d85fc6f08621b35b2","genesis_spec_hash":"57dbc09259d11c4091b58d8ccb5279ddf5293cd6f3fbccc0a264c61a7dc24492","leaf_count":11,"max_total_claim":"595833333333326","mode":"F1"}]}
+commit_genesis ok (REAL core core3.kxi-root-1108.testnet (NEAR testnet))
+fund G GKafXRoKPyWrVDtSWwXimfq4pqC1gJjmYavGPdaY1MEw: 4eoWD6jMFCs7zPFi15kKJwZACKKELrso1TsuFcSJgggZcqJmwJ4Z3wyn7M5XfvixyZw2Fs8hQGEF2vwsDFvPr54g
+tx1 create: 2NkMZoo6yWHqQFddZzbjx6aEwUS4zocLumf1mLMkEn3bZYcvoPFas49Z3jKauQAm5QV211WjhS2YYrFnn6eHnaRH
+tx2 seal: 4FqzDrkeUqhbFFwT2PtXCovapyEAyxgLzsmhhoVeh2FXemmqj9Vp49uPsAZXX9GEWEN3Nn4Rd2yVvzpzirmdeu7H
+Retrying transaction core3.kxi-root-1108.testnet:5gvvNSFu6kK3KbqnnTxSphmr2zfEsEn6FTViPKyuUJam with new nonce.
+Receipt: 5xUN6h3MfZKmHg89j2Wot1yeC2namxFEUdmNmAwFUzFU
+	Log [core3.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"genesis_confirmed","data":[{"launch_id":"4","mint":"3f7dd579fc655a81f8164b0bfb6c75ecead24e4044309065357bcfc3fc6377fc","sigs":["2NkMZoo6yWHqQFddZzbjx6aEwUS4zocLumf1mLMkEn3bZYcvoPFas49Z3jKauQAm5QV211WjhS2YYrFnn6eHnaRH","4FqzDrkeUqhbFFwT2PtXCovapyEAyxgLzsmhhoVeh2FXemmqj9Vp49uPsAZXX9GEWEN3Nn4Rd2yVvzpzirmdeu7H"],"slot":"520563693","ceremony_hash":"18443e0b9b98549db336c213c5ab9c2df4a0ccd7641715395d5387d3bbb3bcc4"}]}
+mint: 5GqySUpr646EsiQjHtFtz2y6gPrNSWCvm9fe8sbnmqKy
+mint_authority: null
+freeze_authority: null
+extensions: none
+g_lamports_after: 890880
+space: 82
+owner: TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA
+supply: 595833333333326 (sum of buckets: 595833333333326)
+latency_ms: 17268
+sign_ms: 2,2
+signed by per-launch key (destroyed) GKafXRoKPyWrVDtSWwXimfq4pqC1gJjmYavGPdaY1MEw
+confirm_genesis ok
+merkle root matches core
+claim ok: 54166666666666
+distributor admin: NULL
+record: evidence/genesis/core3-f1-devnet-launch4.json
