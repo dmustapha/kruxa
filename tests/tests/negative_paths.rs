@@ -145,3 +145,22 @@ async fn the_frozen_state_ends_by_itself_after_seven_days_so_exits_open_and_new_
     assert_eq!(env.usdc_balance(newcomer.id()).await, 1_000 * USDC, "the refused commit went straight back");
     Ok(())
 }
+
+/// AUDIT-ARCH-SERVICES B3 named six rule codes with no triggering sandbox test. Four fire here in one line each; `R_SOLVENCY` is
+/// triggered in tests/solvency.rs (the Intents alert refuses a new Intents commit); `R_MATH` is a defensive guard behind
+/// `validate_params`, whose windows keep every `secs_to_ns` input far below overflow, so no external call reaches it.
+#[tokio::test]
+async fn each_rule_code_the_audit_listed_as_untriggered_fires_once() -> anyhow::Result<()> {
+    let env = Env::new().await?;
+    let id = env.create_launch(&params("NPRC")).await?;
+    let no_launch = env.call(&env.creator, "cancel_trial", lid(99), ZERO).await;
+    assert!(has_code(&no_launch, "R_NO_LAUNCH"), "{:?}", no_launch.failures());
+    let not_clear = env.call(&env.creator, "dissolve", lid(id), ZERO).await;
+    assert!(has_code(&not_clear, "R_NOT_CLEAR"), "an Open launch cannot be dissolved: {:?}", not_clear.failures());
+    let nothing = env.call(&env.guardian, "cancel_upgrade", json!({}), ZERO).await;
+    assert!(has_code(&nothing, "R_NOTHING"), "{:?}", nothing.failures());
+    env.advance_to(id, "Closing").await;
+    let late = env.call(&env.creator, "cancel_trial", lid(id), ZERO).await;
+    assert!(has_code(&late, "R_TOO_LATE"), "{:?}", late.failures());
+    Ok(())
+}
