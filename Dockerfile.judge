@@ -9,16 +9,17 @@
 # wasm built in this image. `docker run` then runs `scripts/judge-run.sh --prebuilt`, which verifies those hashes, runs the narrated sandbox
 # lifecycle on those exact bytes and the offline verify checks. Nothing is fetched or built at run time (CARGO_NET_OFFLINE=true).
 #
+# Base is trixie (glibc 2.41) because the near-sandbox binary needs glibc 2.39; bookworm (2.36) cannot start it (evidence/docker-judge/L1-failure.log).
 # Honest limit: artifacts/ here come from a NON-reproducible local cargo-near build inside the image (artifacts/BUILD-KIND says so). The
 # reproducible build needs docker-in-docker; `scripts/build-artifacts.sh` without `--local` is the release path and runs on a host.
 #
 # Pinning: the base tag fixes Rust 1.95.0. Pin the digest too once it has been pulled on a networked machine:
-#   FROM rust:1.95.0-bookworm@sha256:<digest from `docker pull rust:1.95.0-bookworm`>
-FROM rust:1.95.0-bookworm
+#   FROM rust:1.95.0-trixie@sha256:<digest from `docker pull rust:1.95.0-trixie`>
+FROM rust:1.95.0-trixie
 
 ENV DEBIAN_FRONTEND=noninteractive CARGO_TERM_COLOR=never
 RUN apt-get update \
- && apt-get install -y --no-install-recommends python3 jq curl ca-certificates build-essential pkg-config libssl-dev clang \
+ && apt-get install -y --no-install-recommends python3 jq curl ca-certificates build-essential pkg-config libssl-dev libudev-dev clang \
  && rm -rf /var/lib/apt/lists/*
 
 # cargo-near builds the contracts (the wasm feature lowering mainnet requires). Pinned to the version the repo was built with.

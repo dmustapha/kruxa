@@ -1,0 +1,21 @@
+2026-11-11T18:51:26Z
+KRUXA JUDGE RUN  git unknown  2026-11-11T18:51:26Z
+sandbox only; no keys, no funds, no mainnet or testnet transaction; 1 credential-shaped variables scrubbed
+
+== STEPS (--prebuilt)
+  A0  GREEN     0s  artifacts/SHA256SUMS: every shipped wasm hashes to its recorded sha256
+  A1  GREEN     0s  the sandbox below runs the shipped artifact bytes (copied to target/near)
+  V1  GREEN     1s  golden vectors: PASS at the soft cap, FAIL one micro-USDC below, oversubscription refund
+  L1  GREEN   100s  narrated lifecycle on the real core wasm: create, commit, walk, settle PASS and FAIL, refunds, STREAM_CAP
+  T1  GREEN     0s  verify: recorded launch lifecycle replays to its recorded book hash
+  T2  GREEN     1s  tamper: one micro-USDC changed in the record is detected, exit 2
+  T3  GREEN     0s  verify: recorded Solana devnet genesis re-checks clean
+  T4  GREEN     0s  tamper-all: every recorded Solana input flipped, each run detected, exit 2
+  T5  GREEN     0s  dead RPC exits 4 and never prints MISMATCH
+  M2  GREEN     5s  market demo: buy and sell, five fee slices add up, custody unchanged
+  W1  GREEN     2s  swarm: invariants every round, recorded runs reproduce
+  Z1  GREEN     0s  wall time 109s is under the 300 s budget
+
+PREBUILT: 12 of 12 steps green, wall 109s. No tracks claimed; the full run claims them.
+JUDGE PREBUILT GREEN
+docker run rc=0

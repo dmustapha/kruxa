@@ -1,0 +1,38 @@
+{
+  "schema": "kruxa.track-claims/1",
+  "git_head": "44b1bce69842ff2e47c0e6774ba9cf8fddf40e8e",
+  "tracked_files_modified": false,
+  "source": "scripts/judge-run.sh track table",
+  "claimed": [
+    {
+      "track": "Memecoins With Mechanics",
+      "basis": "steps V1 C1 M1 M2 M3 U1"
+    },
+    {
+      "track": "AI Security & Defense",
+      "basis": "steps T1 T2 T3 T4 T5 A1"
+    },
+    {
+      "track": "AI Swarms",
+      "basis": "steps W1"
+    },
+    {
+      "track": "Open Innovation",
+      "basis": "steps P0 N1 N2 B1 U1 V1 C1 M1 M2 M3 I1 A1 T1 T2 T3 T4 T5 W1 O1"
+    },
+    {
+      "track": "Investment Thesis",
+      "basis": "steps H1"
+    }
+  ],
+  "not_claimed_red": [
+    {
+      "track": "Unstoppable DeFi",
+      "reason": "no sandbox-only proof: the dry quote needs a live Intents endpoint and the Test 1 evidence files are not committed"
+    },
+    {
+      "track": "Agent Economy",
+      "reason": "track cut (CHANGE-ORDER-6 E-2): no agent module is built"
+    }
+  ]
+}

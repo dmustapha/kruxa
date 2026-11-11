@@ -33,7 +33,7 @@ async fn code_hash(env: &Env) -> String {
 }
 
 fn core_wasm() -> Vec<u8> {
-    std::fs::read(format!("{}/../target/near/kruxa_core/kruxa_core.wasm", env!("CARGO_MANIFEST_DIR"))).unwrap()
+    kruxa_tests::core_wasm_bytes()
 }
 
 fn sha256_hex(bytes: &[u8]) -> String {

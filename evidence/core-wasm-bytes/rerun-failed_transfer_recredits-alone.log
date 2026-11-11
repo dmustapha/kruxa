@@ -1,0 +1,5 @@
+test creator_allocation_failed_transfer_recredits has been running for over 60 seconds
+test failed_transfer_recredits_the_claim_and_the_position_survives has been running for over 60 seconds
+test failed_transfer_recredits_the_claim_and_the_position_survives ... ok
+test creator_allocation_failed_transfer_recredits ... ok
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 13 filtered out; finished in 66.08s

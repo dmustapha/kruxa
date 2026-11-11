@@ -9,3 +9,34 @@
 | GR-12 | PASS | 2026-11-10T19:25Z | round 3: F0 on the exact deployed wasm (e85198ed) through the core gate, launch 9, mint 7unMFFxMcyMrQa75D3WJUW8qqV4QPE9naj4uCo4NMgf5, verify exit 0, tamper-all exit 2 (evidence/genesis/core3-f0-devnet-launch9.json, rehearsal/ROUND3.md) |
 | GR-2 | PASS | 2026-11-10T22:00Z | round 4, the REPRODUCIBLE wasm 665caab5 deployed on core3.kxi-root-1108.testnet (view_code sha256 665caab5a582a58b2412dfb2e81f1caf2ff94339c8bcc9f8be9ebebb72239c64, deploy tx Gu5Msp6rduKg6XZ8RFNbMeT6s2aKM2Tcvmp7GNTgWvza): scripts/gate-g2.sh GREEN 9 of 9 with PASS launch 10 and FAIL launch 3 (evidence/testnet-core3/gate-g2-round4.txt); verify.sh 10 exit 0 (CODE line MATCH 665caab5), tamper-all exit 2 (19 MISMATCH). The shared RPC throttled (HTTP 429): two earlier verify attempts (both exit 4) are kept next to the passing one, and the passing runs went through a local retry proxy to the same RPC. G2-01 read the existing gate-g1 logs |
 | GR-12 | PASS | 2026-11-10T22:00Z | round 4: F0 on the reproducible wasm 665caab5 through the core gate, launch 10, mint 6MMpWcv7vnpc9ZFKJoykK8dnMAmSzkKfYqHzNf4GRZqC, tx1 44XqjTqYkzwA2D6EsqLScZfK9LvLKh1oDseGH1o4L5CqaZYgCtgZw6hCBbE2iZSyiQUBZiAW282uJ9R2Ud8G8Wzg, tx2 3RTQY8GvNQPGdHuiQCid8xChZnZx4KB6CGhFzBNB1m4kqoKdhUG4iTrXL5gNZqaWe7vLceyi7jrpsW1st4BhbeVo, claim ok. First tx2 attempt failed on an expired blockhash (RPC throttling); recovered with abort_genesis (guardian) and reopen_genesis (owner) and a resume, so this run is a PASS with one reopen (evidence/genesis/core3-f0-devnet-launch10.log and the attempt logs, rehearsal/ROUND4.md) |
+
+## FG-07 refresh of the gate-g3 result (2026-11-11T17:48Z, tree 402423f, read-only run, no FREEZE row written)
+
+Command: `./scripts/gate-g3.sh` (read-only; `gate-freeze.sh candidate` was NOT run because it appends a row to rehearsal/LOG.md). The sandbox and native
+logs it read are the Nov 10 `target/gate-g1` logs (322 sandbox tests ok), which predate the dissolve-after-walk core change merged on Nov 11; they
+must be regenerated on the new reproducible wasm before the freeze (FG-24, run by the coordinator). Rows below are a table of the run, not gate rows
+(first cell starts with "row" so gate-g3.sh does not parse them).
+
+| Row | Kind | State | Blocker, what remains | Who |
+|---|---|---|---|---|
+| row GR-1 | HARD | PASS | stale logs: rerun `scripts/gate-g1.sh` (or the suite with `KXI_CORE_WASM`) on the new core build | automatable (sandbox only, no funds) |
+| row GR-2 | HARD | PASS on 665caab5 | the new core must be redeployed and `gate-g2.sh` rerun on it; that signs testnet transactions | testnet keys: coordinator or Dami, not this agent |
+| row GR-3 | WAIVABLE | UNKNOWN | Test 1 is RECORDED but thin (only the OV15 hash). Decide: accept it or drop the Solana-landing claims (README edit, then one evidence line) | Dami decides; the README edit is automatable after the ruling |
+| row GR-4 | HARD | PASS | none | none |
+| row GR-5 | HARD | PASS | rerun with GR-1 | automatable |
+| row GR-6 | HARD | PASS | rerun with GR-1 | automatable |
+| row GR-7 | HARD | UNKNOWN | devnet rehearsal exists (evidence/genesis/squads-devnet-*.txt, single-party vault); the 3 hardware wallets and a line in this file are missing | Dami only |
+| row GR-8 | HARD | UNKNOWN | the seven disclosures are in `app/app/charter/page.tsx` but nothing is published: needs hosting and the domain | Dami only (hosting accounts); a check that the seven items are in the built page is automatable |
+| row GR-9 | HARD | UNKNOWN | legal pages exist in `app/app/legal`; counsel review (P-14) | Dami only |
+| row GR-10 | HARD | PASS, 12 minutes of margin | the open-by limit is Nov 11 18:00 UTC; this run was at 17:48Z, so the row turns FAIL at 18:00Z unless Dami rules the limit | Dami (ruling) |
+| row GR-11 | HARD | PENDING | per-step confirmations at execution | Dami only |
+| row GR-12 | HARD | PASS on 665caab5 | F0 was never run on the new wasm; either accept or rerun one F0 (signs devnet and testnet txs) | Dami or coordinator |
+| row GR-13 | WAIVABLE | UNKNOWN | `spikes/meteora/RESULTS.md` is [REHEARSED-LOCAL] with every devnet check [UNVERIFIED]: needs devnet SOL and signatures, or a Dami waiver with the consequence "NEAR pool only for round one" | Dami only (funds and signing) |
+| row GR-14 | HARD | UNKNOWN | the FREEZE row (`gate-freeze.sh freeze`) for the NEW reproducible hash; the 665caab5 hash is superseded | Dami only |
+| row GR-15 | HARD | PASS | rerun with GR-1 | automatable |
+| row GR-16 | WAIVABLE | PASS | none | none |
+| row GR-17 | HARD | UNKNOWN | brand-token supply and allocation, USDC payout address, pool and LP-seed amounts | Dami only |
+| row GR-18 | WAIVABLE | PASS | rerun with GR-1 | automatable |
+
+Result: NO-GO (blocked by GR-3 GR-7 GR-8 GR-9 GR-11 GR-13 GR-14 GR-17). Nothing in the blocked list can be closed by an agent without funds, signing,
+hosting or a ruling. Full output: `evidence/testnet-core3/gate-g3-2026-11-11.txt`.

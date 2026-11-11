@@ -11,6 +11,15 @@ use serde_json::{json, Value};
 pub const USDC: u128 = 1_000_000;
 pub const GAS: Gas = Gas::from_tgas(300);
 
+/// The core wasm every sandbox suite deploys. `KXI_CORE_WASM=<path>` replaces the local build (for example with the reproducible
+/// `artifacts/kruxa_core.wasm`), so the suites can run on the exact bytes that testnet runs. Unset: `target/near/kruxa_core/kruxa_core.wasm`.
+pub fn core_wasm_bytes() -> Vec<u8> {
+    match std::env::var("KXI_CORE_WASM") {
+        Ok(p) if !p.is_empty() => std::fs::read(&p).unwrap_or_else(|e| panic!("KXI_CORE_WASM={p}: {e}")),
+        _ => wasm("kruxa_core"),
+    }
+}
+
 fn wasm(name: &str) -> Vec<u8> {
     let p = format!("{}/../target/near/{}/{}.wasm", env!("CARGO_MANIFEST_DIR"), name, name);
     std::fs::read(&p).unwrap_or_else(|_| panic!("missing {p}: run scripts/build.sh first"))
@@ -130,7 +139,7 @@ impl Env {
         };
         let factory = deploy_at(&root, "factory", wasm("mock_factory")).await?;
         factory.call("new").transact().await?.into_result()?;
-        let core = deploy_at(&root, "core", wasm("kruxa_core")).await?;
+        let core = deploy_at(&root, "core", core_wasm_bytes()).await?;
         core.call("new")
             .args_json(json!({ "owner": owner.id(), "guardian": guardian.id(), "treasury": treasury.id(), "relay_fees": relay_fees.id(), "usdc": usdc.id(), "intents": intents.id(), "factory": factory.id(), "profile": profile }))
             .transact()
