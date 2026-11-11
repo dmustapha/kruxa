@@ -1,6 +1,6 @@
 # Limitations
 
-Current as of 2026-11-11 (synced to the reproducible core on core3 and core4, the full judge record, gate-g2 round 4, the indexer ingest and SW-2). This file lists what Kruxa does not do and the honest limits of what it does. `SUBMISSION_STATUS.md` tracks progress; `PROOF-DEBTS.md` tracks unproven items. Every limit names its reason or its file.
+Current as of 2026-11-11 (synced to the reproducible core on core3 and core4, the full judge record, gate-g2 round 4, the indexer ingest and SW-2, seeds 1 to 3 GREEN on testnet). This file lists what Kruxa does not do and the honest limits of what it does. `SUBMISSION_STATUS.md` tracks progress; `PROOF-DEBTS.md` tracks unproven items. Every limit names its reason or its file.
 
 ## 1. Honest limits that exist now
 

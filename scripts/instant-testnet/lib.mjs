@@ -34,7 +34,7 @@ function retryOnRateLimit(provider) {
   provider.sendJsonRpc = async (method, params) => {
     for (let i = 0; ; i++) {
       try { return await send(method, params); } catch (e) {
-        if (i >= 8 || !/-429|Rate limits exceeded/.test(String(e && e.message))) throw e;
+        if (i >= 8 || !/-429|Rate limits exceeded|fetch failed|ECONNRESET|ETIMEDOUT|UND_ERR/.test(String(e && e.message))) throw e;
         await sleep(5 * (i + 1));
       }
     }
