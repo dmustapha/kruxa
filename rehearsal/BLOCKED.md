@@ -2,7 +2,7 @@
 
 | Item | State | Why |
 |---|---|---|
-| `scripts/verify.sh instant <id>` | not run | The subcommand does not exist (REMAINING C2, 0.3 AD, unbuilt). Nothing to run. |
+| `scripts/verify.sh instant <id>` | built and run 2026-11-11 | Now exists (FG-03); transcripts in evidence/verify/instant-*.txt. One finding: the deployed launcher is the Nov 8 build, not the current artifact (LIMITATIONS 10a). |
 | `scripts/swarm-testnet.sh` (SW-2) | built, run once, RED (blocked) | Now `scripts/swarm-testnet.mjs`. The 16 sub-accounts exist and are funded; the seed 1 replay cannot start: core3 global_held is 2,300 USDC of 3,000 (six passed launches hold their 30 day streams and LP seeds), so headroom is 700 and `create_trial` with the recorded 1,000 USDC hard cap panics `R_CAP_GLOBAL` (tx ENKa1jChJojSKm5mZpEwsLdpN9DW6AufaeroH5QGqi15). It also needs about 1.9 NEAR more than the root can spare (token account 1.8). Raising the cap is a 7 day timelock; a fresh core (`core4`) needs about 7 NEAR. See evidence/swarm-testnet/. |
 | Reproducible build of the wasm | not done | `build-artifacts.sh` without `--local` needs docker and a clean committed tree. `artifacts/SHA256SUMS` is the NON-reproducible local build (`artifacts/BUILD-KIND`). The verify `CODE:` line wording says "reproducible build sha256" even for this kind; it matches. |
 | GR-14 FREEZE row (`gate-freeze.sh freeze`) | not written | The freeze is Dami's Nov 10 20:00 decision. gate-g3 GR-14 stays UNKNOWN until that row exists. |
