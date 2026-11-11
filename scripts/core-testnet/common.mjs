@@ -20,7 +20,7 @@ export const REPO = path.resolve(here, '../..');
 export const A = {
   owner: ROOT,
   core: process.env.KXI_CORE || `core3.${ROOT}`, // KXI_CORE names a fresh core account (e.g. core4.<root>); default stays core3
-  market: `market3.${ROOT}`,
+  market: process.env.KXI_MARKET || `market3.${ROOT}`, // KXI_MARKET names a fresh market for a fresh core (e.g. market4.<root>)
   usdc: `usdc.${ROOT}`,
   guardian: `guardian.${ROOT}`,
   treasury: `treasury.${ROOT}`,

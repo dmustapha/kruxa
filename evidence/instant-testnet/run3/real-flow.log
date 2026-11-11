@@ -1,0 +1,139 @@
+created guardian.kxi-root-1111.testnet tx=Bbkucw1S8A5inWr4Xy6iytLHYk3Uh4CysdiMiFqbnCnL
+created treasury.kxi-root-1111.testnet tx=9Xs2kyLnyAT8cuA1BTSY7MC6ZBYzZhfsJeybJP6UkmUR
+created usdc.kxi-root-1111.testnet tx=E7PqspLdFKUov1iDjsX1PgrhUVjaDdzRBNPwXAowXZAy
+created demo-instant.kxi-root-1111.testnet tx=JBHAow6RV6qzLaKYbKbh2mejmUeTHgX6mJgRqEWuvZST
+created demo-market.kxi-root-1111.testnet tx=D1MGUYyPEMNs935s6RLakV4wWaAXHU6njK6E5sVmQYW5
+created creator-a.kxi-root-1111.testnet tx=GnuJDVu3WEhQzCAecr6vCrpof3BNyyH2Bw34gvei2YY2
+created creator-b.kxi-root-1111.testnet tx=5WKJ3x49cncqp2MDMJtBHD9FTsyxHcqDhTySJMLX7D5n
+created buyer.kxi-root-1111.testnet tx=8GaMQa85Q3X5rhh2uYqa21ckUuNvdE64eJdeSFP7jYUM
+deployed /Users/MAC/near-hack/kruxa-repo/.claude/worktrees/agent-a56dee095fb62f297/target/near/mock_ft/mock_ft.wasm -> usdc.kxi-root-1111.testnet tx=2ZMLGKNPw94n75Ph4Y1ocz1rMh5V6dXuHot75psuMKkC
+OK   init usdc.kxi-root-1111.testnet.new tx=5ddmDZ2JCduvFwvMCvPzRsW1K4XCKnKjJQnJtNhR53VQ codes=
+deployed /Users/MAC/near-hack/kruxa-repo/.claude/worktrees/agent-a56dee095fb62f297/target/near/kruxa_instant_contract/kruxa_instant_contract.wasm -> demo-instant.kxi-root-1111.testnet tx=DxwUZ2C4fucQX46DGzNgCKYCgBqL3LrSH3ss8rchGukX
+OK   init demo-instant.kxi-root-1111.testnet.new tx=JCSRqdNHDuFxncWiq7hgUuTggps4V8jHLs3K2qUxzvo2 codes=
+deployed /Users/MAC/near-hack/kruxa-repo/.claude/worktrees/agent-a56dee095fb62f297/target/near/kruxa_market_contract/kruxa_market_contract.wasm -> demo-market.kxi-root-1111.testnet tx=AfULrCyJKDSb6UhcvKDUnroUVbcSwSurUHazRrtrKY5e
+OK   init demo-market.kxi-root-1111.testnet.new tx=DGMCnLWLEcGFQBUZAFDwrSbidL3vnPkgwXgGi1xztu6v codes=
+OK   register demo-instant.kxi-root-1111.testnet on mock USDC tx=BxB5uGJ91nvAp2MbbYiiaq8WV4KgjBCqMw75CeWDQe6z codes=
+OK   register demo-market.kxi-root-1111.testnet on mock USDC tx=GchSbDsEf9a5qEZtKd41vssr9HawHswDiDoojQUDAzJo codes=
+OK   register treasury.kxi-root-1111.testnet on mock USDC tx=NXWepN3zRykW3K7Dg7xYMktkNs81qQ47sKgMC3SLJ9E codes=
+OK   register creator-a.kxi-root-1111.testnet on mock USDC tx=GR3Bn6hharfykAHVetqSQEytiedq1f6qe5PUAtjbaEMi codes=
+OK   register creator-b.kxi-root-1111.testnet on mock USDC tx=6SKBdWRMdG9nBn6WDMEVMkHkLmTpRirpnLj8wpxXDrhE codes=
+OK   register buyer.kxi-root-1111.testnet on mock USDC tx=GND3eomNmHWTR9Xq2tH28PeVKqexBrwmb9qWDAKZX7S2 codes=
+OK   register kxi-root-1111.testnet on mock USDC tx=5Rk2TL41giDQryYL9DLfRjgoad53mMfjk6yRcrGaZg2v codes=
+Receipt: AYPj2Ewz27WwKnhyTwpN6knK7vXJ7otRmHjQxpuFZuvN
+	Log [demo-market.kxi-root-1111.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"launcher_set","data":[{"launcher":"demo-instant.kxi-root-1111.testnet"}]}
+OK   market.set_launcher(launcher) tx=5ZSkJFai4gAp11rWuxGqxkcKKKtcr4BNvCjJucUhBnPt codes=
+Receipt: 2Mr3pMRUF3RFJEcf7JWUbZFTFak3Bgi1mHSsAy67nLbF
+	Log [demo-instant.kxi-root-1111.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"market_set","data":[{"market":"demo-market.kxi-root-1111.testnet"}]}
+OK   launcher.set_market(market) tx=BQZEwJ84uXwqQwHUGbUZSeaN6Ei1oyp8as8pYS5Hoyqh codes=
+{"owner":"kxi-root-1111.testnet","guardian":"guardian.kxi-root-1111.testnet","treasury":"treasury.kxi-root-1111.testnet","usdc":"usdc.kxi-root-1111.testnet","factory":"token.primitives.testnet","market":"demo-market.kxi-root-1111.testnet","market_locked":false,"profile":"demo","creator_gate":false,"paused":"None","launch_fee":"0","factory_deposit":"60000000000000000000000","seed_min":"100000000","seed_max":"1000000000","seed_cap_aggregate":"3000000000","pending_caps":{"aggregate":null,"per_launc
+SNAP after setup (all identities true)
+=== full launch on the real factory
+Receipts: 3ThuWvjasdrxbrVrBsbtgSybSwAQ2uREdcxYgyTf7X7p, 9UDWuumd5H6638R7WviLxrEwnLfG7j3FseUqyQCSCTHi, 7ne76UqWgVPBUq82vYmcpYZBATxLNL7dg3bQu5UrA1JA
+	Log [demo-instant.kxi-root-1111.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"instant_created","data":[{"launch_id":"1000000000","mode":"instant","creator":"creator-a.kxi-root-1111.testnet","payout_recipient":"creator-a.kxi-root-1111.testnet","symbol":"KXIA1111","name":"KXIA1111 Demo","total_supply":"1000000000000000","token_decimals":6,"creator_alloc":"50000000000000","pool_tokens":"950000000000000","cliff_days":7,"vest_days":30,"seed_q":"250000000","launch_fee":"0","terms":{"total_fee_bps":100,"creator_bps":5000,"platform_bps":1500,"holders_bps":1500,"lp_bps":1000,"referral_bps":1000,"opening_fee_start_bps":500,"opening_decay_minutes":60,"fee_vest_bps":5000,"fee_vest_days":90},"charter_hash":"b74f587bba44157c4a6ba15429d845a62eb6103bc4fdae6350b52601ee9f298b"}]}
+Receipt: Eg6UVUrNfrN6yE1KdH5bEc97aLU4xpjmCY3F8u6LgSFE
+	Log [demo-instant.kxi-root-1111.testnet]: EVENT_JSON:{"standard":"nep141","version":"1.0.0","event":"ft_mint","data":[{"owner_id":"demo-instant.kxi-root-1111.testnet","amount":"1000000000000000","memo":"new tokens are minted"}]}
+Receipt: 3uctk1oa3fgeGyAwHbj8E6Gj4bSTgJJXgAkYUi4ocnTz
+	Log [demo-instant.kxi-root-1111.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"instant_token_ready","data":[{"launch_id":"1000000000","token":"kxia1111.token.primitives.testnet"}]}
+OK   create_instant KXIA1111 against token.primitives.testnet (110 Tgas factory call) tx=A48D2pGd6P7rb7i4fsxmZG5hUCbKV4EiBQVtk3w9d1tq codes=
+SNAP after create_instant KXIA1111 (all identities true)
+OK   mint 400 USDC to creator-a.kxi-root-1111.testnet tx=DzzMQth1ZRJfVNmuxDLpwYsorv5YkpngjgBVY2wkSEeA codes=
+Receipt: FSwV53B9msSSzabfDXf72Bj6MToruiTcmcYpBc1sHpRd
+	Log [usdc.kxi-root-1111.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"instant_seeded","data":[{"launch_id":"1000000000","seed":"250000000","launch_fee":"0"}]}
+OK   seed 250 USDC (creator-a) tx=5ZMeix5WRo4nQrrFRjCJujxmDfX2GFfbhR563HvUpG7K codes=
+SNAP after seed (all identities true)
+Receipt: DXHTu1gQ4RU2mDTSZwk7DteLGTFQ5EDsHwsoNsoPhm2g
+	Failure [demo-instant.kxi-root-1111.testnet]: Error: {"index":0,"kind":{"index":0,"kind":{"FunctionCallError":{"ExecutionError":"Smart contract panicked: R_INSTANT_STATE: the allocation vests only after the pool is open"}}}}
+FAIL claim_vested before the pool is open (expect R_INSTANT_STATE) tx=5XwmgAwURf8EbF5iidNbwcwBNj7pGmEtNmsQLXxTVr7C codes=R_INSTANT_STATE
+Receipts: 2Kb9BNt1giUWWmbrNW2YHV6TRPqP8hBgR8fFZYH8pr2S, 9f8bKiQHAqAwxXxGkpcH5kD57btWVQ4J3UjvFVhAGqVu, 4wzz18FCEdZPLPoSi3fPmdRR9vMCxRXovd71Q6sozpUD
+	Log [demo-instant.kxi-root-1111.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"instant_handoff","data":[{"launch_id":"1000000000","leg":"Seed","amount":"250000000","market":"demo-market.kxi-root-1111.testnet"}]}
+Receipts: DcSzKDQgwqcL6EzjXwxbS8RQytGZi55yPRcyPKhrV7a4, DcGWdsdeDqfazWc7ceQih9rGMh6pp34UKXFur78nVRbL, APYcqHMNZZthtZ4fujUT3QURQAYnPVnKqP4gQzCcdq7K, 7R2h7DpDSGEVuCdZQx2DupB4tJQyfo6JeGrdUHYjb82G, EQUA7MyAWSDxx3qMDHSmhnMdrn51jmhkyVVYsmJ146FG
+	Log [demo-instant.kxi-root-1111.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"instant_leg_resolved","data":[{"launch_id":"1000000000","leg":"Seed","amount":"250000000","used":"250000000","unused":"0"}]}
+	Log [demo-instant.kxi-root-1111.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"instant_handoff","data":[{"launch_id":"1000000000","leg":"Token","amount":"950000000000000","market":"demo-market.kxi-root-1111.testnet"}]}
+Receipts: 5Wss92mVZiptdFfS9f7BPVQAdQu33ddxSoWsdtBexVeg, DpPgEraSqGcg8aJDfTDYFqVgmVYRXcW2tRemxBKMixAA, BKm36ReGMACSd2MFTbPwo7UTDugE9AJzaDMaXTzdHVB7
+	Log [demo-instant.kxi-root-1111.testnet]: EVENT_JSON:{"standard":"nep141","version":"1.0.0","event":"ft_transfer","data":[{"old_owner_id":"demo-instant.kxi-root-1111.testnet","new_owner_id":"demo-market.kxi-root-1111.testnet","amount":"950000000000000"}]}
+Receipt: 7pjMR4Lp13ZVkGAjybiW3VsizsaVnwdg7NHHryuQ6q4J
+	Log [demo-instant.kxi-root-1111.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"pool_opened","data":[{"launch_id":"1000000000","mode":"instant","creator":"creator-a.kxi-root-1111.testnet","token":"kxia1111.token.primitives.testnet","quote":"usdc.kxi-root-1111.testnet","q":"250000000","t":"950000000000000","payout_recipient":"creator-a.kxi-root-1111.testnet","opened_ns":"1794380048984935411","fee_bps":100,"creator_bps":5000,"mint_authority":null,"freeze_authority":null,"terms":{"total_fee_bps":100,"creator_bps":5000,"platform_bps":1500,"holders_bps":1500,"lp_bps":1000,"referral_bps":1000,"opening_fee_start_bps":500,"opening_decay_minutes":60,"fee_vest_bps":5000,"fee_vest_days":90}}]}
+Receipt: GuEf7jjtqxS8vwM5iTuz3PpBooQDsTCXNAxZaiYxywuN
+	Log [demo-instant.kxi-root-1111.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"instant_leg_resolved","data":[{"launch_id":"1000000000","leg":"Token","amount":"950000000000000","used":"950000000000000","unused":"0"}]}
+	Log [demo-instant.kxi-root-1111.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"instant_opened","data":[{"launch_id":"1000000000","token":"kxia1111.token.primitives.testnet","market":"demo-market.kxi-root-1111.testnet","q":"250000000","t":"950000000000000","opened_at":"1794380050236702691"}]}
+OK   open_instant by a stranger at 260 Tgas tx=GqPnFqmCoKhYWhKyWP5twDZuCV9xHL66A5FnQCnp1LNq codes=
+SNAP after open_instant (all identities true)
+OK   mint 200 USDC to buyer.kxi-root-1111.testnet tx=By187uv1WpzkEo9GLnupEEFoEeRDpxDewdRgkVTHYMUi codes=
+OK   register buyer.kxi-root-1111.testnet on kxia1111.token.primitives.testnet tx=Fpz7voSamvcYn8krmDxHMbPubcwsrXdwJ7BjVbdxszhM codes=
+Receipts: BKi2SGttK1xo8gxtGCrSVGCGCERpGvgUndTDJrX8nZW, 2vseN8pgkGUQD2YZss24Y894b1FU3RrL2wyzJDezUTtF, Aj16k6MeWtu3Wj6EJtHhhhe2Pgc4DNNXDvYoKYiL5qHA
+	Log [usdc.kxi-root-1111.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"swap","data":[{"launch_id":"1000000000","side":"buy","trader":"buyer.kxi-root-1111.testnet","receiver":"buyer.kxi-root-1111.testnet","amount_in":"20000000","amount_out":"67115600682575","fee_total":"995360","fee_bps":"497","creator_bps":5000,"creator":"100000","platform":"30000","holders":"0","lp":"865360","referral":"0","surcharge":"795360","red_holders":"30000","red_referral":"20000","q":"269870000","t":"882884399317425","ts_ns":"1794380069818173860"}]}
+Receipt: 4o3hZN6jFQ9VerQSBQNCzMfLdPF1iWbNP8MWxPrtH7bD
+	Log [usdc.kxi-root-1111.testnet]: EVENT_JSON:{"standard":"nep141","version":"1.0.0","event":"ft_transfer","data":[{"old_owner_id":"demo-market.kxi-root-1111.testnet","new_owner_id":"buyer.kxi-root-1111.testnet","amount":"67115600682575"}]}
+OK   buy 20 USDC (buyer) tx=2opAqNMoQBUPXxS9KQLLiVeTJ6uZPVoyvdpnopwouK1H codes=
+SNAP after buy (all identities true)
+Receipts: 8bScznaKiwSdveUAz2TEbb33jRsMJ3hFDScQ8gtVXXDt, 4PRp76SYLtv7Z9ZXVAr8MxCWWV2e33AgTTtoGhu6noFR, AQ1EKcdBjcEsjHTSCccmokQ9Y5GFk8pVwaEjD4VbbFso
+	Log [kxia1111.token.primitives.testnet]: EVENT_JSON:{"standard":"nep141","version":"1.0.0","event":"ft_transfer","data":[{"old_owner_id":"buyer.kxi-root-1111.testnet","new_owner_id":"demo-market.kxi-root-1111.testnet","amount":"33557800341287"}]}
+Receipts: DfW9KQTfGEuq1m3vkXwMRADumYQvKvh6ocBvA5jc1gtm, 5gpoY9pLEKxWUgvxt1qedNt6bywDGzFANjiArhxqKxf3, X5V9vbtzv7xiN8uBpKBo5EAYJckkpSzoavrVJFyk5X7
+	Log [kxia1111.token.primitives.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"swap","data":[{"launch_id":"1000000000","side":"sell","trader":"buyer.kxi-root-1111.testnet","receiver":"buyer.kxi-root-1111.testnet","amount_in":"33557800341287","amount_out":"9390844","fee_total":"491114","fee_bps":"496","creator_bps":5000,"creator":"49410","platform":"14823","holders":"0","lp":"426881","referral":"0","surcharge":"392294","red_holders":"14823","red_referral":"9882","q":"260414923","t":"916442199658712","ts_ns":"1794380076163622075"}]}
+OK   sell half back (buyer) tx=8d6ukkaQ8EdXPgax9TuNNzKaRdzCmdvTrhT67Xm5FMAx codes=
+SNAP after sell (all identities true)
+OK   register creator-a.kxi-root-1111.testnet on kxia1111.token.primitives.testnet tx=YrbKS34VygQbJGh6SrqtBY81vTaKVSEu9frx42WvMeM codes=
+Receipt: 3C9KZCMfocbDFJF91hBchDykwyfUuDJoh9BR6KkGnGzg
+	Log [usdc.kxi-root-1111.testnet]: R_SELF_BUY: ft_on_transfer refused, full amount returned
+OK   SELF-BUY by creator-a (expect R_SELF_BUY) tx=1QxHnt98wM17dgTzc6drjzcHzA3PZSir9iGm9SGuZW3 codes=R_SELF_BUY
+Receipt: AchLEb89RV6Juo7Q2yivHs57FFyUrQNTkSsz5KL22nR5
+	Log [usdc.kxi-root-1111.testnet]: R_SELF_BUY: ft_on_transfer refused, full amount returned
+OK   SELF-BUY by buyer with receiver=creator-a (expect R_SELF_BUY) tx=6w2vjFfr6p7KgK7KQMbuxcFmemauYv4NQFchiWwXSi1n codes=R_SELF_BUY
+SNAP after refused self-buys (all identities true)
+waiting for the 70 s demo cliff
+Receipt: HpYjgk622pmyxYfvCx7V6cWjpMgFgVJm3frC8MTuQWjk
+	Failure [demo-instant.kxi-root-1111.testnet]: Error: {"index":0,"kind":{"index":0,"kind":{"FunctionCallError":{"ExecutionError":"Smart contract panicked: R_NOT_AUTHORIZED: only the payout recipient can claim"}}}}
+FAIL claim_vested by a stranger (expect R_NOT_AUTHORIZED) tx=2u2UsiD81NMDu4FpWoe7ccK2Y1SKiuB47QZ6fvzo82j9 codes=R_NOT_AUTHORIZED
+Receipt: J52QWuYg4nD4LBZhJJxvrn4zPJdXH6nErequas8nbvm5
+	Failure [demo-instant.kxi-root-1111.testnet]: Error: {"index":0,"kind":{"index":0,"kind":{"FunctionCallError":{"ExecutionError":"Smart contract panicked: STREAM_CAP: requested 38455995960498 > claimable 13164289789333"}}}}
+FAIL claim_vested above claimable (expect STREAM_CAP) tx=6Ep1d54SH3Ef4c9gJoWRQQJtwNuKg4HrnYyYS7B12Nb2 codes=STREAM_CAP
+Receipts: 92s8gRnFbVG18fBkoHDCEPSxpV9wzfQLGzgJi1mobdAK, 66dDJLTv32urp9MUGzJLYADEy7z25HMoP6RHzkWDarFz, C7rtWq2E8gpyUFdfiodxLbhnooH9gE9J6tAV3qhviBpV
+	Log [demo-instant.kxi-root-1111.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"alloc_claimed","data":[{"launch_id":"1000000000","recipient":"creator-a.kxi-root-1111.testnet","amount":"13579408299666","claimed_total":"13579408299666","unlocked_total":"13579408299666"}]}
+Receipt: DpHehACYiUTGNtotEN7btPkQpd9vypViTicD9ovtUJQ4
+	Log [demo-instant.kxi-root-1111.testnet]: EVENT_JSON:{"standard":"nep141","version":"1.0.0","event":"ft_transfer","data":[{"old_owner_id":"demo-instant.kxi-root-1111.testnet","new_owner_id":"creator-a.kxi-root-1111.testnet","amount":"13579408299666"}]}
+OK   claim_vested all claimable (creator-a) tx=8iN4VXwLDYnfTJi3KUJJsiaX7B2rw6QhS8RYBNPcPgNf codes=
+creator-a token balance 13579408299666
+SNAP after vesting claim (all identities true)
+=== failed launch on the real factory (market paused, abort, reclaim)
+Receipts: 7USiQNAfa43cfkF6sUYT73jdd1ipNrJqedVjTJYwzbNM, HNeMViQUr4NQyPPy9Np3rpa9QmcMpxeMnke1tSWVDpWS, FXRLd17K2TDdhFpwjQL2MnxW1qhDtbPrz2qbhmigUg6Z
+	Log [demo-instant.kxi-root-1111.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"instant_created","data":[{"launch_id":"1000000001","mode":"instant","creator":"creator-b.kxi-root-1111.testnet","payout_recipient":"creator-b.kxi-root-1111.testnet","symbol":"KXIB1111","name":"KXIB1111 Demo","total_supply":"1000000000000000","token_decimals":6,"creator_alloc":"50000000000000","pool_tokens":"950000000000000","cliff_days":7,"vest_days":90,"seed_q":"250000000","launch_fee":"0","terms":{"total_fee_bps":100,"creator_bps":5000,"platform_bps":1500,"holders_bps":1500,"lp_bps":1000,"referral_bps":1000,"opening_fee_start_bps":500,"opening_decay_minutes":60,"fee_vest_bps":5000,"fee_vest_days":90},"charter_hash":"2f82484f57c789ae4ccbc535bfcfa344d1c4dd50f3292808beafa7330c47489b"}]}
+Receipt: 2AUQDcvzpxMhpoSRp7V5NkxQQAi5gmLAbho1ZMVZgrD4
+	Log [demo-instant.kxi-root-1111.testnet]: EVENT_JSON:{"standard":"nep141","version":"1.0.0","event":"ft_mint","data":[{"owner_id":"demo-instant.kxi-root-1111.testnet","amount":"1000000000000000","memo":"new tokens are minted"}]}
+Receipt: AnvVuM7kNjj8sW5JEp2PACH1CA5c5vcCSK6tJq1bBQ9B
+	Log [demo-instant.kxi-root-1111.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"instant_token_ready","data":[{"launch_id":"1000000001","token":"kxib1111.token.primitives.testnet"}]}
+OK   create_instant KXIB1111 against token.primitives.testnet (110 Tgas factory call) tx=ECqMvr2Z4i7afKSrnhNViuWuwB6rZKCXEZqJYTbaJaZq codes=
+SNAP after create_instant KXIB1111 (all identities true)
+OK   mint 250 USDC to creator-b.kxi-root-1111.testnet tx=eKwoy3cYWKj2QL6UAkukWmTd4QTCw1dpDSenESCD4tY codes=
+Receipt: 2r2gndYuZPi4nwWXfVFv9EzEDf1g4z8wH27TEAXdWt7H
+	Log [usdc.kxi-root-1111.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"instant_seeded","data":[{"launch_id":"1000000001","seed":"250000000","launch_fee":"0"}]}
+OK   seed 250 USDC (creator-b) tx=HVpg2P37EtBDNj6wXD5EtYnsB3nuUYGLDxFExktNgSfQ codes=
+Receipt: FvVDPD3fRh1nV76x8PfNjSC5WupMpUm3A3C3RPm2ta4D
+	Log [demo-market.kxi-root-1111.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"market_paused","data":[{"paused":true,"by":"guardian.kxi-root-1111.testnet"}]}
+OK   market.pause (guardian) tx=J6UtfN8vVK9QjxnDCwpUq3nFLxwHkGk8Di4AonGqoTS4 codes=
+Receipts: FTmK86VeQQUBoprsmhyW64T8zDuMzzoFbm8ZAdWGmVvW, 6DsZZEXsbPZaBhH8MRcJ73v1HLjrZih4C4cqGdfhaMQR, 7EKhVyGvbXu7hx1NDBsZT6iUrJfDgJeqtuUzGA2pcGE1
+	Log [demo-instant.kxi-root-1111.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"instant_handoff","data":[{"launch_id":"1000000001","leg":"Seed","amount":"250000000","market":"demo-market.kxi-root-1111.testnet"}]}
+Receipt: 8ganQFCCq76hfciBQ2ywrWhj6PzjnUs31yshP83eR8Dq
+	Log [demo-instant.kxi-root-1111.testnet]: R_PAUSED: ft_on_transfer refused, full amount returned
+Receipt: 4VrKtu8jT7mpz156Lb1wnBTzEn6WkzULD3S1W3wsd8VL
+	Log [demo-instant.kxi-root-1111.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"instant_leg_resolved","data":[{"launch_id":"1000000001","leg":"Seed","amount":"250000000","used":"0","unused":"250000000"}]}
+OK   open_instant while the market is paused (expect R_PAUSED) tx=J2BBhVpHXqmuoNaVLn1rxeAQTvQQhbVzXgErSvTg7zHv codes=R_PAUSED
+SNAP B after refused open (all identities true)
+Receipt: 6Kj9D28Kq587wJRjTVcXoG72PS1zFDQmKMXi3aBXjpGF
+	Failure [demo-instant.kxi-root-1111.testnet]: Error: {"index":0,"kind":{"index":0,"kind":{"FunctionCallError":{"ExecutionError":"Smart contract panicked: R_TOO_EARLY: abort is open 72 hours after the seed"}}}}
+FAIL abort_instant too early (expect R_TOO_EARLY) tx=FukkeSFZMGqiGpWLar9fZR36c3J5eBaibTzmMwGqrHzk codes=R_TOO_EARLY
+Receipt: J51fdUvA7mJH7Jy2ytR185RJ9La6gmaM8v3g7mtsTbZ
+	Failure [demo-instant.kxi-root-1111.testnet]: Error: {"index":0,"kind":{"index":0,"kind":{"FunctionCallError":{"ExecutionError":"Smart contract panicked: R_NOT_AUTHORIZED: creator only"}}}}
+FAIL abort_instant by a stranger (expect R_NOT_AUTHORIZED) tx=BstnSnzckjucB9PPDQrVeHrgtfcZrfoMCtwtUNF1BHtN codes=R_NOT_AUTHORIZED
+Receipts: 6ANAnrZSi37Cp8mC5ngXvz3Q2EMKR6uFLEgEVZitJ5Nh, 26hPT9DH9jPXFpFWoizAqapPnrsCGi5w74NV8VVfNNtc, GoZx6LzAanjVbCe3Ai6HJVuKBypDrcqn2bX64WguzeoM
+	Log [demo-instant.kxi-root-1111.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"instant_aborted","data":[{"launch_id":"1000000001","by":"creator-b.kxi-root-1111.testnet","refunded_seed":"250000000","refundable_deposit":"51250000000000000000000"}]}
+OK   abort_instant by creator-b tx=3bZ9LMkXP6bAL1FjZsvcHGKDZMur8UQeSoqHhPwyNB5M codes=
+creator-b USDC after abort 250000000
+SNAP B after abort (all identities true)
+Receipts: 9oXGvSLiafEJnu3D8m6BQFnanagxxoFERMdkJWjSc1t5, Bk46vBPDiKLYvUiEnZhrryMhqYJ7QuUHiKxcww9Yhb7v
+	Log [demo-instant.kxi-root-1111.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"deposit_reclaimed","data":[{"launch_id":"1000000001","to":"creator-b.kxi-root-1111.testnet","amount":"51250000000000000000000"}]}
+OK   reclaim_deposit (creator-b) tx=VhAk9cg42MbEk7r1iV8aanH2EkENf2zWBWTJcMrvZfu codes=
+Receipt: 7KdgoegdXeaSmkeq13euKzbt5H91qLHewjdc7HzDoR1X
+	Log [demo-market.kxi-root-1111.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"market_paused","data":[{"paused":false,"by":"kxi-root-1111.testnet"}]}
+OK   market.unpause (owner) tx=33mXCZ216HP3ToTqvbrFHppkz6Fh5wZcXV1jFU5g7XMU codes=
+SNAP B after reclaim (all identities true)
+done
