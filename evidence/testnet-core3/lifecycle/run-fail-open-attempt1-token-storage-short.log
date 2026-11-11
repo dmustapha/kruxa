@@ -1,0 +1,54 @@
+OK   top up kxi-root-1108.testnet to 4.6 NEAR from kx-fund-1112.testnet tx=EMgijygCbAb6jYkieeShiFGA9JFB8peEKAmbKnqpKkwc
+OK   top up factory.kxi-root-0811.testnet for token lcw1.factory.kxi-root-0811.testnet tx=8gU1tdyPB49Z4qgnW9zNRksAxZFNZVPNzk45bk62x7wK
+created lcw1.factory.kxi-root-0811.testnet tx=Fhgs6mRa4iut9D8jyY74V3E1J7Rx9wNcYkebokKFLVPB
+Receipt: F94beuGULshonVELv6kKfmdeAJKhtF15kdMStuXwyAim
+	Failure [lcw1.factory.kxi-root-0811.testnet]: Error: The account lcw1.factory.kxi-root-0811.testnet wouldn't have enough balance to cover storage, required to have 98496398851223400000000 yoctoNEAR more
+/Users/MAC/near-hack/kruxa-repo/relayer/node_modules/@near-js/utils/lib/commonjs/errors/rpc_errors.cjs:32
+    const server_tx_error = new ServerTransactionError();
+                            ^
+
+ServerTransactionError: The account lcw1.factory.kxi-root-0811.testnet wouldn't have enough balance to cover storage, required to have 98496398851223400000000 yoctoNEAR more
+    at parseResultError (/Users/MAC/near-hack/kruxa-repo/relayer/node_modules/@near-js/utils/lib/commonjs/errors/rpc_errors.cjs:32:29)
+    at Account.signAndSendTransaction (/Users/MAC/near-hack/kruxa-repo/relayer/node_modules/@near-js/accounts/lib/commonjs/account.cjs:103:52)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Module.deployWasm (file:///Users/MAC/near-hack/kruxa-repo/.claude/worktrees/agent-a35d0e89109399fd8/scripts/instant-testnet/lib.mjs:130:15)
+    at async ensureToken (file:///Users/MAC/near-hack/kruxa-repo/.claude/worktrees/agent-a35d0e89109399fd8/scripts/core-testnet/lifecycle-fail.mjs:52:3)
+    at async open (file:///Users/MAC/near-hack/kruxa-repo/.claude/worktrees/agent-a35d0e89109399fd8/scripts/core-testnet/lifecycle-fail.mjs:83:17)
+    at async file:///Users/MAC/near-hack/kruxa-repo/.claude/worktrees/agent-a35d0e89109399fd8/scripts/core-testnet/lifecycle-fail.mjs:166:23 {
+  type: 'LackBalanceForState',
+  context: undefined,
+  transaction_outcome: {
+    block_hash: 'GuNpTzsbzf1vs7awkyViajrVrW3JrKXm3M4BDGBwQzM7',
+    id: '3hp63oPp5UhPFVtD2dDicFTgrEJbbgn7dqo9ExPN9aYf',
+    outcome: {
+      executor_id: 'lcw1.factory.kxi-root-0811.testnet',
+      gas_burnt: 1576435139594,
+      logs: [],
+      metadata: { gas_profile: null, version: 1 },
+      receipt_ids: [ 'FpzUDAVjFCb323pAy2CzUKoRa7ZArJ1omrpCt5VmvRm5' ],
+      status: {
+        SuccessReceiptId: 'FpzUDAVjFCb323pAy2CzUKoRa7ZArJ1omrpCt5VmvRm5'
+      },
+      tokens_burnt: '157643513959400000000'
+    },
+    proof: [
+      {
+        direction: 'Right',
+        hash: 'M2Ks3anGEEDWHFuMfdbP4uVhKUKN4R9R79Z5a6qbhtr'
+      },
+      {
+        direction: 'Right',
+        hash: 'BkshGbPjnS2ncySjanJpukwDqyaEyMhyX94HQRTWgX5v'
+      }
+    ]
+  },
+  index: null,
+  account_id: 'lcw1.factory.kxi-root-0811.testnet',
+  amount: '98496398851223400000000',
+  kind: {
+    account_id: 'lcw1.factory.kxi-root-0811.testnet',
+    amount: '98496398851223400000000'
+  }
+}
+
+Node.js v24.10.0

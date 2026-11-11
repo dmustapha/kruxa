@@ -1,0 +1,31 @@
+Receipt: 7r1JNRzddPPfNkjerxfMZJUSwCEXnDpRCdVa3m1SQTai
+	Log [usdc.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"contributed","data":[{"launch_id":"4","holder":"near:sw-h3.kxi-root-1108.testnet","net":"36000000","relay_fee":"0","custody":"Native","total_active":"72000000","funders":2,"book_hash":"0bad9d29fd22d1c8bb711c2dc5711a708ff9020f7c8b9fa5868780d5298d729a"}]}
+OK   commit sw-h3.kxi-root-1108.testnet 36 USDC tx=AvjrKohxrE8YB4LsiaaZdFjJQoQueFyKdbzsiz7zPFTY codes=
+Receipt: C6T4RYysXZH8b1XGyAAnhknBrgpuooW9HoBg6TwAMZ5N
+	Log [usdc.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"contributed","data":[{"launch_id":"4","holder":"near:sw-h1.kxi-root-1108.testnet","net":"36000000","relay_fee":"0","custody":"Native","total_active":"36000000","funders":1,"book_hash":"4a9830952fa2587056ff6fbd6c761145a3f1d7f4c911efe98ec9003fec743137"}]}
+OK   commit sw-h1.kxi-root-1108.testnet 36 USDC tx=F13wCKQkukmCzoXfvbzW8RJDtzKKuuGpxSUWQ2eT7tzu codes=
+Receipt: 7GBxn7rqPyo3qhD742BqcYqggP27r1ZhRoCQKaWQaWKr
+	Log [intents.kxa1-owner-1203.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"contributed","data":[{"launch_id":"4","holder":"sol:J7WTWK9i7SQH6Yno25avK2QDx2A2wpu8Jendrr9U2L84","net":"36000000","relay_fee":"0","custody":"Intents","total_active":"108000000","funders":3,"book_hash":"654ef8d61ec2f1b28d3dd09cc600c3f7ecc4612c1f4eb512ace025e28180cf7b"}]}
+OK   commit sol:J7WTWK 36 USDC (mock Intents, Solana-delivered) tx=2NEF34DBtcDFZ3hU4sGJCssxqfi9gmAPe1GtJ1PcQsHv codes=
+Receipt: 7jChYgGKWaZ55desUaF7mxvYZxLvbaJNScsaQ2tBSBxj
+	Failure [core4.kxi-root-1108.testnet]: Error: {"index":0,"kind":{"index":0,"kind":{"FunctionCallError":{"ExecutionError":"Smart contract panicked: R_NOT_AUTHORIZED: creator only"}}}}
+FAIL cancel_trial launch 4 by a non-creator (expect refused R_NOT_AUTHORIZED) tx=5Tn4iyNseQVpgGekDMZHvgwuDE6hBCnRqZWVAiGUtoRV codes=R_NOT_AUTHORIZED
+Receipt: 76uU2Sn4zHBVact9CpZvky9ZYqPf89SvCnCGmopLW8Xh
+	Log [core4.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"verdict","data":[{"launch_id":"4","outcome":"FAIL","reasons":4,"total_active":"108000000","funders":3}]}
+OK   cancel_trial launch 4 by the creator inside the commit window tx=4qA5qx2HxZSFZxY8GvszmC2MyAqBVaf6XeoPB58parqb codes=
+Receipt: CUn2didCrEJhLVt6YAtqo7H88gKZ4kn9AF6ASwrmE7B
+	Log [core4.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"payout_resolved","data":[{"launch_id":"4","kind":"RefundNative","amount":"36000000","ok":true}]}
+OK   claim_refund launch 4 (sw-h1.kxi-root-1108.testnet, called by the holder) tx=47T5SRPYrWTDq3Drm7vyyczLLVqdNb78GBnxrVaJdLAY codes=
+Receipt: 5cHphTcA7tNjRRARDW855oXwvcs7qdvs6DdvKmBqdvbo
+	Log [core4.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"payout_resolved","data":[{"launch_id":"4","kind":"RefundNative","amount":"36000000","ok":true}]}
+OK   claim_refund launch 4 (sw-h3.kxi-root-1108.testnet, called by the holder) tx=4HgvMS6sTdF7X3cQqCZ6toUTKJNsjyNCzvscBroHnxrc codes=
+Receipt: Hs8W9A9y5spmcbSDD3gJZZnMtwULUdq8wEGnsSAw41qu
+	Log [core4.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"payout_resolved","data":[{"launch_id":"4","kind":"RefundIntents","amount":"36000000","ok":true}]}
+OK   claim_refund launch 4 (sol:J7WTWK, called by keeper) tx=98qpxboWf25PmWQqP39FqMz638f8dddNLR1JHi9o56TZ codes=
+Receipt: BP29dVkbNqQHayX9E84mrfhukpJRY3nCNoucYydErbDV
+	Log [core4.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"dissolved","data":[{"launch_id":"4"}]}
+OK   dissolve launch 4 (every refund cleared) tx=6Ppkvb5YkNLh3P8xuHbaioMj3mns1P65utJuVd1vBjrN codes=
+Receipts: 8w73VMchCiokLfSvTBkctQBU1UT2hmLi2uhjmHa5a8P, FH8tNCHxi5o6FUjz1kFJs3GzZ1xwHrHb9R9Yg1ni66ch, FuZwLji9MSPzn6PkahPSo9VsmKuNWTSBfTpGATaCgTYK
+	Log [core4.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"bond_reclaimed","data":[{"launch_id":"4","amount":"196250000000000000000000"}]}
+OK   reclaim_bond launch 4 (creator) tx=8ubsfPX6ZZttBgm5ze2JjuE3gb2LdA6rH5AY5oG8a6WY codes=
+status Dissolved, invariants all_ok true

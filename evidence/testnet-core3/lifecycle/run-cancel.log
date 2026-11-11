@@ -1,0 +1,32 @@
+OK   top up factory.kxi-root-0811.testnet for token lcx1.factory.kxi-root-0811.testnet tx=H3By855qD7ByZk9Jx74buh7rE7gapgRn8N52geh7RD2P
+created lcx1.factory.kxi-root-0811.testnet tx=4ygxnQVY93hXApXs6iUWw4GnCscJxmTSu43KopcXpkfW
+deployed /Users/MAC/near-hack/kruxa-repo/.claude/worktrees/agent-a35d0e89109399fd8/target/near/mock_ft/mock_ft.wasm -> lcx1.factory.kxi-root-0811.testnet tx=3m7HPjg9A729ro1j5EWvijSwbaiKbe48d49uxqEqeqKx
+Retrying transaction lcx1.factory.kxi-root-0811.testnet:2a2DyBFXe14pq8bv7eJYnvLBPCNtbm1FT2tzWca7PBhZ with new nonce.
+OK   init lcx1.factory.kxi-root-0811.testnet.new tx=FhEYk5F6JvuSB98a5Ef2dhWuJMWyXvXm3n1Ftogjuzub codes=
+OK   top up creator-a.kxi-root-1108.testnet to 0.62625 NEAR from kxi-root-1108.testnet tx=3myVEJexdAoJkrhWkpmcakBZUMX38pZHvBEL1jESjPaU
+OK   usdc.mint to intents for the Solana holder tx=4t4JHrJp6REiF3UejZmsN1Pk2tX9qGfahKQrvTYRAsZU codes=
+OK   intents.mt_deposit sol:J7WTWK tx=7EHDG4Y94HNS813rQG9f2N5eEEagPP5p4VzVuze3Xnwh codes=
+Receipts: 2w3G2dFiaSyV5pd7rwYXPDGCPzTjggvDhBdJUCaTkGcV, CHvc45YADa1Hfgm1RcUDsxBTeHALYharAsfzBEAHkHSp, CJkeULpuxkG6btAbyR2fL2xFBXdxjKT5VZP9fYnvSVnr
+	Log [core4.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"charter_created","data":[{"launch_id":"4","creator":"creator-a.kxi-root-1108.testnet","symbol":"LCX1","charter_hash":"2c47574442f1510203f9c4f7f5fa47f663d11259d2618d0f74202962775dc7d8","soft_cap":"350000000","min_funders":10,"stream_days":30,"payout_recipient":"creator-a.kxi-root-1108.testnet","token_decimals":6,"name":"LCX1 Lifecycle Test","total_supply":"1000000000000000"}]}
+Receipt: 4zmehRB9vQv9TPAqHqoDPwWRJvHToqaf98gfJbYhrGez
+	Log [core4.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"trial_opened","data":[{"launch_id":"4","opens_at":"1794364852101392911","commit_end":"1794364972101392911","walk_end":"1794365002101392911"}]}
+OK   create_trial LCX1 (to be cancelled) tx=AATFfgPbafWnDndp84yRrYdHF1X6Tsb7DaTFt1La3Rbo codes=
+node:internal/deps/undici/undici:15845
+      Error.captureStackTrace(err);
+            ^
+
+TypeError: fetch failed
+    at node:internal/deps/undici/undici:15845:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async BackOff.request (/Users/MAC/near-hack/kruxa-repo/relayer/node_modules/@near-js/providers/lib/commonjs/fetch_json.cjs:40:21) {
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:18545
+      at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16) {
+    errno: -61,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 18545
+  }
+}
+
+Node.js v24.10.0

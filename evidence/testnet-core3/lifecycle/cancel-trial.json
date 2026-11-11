@@ -1,0 +1,12 @@
+{
+  "launch_id": "4",
+  "symbol": "LCX1",
+  "token": "lcx1.factory.kxi-root-0811.testnet",
+  "create_tx": "AATFfgPbafWnDndp84yRrYdHF1X6Tsb7DaTFt1La3Rbo",
+  "cancel_tx": "4qA5qx2HxZSFZxY8GvszmC2MyAqBVaf6XeoPB58parqb",
+  "holders": [
+    "near:sw-h1.kxi-root-1108.testnet",
+    "near:sw-h3.kxi-root-1108.testnet",
+    "sol:J7WTWK9i7SQH6Yno25avK2QDx2A2wpu8Jendrr9U2L84"
+  ]
+}

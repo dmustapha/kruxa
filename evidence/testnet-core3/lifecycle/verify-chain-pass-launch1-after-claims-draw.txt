@@ -1,0 +1,4 @@
+recomputed outcome=PASS inputs_hash=bbd796985c710e82bafe24b77dda25b65dab969b04df806cbf6d9428a91cda37
+stored     pass=true inputs_hash=bbd796985c710e82bafe24b77dda25b65dab969b04df806cbf6d9428a91cda37
+MATCH
+exit=0

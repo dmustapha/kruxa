@@ -1,0 +1,12 @@
+== NEAR recompute (C31-C34, kruxa-sim)
+recomputed outcome=FAIL(reasons=3) inputs_hash=f54cc8e9408f0135e7263721a13673450d546d8c5cfe411620078bf220a5a4f2
+stored     pass=false inputs_hash=f54cc8e9408f0135e7263721a13673450d546d8c5cfe411620078bf220a5a4f2
+MATCH
+== operator lines (VX-2)
+KEYS: 1 full-access key(s): ed25519:9TYaUWu3dXtckuNDjC6UtiwyFtLcdzdcRiCmwVyDkz7n; 0 function-call key(s)
+NOTE: a full-access key is present, so its owner can redeploy this contract.
+CODE: view_code sha256 665caab5a582a58b2412dfb2e81f1caf2ff94339c8bcc9f8be9ebebb72239c64; reproducible build sha256 665caab5a582a58b2412dfb2e81f1caf2ff94339c8bcc9f8be9ebebb72239c64; MATCH
+== Solana genesis (C3-C28)
+no mint (expected for FAIL): launch 3 failed its verdict, so no Solana genesis exists
+PASS C30 FAIL launch 3: no genesis committed (status None, no g_pub, no mint), launch_fee 0, creator stream 0
+exit=0
