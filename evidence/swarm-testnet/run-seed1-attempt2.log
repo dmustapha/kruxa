@@ -1,0 +1,14 @@
+preflight: core4.kxi-root-1108.testnet global_cap 3000000000 global_held 0 headroom 3000000000; trial hard_cap 1000000000; pause None
+preflight: root 6.992 NEAR (reserve 1, spare 5.992); needs 1.953 NEAR (sub-accounts 0.052, token 1.800, creator top-up 0.101)
+OK   top up factory.kxi-root-0811.testnet for token sw1t015712.factory.kxi-root-0811.testnet tx=2H64aN8E5EcWb4KXXzCebQbnxan4FF2gBCSsNEDzjgdX
+created sw1t015712.factory.kxi-root-0811.testnet tx=B7PhLNTHoY6gFsGekbANhPj3NHf3pUF8Jo6Wsm9ZSyGT
+deployed /Users/MAC/near-hack/kruxa-repo/target/near/mock_ft/mock_ft.wasm -> sw1t015712.factory.kxi-root-0811.testnet tx=B8BWk7F9VGPN1gTQkNpptTjctbVN1v9R9uPiQqgwVD43
+OK   init sw1t015712.factory.kxi-root-0811.testnet.new tx=3XeS8NRW9cz1ybDeXYZN6jw48TmLcnM8vBBsyPU9EcE3 codes=
+OK   top up creator-a.kxi-root-1108.testnet for the trial deposit tx=J6eBJZquX7KrH63gACupsm1UCdNM6HiueZJFveNnKDpS
+FAIL create_trial SW1T015712 (swarm seed) tx=7aa7LA62SNxpMZqcPCnHHULB9c7TnAvoC3mid5veQr8S codes=
+Error: create_trial failed: Sender creator-a.kxi-root-1108.testnet does not have enough balance 0.471250100865760799999998 for operation costing 0.7221715761162285
+    at createTrial (file:///Users/MAC/near-hack/kruxa-repo/.claude/worktrees/agent-a18cecf0f43c97c5e/scripts/swarm-testnet.mjs:169:27)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async main (file:///Users/MAC/near-hack/kruxa-repo/.claude/worktrees/agent-a18cecf0f43c97c5e/scripts/swarm-testnet.mjs:265:18)
+transactions sent: 6
+SWARM-TESTNET RED (aborted)
