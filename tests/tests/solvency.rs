@@ -273,7 +273,7 @@ async fn short_native_balance_is_reported_without_blocking_anything() -> anyhow:
 async fn unreadable_verifier_never_panics_the_callback_and_leaves_the_alert_alone() -> anyhow::Result<()> {
     let env = Env::new().await?;
     let root = env.worker.root_account()?;
-    let code = std::fs::read(format!("{}/../target/near/kruxa_core/kruxa_core.wasm", env!("CARGO_MANIFEST_DIR")))?;
+    let code = kruxa_tests::core_wasm_bytes();
     let acct = root.create_subaccount("core2").initial_balance(NearToken::from_near(50)).transact().await?.into_result()?;
     let core2: Contract = acct.deploy(&code).await?.into_result()?;
     // intents account has no contract: mt_balance_of fails
