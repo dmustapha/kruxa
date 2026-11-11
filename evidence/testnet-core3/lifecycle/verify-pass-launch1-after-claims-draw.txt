@@ -1,0 +1,11 @@
+== NEAR recompute (C31-C34, kruxa-sim)
+recomputed outcome=PASS inputs_hash=bbd796985c710e82bafe24b77dda25b65dab969b04df806cbf6d9428a91cda37
+stored     pass=true inputs_hash=bbd796985c710e82bafe24b77dda25b65dab969b04df806cbf6d9428a91cda37
+MATCH
+== operator lines (VX-2)
+KEYS: 1 full-access key(s): ed25519:9TYaUWu3dXtckuNDjC6UtiwyFtLcdzdcRiCmwVyDkz7n; 0 function-call key(s)
+NOTE: a full-access key is present, so its owner can redeploy this contract.
+CODE: view_code sha256 665caab5a582a58b2412dfb2e81f1caf2ff94339c8bcc9f8be9ebebb72239c64; reproducible build sha256 665caab5a582a58b2412dfb2e81f1caf2ff94339c8bcc9f8be9ebebb72239c64; MATCH
+== Solana genesis (C3-C28)
+PENDING: no evidence/genesis-1.json (genesis record not published yet)
+exit=3 (NEAR part MATCH; Solana step PENDING because this launch has no genesis record, a no-genesis launch; same as any launch without evidence/genesis-<id>.json)

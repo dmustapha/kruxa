@@ -1,0 +1,37 @@
+== NEAR recompute (C31-C34, kruxa-sim)
+recomputed outcome=FAIL(reasons=7) inputs_hash=afa7f63ecf0c8ce43aa988f9912fccc763fe29c3ee387b292ac4a753b8a160fe
+stored     pass=false inputs_hash=afa7f63ecf0c8ce43aa988f9912fccc763fe29c3ee387b292ac4a753b8a160fe
+MATCH
+== operator lines (VX-2)
+KEYS: 1 full-access key(s): ed25519:9TYaUWu3dXtckuNDjC6UtiwyFtLcdzdcRiCmwVyDkz7n; 0 function-call key(s)
+NOTE: a full-access key is present, so its owner can redeploy this contract.
+CODE: view_code sha256 665caab5a582a58b2412dfb2e81f1caf2ff94339c8bcc9f8be9ebebb72239c64; reproducible build sha256 665caab5a582a58b2412dfb2e81f1caf2ff94339c8bcc9f8be9ebebb72239c64; MATCH
+== Solana genesis (C3-C28)
+PASS C5 mint == createWithSeed(g_pub, seed 4, Tokenkeg): no private key exists
+PASS C3 spec re-hash 7e1af450072873eb (sha256 of the committed borsh GenesisSpec)
+PASS C4 mint FtAU9HbUopWVMMr41XNsFr11B4ZxbbKX4JLWmNAJ8Wfe owner Tokenkeg space 82 (no extensions: C8)
+PASS C7 mint_authority=None freeze_authority=None
+PASS C6 decimals 6 supply 649999999999992 == sum of buckets
+PASS C9 metadata is_mutable=false, name/symbol/uri == spec, fee 0, no creators
+PASS C11 reserve bucket 0, distributor vault holds the unclaimed rest
+PASS C13 distributor 9XYvBt root/max_total_claim/max_num_nodes/timestamps/clawback receiver match, admin NULL (1nc1nera)
+SKIP C12 (no --charter given)
+PASS C14 G holds no token accounts
+PASS C15 G history is the ceremony only (3 signatures)
+MISMATCH g_pub C=C16 expected=<=895880 lamports actual=2091800
+PASS C17 on-chain tx1 and tx2 message bytes == compile(spec, blockhash, price)
+PASS C18 program allowlist holds
+PASS C19 SetAuthority(MintTokens, None) is the last token instruction, after every MintTo
+PASS C20 rebuilt merkle root == spec == on-chain; sum 649999999999992, leaves 12
+PASS C21 all 12 proofs verify against the root
+SKIP C27 (F1 record: no derived key)
+SKIP C28 (single RPC; pass --rpc2)
+MISMATCH genesis_status C=C1 expected=Confirmed (launch Passed) actual=None (launch Dissolved)
+MISMATCH verdict C=C2 expected=PASS actual={'pass': False, 'reasons': 4, 'settled_at': '1794364876570476499', 'total_active': '108000000', 'accepted': '0', 'launch_fee': '0', 'lp_quote': '0', 'stream': '0', 'excess_pool': '0', 'inputs_hash': 'afa7f63ecf0c8ce43aa988f9912fccc763fe29c3ee387b292ac4a753b8a160fe', 'book_hash': '654ef8d61ec2f1b28d3dd09cc600c3f7ecc4612c1f4eb512ace025e28180cf7b'}
+MISMATCH ceremony_hash C=C26 expected=1722bb95dba4502d8e54903623671ac6d9831cff4f2f134110877f9c14e47834 actual=None
+SKIP C10 (needs the hosted metadata JSON)
+SKIP C22 (no creator allocation in this record)
+SKIP C23 (needs the core's genesis_committed/genesis_confirmed events (plain RPC cannot enumerate a contract's events; the views show one confirmed mint, see C1))
+SKIP C25 (no Verdict Rail attestation in this record)
+SKIP C30 (PASS launch (FAIL path is a core check))
+exit=2

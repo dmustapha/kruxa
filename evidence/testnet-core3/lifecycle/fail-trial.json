@@ -1,0 +1,73 @@
+{
+  "launch_id": "3",
+  "symbol": "LCW1",
+  "token": "lcw1.factory.kxi-root-0811.testnet",
+  "create_tx": "hZf3r7uVAws1N8toMnD4PSoVoJpjoMijFjVECjvWJv4",
+  "global_held_before": "2396650042",
+  "near_holders": [
+    "sw-h1.kxi-root-1108.testnet",
+    "sw-h3.kxi-root-1108.testnet",
+    "sw-h4.kxi-root-1108.testnet"
+  ],
+  "sol_holders": [
+    "sol:62zT2Awv8beL7mcsvidcctJ646Y11ytNScKzrPzw45Hd",
+    "sol:u5foubJSQeA14Re5w9HYpaeJaCFF4qTShX7XmpU42BS",
+    "sol:Ga7Qd4aScMDXLWcJBkhFTydd3L9KGgWfozvdXd2eocfS",
+    "sol:HSZYZ8PyavxGWP9MG4veYdFVeiMeMDa5VEU4kvESrodQ",
+    "sol:DWazLXZDgcoXRWnxZGiGTqzK6kzkbGWCYws58CNQ7xMQ",
+    "sol:AvTF9BgvPv26X4s1JFt7uPfqjRQQ86bD8BvMDTcc3cdR",
+    "sol:4n8LzdDwJwhKjXcsUAdvkUyHUJZrWwgNtMnjCmCmvdVF"
+  ],
+  "commits": [
+    {
+      "step": "commit sw-h1.kxi-root-1108.testnet 36 USDC",
+      "tx": "H1LKecgjQt2XPd7XopgkFcAisqFbkvj5pbt1agZiwx5M",
+      "success": true
+    },
+    {
+      "step": "commit sw-h3.kxi-root-1108.testnet 36 USDC",
+      "tx": "GMrr5GaiVWMk5Bk3A5MnCNhKBqJrRrg36zMTWovMYxPy",
+      "success": true
+    },
+    {
+      "step": "commit sw-h4.kxi-root-1108.testnet 36 USDC",
+      "tx": "CXb4je29A1UJpckdAbSdZaBQRSmyW9keTe4CXWyPrPYK",
+      "success": true
+    },
+    {
+      "step": "commit sol:62zT2A 36 USDC (mock Intents, Solana-delivered)",
+      "tx": "D5z3urojELs81futNMCKfmw9vj9Qz7riskzn3tEsfCiK",
+      "success": true
+    },
+    {
+      "step": "commit sol:u5foub 36 USDC (mock Intents, Solana-delivered)",
+      "tx": "DnNx9TyQ4pf3PKYra7UKVBHv46u8VARY3aoMQRpuWgRb",
+      "success": true
+    },
+    {
+      "step": "commit sol:Ga7Qd4 36 USDC (mock Intents, Solana-delivered)",
+      "tx": "6td3p5mMzYFbw8BW4aCD3i6QAn2WrdfCxvFYnroixWQx",
+      "success": true
+    },
+    {
+      "step": "commit sol:HSZYZ8 36 USDC (mock Intents, Solana-delivered)",
+      "tx": "F5T13G3tPFNadcNhyk9bgDsh7BieEiheitUY7wkVeg5H",
+      "success": true
+    },
+    {
+      "step": "commit sol:DWazLX 36 USDC (mock Intents, Solana-delivered)",
+      "tx": "2t1FLoQeJiZVXjo41hBhji3J3ksZXnNsE4TXVemMcH9W",
+      "success": true
+    },
+    {
+      "step": "commit sol:AvTF9B 36 USDC (mock Intents, Solana-delivered)",
+      "tx": "9cNvUfaRw5QdxEK4qTUfqoZe5jKKrgypbByB1sPWk53b",
+      "success": true
+    },
+    {
+      "step": "commit sol:4n8Lzd 36 USDC (mock Intents, Solana-delivered)",
+      "tx": "5NdazVSHD3LmsTuHzDJD7LAKbyLeFxZGSzdcMTeJb5eB",
+      "success": true
+    }
+  ]
+}
