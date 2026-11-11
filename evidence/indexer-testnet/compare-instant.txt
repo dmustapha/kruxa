@@ -1,0 +1,42 @@
+MATCH    instant launch 1000000000 :: status (Open with a pool is served as trading) chain="trading" indexer="trading"
+MATCH    instant launch 1000000000 :: mode chain="instant" indexer="instant"
+MATCH    instant launch 1000000000 :: creator chain="creator-a.kxi-root-0811.testnet" indexer="creator-a.kxi-root-0811.testnet"
+MATCH    instant launch 1000000000 :: payout_recipient chain="creator-a.kxi-root-0811.testnet" indexer="creator-a.kxi-root-0811.testnet"
+MATCH    instant launch 1000000000 :: symbol chain="ALPHA" indexer="ALPHA"
+MATCH    instant launch 1000000000 :: charter_hash chain="c2b98a94af693e79a5005e3cdd6e31618dbefaa75230f5cf483198f39ebca57b" indexer="c2b98a94af693e79a5005e3cdd6e31618dbefaa75230f5cf483198f39ebca57b"
+MATCH    instant launch 1000000000 :: total_supply chain="1000000000000000" indexer="1000000000000000"
+MATCH    instant launch 1000000000 :: token chain="alpha.factory.kxi-root-0811.testnet" indexer="alpha.factory.kxi-root-0811.testnet"
+MATCH    instant launch 1000000000 :: creator_alloc (n_alloc) chain="50000000000000" indexer="50000000000000"
+MATCH    instant launch 1000000000 :: pool_tokens (n_pool) chain="950000000000000" indexer="950000000000000"
+MATCH    instant launch 1000000000 :: cliff_days chain=7 indexer=7
+MATCH    instant launch 1000000000 :: vest_days chain=30 indexer=30
+MATCH    instant launch 1000000000 :: seed_q chain="250000000" indexer="250000000"
+MATCH    instant launch 1000000000 :: launch_fee chain="0" indexer="0"
+MATCH    instant launch 1000000000 :: alloc_claimed chain="13713874308333" indexer="13713874308333"
+MATCH    instant launch 1000000000 :: opened_at (opened_at_ns / 1e9) chain="1794151747" indexer=1794151747
+MATCH    market pool 1000000000 :: pool open chain=true indexer=true
+MATCH    market pool 1000000000 :: q (quote_reserve) chain="260415867" indexer="260415867"
+MATCH    market pool 1000000000 :: t (token_reserve) chain="916443873506238" indexer="916443873506238"
+MATCH    market pool 1000000000 :: token chain="alpha.factory.kxi-root-0811.testnet" indexer="alpha.factory.kxi-root-0811.testnet"
+MATCH    market pool 1000000000 :: payout_recipient chain="creator-a.kxi-root-0811.testnet" indexer="creator-a.kxi-root-0811.testnet"
+MATCH    market pool 1000000000 :: mode chain="instant" indexer="instant"
+MATCH    market pool 1000000000 :: opened_at (opened_ns / 1e9) chain="1794151746" indexer=1794151746
+MATCH    market pool 1000000000 :: paused (state != Open) chain=false indexer=false
+MATCH    instant launch 1000000001 :: status (Open with a pool is served as trading) chain="aborted" indexer="aborted"
+MATCH    instant launch 1000000001 :: mode chain="instant" indexer="instant"
+MATCH    instant launch 1000000001 :: creator chain="creator-b.kxi-root-0811.testnet" indexer="creator-b.kxi-root-0811.testnet"
+MATCH    instant launch 1000000001 :: payout_recipient chain="creator-b.kxi-root-0811.testnet" indexer="creator-b.kxi-root-0811.testnet"
+MATCH    instant launch 1000000001 :: symbol chain="BETA" indexer="BETA"
+MATCH    instant launch 1000000001 :: charter_hash chain="caeb575f4223c0fea9d763afc9bd4cb39618f6876f82722251e298786b1af74f" indexer="caeb575f4223c0fea9d763afc9bd4cb39618f6876f82722251e298786b1af74f"
+MATCH    instant launch 1000000001 :: total_supply chain="1000000000000000" indexer="1000000000000000"
+MATCH    instant launch 1000000001 :: token chain="beta.factory.kxi-root-0811.testnet" indexer="beta.factory.kxi-root-0811.testnet"
+MATCH    instant launch 1000000001 :: creator_alloc (n_alloc) chain="50000000000000" indexer="50000000000000"
+MATCH    instant launch 1000000001 :: pool_tokens (n_pool) chain="950000000000000" indexer="950000000000000"
+MATCH    instant launch 1000000001 :: cliff_days chain=7 indexer=7
+MATCH    instant launch 1000000001 :: vest_days chain=90 indexer=90
+MATCH    instant launch 1000000001 :: seed_q chain="250000000" indexer="250000000"
+MATCH    instant launch 1000000001 :: launch_fee chain="0" indexer="0"
+MATCH    instant launch 1000000001 :: alloc_claimed chain="0" indexer="0"
+MATCH    instant launch 1000000001 :: opened_at (opened_at_ns / 1e9) chain=null indexer=null
+MATCH    market pool 1000000001 :: pool open chain=false indexer=false
+checks=41 mismatches=0 rpc=https://test.rpc.fastnear.com

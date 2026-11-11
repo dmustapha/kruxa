@@ -1,0 +1,96 @@
+MATCH    core launch 1 :: verdict (get_state.status) chain=null indexer=null
+MATCH    core launch 1 :: total_active chain="0" indexer="0"
+MATCH    core launch 1 :: active_funders (funders) chain=0 indexer=0
+MATCH    core launch 1 :: charter_hash chain="3895e5749100fd244dc13d90de5316fcee98857b1ffc4f0f83478ab30b8b5312" indexer="3895e5749100fd244dc13d90de5316fcee98857b1ffc4f0f83478ab30b8b5312"
+MATCH    core launch 1 :: book_hash (rolling, folded) chain="0000000000000000000000000000000000000000000000000000000000000000" indexer=""
+MATCH    core launch 1 :: payout_recipient chain="creator-a.kxi-root-1108.testnet" indexer="creator-a.kxi-root-1108.testnet"
+MATCH    core launch 1 :: book_hash replayed from contributed/walked (fold_ok) chain="0000000000000000000000000000000000000000000000000000000000000000" indexer=""
+MATCH    core launch 1 :: book_mismatch_at chain=null indexer=null
+MATCH    market pool 1 :: pool open chain=false indexer=false
+MATCH    core launch 2 :: verdict (get_state.status) chain="PASS" indexer="PASS"
+MATCH    core launch 2 :: total_active chain="360000000" indexer="360000000"
+MATCH    core launch 2 :: active_funders (funders) chain=12 indexer=12
+MATCH    core launch 2 :: charter_hash chain="db0689b677e8358104670926186ffd469420884465abf73569462bd176744517" indexer="db0689b677e8358104670926186ffd469420884465abf73569462bd176744517"
+MATCH    core launch 2 :: book_hash (rolling, folded) chain="f5234c4600b5978c463ab8bd2f7f1326d3af529d92077f4f01d5789efe77ef8e" indexer="f5234c4600b5978c463ab8bd2f7f1326d3af529d92077f4f01d5789efe77ef8e"
+MATCH    core launch 2 :: payout_recipient chain="creator-a.kxi-root-1108.testnet" indexer="creator-a.kxi-root-1108.testnet"
+MATCH    core launch 2 :: book_hash replayed from contributed/walked (fold_ok) chain="f5234c4600b5978c463ab8bd2f7f1326d3af529d92077f4f01d5789efe77ef8e" indexer="f5234c4600b5978c463ab8bd2f7f1326d3af529d92077f4f01d5789efe77ef8e"
+MATCH    core launch 2 :: book_mismatch_at chain=null indexer=null
+MATCH    market pool 2 :: pool open chain=false indexer=false
+MATCH    core launch 3 :: verdict (get_state.status) chain="FAIL" indexer="FAIL"
+MATCH    core launch 3 :: total_active chain="150000000" indexer="150000000"
+MATCH    core launch 3 :: active_funders (funders) chain=5 indexer=5
+MATCH    core launch 3 :: charter_hash chain="b3160823c6b95fb2fff4d2f5c075c4dd653ed0f1bab142323a265036c8999dfa" indexer="b3160823c6b95fb2fff4d2f5c075c4dd653ed0f1bab142323a265036c8999dfa"
+MATCH    core launch 3 :: book_hash (rolling, folded) chain="22d3dd23762a8e7caf01d6335a6593b87bb37a158f09816d8fb2966d9838f0e9" indexer="22d3dd23762a8e7caf01d6335a6593b87bb37a158f09816d8fb2966d9838f0e9"
+MATCH    core launch 3 :: payout_recipient chain="creator-b.kxi-root-1108.testnet" indexer="creator-b.kxi-root-1108.testnet"
+MATCH    core launch 3 :: book_hash replayed from contributed/walked (fold_ok) chain="22d3dd23762a8e7caf01d6335a6593b87bb37a158f09816d8fb2966d9838f0e9" indexer="22d3dd23762a8e7caf01d6335a6593b87bb37a158f09816d8fb2966d9838f0e9"
+MATCH    core launch 3 :: book_mismatch_at chain=null indexer=null
+MATCH    market pool 3 :: pool open chain=false indexer=false
+MATCH    core launch 4 :: verdict (get_state.status) chain="PASS" indexer="PASS"
+MATCH    core launch 4 :: total_active chain="360000000" indexer="360000000"
+MATCH    core launch 4 :: active_funders (funders) chain=12 indexer=12
+MATCH    core launch 4 :: charter_hash chain="611fe27edd50d148f9a2ea5b538835d150ac0004ede84e9fbbdcaad09dd33b92" indexer="611fe27edd50d148f9a2ea5b538835d150ac0004ede84e9fbbdcaad09dd33b92"
+MATCH    core launch 4 :: book_hash (rolling, folded) chain="d692255b7fddcbe903af1266d44588c4591ca5f01f79334361a56a3b3d5a643d" indexer="d692255b7fddcbe903af1266d44588c4591ca5f01f79334361a56a3b3d5a643d"
+MATCH    core launch 4 :: payout_recipient chain="creator-a.kxi-root-1108.testnet" indexer="creator-a.kxi-root-1108.testnet"
+MATCH    core launch 4 :: book_hash replayed from contributed/walked (fold_ok) chain="d692255b7fddcbe903af1266d44588c4591ca5f01f79334361a56a3b3d5a643d" indexer="d692255b7fddcbe903af1266d44588c4591ca5f01f79334361a56a3b3d5a643d"
+MATCH    core launch 4 :: book_mismatch_at chain=null indexer=null
+MATCH    market pool 4 :: pool open chain=true indexer=true
+MATCH    market pool 4 :: q (quote_reserve) chain="167773423" indexer="167773423"
+MATCH    market pool 4 :: t (token_reserve) chain="223793321895702" indexer="223793321895702"
+MATCH    market pool 4 :: token chain="kxcc.factory.kxi-root-0811.testnet" indexer="kxcc.factory.kxi-root-0811.testnet"
+MATCH    market pool 4 :: payout_recipient chain="creator-a.kxi-root-1108.testnet" indexer="creator-a.kxi-root-1108.testnet"
+MATCH    market pool 4 :: mode chain="trial" indexer="trial"
+MATCH    market pool 4 :: opened_at (opened_ns / 1e9) chain="1794270714" indexer=1794270714
+MATCH    market pool 4 :: paused (state != Open) chain=false indexer=false
+MATCH    core launch 5 :: verdict (get_state.status) chain="PASS" indexer="PASS"
+MATCH    core launch 5 :: total_active chain="360000000" indexer="360000000"
+MATCH    core launch 5 :: active_funders (funders) chain=12 indexer=12
+MATCH    core launch 5 :: charter_hash chain="6bcdb8f438f4312f8bf480f5ac22577210031ba301fec01df9db3f4bfa4e4c0c" indexer="6bcdb8f438f4312f8bf480f5ac22577210031ba301fec01df9db3f4bfa4e4c0c"
+MATCH    core launch 5 :: book_hash (rolling, folded) chain="e00e2a0b81de865429749b6fcb60acf768a4486b371e74861e0a1aba2b02bd50" indexer="e00e2a0b81de865429749b6fcb60acf768a4486b371e74861e0a1aba2b02bd50"
+MATCH    core launch 5 :: payout_recipient chain="creator-b.kxi-root-1108.testnet" indexer="creator-b.kxi-root-1108.testnet"
+MATCH    core launch 5 :: book_hash replayed from contributed/walked (fold_ok) chain="e00e2a0b81de865429749b6fcb60acf768a4486b371e74861e0a1aba2b02bd50" indexer="e00e2a0b81de865429749b6fcb60acf768a4486b371e74861e0a1aba2b02bd50"
+MATCH    core launch 5 :: book_mismatch_at chain=null indexer=null
+MATCH    market pool 5 :: pool open chain=false indexer=false
+MATCH    core launch 6 :: verdict (get_state.status) chain="PASS" indexer="PASS"
+MATCH    core launch 6 :: total_active chain="360000000" indexer="360000000"
+MATCH    core launch 6 :: active_funders (funders) chain=12 indexer=12
+MATCH    core launch 6 :: charter_hash chain="65b23422194337ba6b9e888313cea5ea69248e786270e410c8e923f53fb68820" indexer="65b23422194337ba6b9e888313cea5ea69248e786270e410c8e923f53fb68820"
+MATCH    core launch 6 :: book_hash (rolling, folded) chain="5c28a07067625a4ab18e3756ed0f5b9bee4ede858ac183e5dc01c68ac71acf23" indexer="5c28a07067625a4ab18e3756ed0f5b9bee4ede858ac183e5dc01c68ac71acf23"
+MATCH    core launch 6 :: payout_recipient chain="creator-a.kxi-root-1108.testnet" indexer="creator-a.kxi-root-1108.testnet"
+MATCH    core launch 6 :: book_hash replayed from contributed/walked (fold_ok) chain="5c28a07067625a4ab18e3756ed0f5b9bee4ede858ac183e5dc01c68ac71acf23" indexer="5c28a07067625a4ab18e3756ed0f5b9bee4ede858ac183e5dc01c68ac71acf23"
+MATCH    core launch 6 :: book_mismatch_at chain=null indexer=null
+MATCH    market pool 6 :: pool open chain=true indexer=true
+MATCH    market pool 6 :: q (quote_reserve) chain="159389533" indexer="159389533"
+MATCH    market pool 6 :: t (token_reserve) chain="235424028268551" indexer="235424028268551"
+MATCH    market pool 6 :: token chain="kxce.factory.kxi-root-0811.testnet" indexer="kxce.factory.kxi-root-0811.testnet"
+MATCH    market pool 6 :: payout_recipient chain="creator-a.kxi-root-1108.testnet" indexer="creator-a.kxi-root-1108.testnet"
+MATCH    market pool 6 :: mode chain="trial" indexer="trial"
+MATCH    market pool 6 :: opened_at (opened_ns / 1e9) chain="1794272045" indexer=1794272045
+MATCH    market pool 6 :: paused (state != Open) chain=false indexer=false
+MATCH    core launch 7 :: verdict (get_state.status) chain=null indexer=null
+MATCH    core launch 7 :: total_active chain="0" indexer="0"
+MATCH    core launch 7 :: active_funders (funders) chain=0 indexer=0
+MATCH    core launch 7 :: charter_hash chain="23c2478195b021aa6053c450a308a1ad15f6d262003a451a1e600c61b591fc7e" indexer="23c2478195b021aa6053c450a308a1ad15f6d262003a451a1e600c61b591fc7e"
+MATCH    core launch 7 :: book_hash (rolling, folded) chain="0000000000000000000000000000000000000000000000000000000000000000" indexer=""
+MATCH    core launch 7 :: payout_recipient chain="creator-b.kxi-root-1108.testnet" indexer="creator-b.kxi-root-1108.testnet"
+MATCH    core launch 7 :: book_hash replayed from contributed/walked (fold_ok) chain="0000000000000000000000000000000000000000000000000000000000000000" indexer=""
+MATCH    core launch 7 :: book_mismatch_at chain=null indexer=null
+MATCH    market pool 7 :: pool open chain=false indexer=false
+MATCH    core launch 8 :: verdict (get_state.status) chain="PASS" indexer="PASS"
+MATCH    core launch 8 :: total_active chain="360000000" indexer="360000000"
+MATCH    core launch 8 :: active_funders (funders) chain=12 indexer=12
+MATCH    core launch 8 :: charter_hash chain="ee7560fb557a682ae80438f375b906f529674466cb5ecd4e1dadd16b9c15309a" indexer="ee7560fb557a682ae80438f375b906f529674466cb5ecd4e1dadd16b9c15309a"
+MATCH    core launch 8 :: book_hash (rolling, folded) chain="a983d88b58a0c86d7bfc5103c7852c51cf6b04de7119234114937234622fdf0a" indexer="a983d88b58a0c86d7bfc5103c7852c51cf6b04de7119234114937234622fdf0a"
+MATCH    core launch 8 :: payout_recipient chain="creator-a.kxi-root-1108.testnet" indexer="creator-a.kxi-root-1108.testnet"
+MATCH    core launch 8 :: book_hash replayed from contributed/walked (fold_ok) chain="a983d88b58a0c86d7bfc5103c7852c51cf6b04de7119234114937234622fdf0a" indexer="a983d88b58a0c86d7bfc5103c7852c51cf6b04de7119234114937234622fdf0a"
+MATCH    core launch 8 :: book_mismatch_at chain=null indexer=null
+MATCH    market pool 8 :: pool open chain=false indexer=false
+MATCH    core launch 9 :: verdict (get_state.status) chain="PASS" indexer="PASS"
+MATCH    core launch 9 :: total_active chain="360000000" indexer="360000000"
+MATCH    core launch 9 :: active_funders (funders) chain=12 indexer=12
+MATCH    core launch 9 :: charter_hash chain="e5c199e78c1f93a9e9c4d3b16fc78b6f0aaf83ae49b036b829f7766b0082046b" indexer="e5c199e78c1f93a9e9c4d3b16fc78b6f0aaf83ae49b036b829f7766b0082046b"
+MATCH    core launch 9 :: book_hash (rolling, folded) chain="effaec550f6329acd01388e498b1e473576d286dd052db64abc3f8772fa5ddce" indexer="effaec550f6329acd01388e498b1e473576d286dd052db64abc3f8772fa5ddce"
+MATCH    core launch 9 :: payout_recipient chain="creator-a.kxi-root-1108.testnet" indexer="creator-a.kxi-root-1108.testnet"
+MATCH    core launch 9 :: book_hash replayed from contributed/walked (fold_ok) chain="effaec550f6329acd01388e498b1e473576d286dd052db64abc3f8772fa5ddce" indexer="effaec550f6329acd01388e498b1e473576d286dd052db64abc3f8772fa5ddce"
+MATCH    core launch 9 :: book_mismatch_at chain=null indexer=null
+MATCH    market pool 9 :: pool open chain=false indexer=false
+checks=95 mismatches=0 rpc=https://test.rpc.fastnear.com
