@@ -1,0 +1,11 @@
+# 2026-11-11T02:39Z TESTNET read-only. RPC: local pass-through scripts/core-testnet/rpc-retry-proxy.mjs -> https://test.rpc.fastnear.com
+# command: scripts/verify-claims.sh --offline
+C-01 PASS
+C-02 PASS
+C-03 PASS
+C-04 SKIP (needs --rpc and --contract of a testnet core)
+C-05 SKIP (needs --rpc and --contract of a testnet core)
+C-06 SKIP (needs the sandbox suite)
+C-07 PASS
+C-07 PASS
+# exit 0

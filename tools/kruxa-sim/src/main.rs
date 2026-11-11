@@ -7,10 +7,19 @@
 //!   kruxa-sim validate --params fixtures/hostile.json [--profile ladder|demo] [--headroom N] [--brand]
 //!   kruxa-sim fuzz [--n 10000] [--seed 1]
 //!   kruxa-sim verify --rpc URL [--rpc2 URL] --contract core.kruxa.testnet --launch 1 [--tamper [FIELD] | --tamper-all]
+//!   kruxa-sim verify-ledger --rpc URL [--rpc2 URL] --contract core.kruxa.testnet --launch 1 [--tamper [FIELD] | --tamper-all]      C33
+//!   kruxa-sim verify-market --rpc URL [--rpc2 URL] (--market ACCOUNT | --core ACCOUNT) [--pools 1,2] [--tamper [FIELD] | --tamper-all]   C34
+//!   kruxa-sim verify-instant --rpc URL [--rpc2 URL] --launcher ACCOUNT --launch 1000000000 [--tamper [FIELD] | --tamper-all]
+//!   kruxa-sim rules [--profile ladder|demo] [--rpc URL --contract ACCOUNT]    the Rules defaults, or a live get_rule_set compared key by key (C-04)
 //! Exit codes (CO-6 E-4): 0 MATCH, 2 only MISMATCH, 3 pending, 4 RPC or view failure, 64 usage, 1 tamper self-test failure.
 mod cli;
 mod fold;
 mod fuzz;
+mod instant;
+mod ledger;
+mod market;
+mod recompute;
+mod rules;
 mod validate;
 mod verify;
 
@@ -117,9 +126,15 @@ fn main() {
         Some("verdict") => run_verdict(rest),
         Some("settle") => run_settle(rest),
         Some("verify") => verify::run(rest),
+        Some("rules") => rules::run(rest),
+        Some("verify-instant") => instant::run(rest),
+        Some("verify-ledger") => ledger::run(rest),
+        Some("verify-market") => market::run(rest),
         Some("fold") => fold::run(rest),
         Some("validate") => validate::run(rest),
         Some("fuzz") => fuzz::run(rest),
-        _ => usage("kruxa-sim verdict|settle|fold|validate|fuzz|verify (see the file header)"),
+        _ => usage(
+            "kruxa-sim verdict|settle|fold|validate|fuzz|verify|verify-ledger|verify-market|verify-instant|rules (see the file header)",
+        ),
     }
 }

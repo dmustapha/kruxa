@@ -1,0 +1,16 @@
+# 2026-11-11T02:37Z TESTNET read-only. RPC: local pass-through scripts/core-testnet/rpc-retry-proxy.mjs -> https://test.rpc.fastnear.com
+# command: target/debug/kruxa-sim verify-market --rpc http://127.0.0.1:18545 --market market3.kxi-root-1108.testnet --tamper-all
+C34 market market3.kxi-root-1108.testnet: pools=2 sum_q=327162956 global_q=327162956 platform_unpaid=138840 owed_usdc=0 usdc_expected=327764601 usdc_balance=327764601
+PASS global_q
+PASS usdc_identity
+PASS usdc_custody
+PASS token_identity
+PASS token_custody
+MATCH C34 market3.kxi-root-1108.testnet
+MISMATCH pool_q
+MISMATCH pool_t
+MISMATCH global_q
+MISMATCH platform_unpaid
+MISMATCH usdc_expected
+MISMATCH token_expected
+# exit 2

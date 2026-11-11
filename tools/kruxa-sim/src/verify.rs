@@ -16,7 +16,7 @@ fn base64_encode(b: &[u8]) -> String {
 }
 
 /// One view call. Err for transport failure, non-200, a JSON-RPC error, a contract panic, or bytes that are not JSON.
-fn rpc_view(rpc: &str, contract: &str, method: &str, args: &Value) -> Result<Value, String> {
+pub(crate) fn rpc_view(rpc: &str, contract: &str, method: &str, args: &Value) -> Result<Value, String> {
     let body = json!({ "jsonrpc": "2.0", "id": "kruxa", "method": "query", "params": { "request_type": "call_function", "finality": "final",
         "account_id": contract, "method_name": method, "args_base64": base64_encode(args.to_string().as_bytes()) } });
     let resp: Value = ureq::post(rpc)
@@ -33,7 +33,7 @@ fn rpc_view(rpc: &str, contract: &str, method: &str, args: &Value) -> Result<Val
 }
 
 /// Reads from the primary RPC and, if given, a second one. Disagreement is infrastructure, not a mismatch.
-fn view(rpcs: &[String], contract: &str, method: &str, args: &Value) -> Value {
+pub(crate) fn view(rpcs: &[String], contract: &str, method: &str, args: &Value) -> Value {
     let answers: Vec<Value> = rpcs.iter().map(|r| rpc_view(r, contract, method, args).unwrap_or_else(|e| infra(&e))).collect();
     if answers.windows(2).any(|w| w[0] != w[1]) {
         infra(&format!("the RPCs disagree on {method}"));

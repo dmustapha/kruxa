@@ -1,0 +1,6 @@
+# 2026-11-11T02:39Z TESTNET read-only. RPC: local pass-through scripts/core-testnet/rpc-retry-proxy.mjs -> https://test.rpc.fastnear.com
+# command: scripts/verify-claims.sh C-04 C-05 --rpc http://127.0.0.1:18545 --contract core4.kxi-root-1108.testnet
+C-04 PASS
+C-04 PASS
+C-05 PASS
+# exit 0

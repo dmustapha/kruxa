@@ -1,0 +1,24 @@
+# 2026-11-11T02:34Z TESTNET read-only. RPC: local pass-through scripts/core-testnet/rpc-retry-proxy.mjs -> https://test.rpc.fastnear.com
+# command: KRUXA_NEAR_RPC=http://127.0.0.1:18545 KRUXA_CONTRACT=core4.kxi-root-1108.testnet KRUXA_GENESIS_PREFIX=evidence/genesis/core4/genesis- scripts/verify.sh 2
+== NEAR recompute (C31-C34, kruxa-sim)
+recomputed outcome=PASS inputs_hash=3879700dc846ff48ec5b0b0b095843009d3ab0fa5223419ea31515e89f305f6c
+stored     pass=true inputs_hash=3879700dc846ff48ec5b0b0b095843009d3ab0fa5223419ea31515e89f305f6c
+MATCH
+C33 launch 2 on core4.kxi-root-1108.testnet: credited=1207000000 open=0 due=206999992 inflight=0 refunded=0 spent=1000000008 positions=15 held_native=2468650042 held_intents=216000000
+PASS L1_flow
+PASS L3_positions
+PASS I2_book_sums
+PASS I5_no_overpay
+PASS L6_counters
+PASS L4_buckets
+PASS L4_settlement
+PASS I3_inputs_frozen
+MATCH C33 launch 2
+PENDING the core has no market set, so there is no market identity to recompute
+== operator lines (VX-2)
+KEYS: 1 full-access key(s): ed25519:9TYaUWu3dXtckuNDjC6UtiwyFtLcdzdcRiCmwVyDkz7n; 0 function-call key(s)
+NOTE: a full-access key is present, so its owner can redeploy this contract.
+CODE: view_code sha256 665caab5a582a58b2412dfb2e81f1caf2ff94339c8bcc9f8be9ebebb72239c64; reproducible build sha256 665caab5a582a58b2412dfb2e81f1caf2ff94339c8bcc9f8be9ebebb72239c64; MATCH
+== Solana genesis (C3-C28)
+PENDING: no evidence/genesis/core4/genesis-2.json (genesis record not published yet)
+# exit 3

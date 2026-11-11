@@ -1,0 +1,58 @@
+# 2026-11-11T02:33Z TESTNET read-only. RPC: local pass-through scripts/core-testnet/rpc-retry-proxy.mjs -> https://test.rpc.fastnear.com
+# command: KRUXA_NEAR_RPC=http://127.0.0.1:18545 KRUXA_CONTRACT=core3.kxi-root-1108.testnet KRUXA_GENESIS_PREFIX=evidence/genesis/core3/genesis- scripts/verify.sh 4 --charter evidence/genesis/charter-devnet-squads-CneX72.json --rpc2 http://127.0.0.1:18546
+== NEAR recompute (C31-C34, kruxa-sim)
+recomputed outcome=PASS inputs_hash=d5733d34059ca252622bb2c27f9c2a7d5a2c982fbd358e502c65d9bde0f0deae
+stored     pass=true inputs_hash=d5733d34059ca252622bb2c27f9c2a7d5a2c982fbd358e502c65d9bde0f0deae
+MATCH
+C33 launch 4 on core3.kxi-root-1108.testnet: credited=360000000 open=0 due=0 inflight=0 refunded=0 spent=360000000 positions=12 held_native=2150000000 held_intents=150000000
+PASS L1_flow
+PASS L3_positions
+PASS I2_book_sums
+PASS I5_no_overpay
+PASS L6_counters
+PASS L4_buckets
+PASS L4_settlement
+PASS I3_inputs_frozen
+MATCH C33 launch 4
+C34 market market3.kxi-root-1108.testnet: pools=2 sum_q=327162956 global_q=327162956 platform_unpaid=138840 owed_usdc=0 usdc_expected=327764601 usdc_balance=327764601
+PASS global_q
+PASS usdc_identity
+PASS usdc_custody
+PASS token_identity
+PASS token_custody
+MATCH C34 market3.kxi-root-1108.testnet
+== operator lines (VX-2)
+KEYS: 1 full-access key(s): ed25519:2LXB3AWpWCYEgypBA7KFP9WGX6ZNK3ByZ6XJohvXwTVq; 0 function-call key(s)
+NOTE: a full-access key is present, so its owner can redeploy this contract.
+CODE: view_code sha256 665caab5a582a58b2412dfb2e81f1caf2ff94339c8bcc9f8be9ebebb72239c64; reproducible build sha256 665caab5a582a58b2412dfb2e81f1caf2ff94339c8bcc9f8be9ebebb72239c64; MATCH
+== Solana genesis (C3-C28)
+PASS C5 mint == createWithSeed(g_pub, seed 4, Tokenkeg): no private key exists
+PASS C3 spec re-hash 57dbc09259d11c40 (sha256 of the committed borsh GenesisSpec)
+PASS C4 mint 5GqySUpr646EsiQjHtFtz2y6gPrNSWCvm9fe8sbnmqKy owner Tokenkeg space 82 (no extensions: C8)
+PASS C7 mint_authority=None freeze_authority=None
+PASS C6 decimals 6 supply 595833333333326 == sum of buckets
+PASS C9 metadata is_mutable=false, name/symbol/uri == spec, fee 0, no creators
+PASS C11 reserve bucket 0, distributor vault holds the unclaimed rest
+PASS C13 distributor 9XYvBt root/max_total_claim/max_num_nodes/timestamps/clawback receiver match, admin NULL (1nc1nera)
+PASS C12 squads 2-of-3 time_lock 172800 == charter, config_authority None, reserve owner is vault 8955vW2w
+PASS C14 G holds no token accounts
+PASS C15 G history is the ceremony only (3 signatures)
+PASS C16 G lamports 890880 <= 895880 (rent-exempt floor 890,880 + 5,000; a system account cannot be left lower without a sweep)
+PASS C17 on-chain tx1 and tx2 message bytes == compile(spec, blockhash, price)
+PASS C18 program allowlist holds
+PASS C19 SetAuthority(MintTokens, None) is the last token instruction, after every MintTo
+PASS C20 rebuilt merkle root == spec == on-chain; sum 595833333333326, leaves 11
+PASS C21 all 11 proofs verify against the root
+SKIP C27 (F1 record: no derived key)
+PASS C28 two-RPC agreement enforced on every read (2 RPCs)
+PASS C1 core launch 4 is Passed and genesis Confirmed with mint == M and the two ceremony signatures
+PASS C2 stored verdict PASS == the independent kruxa-sim recompute (inputs_hash MATCH, section NEAR recompute above)
+PASS C24 tx1 block time 1794270787 is 107 s after the NEAR settle at 1794270680 (>= 0, <= 24 h; the commit time is not readable by a view, so settle is the anchor)
+PASS C26 core ceremony_hash 18443e0b9b98549d == sha256(spec_hash | tx1 | tx2) recomputed from the record
+SKIP C10 (needs the hosted metadata JSON)
+SKIP C22 (no creator allocation in this record)
+SKIP C23 (needs the core's genesis_committed/genesis_confirmed events (plain RPC cannot enumerate a contract's events; the views show one confirmed mint, see C1))
+SKIP C25 (no Verdict Rail attestation in this record)
+SKIP C30 (PASS launch (FAIL path is a core check))
+ALL CHECKS OK (22 passed, 6 skipped)
+# exit 0

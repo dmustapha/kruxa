@@ -1,0 +1,20 @@
+# 2026-11-11T02:31Z TESTNET read-only. RPC: local pass-through scripts/core-testnet/rpc-retry-proxy.mjs -> https://test.rpc.fastnear.com
+# command: KRUXA_NEAR_RPC=http://127.0.0.1:18545 scripts/verify.sh instant 1000000000
+== instant recompute (IL-1, buckets, custody, vesting; kruxa-sim verify-instant)
+instant launch 1000000000 on demo-instant.kxi-root-0811.testnet: status=Open token=alpha.factory.kxi-root-0811.testnet
+IL-1 total_supply=1000000000000000 n_alloc=50000000000000 n_pool=950000000000000; recomputed n_alloc=50000000000000 (floor(1000000000000000 * 500 / 10000))
+buckets sent=950000000000000 inflight=0 unsent=0 claimed=13713874308333 unlocked=50000000000000; token custody expected=36286125691667 balance=36286125691667; usdc expected=0 balance=0
+PASS IL1_supply
+PASS IL1_alloc_split
+PASS bucket_pool
+PASS bucket_claimed
+PASS vest_bounds
+PASS custody_token
+PASS custody_usdc
+MATCH instant 1000000000
+== operator lines (VX-2, launcher)
+KEYS: 1 full-access key(s): ed25519:FqmcMSEjxwcMmp8RPu8dpJj92VrVntfEiNXVeSjP3yjn; 0 function-call key(s)
+NOTE: a full-access key is present, so its owner can redeploy this contract.
+CODE: view_code sha256 1ce3157607db3c0b5f8743b5378d7d0e2daa2b154910361c0a959440b134b15d; reproducible build sha256 90b87782e25ee0f7991fac494c895b61a7d4f1008bf02ec32588ac9a6091d255; MISMATCH
+MISMATCH contract_code
+# exit 2

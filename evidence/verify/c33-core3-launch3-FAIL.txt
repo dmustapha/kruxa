@@ -1,0 +1,20 @@
+# 2026-11-11T02:37Z TESTNET read-only. RPC: local pass-through scripts/core-testnet/rpc-retry-proxy.mjs -> https://test.rpc.fastnear.com
+# command: target/debug/kruxa-sim verify-ledger --rpc http://127.0.0.1:18545 --contract core3.kxi-root-1108.testnet --launch 3 --tamper-all
+C33 launch 3 on core3.kxi-root-1108.testnet: credited=150000000 open=0 due=150000000 inflight=0 refunded=0 spent=0 positions=5 held_native=2150000000 held_intents=150000000
+PASS L1_flow
+PASS L3_positions
+PASS I2_book_sums
+PASS I5_no_overpay
+PASS L6_counters
+PASS I3_inputs_frozen
+MATCH C33 launch 3
+MISMATCH credited
+MISMATCH open_native
+MISMATCH due_native
+MISMATCH spent_native
+MISMATCH refunded
+MISMATCH position_contributed
+MISMATCH held_native
+MISMATCH held_intents
+MISMATCH inputs_total_active
+# exit 2

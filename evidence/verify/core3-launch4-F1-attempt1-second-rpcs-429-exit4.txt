@@ -1,0 +1,13 @@
+# 2026-11-11T02:31Z TESTNET read-only. RPC: local pass-through scripts/core-testnet/rpc-retry-proxy.mjs -> https://test.rpc.fastnear.com
+# command: KRUXA_NEAR_RPC=http://127.0.0.1:18545 KRUXA_CONTRACT=core3.kxi-root-1108.testnet KRUXA_GENESIS_PREFIX=evidence/genesis/core3/genesis- scripts/verify.sh 4 --charter evidence/genesis/charter-devnet-squads-CneX72.json --rpc2 https://solana-devnet.gateway.tatum.io --near-rpc2 https://rpc.testnet.near.org
+== NEAR recompute (C31-C34, kruxa-sim)
+infrastructure error: rpc https://rpc.testnet.near.org: https://rpc.testnet.near.org/: status code 429
+infrastructure error: rpc https://rpc.testnet.near.org: https://rpc.testnet.near.org/: status code 429
+infrastructure error: rpc https://rpc.testnet.near.org: https://rpc.testnet.near.org/: status code 429
+== operator lines (VX-2)
+KEYS: 1 full-access key(s): ed25519:2LXB3AWpWCYEgypBA7KFP9WGX6ZNK3ByZ6XJohvXwTVq; 0 function-call key(s)
+NOTE: a full-access key is present, so its owner can redeploy this contract.
+CODE: view_code sha256 665caab5a582a58b2412dfb2e81f1caf2ff94339c8bcc9f8be9ebebb72239c64; reproducible build sha256 665caab5a582a58b2412dfb2e81f1caf2ff94339c8bcc9f8be9ebebb72239c64; MATCH
+== Solana genesis (C3-C28)
+infrastructure error: rpc https://solana-devnet.gateway.tatum.io getAccountInfo: HTTP Error 429: Too Many Requests
+# exit 4
