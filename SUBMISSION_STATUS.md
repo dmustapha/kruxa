@@ -16,7 +16,7 @@ Last updated: 2026-11-11 (docs-sync after round 4, the full judge record, the in
 | Gate G3 | NO-GO as last recorded on 2026-11-10, before rounds 3 and 4; not re-run (GR-3, 7, 8, 9, 11, 13, 14, 17) | `evidence/testnet-core3/gate-g3.txt` |
 | Gate G2 | GREEN 9 of 9 on core3 at round 4 (PASS launch 10 on the deployed wasm, FAIL launch 3; G2-01 read the existing gate-g1 logs, not a re-run) | `evidence/testnet-core3/gate-g2-round4.txt` |
 | Indexer on testnet | live ingest of core3, market3 and the launcher: 136 checks, 0 mismatches (95 + 41) | `evidence/indexer-testnet/` |
-| Swarm on testnet (SW-2) | seed 1 GREEN 56 of 56 on core4 (run 2; run 1 was RED 55 of 56 from a runner funding bug, kept) | `evidence/swarm-testnet/run-seed1-core4-run2-GREEN.json` |
+| Swarm on testnet (SW-2) | seed 1 GREEN 56 of 56 on core4 (run 2; run 1 was RED 55 of 56 from a runner funding bug, kept); seed 2 GREEN 51 of 51 and seed 3 GREEN 49 of 49 on the fresh core6 (rounds of 20 s; earlier seed 2 attempts on core5 were RED from RPC latency and a network fetch failure, seed 3 on core5 aborted by a network drop, all kept) | `evidence/swarm-testnet/run-seed1-core4-run2-GREEN.json`, `run-seed2-core6-run1-GREEN.json`, `run-seed3-core6-run1-GREEN.json` |
 
 ## 2. Deliverables
 

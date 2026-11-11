@@ -30,7 +30,7 @@ describe('.env.example is complete', () => {
   });
   it('.env.testnet names the live testnet stack, only testnet, no secrets', () => {
     const live = readFileSync(join(app, '.env.testnet'), 'utf8');
-    for (const k of ['CORE_ACCOUNT=core3.kxi-root-1108.testnet', 'MARKET_ACCOUNT=market3.kxi-root-1108.testnet', 'USDC_ACCOUNT=usdc.kxi-root-1108.testnet', 'INSTANT_ACCOUNT=demo-instant.kxi-root-1108.testnet', 'FACTORY_ACCOUNT=factory.kxi-root-0811.testnet']) expect(live).toContain(`NEXT_PUBLIC_${k}`);
+    for (const k of ['CORE_ACCOUNT=core3.kxi-root-1108.testnet', 'MARKET_ACCOUNT=market3.kxi-root-1108.testnet', 'USDC_ACCOUNT=usdc.kxi-root-1108.testnet', 'INSTANT_ACCOUNT=demo-instant.kxi-root-1111.testnet', 'FACTORY_ACCOUNT=factory.kxi-root-0811.testnet']) expect(live).toContain(`NEXT_PUBLIC_${k}`);
     expect(/^NEXT_PUBLIC_NEAR_NETWORK=testnet$/m.test(live)).toBe(true);
     expect(/^NEXT_PUBLIC_MAINNET_CONFIRMED=/m.test(live)).toBe(false);
     expect(/(secret|private|seed phrase|api[_-]?key)\s*=/i.test(live)).toBe(false);

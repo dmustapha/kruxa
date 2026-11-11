@@ -1,0 +1,777 @@
+{
+  "seed": 2,
+  "core": "core5.kxi-root-1108.testnet",
+  "launch": {
+    "id": "2",
+    "token": "sw2t070907.factory.kxi-root-0811.testnet",
+    "create_tx": "GyJDMv7XLeVYyMUdUwwStbeCYueMK22dL3T4UKiSLngA"
+  },
+  "params": {
+    "symbol": "SW2T070907",
+    "name": "SW2T070907 Swarm Test",
+    "total_supply_whole": 1000000000,
+    "sale_bps": 6000,
+    "lp_bps": 2500,
+    "creator_bps": 1000,
+    "backer_bps": 500,
+    "hard_cap": "1000000000",
+    "soft_cap": "1000000000",
+    "min_buy": "20000000",
+    "wallet_bps": 200,
+    "min_funders": 10,
+    "open_delay_secs": 30,
+    "commit_secs": 400,
+    "tail_secs": 80,
+    "stream_days": 30
+  },
+  "charter": {
+    "launch_id": "2",
+    "creator": "creator-a.kxi-root-1108.testnet",
+    "stream_recipient": "creator-a.kxi-root-1108.testnet",
+    "payout_recipient": "creator-a.kxi-root-1108.testnet",
+    "created_at": "1794381191869296732",
+    "opens_at": "1794381221869296732",
+    "commit_end": "1794381621869296732",
+    "walk_end": "1794381701869296732",
+    "params": {
+      "symbol": "SW2T070907",
+      "name": "SW2T070907 Swarm Test",
+      "total_supply_whole": 1000000000,
+      "sale_bps": 6000,
+      "lp_bps": 2500,
+      "creator_bps": 1000,
+      "backer_bps": 500,
+      "hard_cap": "1000000000",
+      "soft_cap": "1000000000",
+      "min_buy": "20000000",
+      "wallet_bps": 200,
+      "min_funders": 10,
+      "open_delay_secs": 30,
+      "commit_secs": 400,
+      "tail_secs": 80,
+      "stream_days": 30,
+      "fees": {
+        "total_fee_bps": 100,
+        "creator_bps": 5000,
+        "platform_bps": 1500,
+        "holders_bps": 1500,
+        "lp_bps": 1000,
+        "referral_bps": 1000,
+        "opening_fee_start_bps": 0,
+        "opening_decay_minutes": 0,
+        "fee_vest_bps": 5000,
+        "fee_vest_days": 90
+      }
+    },
+    "derived": {
+      "n_total": "1000000000000000",
+      "n_sale": "600000000000000",
+      "n_creator": "100000000000000",
+      "n_backer": "50000000000000",
+      "n_lp": "250000000000000",
+      "wallet_cap": "100000000",
+      "max_total_held": "2000000000",
+      "max_holders": 100
+    },
+    "route": "FactoryPrimitives"
+  },
+  "events": [
+    {
+      "round": 0,
+      "agent": "H1",
+      "action": "commit",
+      "amount": "44000000",
+      "recorded": "ok",
+      "tx": "7cvCMn17ZmtGYUkSRHaL7JjKVtYhr8zGSF8w8JZRG3A9",
+      "success": true,
+      "codes": [],
+      "matches": true
+    },
+    {
+      "round": 0,
+      "agent": "W1",
+      "action": "commit",
+      "amount": "1000000000",
+      "recorded": "R_CAP_ACCOUNT",
+      "tx": "EoTKighxTttP1KFR1hMvJxyMZJxFd3YqXWFRL4DPZvMp",
+      "success": true,
+      "codes": [
+        "R_CAP_ACCOUNT"
+      ],
+      "matches": true
+    },
+    {
+      "round": 1,
+      "agent": "H4",
+      "action": "commit",
+      "amount": "37000000",
+      "recorded": "ok",
+      "tx": "9hqtA8MByagq2v4hhw3yz9hh9EMtjHnQMsU16EdeczfW",
+      "success": true,
+      "codes": [],
+      "matches": true
+    },
+    {
+      "round": 1,
+      "agent": "H6",
+      "action": "commit",
+      "amount": "10000000",
+      "recorded": "R_MIN_CONTRIBUTION",
+      "tx": "AjUtQUkvyMATsA1wm7G7TX9pogtkR3JooWSeh4ERhx8p",
+      "success": true,
+      "codes": [
+        "R_MIN_CONTRIBUTION"
+      ],
+      "matches": true
+    },
+    {
+      "round": 1,
+      "agent": "W1",
+      "action": "commit",
+      "amount": "100000000",
+      "recorded": "ok",
+      "tx": "CDA2mo7acZ4scEQSTiA9XAEsE1HWvftgf7TCFkj8m3oZ",
+      "success": true,
+      "codes": [],
+      "matches": true
+    },
+    {
+      "round": 2,
+      "agent": "H2",
+      "action": "commit",
+      "amount": "20000000",
+      "recorded": "ok",
+      "tx": "EH4iHNtFgTQ7MDSJvekj7HXkgzxX5XtrDLAhBn45XNdr",
+      "success": true,
+      "codes": [],
+      "matches": true
+    },
+    {
+      "round": 2,
+      "agent": "Y1",
+      "action": "commit",
+      "amount": "400000000",
+      "recorded": "R_CAP_ACCOUNT",
+      "tx": "CP1bwsUkSWRSqhmjihawT18iMyeGMjprZjfRfFdwwfEg",
+      "success": true,
+      "codes": [
+        "R_CAP_ACCOUNT"
+      ],
+      "matches": true
+    },
+    {
+      "round": 3,
+      "agent": "Y1",
+      "action": "commit",
+      "amount": "100000000",
+      "recorded": "ok",
+      "tx": "GXeZBhWNvSCucAu9Jagz2S4eg1AbGVFFoyddwCs5L5EU",
+      "success": true,
+      "codes": [],
+      "matches": true
+    },
+    {
+      "round": 4,
+      "agent": "F",
+      "action": "commit",
+      "amount": "100000000",
+      "recorded": "ok",
+      "tx": "ksqwJn6JtGtH1Ciw3MaoybtWv3LSMVUuh3ieUXEoCLD",
+      "success": true,
+      "codes": [],
+      "matches": true
+    },
+    {
+      "round": 6,
+      "agent": "W1",
+      "action": "commit",
+      "amount": "50000000",
+      "recorded": "R_CAP_ACCOUNT",
+      "tx": "7T2p6d3bou51m99MoRy9osDzRVTZGtM5mgXesiMb4sBr",
+      "success": true,
+      "codes": [
+        "R_CAP_ACCOUNT"
+      ],
+      "matches": true
+    },
+    {
+      "round": 6,
+      "agent": "H7",
+      "action": "commit",
+      "amount": "41000000",
+      "recorded": "ok",
+      "tx": "8nhgCYuVmkunqGFXFq5TBaUPcxTMaUpbEZmZxaCSh3CR",
+      "success": true,
+      "codes": [],
+      "matches": true
+    },
+    {
+      "round": 8,
+      "agent": "W2",
+      "action": "commit",
+      "amount": "1000000000",
+      "recorded": "R_CAP_ACCOUNT",
+      "tx": "es3C1RastrUfygZEjFGBtnz25ZYaGo1FyWs4pyhCKCD",
+      "success": true,
+      "codes": [
+        "R_CAP_ACCOUNT"
+      ],
+      "matches": true
+    },
+    {
+      "round": 8,
+      "agent": "Y2",
+      "action": "commit",
+      "amount": "100000000",
+      "recorded": "ok",
+      "tx": "ETY3HhNokYoTpZgJuCGPMo4urZfyYAhm9i8dkwb8pKth",
+      "success": true,
+      "codes": [],
+      "matches": true
+    },
+    {
+      "round": 8,
+      "agent": "H3",
+      "action": "commit",
+      "amount": "33000000",
+      "recorded": "ok",
+      "tx": "7Cqo2zwR56apBn4dWaKd2ECDwvuYF7FKw1qprCGanP7g",
+      "success": true,
+      "codes": [],
+      "matches": true
+    },
+    {
+      "round": 9,
+      "agent": "W2",
+      "action": "commit",
+      "amount": "100000000",
+      "recorded": "ok",
+      "tx": "GGdU6bJGU92Ff2areK5ZBgMveid5DNrFew3vbK7tJKxt",
+      "success": true,
+      "codes": [],
+      "matches": true
+    },
+    {
+      "round": 12,
+      "agent": "Y3",
+      "action": "commit",
+      "amount": "100000000",
+      "recorded": "ok",
+      "tx": "G1HsZaqHXQgMJkTBSGLBEpqcxZ64BBUZRjUuGdvY45GS",
+      "success": true,
+      "codes": [],
+      "matches": true
+    },
+    {
+      "round": 12,
+      "agent": "W1",
+      "action": "commit",
+      "amount": "50000000",
+      "recorded": "R_CAP_ACCOUNT",
+      "tx": "3TFXMpmFTnC6eBG7QE9cSw8BuaSiJAaLy9rfmSwxpjVU",
+      "success": true,
+      "codes": [
+        "R_CAP_ACCOUNT"
+      ],
+      "matches": true
+    },
+    {
+      "round": 14,
+      "agent": "W2",
+      "action": "commit",
+      "amount": "50000000",
+      "recorded": "R_CAP_ACCOUNT",
+      "tx": "HzzrXNdLWfcgA7MD7BzEjKmubL8cpzk7iNKzie77zTVP",
+      "success": true,
+      "codes": [
+        "R_CAP_ACCOUNT"
+      ],
+      "matches": true
+    },
+    {
+      "round": 14,
+      "agent": "H5",
+      "action": "commit",
+      "amount": "20000000",
+      "recorded": "ok",
+      "tx": "B2VE16EFrqzVJYaM5v3FGJ6k7FwFC181oo3UcLZBCS4X",
+      "success": true,
+      "codes": [],
+      "matches": true
+    },
+    {
+      "round": 16,
+      "agent": "Y4",
+      "action": "commit",
+      "amount": "100000000",
+      "recorded": "ok",
+      "tx": "5fDFA8BNzvjUGCLchPDjzqj6FiYMkn8BMuLbkBtd7ihB",
+      "success": true,
+      "codes": [],
+      "matches": true
+    },
+    {
+      "round": 18,
+      "agent": "W1",
+      "action": "commit",
+      "amount": "50000000",
+      "recorded": "R_CAP_ACCOUNT",
+      "tx": "AjUR781oTTMEYWkMYAFW6qE8Zj4SnRYEeosg8gxjcLt4",
+      "success": true,
+      "codes": [
+        "R_CAP_ACCOUNT"
+      ],
+      "matches": true
+    },
+    {
+      "round": 19,
+      "agent": "S2",
+      "action": "commit",
+      "amount": "100000000",
+      "recorded": "ok",
+      "tx": "2MuTGW65xeaobCdumWZHBfAV679BLn1vsQt8CoXtgSoY",
+      "success": true,
+      "codes": [],
+      "matches": true
+    },
+    {
+      "round": 19,
+      "agent": "S1",
+      "action": "commit",
+      "amount": "100000000",
+      "recorded": "ok",
+      "tx": null,
+      "success": false,
+      "codes": [],
+      "matches": false
+    },
+    {
+      "round": 20,
+      "agent": "H7",
+      "action": "walk",
+      "amount": "41000000",
+      "recorded": "ok",
+      "tx": "HWxVqUAuW79Sgkq3VgWFNCkF9bKmWMmEz2qzx1gMHWpQ",
+      "success": true,
+      "codes": [],
+      "matches": true
+    },
+    {
+      "round": 21,
+      "agent": "S2",
+      "action": "commit",
+      "amount": "100000000",
+      "recorded": "R_WRONG_PHASE",
+      "tx": "2oZPpk4MLQraSrZevzuYGaAEsqTvizumGZNHjUW5vssB",
+      "success": true,
+      "codes": [
+        "R_WRONG_PHASE"
+      ],
+      "matches": true
+    },
+    {
+      "round": 21,
+      "agent": "S1",
+      "action": "commit",
+      "amount": "100000000",
+      "recorded": "R_WRONG_PHASE",
+      "tx": "BEyVA39r4fEBD7EoGmNpXUfFoubD2PsHH3Tziu9CfqDZ",
+      "success": true,
+      "codes": [
+        "R_WRONG_PHASE"
+      ],
+      "matches": true
+    },
+    {
+      "round": 23,
+      "agent": "F",
+      "action": "walk",
+      "amount": "100000000",
+      "recorded": "ok",
+      "tx": "C7sHWcLsGLEBu9c4tmppBGkDJfEgG6yg9NQ7ZJHzH1GC",
+      "success": true,
+      "codes": [],
+      "matches": true
+    }
+  ],
+  "readback": {
+    "before": {
+      "status": "Open",
+      "phase": "Ready",
+      "token": "sw2t070907.factory.kxi-root-0811.testnet",
+      "payout_recipient": "creator-a.kxi-root-1108.testnet",
+      "total_active": "854000000",
+      "active_funders": 12,
+      "holder_count": 14,
+      "positions_live": 14,
+      "positions_unsettled": 0,
+      "residue_swept": false,
+      "charter_hash": "a382b62b09dfeece2bd8de7ad44e858e41ccd6e05440f56c1335f82c284ef380",
+      "book_hash": "411c708713de46e94dce44b2a6ebc2321f267419b0f384b0f71592505ee8e839",
+      "bond": "360000000000000000000000"
+    },
+    "settle": {
+      "step": "keeper settle 2",
+      "signer": "keeper.kxi-root-1108.testnet",
+      "contract": "core5.kxi-root-1108.testnet",
+      "method": "settle",
+      "tx": "9LsgJjK5TnxsQqLdmXAVrh2L2UPjX45W3VDiZdqfEZqC",
+      "success": true,
+      "rule_codes": [],
+      "value": "false",
+      "gas_burnt_near": 0.000301,
+      "log_lines": [],
+      "receipts": "core5:ok",
+      "failures": [],
+      "expected": "ok",
+      "at": "2026-11-11T07:21:58.489Z"
+    },
+    "after": {
+      "status": "Failed(1)",
+      "phase": "Ready",
+      "token": "sw2t070907.factory.kxi-root-0811.testnet",
+      "payout_recipient": "creator-a.kxi-root-1108.testnet",
+      "total_active": "854000000",
+      "active_funders": 12,
+      "holder_count": 14,
+      "positions_live": 14,
+      "positions_unsettled": 0,
+      "residue_swept": false,
+      "charter_hash": "a382b62b09dfeece2bd8de7ad44e858e41ccd6e05440f56c1335f82c284ef380",
+      "book_hash": "411c708713de46e94dce44b2a6ebc2321f267419b0f384b0f71592505ee8e839",
+      "bond": "360000000000000000000000"
+    },
+    "settlement": {
+      "pass": false,
+      "reasons": 1,
+      "settled_at": "1794381717858898023",
+      "total_active": "854000000",
+      "accepted": "0",
+      "launch_fee": "0",
+      "lp_quote": "0",
+      "stream": "0",
+      "excess_pool": "0",
+      "inputs_hash": "6c4cfd3fe18382391f59af279d46f9e0633d71f82fa0a8e2e6f390396bba50eb",
+      "book_hash": "411c708713de46e94dce44b2a6ebc2321f267419b0f384b0f71592505ee8e839"
+    },
+    "invariants": {
+      "l1_ok": true,
+      "l1_err": null,
+      "l3_ok": true,
+      "l3_err": null,
+      "l4_ok": true,
+      "l4_err": null,
+      "l6_ok": true,
+      "l6_err": null,
+      "i2_ok": true,
+      "i2_err": null,
+      "i3_ok": true,
+      "i3_err": null,
+      "i4_ok": true,
+      "i4_err": null,
+      "i5_ok": true,
+      "i5_err": null,
+      "l7_ok": true,
+      "l7_err": null,
+      "intents_alert": false,
+      "all_ok": true
+    }
+  },
+  "checks": [
+    {
+      "name": "replay: every event outcome equals the recorded result",
+      "got": "1",
+      "want": "0",
+      "ok": false
+    },
+    {
+      "name": "total_active before settle",
+      "got": "854000000",
+      "want": "954000000",
+      "ok": false
+    },
+    {
+      "name": "active_funders before settle",
+      "got": "12",
+      "want": "13",
+      "ok": false
+    },
+    {
+      "name": "verdict",
+      "got": "FAIL",
+      "want": "FAIL",
+      "ok": true
+    },
+    {
+      "name": "get_invariants all_ok",
+      "got": "true",
+      "want": "true",
+      "ok": true
+    },
+    {
+      "name": "H1 spent",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    },
+    {
+      "name": "H1 tokens_entitled",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    },
+    {
+      "name": "H1 bonus_entitled",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    },
+    {
+      "name": "H2 spent",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    },
+    {
+      "name": "H2 tokens_entitled",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    },
+    {
+      "name": "H2 bonus_entitled",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    },
+    {
+      "name": "H3 spent",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    },
+    {
+      "name": "H3 tokens_entitled",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    },
+    {
+      "name": "H3 bonus_entitled",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    },
+    {
+      "name": "H4 spent",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    },
+    {
+      "name": "H4 tokens_entitled",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    },
+    {
+      "name": "H4 bonus_entitled",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    },
+    {
+      "name": "H5 spent",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    },
+    {
+      "name": "H5 tokens_entitled",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    },
+    {
+      "name": "H5 bonus_entitled",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    },
+    {
+      "name": "H6 position exists",
+      "got": "none",
+      "want": "none",
+      "ok": true
+    },
+    {
+      "name": "H7 spent",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    },
+    {
+      "name": "H7 tokens_entitled",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    },
+    {
+      "name": "H7 bonus_entitled",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    },
+    {
+      "name": "W1 spent",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    },
+    {
+      "name": "W1 tokens_entitled",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    },
+    {
+      "name": "W1 bonus_entitled",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    },
+    {
+      "name": "W2 spent",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    },
+    {
+      "name": "W2 tokens_entitled",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    },
+    {
+      "name": "W2 bonus_entitled",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    },
+    {
+      "name": "S1 position exists",
+      "got": "none",
+      "want": "present",
+      "ok": false
+    },
+    {
+      "name": "S2 spent",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    },
+    {
+      "name": "S2 tokens_entitled",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    },
+    {
+      "name": "S2 bonus_entitled",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    },
+    {
+      "name": "Y1 spent",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    },
+    {
+      "name": "Y1 tokens_entitled",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    },
+    {
+      "name": "Y1 bonus_entitled",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    },
+    {
+      "name": "Y2 spent",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    },
+    {
+      "name": "Y2 tokens_entitled",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    },
+    {
+      "name": "Y2 bonus_entitled",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    },
+    {
+      "name": "Y3 spent",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    },
+    {
+      "name": "Y3 tokens_entitled",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    },
+    {
+      "name": "Y3 bonus_entitled",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    },
+    {
+      "name": "Y4 spent",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    },
+    {
+      "name": "Y4 tokens_entitled",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    },
+    {
+      "name": "Y4 bonus_entitled",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    },
+    {
+      "name": "F spent",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    },
+    {
+      "name": "F tokens_entitled",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    },
+    {
+      "name": "F bonus_entitled",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    }
+  ],
+  "tx_count": 58
+}

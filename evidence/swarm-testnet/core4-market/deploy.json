@@ -1,0 +1,25 @@
+{
+  "network": "NEAR TESTNET (play money)",
+  "profile": "demo",
+  "accounts": {
+    "owner": "kxi-root-1108.testnet",
+    "core": "core4.kxi-root-1108.testnet",
+    "market": "market4.kxi-root-1108.testnet",
+    "usdc": "usdc.kxi-root-1108.testnet",
+    "guardian": "guardian.kxi-root-1108.testnet",
+    "treasury": "treasury.kxi-root-1108.testnet",
+    "relayFees": "relay-fees.kxi-root-1108.testnet",
+    "intents": "intents.kxa1-owner-1203.testnet",
+    "factory": "factory.kxi-root-0811.testnet",
+    "genesisRelayer": "7218da57019c05386280b3a4196e7654279e32c66e129889e17a653fc229cc85"
+  },
+  "deployments": {
+    "market": {
+      "account": "market4.kxi-root-1108.testnet",
+      "wasm": "kruxa_market_contract",
+      "bytes": 261077,
+      "sha256": "c80560d63663fe71526f88de9ebbf5c8c16979c00ed32d1eb11b13c087ae2b26",
+      "core_set_market_tx": "GiuAGrMT9SUVkEmnwjoUUrGW1bv9toGb8UpUZSZfPsW"
+    }
+  }
+}

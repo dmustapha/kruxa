@@ -1,0 +1,9 @@
+created core5.kxi-root-1108.testnet tx=48YxLxUMtuwddSQ8eBX9qMW4BG2hME5aUN7Gujq2pAf1
+deployed /Users/MAC/near-hack/kruxa-repo/.claude/worktrees/agent-a56dee095fb62f297/artifacts/kruxa_core.reproducible.wasm -> core5.kxi-root-1108.testnet tx=raZvyAudBXxYibgjEqYEq8aam3sdDgDi3sJn3sRgWsh
+OK   init core5.kxi-root-1108.testnet.new tx=9G2E9Nqku7RaitGxbK9Nn6KY3dKCeSGYTaJHAwfxoTEY codes=
+view_code sha256 665caab5a582a58b2412dfb2e81f1caf2ff94339c8bcc9f8be9ebebb72239c64 == build (kruxa_core, 655387 B) on core5.kxi-root-1108.testnet
+OK   usdc.storage_deposit core5.kxi-root-1108.testnet tx=FVrbLqpH8YaHgWTdrFrmdR1F9WYCu7vz5LE84ikqRmQa codes=
+Receipt: 44NNTHNUMELzQyRYLd6QX1ji7bFzXaQjyzT6Yy14Yia6
+	Log [core5.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"genesis_relayer_set","data":[{"account":"7218da57019c05386280b3a4196e7654279e32c66e129889e17a653fc229cc85"}]}
+OK   core.set_genesis_relayer tx=3MPRf5w3P6nZMJTdPYunnuADtJ7JAYdfKamav8f9dLQW codes=
+root balance NEAR: 22.930

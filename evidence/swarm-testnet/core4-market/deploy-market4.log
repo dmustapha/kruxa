@@ -1,0 +1,9 @@
+created market4.kxi-root-1108.testnet tx=BRcVswXX9t61qgQZU1DgV71JekYJLq1Ff2q9oxvpogDC
+deployed /Users/MAC/near-hack/kruxa-repo/.claude/worktrees/agent-a56dee095fb62f297/artifacts/kruxa_market_contract.wasm -> market4.kxi-root-1108.testnet tx=8Xzg8YXVeUZwRUD1HHGnmZA3kHjvwX4YhyUEocAk7sQp
+OK   init market4.kxi-root-1108.testnet.new tx=2thrBu6ssLFPPEfETL4CM6vC9Fnxi9AQQzPzp9DxY151 codes=
+view_code sha256 c80560d63663fe71526f88de9ebbf5c8c16979c00ed32d1eb11b13c087ae2b26 == build (kruxa_market_contract, 261077 B) on market4.kxi-root-1108.testnet
+OK   usdc.storage_deposit market4.kxi-root-1108.testnet tx=9v6kdemsmXbvFChJMdFFCszzaYDcDkP4TTdPkkggx2zN codes=
+Receipt: 7fA1L6SYLmgviJ325MKpTYiuD5avUTnPJmdtiBg9DqbB
+	Log [core4.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"market_set","data":[{"market":"market4.kxi-root-1108.testnet"}]}
+OK   core.set_market tx=GiuAGrMT9SUVkEmnwjoUUrGW1bv9toGb8UpUZSZfPsW codes=
+root balance NEAR: 11.434
