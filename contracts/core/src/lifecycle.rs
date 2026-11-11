@@ -410,6 +410,8 @@ impl Contract {
     }
 
     /// Removes a position record once nothing is owed either way. Frees storage so the creator bond becomes reclaimable.
+    /// A walker (open == 0, never settled because `settle_position_inner` has nothing to settle) is deletable the same way as a
+    /// settled position: the `open() == 0` guard below is what makes `settled` redundant, and every money counter must be zero.
     pub(crate) fn try_delete_position(&mut self, st: &mut LaunchState, launch_id: u64, holder: &HolderId) {
         let key = (launch_id, holder.clone());
         let Some(pos) = self.positions.get(&key) else { return };
@@ -423,7 +425,7 @@ impl Contract {
             }
             _ => true,
         };
-        if !pos.settled || pos.owed() + pos.inflight() + pos.open() != 0 || !tokens_done {
+        if pos.owed() + pos.inflight() + pos.open() != 0 || !tokens_done {
             return;
         }
         let seq = pos.seq;

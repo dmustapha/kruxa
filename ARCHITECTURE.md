@@ -316,7 +316,7 @@ settle(id) after walk_end: verdict(inputs) -> PASS: 4 buckets, status Passed | F
 | Creating | CreationFailed | `on_token_created` / `on_token_verified` | contract | factory call failed or supply mismatch; `finalize_creation` retries after 10 minutes |
 | Open | Failed(CANCELLED) | `cancel_trial` | creator | before `commit_end` (R_TOO_LATE) |
 | Open | Passed / Failed(reasons) | `settle` | any | `now >= walk_end` (R_TOO_EARLY); not FROZEN |
-| Failed | Dissolved | `dissolve` | any | every refund paid and every position deleted (R_NOT_CLEAR) |
+| Failed | Dissolved | `dissolve` | any | every refund paid and every position deleted (R_NOT_CLEAR); a walker's record is deleted when its refund lands (it has `open == 0`, nothing to settle) |
 
 Clock phases (Scheduled, Open, Closing, Ready) are derived, never stored, so nothing can fail to happen.
 
