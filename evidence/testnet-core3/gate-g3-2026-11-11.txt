@@ -1,0 +1,20 @@
+GR-1   HARD      PASS     Wave 1 + D-1 + D-3 suites ok in the last gate-g1 run (322 sandbox tests ok)
+GR-2   HARD      PASS     devnet end to end, verify exit 0, tamper-all exit 2:  round 4, the REPRODUCIBLE wasm 665caab5 deployed on core3.kxi-root-1108.testnet (view_code sha256 665caab5a582a58b2412dfb2e81f1caf2ff94339c8bcc9f8be9ebebb72239c64, deploy tx Gu5Msp6rduKg6XZ8RFNbMeT6s2aKM2Tcvmp7GNTgWvza): scripts/gate-g2.sh GREEN 9 of 9 with PASS launch 10 and FAIL launch 3 (evidence/testnet-core3/gate-g2-round4.txt); verify.sh 10 exit 0 (CODE line MATCH 665caab5), tamper-all exit 2 (19 MISMATCH). The shared RPC throttled (HTTP 429): two earlier verify attempts (both exit 4) are kept next to the passing one, and the passing runs went through a local retry proxy to the same RPC. G2-01 read the existing gate-g1 logs 
+GR-3   WAIVABLE  UNKNOWN  Intents path decided (Test 1 or Solana-landing claims dropped): no line in rehearsal/GATE-EVIDENCE.md
+GR-4   HARD      PASS     evidence/factory-probe.txt: cost and ft_burn recorded; docs/benchmarks.md B-FACTORY
+GR-5   HARD      PASS     caps in code: 3 tests ok in the last run
+GR-6   HARD      PASS     pause, freeze, guardian; exits open while PAUSED: 2 tests ok in the last run
+GR-7   HARD      UNKNOWN  Squads vault rehearsed on devnet, 48 h lock, 3 hardware wallets: no line in rehearsal/GATE-EVIDENCE.md
+GR-8   HARD      UNKNOWN  disclosure pages published: no line in rehearsal/GATE-EVIDENCE.md
+GR-9   HARD      UNKNOWN  legal minimum: no line in rehearsal/GATE-EVIDENCE.md
+GR-10  HARD      PASS     now 2026-11-11T17:48:07Z is 0 h before the Nov 11 18:00 UTC open-by limit
+GR-11  HARD      PENDING  filled at execution, not now
+GR-12  HARD      PASS     genesis mode decided (F0 3 of 3 or F1 disclosed):  round 4: F0 on the reproducible wasm 665caab5 through the core gate, launch 10, mint 6MMpWcv7vnpc9ZFKJoykK8dnMAmSzkKfYqHzNf4GRZqC, tx1 44XqjTqYkzwA2D6EsqLScZfK9LvLKh1oDseGH1o4L5CqaZYgCtgZw6hCBbE2iZSyiQUBZiAW282uJ9R2Ud8G8Wzg, tx2 3RTQY8GvNQPGdHuiQCid8xChZnZx4KB6CGhFzBNB1m4kqoKdhUG4iTrXL5gNZqaWe7vLceyi7jrpsW1st4BhbeVo, claim ok. First tx2 attempt failed on an expired blockhash (RPC throttling); recovered with abort_genesis (guardian) and reopen_genesis (owner) and a resume, so this run is a PASS with one reopen (evidence/genesis/core3-f0-devnet-launch10.log and the attempt logs, rehearsal/ROUND4.md) 
+GR-13  WAIVABLE  UNKNOWN  Meteora spike result recorded: no line in rehearsal/GATE-EVIDENCE.md
+GR-14  HARD      UNKNOWN  no A-4 FREEZE row with a sha256 in rehearsal/LOG.md
+GR-15  HARD      PASS     open_market handoff against the stub and the real market: 2 tests ok in the last run
+GR-16  WAIVABLE  PASS     Market-lite testnet e2e (make market-demo); otherwise the market stays testnet:  market3.kxi-root-1108.testnet opened for launches 4 and 6 through core open_market; buy, claim_owed, buy, sell; pool and market invariants true (evidence/testnet-core3/txlog.jsonl, market-flows.json) 
+GR-17  HARD      UNKNOWN  brand-token supply and allocation, USDC payout address, pool and LP-seed amounts ruled: no line in rehearsal/GATE-EVIDENCE.md
+GR-18  WAIVABLE  PASS     payout_recipient alias in get_charter and get_state: 1 tests ok in the last run
+
+NO-GO (blocked by: GR-3 GR-7 GR-8 GR-9 GR-11 GR-13 GR-14 GR-17)
