@@ -47,7 +47,7 @@ export function bakeSnapshot(store: Store, outDir: string, bakedAt: number = Mat
   for (const r of all(store, "SELECT launch_id FROM launches")) bakeLaunch(String(r.launch_id), out, page);
   const a = asOf(store);
   const health = page("/api/health") as Record<string, unknown>;
-  out("api/health.json", { ...health, status: "snapshot", data_source: "snapshot", baked_at: bakedAt, snapshot: { baked_at: bakedAt, block_height: a.block_height, block_time: a.block_time } });
+  out("api/health.json", { ...health, status: "snapshot", data_source: "snapshot", uptime_s: 0, baked_at: bakedAt, snapshot: { baked_at: bakedAt, block_height: a.block_height, block_time: a.block_time } });
   void app.close();
   return { files, asOf: a };
 }

@@ -1,0 +1,1 @@
+{"items":[],"basis":"the event names the launch, amount and ok flag but not the leg kind or holder, so an execution closes the oldest queued entry with the same three values","as_of":{"block_height":277076027,"block_time":1794318750},"source":"chain"}

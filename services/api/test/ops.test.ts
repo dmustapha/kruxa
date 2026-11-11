@@ -230,6 +230,7 @@ test("snapshot: bake from the fixture store, serve it, and every page equals the
     assert.deepEqual((await get("/api/token/1/candles?interval=1h", snap)).body, (await get("/api/token/1/candles?interval=1h")).body);
     const health = (await get("/api/health", snap)).body;
     assert.deepEqual([health.status, health.data_source, health.baked_at], ["snapshot", "snapshot", 1_900_000_000]);
+    assert.equal(health.uptime_s, 0, "a snapshot has no process uptime (it used to report the current epoch seconds)");
     assert.equal(health.snapshot.block_height, asOf(store).block_height);
     assert.equal(health.state_hash, store.stateHash());
     assert.equal((await get("/api/ops-log?limit=200", snap)).body.items.length, (await get("/api/ops-log?limit=200")).body.items.length);
