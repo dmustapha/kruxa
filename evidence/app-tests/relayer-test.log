@@ -1,0 +1,18 @@
+
+> kruxa-relayer@0.1.0 test
+> vitest run
+
+
+ RUN  v2.1.8 /Users/MAC/near-hack/kruxa-repo/.claude/worktrees/agent-a9e31145ff9cbdf42/relayer
+
+ ✓ src/resume.test.ts (9 tests) 20ms
+ ✓ src/sweep.test.ts (6 tests) 11ms
+ ✓ src/compile.test.ts (11 tests) 215ms
+ ✓ src/f0.test.ts (9 tests) 250ms
+
+ Test Files  4 passed (4)
+      Tests  35 passed (35)
+   Start at  03:25:10
+   Duration  901ms (transform 476ms, setup 0ms, collect 1.04s, tests 496ms, environment 0ms, prepare 353ms)
+
+exit=0

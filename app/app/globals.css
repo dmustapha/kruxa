@@ -123,7 +123,7 @@ button.btn-quiet { border-color: var(--line-strong); color: var(--fg); } button.
 
 /* Timeline */
 .tl { list-style: none; margin: 0; padding: 0 0 0 18px; border-left: 2px solid var(--line); }
-.tl li { position: relative; padding: 6px 0 10px 8px; color: var(--fg); font-size: 0.9rem; } .tl li::before { content: ''; position: absolute; left: -24px; top: 12px; width: 10px; height: 10px; border-radius: 50%; background: var(--bg); border: 2px solid var(--accent); }
+.tl li { overflow-wrap: anywhere; position: relative; padding: 6px 0 10px 8px; color: var(--fg); font-size: 0.9rem; } .tl li::before { content: ''; position: absolute; left: -24px; top: 12px; width: 10px; height: 10px; border-radius: 50%; background: var(--bg); border: 2px solid var(--accent); }
 .tl .when { display: block; font: 0.75rem var(--mono); color: var(--muted); overflow-wrap: anywhere; }
 
 /* Landing */
@@ -195,8 +195,8 @@ main { max-width: 1200px; } .hdr-in, .strip-in, .site-footer .in { max-width: 12
 @media (max-width: 719px) { .mtabs { display: flex; } .mt-hide { display: none; } }
 
 /* Create studio */
-.studio { display: grid; gap: 16px; } .studio-left { display: grid; gap: 16px; align-content: start; } .studio-left > .card { margin: 0; }
-@media (min-width: 960px) { .studio { grid-template-columns: minmax(300px, 380px) 1fr; align-items: start; } .studio-left { position: sticky; top: 112px; } }
+.studio { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; } .studio > * { min-width: 0; } .studio-left { display: grid; gap: 16px; align-content: start; } .studio-left > .card { margin: 0; }
+@media (min-width: 960px) { .studio { grid-template-columns: minmax(300px, 380px) minmax(0, 1fr); align-items: start; } .studio-left { position: sticky; top: 112px; } }
 .summary { margin: 8px 0 0; padding: 8px 12px; background: var(--sunk); border-radius: 8px; color: var(--fg); font-size: 0.875rem; } .sumlist { margin: 0; padding-left: 18px; } .sumlist li { color: var(--fg); margin: 6px 0; font-size: 0.875rem; }
 .bar { display: flex; height: 12px; border-radius: 99px; overflow: hidden; margin: 8px 0 12px; border: 1px solid var(--line); }
 @media (max-width: 719px) { .hero-strip { padding: 8px 0 12px; margin-bottom: 8px; } .hero-strip .placeholder h1 { font-size: 1.1rem !important; } .hero-strip .eyebrow { display: none; } }

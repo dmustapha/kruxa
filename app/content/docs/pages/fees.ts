@@ -18,7 +18,7 @@ export const fees: Page = {
     table(
       ['Fee', 'Who pays', 'Amount', 'When'],
       ['Launch fee', 'taken from the raise', `${F.launchFeePct}% of the accepted raise, minimum $${F.launchFeeMinUsdc}, maximum $${F.launchFeeMaxUsdc.toLocaleString('en-US')}. At a $1,000 raise: $15.`, 'only on PASS. Zero on FAIL.'],
-      ['Instant launch fee', 'the creator, taken from the pool seed', `a flat $${I.launchFeeMainnetUsdc} USDC on mainnet, zero on testnet. The pool opens with the seed minus this fee.`, 'when the seed is accepted. Being built, not deployed.'],
+      ['Instant launch fee', 'the creator, taken from the pool seed', `a flat $${I.launchFeeMainnetUsdc} USDC on mainnet, zero on testnet. The pool opens with the seed minus this fee.`, 'when the seed is accepted. Run on testnet, not on mainnet.'],
       ['Instant creation deposit', 'the creator', `about ${I.depositNear} NEAR, covering the factory token, storage and the market's setup. Excess is sent back; parts of it are kept if the launch fails.`, 'at `create_instant`'],
       ['Relay fee', 'a Solana-origin buyer who asks someone else to submit the call', `flat, quoted before you sign, at most the lower of $${F.relayFeeCeilingUsdc.toFixed(2)} or ${F.relayFeeCeilingPct}% of the amount`, 'at commit. Never refunded. NEAR buyers pay none.'],
       ['Intents withdrawal fee', 'a buyer moving funds to a Solana address', `fixed ${F.intentsSolanaWithdrawFeeUsdc.toFixed(2)} USDC per withdrawal. The platform never pays it.`, 'when you withdraw to Solana. 0.15% at a $20 amount.'],

@@ -1,8 +1,22 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ApiError, apiGet, buildUrl } from './client';
+import { resetSnapshotServed, snapshotServed } from './snapshot';
 
 afterEach(() => vi.restoreAllMocks());
 const respond = (status: number, body: unknown) => vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify(body), { status }));
+
+describe('apiGet from a snapshot-mode API', () => {
+  it('marks the RECORDED strip when the API says x-kruxa-data: snapshot, and not otherwise', async () => {
+    resetSnapshotServed();
+    respond(200, { items: [] });
+    await apiGet('/api/launches');
+    expect(snapshotServed()).toBeNull();
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({ as_of: { block_time: 42 } }), { status: 200, headers: { 'x-kruxa-data': 'snapshot' } }));
+    await apiGet('/api/launches');
+    expect(snapshotServed()).toEqual({ at: 42 });
+    resetSnapshotServed();
+  });
+});
 
 describe('apiGet', () => {
   it('builds query strings and skips empty values', () => expect(buildUrl('/api/launches', { stage: 'open', q: '', limit: 24, x: undefined }, 'http://h')).toBe('http://h/api/launches?stage=open&limit=24'));

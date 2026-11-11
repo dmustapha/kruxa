@@ -18,7 +18,7 @@ export const creators: Page = {
     table(
       ['If you want', 'Pick'],
       ['Buyers to commit refundable money first, with a verdict and a Walk, and a Solana mint after PASS', '**Trial launch** (recommended)'],
-      ['Your token to exist and trade now, with your own USDC as the opening liquidity, and no trial for buyers', '**Instant launch** (higher risk, NEAR only, being built)'],
+      ['Your token to exist and trade now, with your own USDC as the opening liquidity, and no trial for buyers', '**Instant launch** (higher risk, NEAR only, testnet only so far)'],
     ),
     p('Buyers see the mode in a badge on every page that shows your token. An Instant launch carries the badge INSTANT (NO TRIAL), and buyers of it get no refund. Choose Instant only if you accept that.'),
     h2('How to launch a Trial'),
@@ -67,7 +67,7 @@ export const creators: Page = {
     note('warn', `The contract caps the **declared** creator slice at ${F.creatorTakeMaxPctOfVolume.toFixed(2)}% of trading volume. That is not the same as "the creator can take at most 1%". Wallets a creator controls could also capture parts of the holder and referral slices once those exist. The hard bound on everything a creator-controlled set of wallets could extract is 80% of the fee, which is 1.60% of volume at the ${F.tradeFeePctMax.toFixed(2)}% maximum fee. The holder and referral payouts are not built in this release, so today the working creator share is the ${F.split.creator}% slice.`, 'The creator maximum, stated precisely'),
     p('None of this is a promise of income. No income, volume or return is claimed anywhere in these docs.'),
     h2('Launch an Instant token'),
-    note('unproven', 'The Instant launcher is being built. Its interface is a draft (INSTANT-ABI 1.0.0), it is not deployed, and on mainnet it will refuse every account, including the owner, until the capped beta opens. Everything below is the design as written in the interface and the launcher code.', 'Being built'),
+    note('unproven', 'The Instant launcher is built, merged and tested in a sandbox. It has run end to end on NEAR testnet, including through the real token factory (evidence/instant-testnet/run2). It is not on mainnet, and on mainnet it will refuse every account, including the owner, until the capped beta opens. Everything below is the design as written in the interface and the launcher code.', 'Testnet only'),
     ol(
       `Create: call \`create_instant\` with a NEAR deposit of about ${I.depositNear} NEAR. The excess is sent back. The \`preview_instant\` view shows the rule codes and the deposit before you sign.`,
       `Seed: send your own USDC to the launcher, exactly the amount you declared. It must be between ${usd(I.seedUsdc.min)} and ${usd(I.seedUsdc.max)} (default ${usd(I.seedUsdc.default)}).`,

@@ -143,12 +143,13 @@ describe('instant launch is described honestly', () => {
     const rows = t.rows.map((r) => r[0]);
     for (const r of ['Refund for buyers', 'Walk', 'Verdict', 'When it trades', 'What the creator cannot do', 'What is bounded', 'What is not bounded']) expect(rows).toContain(r);
   });
-  it('every page that mentions Instant mode labels it as being built and NEAR only somewhere', () => {
+  it('every page that mentions Instant mode labels it as testnet only and NEAR only somewhere', () => {
     const pages = DOC_PAGES.filter((pg) => /Instant launch/.test(textOf(pg)));
     expect(pages.length).toBeGreaterThanOrEqual(5);
     for (const pg of ['how-it-works', 'creators', 'buyers']) {
       const t = textOf(docBySlug(pg)!);
-      expect(t, pg).toContain('Being built');
+      expect(t, pg).toContain('Testnet only');
+      expect(t, pg).not.toMatch(/being built|not been deployed|is not deployed and/i);
     }
     expect(textOf(docBySlug('how-it-works')!)).toContain('NEAR only');
   });

@@ -15,10 +15,30 @@ export function assertMainnetGate(network: string, confirmed: string | undefined
 
 assertMainnetGate(NETWORK, process.env.NEXT_PUBLIC_MAINNET_CONFIRMED);
 
+/** Placeholder accounts used when nothing is configured. They are NOT deployed. `npm run dev:testnet` loads .env.testnet, which names the live testnet stack. */
+export const PLACEHOLDER_CORE = 'core.kruxa.testnet';
+
+/** Pure gate (tested in config.test.ts): mainnet must name every contract account explicitly; a testnet placeholder is never a mainnet default. */
+export function assertExplicitMainnetAccounts(network: string, env: Record<string, string | undefined>): void {
+  if (network !== 'mainnet') return;
+  const missing = ['NEXT_PUBLIC_CORE_ACCOUNT', 'NEXT_PUBLIC_USDC_ACCOUNT', 'NEXT_PUBLIC_USDC_TOKEN_ID', 'NEXT_PUBLIC_INTENTS_ACCOUNT', 'NEXT_PUBLIC_MARKET_ACCOUNT', 'NEXT_PUBLIC_INSTANT_ACCOUNT']
+    .filter((k) => !env[k]);
+  if (missing.length) throw new Error(`R_MAINNET_ACCOUNTS: mainnet has no default accounts; set ${missing.join(', ')}`);
+}
+
+assertExplicitMainnetAccounts(NETWORK, {
+  NEXT_PUBLIC_CORE_ACCOUNT: process.env.NEXT_PUBLIC_CORE_ACCOUNT,
+  NEXT_PUBLIC_USDC_ACCOUNT: process.env.NEXT_PUBLIC_USDC_ACCOUNT,
+  NEXT_PUBLIC_USDC_TOKEN_ID: process.env.NEXT_PUBLIC_USDC_TOKEN_ID,
+  NEXT_PUBLIC_INTENTS_ACCOUNT: process.env.NEXT_PUBLIC_INTENTS_ACCOUNT,
+  NEXT_PUBLIC_MARKET_ACCOUNT: process.env.NEXT_PUBLIC_MARKET_ACCOUNT,
+  NEXT_PUBLIC_INSTANT_ACCOUNT: process.env.NEXT_PUBLIC_INSTANT_ACCOUNT,
+});
+
 export const CONFIG = {
   network: NETWORK,
   rpcUrl: pick(process.env.NEXT_PUBLIC_NEAR_RPC, 'https://rpc.testnet.near.org'),
-  core: pick(process.env.NEXT_PUBLIC_CORE_ACCOUNT, 'core.kruxa.testnet'),
+  core: pick(process.env.NEXT_PUBLIC_CORE_ACCOUNT, PLACEHOLDER_CORE),
   usdc: pick(process.env.NEXT_PUBLIC_USDC_ACCOUNT, 'usdc.kruxa.testnet'),
   intents: pick(process.env.NEXT_PUBLIC_INTENTS_ACCOUNT, 'intents.kruxa.testnet'),
   factory: pick(process.env.NEXT_PUBLIC_FACTORY_ACCOUNT, 'factory.kruxa.testnet'),
@@ -39,6 +59,9 @@ export const CONFIG = {
   /** Seeded demo launches, `A:1,B:2,C:3`. Empty means none configured. */
   demoLaunches: pick(process.env.NEXT_PUBLIC_DEMO_LAUNCHES, ''),
 } as const;
+
+/** True when the app points at a named stack rather than the undeployed placeholder. */
+export const STACK_CONFIGURED = CONFIG.core !== PLACEHOLDER_CORE;
 
 export const USDC_DECIMALS = 6n;
 export const fmtUsdc = (micro: string | bigint): string => {

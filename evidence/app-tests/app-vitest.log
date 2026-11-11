@@ -1,0 +1,13 @@
+
+ RUN  v5.1.0 /Users/MAC/near-hack/kruxa-repo/.claude/worktrees/agent-a9e31145ff9cbdf42/app
+
+
+ Test Files  52 passed (52)
+      Tests  513 passed (513)
+   Start at  03:38:13
+   Duration  2.54s (environment 39%, tests 30%, import 16%, transform 14%, worker 1%)
+
+    Isolate  52 workers spawned · ~181ms startup each (spawn + environment, per file)
+             at least ~491ms faster with isolate: false — reuses workers across files instead of one per file
+
+exit=0

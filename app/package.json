@@ -4,6 +4,8 @@
   "type": "module",
   "scripts": {
     "dev": "WATCHPACK_POLLING=true next dev --turbopack",
+    "dev:testnet": "sh -c 'set -a; . ./.env.testnet; set +a; exec next dev --turbopack'",
+    "build:testnet": "sh -c 'set -a; . ./.env.testnet; set +a; exec next build'",
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",

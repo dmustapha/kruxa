@@ -3,7 +3,7 @@
 // attack gallery file, so the prose cannot drift from the code or the evidence.
 import galleryJson from './attack-gallery.summary.json';
 
-export const STATUS_DATE = '2026-11-08';
+export const STATUS_DATE = '2026-11-11';
 
 // The attack gallery numbers are IMPORTED from attack-gallery.summary.json, a copy of the committed evidence file written by
 // `npm run sync` (scripts/sync-evidence.mjs). They are never typed, and content/evidence-sync.test.ts fails if the copy drifts.
