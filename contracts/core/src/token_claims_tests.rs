@@ -393,3 +393,137 @@ fn l7_holds_with_no_genesis_and_fails_when_the_mint_supply_is_not_the_leaf_total
     g.genesis.sol_mint_supply = 301;
     assert!(c.l7_lock_mirror(&g, &ch).is_err(), "mint supply must equal the leaf total");
 }
+
+// ---- Dissolve after a walk (LIMITATIONS item 21): walker records are deletable once their refund is paid ----
+
+const WALKER: &str = "walker.test";
+
+fn walker_key() -> (u64, HolderId) {
+    (1, HolderId::Near(acct(WALKER)))
+}
+
+fn walker_op(amount: u128) -> PayoutOp {
+    PayoutOp { kind: PayoutKind::RefundNative, launch_id: 1, holder: Some(format!("near:{WALKER}")), amount }
+}
+
+/// Launch 1 in `status` with only a walker (open 0, never settled) whose 100 refund is in flight. Alice's record is removed.
+fn walked_contract(status: Status) -> Contract {
+    let mut c = passed_contract();
+    c.positions.remove(&(1, HolderId::Near(acct("alice.test"))));
+    c.seq_index.remove(&(1, 0));
+    let w = HolderId::Near(acct(WALKER));
+    let pos = Position {
+        seq: 1,
+        deliver: w.clone(),
+        referrer: None,
+        contributed: 100,
+        open_native: 0,
+        open_intents: 0,
+        due_native: 0,
+        due_intents: 0,
+        inflight_native: 100,
+        inflight_intents: 0,
+        refunded: 0,
+        spent: 0,
+        tokens_entitled: 0,
+        bonus_entitled: 0,
+        claimed: 0,
+        claim_inflight: 0,
+        settled: false,
+    };
+    c.seq_index.insert((1, 1), w.clone());
+    c.positions.insert((1, w), pos);
+    let mut st = c.state(1);
+    st.status = status;
+    st.positions_live = 1;
+    st.holder_count = 2;
+    st.active_funders = 0;
+    st.total_active = 0;
+    st.positions_unsettled = 0;
+    st.settlement = None;
+    st.ledger = Ledger { credited: 100, inflight_native: 100, ..Ledger::default() };
+    c.states.insert(1, st);
+    c
+}
+
+fn resolve_walker(c: &mut Contract, ok: bool) {
+    let r = if ok { PromiseResult::Successful(vec![]) } else { PromiseResult::Failed };
+    with_result("core.test", 0, SETTLED + 1, r);
+    c.on_payout(walker_op(100));
+}
+
+fn dissolve_panics(c: &mut Contract) -> bool {
+    testing_env!(ctx("anyone.test", 0, SETTLED + 2).build());
+    std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| c.dissolve(U64(1)))).is_err()
+}
+
+#[test]
+fn a_walkers_record_is_deleted_when_the_refund_lands_and_seq_index_follows() {
+    for status in [Status::Open, Status::Failed(1)] {
+        let mut c = walked_contract(status);
+        resolve_walker(&mut c, true);
+        assert!(c.positions.get(&walker_key()).is_none());
+        assert!(c.seq_index.get(&(1, 1)).is_none());
+        let st = c.state(1);
+        assert_eq!((st.positions_live, st.ledger.refunded, st.ledger.inflight_native), (0, 100, 0));
+        assert_eq!(st.ledger.credited, st.ledger.refunded, "nothing stranded, nothing paid twice");
+    }
+}
+
+#[test]
+fn dissolve_succeeds_after_a_walk_and_positions_live_reaches_zero() {
+    let mut c = walked_contract(Status::Failed(1));
+    resolve_walker(&mut c, true);
+    assert!(!dissolve_panics(&mut c));
+    assert_eq!(c.state(1).status, Status::Dissolved);
+    assert_eq!(c.state(1).positions_live, 0, "reclaim_bond requires positions_live == 0");
+}
+
+#[test]
+fn dissolve_is_still_refused_while_the_walkers_refund_is_in_flight() {
+    let mut c = walked_contract(Status::Failed(1));
+    assert!(dissolve_panics(&mut c));
+    assert_eq!(c.state(1).status, Status::Failed(1));
+}
+
+#[test]
+fn a_failed_refund_leg_keeps_the_walker_record_and_the_money_due() {
+    let mut c = walked_contract(Status::Failed(1));
+    resolve_walker(&mut c, false);
+    let pos = c.positions.get(&walker_key()).cloned().expect("owed money keeps the record");
+    assert_eq!((pos.due_native, pos.inflight_native, pos.refunded), (100, 0, 0));
+    let st = c.state(1);
+    assert_eq!((st.positions_live, st.ledger.due_native), (1, 100));
+    assert!(dissolve_panics(&mut c), "due money blocks dissolve");
+}
+
+#[test]
+fn a_partial_refund_resolution_never_deletes_the_record() {
+    let mut c = walked_contract(Status::Failed(1));
+    with_result("core.test", 0, SETTLED + 1, PromiseResult::Successful(vec![]));
+    c.on_payout(walker_op(60));
+    assert!(c.positions.get(&walker_key()).is_some(), "40 is still in flight");
+}
+
+#[test]
+fn a_funder_with_open_money_is_never_deleted_even_if_unsettled() {
+    let mut c = walked_contract(Status::Failed(1));
+    let mut p = c.positions.get(&walker_key()).cloned().unwrap();
+    p.inflight_native = 0;
+    p.open_native = 100;
+    c.positions.insert(walker_key(), p);
+    let mut st = c.state(1);
+    c.try_delete_position(&mut st, 1, &HolderId::Near(acct(WALKER)));
+    assert!(c.positions.get(&walker_key()).is_some());
+    assert_eq!(st.positions_live, 1);
+}
+
+#[test]
+fn dissolve_stays_refused_while_any_other_position_is_live() {
+    let mut c = walked_contract(Status::Failed(1));
+    resolve_walker(&mut c, true);
+    let mut st = c.state(1);
+    st.positions_live = 1;
+    c.states.insert(1, st);
+    assert!(dissolve_panics(&mut c));
+}

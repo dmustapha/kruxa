@@ -339,3 +339,37 @@ async fn stream_clock_keeps_running_while_paused() -> anyhow::Result<()> {
     env.call(&env.creator, "draw", json!({ "launch_id": id.to_string(), "amount": cap_paused.to_string() }), ZERO).await.into_result()?;
     Ok(())
 }
+
+/// LIMITATIONS item 21 (fixed): a walker's record is deleted once the refund lands, so a launch that FAILs after walks still dissolves
+/// and returns the creator bond. Adversarial parts: dissolve is refused while any refund is unclaimed, a walker who commits again
+/// and walks again is paid exactly once each time, and every USDC unit is accounted for.
+#[tokio::test]
+async fn walk_then_fail_still_dissolves_and_returns_bond() -> anyhow::Result<()> {
+    let env = Env::new().await?;
+    let id = env.create_launch(&params("WDIS")).await?;
+    let users = fill(&env, id, 5, 30 * USDC).await;
+    env.call(&users[0], "walk", lid(id), ONE).await.into_result()?;
+    assert!(env.commit_native(&users[0], id, 30 * USDC, None).await.is_success(), "a walker may commit again while Open");
+    env.call(&users[0], "walk", lid(id), ONE).await.into_result()?;
+    env.call(&users[1], "walk", lid(id), ONE).await.into_result()?;
+    for u in &users[..2] {
+        assert_eq!(env.usdc_balance(u.id()).await, 1_000 * USDC, "walkers paid in full, exactly once");
+        assert!(has_code(&env.call(u, "walk", lid(id), ONE).await, "R_NO_POSITION"), "the record is gone, a third walk finds nothing");
+    }
+    env.advance_to(id, "Ready").await;
+    let r = env.call(&env.creator, "settle", lid(id), ZERO).await;
+    assert!(r.is_success() && !r.json::<bool>()?);
+    assert!(has_code(&env.call(&env.creator, "dissolve", lid(id), ZERO).await, "R_NOT_CLEAR"), "three refunds are still due");
+    for u in &users[2..] {
+        env.call(u, "claim_refund", json!({ "launch_id": id.to_string(), "holder": null }), ZERO).await.into_result()?;
+        assert_eq!(env.usdc_balance(u.id()).await, 1_000 * USDC);
+    }
+    let st = env.state(id).await;
+    assert_eq!(st["positions_live"].as_u64(), Some(0));
+    env.call(&env.creator, "dissolve", lid(id), ZERO).await.into_result()?;
+    let bal = env.creator.view_account().await?.balance;
+    env.call(&env.creator, "reclaim_bond", lid(id), ZERO).await.into_result()?;
+    assert!(env.creator.view_account().await?.balance > bal, "bond returned");
+    assert_eq!(env.state(id).await["status"], "Dissolved");
+    Ok(())
+}

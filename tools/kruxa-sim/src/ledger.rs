@@ -107,8 +107,10 @@ fn check(r: &Rec) -> Vec<&'static str> {
     if let Some(s) = &r.settle {
         // The settlement is frozen; the ledger's excess_pool is drawn down by each refund, so it may only be at or below it.
         let frozen_split = s.launch_fee + s.lp_quote + s.stream == s.accepted && s.accepted + s.excess_pool == s.total_active;
-        let ledger_agrees =
-            (s.launch_fee, s.lp_quote, s.stream) == (l.launch_fee_due, lp, l.stream_total) && l.excess_pool <= s.excess_pool;
+        // sweep_residue moves what is left of the excess pool to the LP bucket, so the ledger LP bucket may exceed the frozen lp_quote by at most
+        // the amount the excess pool has been drawn down by (refunds plus that sweep).
+        let lp_swept = lp.checked_sub(s.lp_quote).filter(|d| l.excess_pool <= s.excess_pool && *d <= s.excess_pool - l.excess_pool);
+        let ledger_agrees = (s.launch_fee, s.stream) == (l.launch_fee_due, l.stream_total) && lp_swept.is_some();
         if r.passed && !(frozen_split && ledger_agrees) {
             bad.push("L4_settlement");
         }

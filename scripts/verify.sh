@@ -7,7 +7,7 @@
 #   optional on chain: --rpc2 <url> reads every view from a second RPC too; disagreement is an infrastructure error
 #   ./scripts/verify.sh instant <id> [--tamper-all] [--rpc2 <url>] [--sums FILE]
 #        a launch on the instant launcher (ids from 1000000000), read-only views: IL-1 supply conservation, token buckets, custody against the
-#        real ft_balance_of, vesting bounds, then the launcher's KEYS and CODE lines. Env: KRUXA_NEAR_RPC, KRUXA_LAUNCHER (demo-instant.kxi-root-0811.testnet).
+#        real ft_balance_of, vesting bounds, then the launcher's KEYS and CODE lines. Env: KRUXA_NEAR_RPC, KRUXA_LAUNCHER (demo-instant.kxi-root-1111.testnet, the run3 launcher whose CODE equals artifacts/SHA256SUMS).
 #        --sums FILE compares the CODE line with that sha256 list instead of artifacts/SHA256SUMS (the testnet launcher is an older build; see LIMITATIONS).
 #   ./scripts/verify.sh <launch_id> [--tamper-all] [--rpc2 <solana url>] [--near-rpc2 <near url>] [--charter FILE] [--production]
 #        --rpc2 is the SECOND SOLANA RPC (turns C28 from SKIP to PASS); --near-rpc2 is the second NEAR RPC for the NEAR views. They are two flags
@@ -79,7 +79,7 @@ instant_run() {
     --sums) [ "$#" -ge 2 ] || { echo "usage: --sums needs a file" >&2; exit 64; }; sums="$2"; shift ;;
     *) echo "usage: $0 instant <launch_id> [--tamper-all] [--rpc2 <url>] [--sums FILE]" >&2; exit 64 ;;
   esac; shift; done
-  local near="${KRUXA_NEAR_RPC:-https://test.rpc.fastnear.com}" launcher="${KRUXA_LAUNCHER:-demo-instant.kxi-root-0811.testnet}"
+  local near="${KRUXA_NEAR_RPC:-https://test.rpc.fastnear.com}" launcher="${KRUXA_LAUNCHER:-demo-instant.kxi-root-1111.testnet}"
   local c_sim c_ops
   echo "== instant recompute (IL-1, buckets, custody, vesting; kruxa-sim verify-instant)"
   set +e
