@@ -24,7 +24,7 @@ Readers: U2 (token page), I (indexer API 1.2.0), L (launcher), D (docs). Source:
 - `LaunchSummary.created_at` for instant launches: the Create form uses it for the one-per-24-hours check (`R_RATE_LIMIT`), together with `?creator=`.
 
 ## What U1 expects from L (launcher)
-- Views used today: `get_config`, `preview_instant(params, creator, payout_recipient)`, `get_instant`, `get_phase`, `get_vesting`, `instants_by_creator`. Methods used: `create_instant`, `USDC.ft_transfer_call(seed_instant)`, `open_instant`, `cancel_instant`, `abort_instant`, `reclaim_deposit`, `claim_vested`.
+- Views used today: `get_config`, `preview_instant(params, creator, payout_recipient)`, `get_instant`, `get_phase`, `get_vesting`. (`instants_by_creator` was planned and is not built in `contracts/instant/src/views.rs`.) Methods used: `create_instant`, `USDC.ft_transfer_call(seed_instant)`, `open_instant`, `cancel_instant`, `abort_instant`, `reclaim_deposit`, `claim_vested`.
 - ABI typo to confirm: section 3 says `abandon_instant` after "24 u" and `abort_instant` after "72 u" where `unit` is one day. CO-7 says 72 hours. The UI avoids stating a number until this is settled.
 - The UI does not offer an announced-open delay (the ABI dropped `trade_delay_secs`).
 

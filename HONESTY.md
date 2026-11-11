@@ -10,7 +10,7 @@ Every disclosure Kruxa makes, with the document or test that proves it.
 6. A NEAR-side token exists from the start of a trial. Proof: `docs/INVARIANTS.md`.
 7. In phase 0 the upgrade key is held by Dami. Proof: `SECURITY.md` item 2; `docs/INVARIANTS.md`.
 8. The sandbox runs protocol 88 and mainnet is recorded as 88 on 2026-11-08; real-network acceptance is untested until the testnet deploy. Proof: `SECURITY.md` item 6; `ARCHITECTURE.md` Section 17.
-9. The kruxa_core wasm (675,007 bytes) is over the original 350 KB target; the budget is 700,000 bytes (Dami, 2026-11-10). Proof: `scripts/lint.sh` prints the size against its gate; `docs/benchmarks.md` B-WASM; `LIMITATIONS.md`.
+9. The kruxa_core wasm (655,387 bytes as deployed, 675,007 as a local build) is over the original 350 KB target; the budget is 700,000 bytes (Dami, 2026-11-10). Proof: `scripts/lint.sh` prints the size against its gate; `docs/benchmarks.md` B-WASM; `LIMITATIONS.md`.
 10. Sybil wallets are not defended against. Proof: `SECURITY.md` item 1.
 11. The owner full-access key bypasses the 7-day upgrade queue; the queue delay is 60 s on the demo profile. Proof: `SECURITY.md` item 2; `evidence/testnet-core3/verify-8-f0.txt` (KEYS line).
 12. `halt_launch` and the 48 h `force_resolve_op` are owner powers; neither can block an exit or change a verdict. Proof: `docs/interfaces/CORE-ABI.md`; `LIMITATIONS.md` limits 2 and 3.

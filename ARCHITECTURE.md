@@ -110,7 +110,7 @@ The deterministic core (`kruxa-math`, `kruxa-logic`) imports no I/O, no near-sdk
 |---|---|---|---|
 | 0 | Nov 6-7, free | toolchain, sandbox S3 vs real `intents.near` wasm, testnet factory probe, `ft_burn` check | prerequisite list, Section 13 |
 | 1 | Nov 7-9 | this document's code: trial lifecycle, S3/S4, Walk, settle, refunds, claims, stream-lite, caps, tests, verify skeleton, app | full code (Section 4) |
-| 2 | Nov 9-11 | Solana genesis (F1), relayer, Merkle + Jito distributor, Squads reserve, `release_lp_seed` (Genesis Round), verify C1-C34 | interface level (5.2, 5.3) |
+| 2 | Nov 9-11 | Solana genesis (F1), relayer, Merkle + Jito distributor, Squads reserve, `release_lp_seed` (Genesis Round; dropped, the method does not exist), verify C1-C34 (C33 and C34 not implemented) | interface level (5.2, 5.3) |
 | 3 | CO-3: Market-lite (scope M-A) Nov 8-11 pre-freeze behind the M-gate; the rest after (vision W6b) | market contract (constant-product pool, fee router, creator claims), then Hold Vault, referral lots, ratchets, creator allocation vesting, backer-pool sweep | interface level (5.1, 5.8) |
 | 4 | later | Verdict Rail (SAS), F0 Chain Signatures mint, ReserveGate / bridge | interface level (5.4, 5.5) |
 
@@ -6229,7 +6229,7 @@ The relayer's trust boundary and its failure runbook are S1-D 5; the key is held
 
 Squads reserve vault: for the demo Dami holds all three keys on separate hardware wallets, disclosed in the Charter as `SinglePartyDemo`; threshold >= 2 and a 48 h time lock are kept even then (RULING R5). Before the capped beta the set becomes 2-of-3 with two named independents (`Independent2of3`); `verify` check C12 requires the on-chain member set to equal the Charter-published set. Jito distributor: the deployed immutable program (upgrade authority None), `set_admin(NULL_ADMIN)` in tx2, 90-day clawback to a Squads ATA whose policy returns unclaimed tokens to the community pool, never to the platform wallet. A Solana buyer pays a refundable claim-rent deposit (about 0.004 SOL) carved from the commit amount through the same mechanism as the relay fee (RECONCILED 6.D 4.5); it is never a platform cost. Merkle leaf layout `hashv([0], hashv([claimant, amount_unlocked u64 LE, amount_locked u64 LE]))` is **UNVERIFIED** until test T-D1 reads the deployed IDL.
 
-Genesis Round (track G, DECISIONS 2026-11-07 YES, capped and labelled): the brand token on mainnet before Nov 14 under hard caps, trial / verdict / Walk / refunds / settle / Solana genesis only, trading on an EXTERNAL standard pool. LP seed USDC is released by `release_lp_seed(launch_id, to)` (OWNER, timelocked) to a Dami-controlled multisig and leaves through an Intents withdrawal (OV15 contract-initiated payout is unproven). **Every mainnet step of this track is REQUIRES DAMI PER-ACTION CONFIRMATION**, and the first mainnet token must be the brand token.
+Genesis Round (track G, DECISIONS 2026-11-07 YES, capped and labelled): the brand token on mainnet before Nov 14 under hard caps, trial / verdict / Walk / refunds / settle / Solana genesis only, trading on an EXTERNAL standard pool. LP seed USDC is released by `release_lp_seed(launch_id, to)` (OWNER, timelocked) [SYNC 2026-11-11: this method was never built; `open_market` replaced it] to a Dami-controlled multisig and leaves through an Intents withdrawal (OV15 contract-initiated payout is unproven). **Every mainnet step of this track is REQUIRES DAMI PER-ACTION CONFIRMATION**, and the first mainnet token must be the brand token.
 
 ## 5.4 Wave 4: Verdict Rail (SAS attestation)
 
@@ -6422,10 +6422,10 @@ The core that ships is the Wave 1 trial lifecycle plus the surface Dami ruled "a
 ### Deployed state (testnet only, play money)
 | Item | Value | Proof |
 |---|---|---|
-| Core account | `core3.kxi-root-1108.testnet`, profile `demo` (short clock) | `evidence/testnet-core3/deploy.json` |
-| Core wasm | sha256 `e85198ed37c2aa1d6cd5f18571f5e023eed391108ca8f22edc8599ac390e65ac`, 675,007 bytes, local non-reproducible build | `view_code` read from testnet RPC on 2026-11-10; `artifacts/SHA256SUMS`; redeploy row in `evidence/testnet-core3/txlog.jsonl` |
+| Core account | `core3.kxi-root-1108.testnet` (profile `demo`, short clock) and `core4.kxi-root-1108.testnet` (fresh deploy for SW-2) | `evidence/testnet-core3/deploy.json`, `evidence/swarm-testnet/deploy.json` |
+| Core wasm | sha256 `665caab5a582a58b2412dfb2e81f1caf2ff94339c8bcc9f8be9ebebb72239c64`, 655,387 bytes, reproducible container build on core3 (round 4, tx `Gu5Msp6rduKg6XZ8RFNbMeT6s2aKM2Tcvmp7GNTgWvza`) and core4; `verify.sh` CODE line MATCH. A local `cargo near` build of the same source is `e85198ed...`, 675,007 bytes (step B1 of `make judge`) | `artifacts/SHA256SUMS`, `evidence/testnet-core3/verify-10-f0.txt`, `evidence/swarm-testnet/deploy.json` |
 | Size budget | 700,000 bytes (`scripts/lint.sh`, Dami, 2026-11-10); supersedes D-13 (570 KB) | DECISIONS-PACK1 seventeenth block |
-| Reproducible candidate | `d362ffa2...`, 655,251 bytes, built before the R_GAS change; NOT what core3 runs | `artifacts/SHA256SUMS.reproducible`, `rehearsal/LOG.md` A-4 and R2-5 |
+| Earlier reproducible candidate | `d362ffa2...`, 655,251 bytes, built before the R_GAS change; superseded by `665caab5...` | `artifacts/SHA256SUMS.reproducible`, `rehearsal/LOG.md` A-4, R2-5 and R3-6 |
 | Market | `market3.kxi-root-1108.testnet`, market ABI 1.1.2 | `evidence/testnet-core3/deploy.json` |
 | Mainnet | nothing deployed | none |
 
@@ -6490,7 +6490,7 @@ The core that ships is the Wave 1 trial lifecycle plus the surface Dami ruled "a
 15. 10 item 2: the upgrade queue exists but the full-access key bypasses it.
 16. 11.3: `claim_tokens` payable (0.00125 NEAR + 1 yocto, 150 to 200 Tgas); `create_trial` 300 Tgas with a 250 floor; `create_token` 110 Tgas.
 17. 11.4: the app reads more environment variables than the short list.
-18. Wasm size: 456,999 and 462,222 bytes (4.8, 17) and the 570 KB acceptance (D-13) are history; the deployed core is 675,007 bytes against a 700,000 byte budget.
+18. Wasm size: 456,999 and 462,222 bytes (4.8, 17) and the 570 KB acceptance (D-13) are history; the deployed core is 655,387 bytes (reproducible build; 675,007 as a local build) against a 700,000 byte budget.
 19. 17c: Phase 0 hashes are history; the final hash is in the Deployed state table above.
 
 # Section 6: Domain Knowledge File spec
@@ -6858,12 +6858,12 @@ Every row cites a committed file; nothing here is a mainnet result.
 
 | Check | Result | Evidence |
 |---|---|---|
-| Core wasm on core3 | sha256 `e85198ed...`, 675,007 bytes, equal to `artifacts/SHA256SUMS`; read from testnet RPC `view_code` | `artifacts/SHA256SUMS`, `evidence/testnet-core3/txlog.jsonl` |
-| F0 rehearsals through the contract gate | 3 of 3 on wasm `7d7b0da2...` (launches 2, 5, 6), then a 4th on wasm `e338f84d...` (launch 8, create_trial at 300 Tgas); `verify.sh` exit 0 each. The 4th ran before the `R_GAS` guard, so no F0 run exists on the exact deployed `e85198ed...` | `evidence/genesis/core3-f0-devnet-launch*.json`, `rehearsal/ROUND2.md` |
+| Core wasm on core3 | sha256 `665caab5...`, 655,387 bytes, reproducible build, equal to `artifacts/SHA256SUMS`; `view_code` read from testnet RPC (round 4) | `artifacts/SHA256SUMS`, `evidence/testnet-core3/verify-10-f0.txt` |
+| F0 rehearsals through the contract gate | 6 of 6: launches 2, 5, 6 on `7d7b0da2...`, launch 8 on `e338f84d...`, launch 9 on the local build `e85198ed...`, launch 10 on the deployed reproducible `665caab5...`; `verify.sh` exit 0 each | `evidence/genesis/core3-f0-devnet-launch*.json`, `rehearsal/ROUND2.md`, `ROUND3.md`, `ROUND4.md` |
 | F1 | launch 4 on core3 passes, C16 now passes (genesis key swept to 890,880 lamports) | `evidence/testnet-core3/verify-4-f1.txt` |
 | verify tamper and dead RPC | `--tamper-all` exit 2 with MISMATCH lines; dead RPC exit 4 | `verify-8-tamper-all.txt`, `verify-2-dead-rpc.txt` |
-| gate-g2 | GREEN 9 of 9 on core3 (G2-01 reads the Nov 8 gate-g1 logs, not a re-run) | `evidence/testnet-core3/gate-g2-round2.txt` |
-| gate-g3 | NO-GO as last recorded; blockers GR-3, 7, 8, 9, 11, 13, 14, 17 (Dami-side or unrecorded) | `evidence/testnet-core3/gate-g3.txt` |
+| gate-g2 | GREEN 9 of 9 on core3 at round 4 (PASS launch 10, FAIL launch 3; G2-01 reads existing gate-g1 logs, not a re-run) | `evidence/testnet-core3/gate-g2-round4.txt` |
+| gate-g3 | NO-GO as last recorded on 2026-11-10, before rounds 3 and 4; not re-run; blockers GR-3, 7, 8, 9, 11, 13, 14, 17 (Dami-side or unrecorded) | `evidence/testnet-core3/gate-g3.txt` |
 | Real factory | `create_token` at 80 Tgas fails, 110 Tgas succeeds; a repeated `storage_deposit` is refunded (N-04 closed for the real factory) | `evidence/testnet-core3/real-factory-probe.json`, `docs/KNOWN-FINDINGS.md` |
 | Attack gallery | 100 attacks, 81 refused, 14 no effect, 5 bounded, 0 failed, 10 not done; sandbox hashes | `evidence/attack-gallery/`, `docs/ATTACK-GALLERY.md` |
-| Fast judge run | 19 of 19 steps GREEN in 553 s on git `b4b4c8a`; the full run (about 2,454 s) has no committed record | `evidence/judge-fast-run.txt` |
+| Judge runs | full `make judge`: 20 of 20 steps GREEN in 2,512 s on git `64ea392`; fast subset: 19 of 19 in 553 s on git `b4b4c8a`. Neither is under 300 s | `evidence/judge-run.txt`, `evidence/judge-fast-run.txt` |
