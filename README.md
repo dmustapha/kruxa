@@ -12,7 +12,7 @@ Built for NEAR HACKATHON: Build Beyond Boundaries. The judge path runs in a loca
 - **After the verdict.** FAIL refunds everyone. PASS refunds any oversubscribed excess pro rata at one uniform price, and the creator's proceeds then stream at a capped rate (`STREAM_CAP`), never faster.
 - **Market.** After a PASS, a pool inside the market contract trades the token with a decaying opening fee and a five-way fee split. It runs in the sandbox and as a testnet demo.
 - **Solana mint.** On PASS the Solana token is a fixed-supply mint with null mint and freeze authority, created in a one-time ceremony that a script re-checks from public data. Here that ran on Solana devnet only, signed through NEAR Chain Signatures.
-- **Instant mode (testnet only):** a second launch mode with no trial and no refund, built and run end to end on NEAR testnet against a mock token factory on a 10-second demo clock (`evidence/instant-testnet/`, `docs/runbooks/instant-testnet.md`); it was not run through the real token factory and is not on mainnet.
+- **Instant mode (testnet only):** a second launch mode with no trial and no refund, built and run end to end on NEAR testnet on a 10-second demo clock, once against a mock token factory and once against the real token factory (`evidence/instant-testnet/`, `docs/runbooks/instant-testnet.md`); it is not on mainnet.
 
 ## Try it
 
@@ -44,7 +44,7 @@ Expected: every step GREEN, then the verdict line, then the tracks Kruxa lists.
 JUDGE RUN GREEN
 ```
 
-3. Print the tracks this README may list. They come from the GREEN rows of step 2 and are not typed by hand.
+3. Print the tracks this README may list. They come from the GREEN rows of step 2 and are not typed by hand. Run it after step 2: `make judge-fast` writes no track table.
 
 ```bash
 make claimed-tracks
@@ -145,7 +145,7 @@ The tracks listed for this submission are the GREEN rows of `make judge`, copied
 
 ### Not claimed
 
-- **Unstoppable DeFi.** The dry quote needs a live Intents endpoint, and the evidence files for the live Intents tests are not committed. Live Intents behaviour, including solver latency, is not evidenced in this repository. Not claimed.
+- **Unstoppable DeFi.** The dry quote needs a live Intents endpoint. The live Intents tests are recorded in `evidence/test1-ov4.json` and `evidence/test1-ov15.json`, but the receipts are thin (one NEAR transaction hash was kept; `LIMITATIONS.md` item 12) and Phantom signing (OV3) is unproven. Live Intents behaviour, including solver latency, is not evidenced to a standard a judge can re-run. Not claimed.
 - **Agent Economy.** Cut. No agent module is built.
 - Privacy & Private AI, Autonomous Business, Real-World Money, Games With Real Economies, NFTs That Do Something, Social Money: no module exists.
 
@@ -157,7 +157,7 @@ The tracks listed for this submission are the GREEN rows of `make judge`, copied
 | NEAR Intents | Backers commit from other chains through `mt_on_transfer` on the `intents.near` Verifier | The sandbox loads the real `intents.near` wasm, pinned by code hash (`tests/tests/real_intents.rs`). No live Intents call is part of the judge path |
 | NEAR Chain Signatures | The contract asks the MPC signer to sign the Solana genesis transactions, only if they equal a compiled spec | Devnet record replayed by `verify.sh --evidence` (T3, T4). Devnet only |
 | NEAR token factory (`token.primitives`) | Launch tokens | A testnet probe is recorded in `evidence/factory-probe.txt`. The sandbox uses a mock factory |
-| NEAR testnet | Demo deployments | The core wasm built by `make judge` has the same sha256 as the code on `core2.kxa1-owner-1203.testnet` (`docs/runbooks/testnet-core2.md`); the market and launcher on testnet are earlier builds |
+| NEAR testnet | Demo deployments | The core on `core3` and `core4` runs the container build of the core, sha256 `665caab5...` (655,387 bytes, `artifacts/SHA256SUMS`); the `CODE` line of `verify.sh` reads MATCH (`evidence/testnet-core3/verify-10-f0.txt`). Step B1 of `make judge` builds the core locally and prints a different hash, `e85198ed...` (675,007 bytes, `evidence/judge-run.txt`): same source, different toolchain (`rehearsal/LOG.md` R3-6). The two are not equal and the judge run does not rebuild the deployed bytes. The market and launcher on testnet are local builds (`artifacts/BUILD-KIND`) |
 
 ## Limits, stated plainly
 
@@ -168,7 +168,7 @@ The tracks listed for this submission are the GREEN rows of `make judge`, copied
 - The factory token's publisher can replace the token code, and the Intents Verifier holds force powers over money inside `intents.near`. Both are disclosed in `SECURITY.md`.
 - The market contract is new and unreviewed. The launch fee and fee split are demonstration values.
 - Launch terms are bounded by a $1,000 cap per launch and a $3,000 global cap on the demo profile.
-- The core wasm is 571,087 bytes, above the 350 KB size budget we set.
+- The core wasm is 675,007 bytes as built by step B1 and 655,387 bytes as the container build deployed on testnet. Both are above the 350 KB target we first set; the budget now in force is 700,000 bytes (`HONESTY.md`).
 
 ## Repository map
 

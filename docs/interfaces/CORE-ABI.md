@@ -4,7 +4,7 @@ Status: CURRENT as of main `e1cdae4`. Source of truth is `contracts/core/src` (f
 
 Conventions: u64 and u128 are decimal strings in JSON. Panics (user calls) start with the rule code: `R_X: text`. Every `#[private]` callback never panics. `owner` and `guardian` are the config accounts; `require_live` refuses while PAUSED or FROZEN; `require_exit_open` refuses only while FROZEN (exits stay open while PAUSED).
 
-Deployed: `core3.kxi-root-1108.testnet`, wasm sha256 `e85198ed37c2aa1d6cd5f18571f5e023eed391108ca8f22edc8599ac390e65ac`, 675,007 bytes, non-reproducible local build (`view_code` read from testnet RPC on 2026-11-10 and equal to `artifacts/SHA256SUMS`). The reproducible candidate is a different binary (`artifacts/SHA256SUMS.reproducible`, `d362ffa2...`, built before the R_GAS change; see LIMITATIONS).
+Deployed: `core3.kxi-root-1108.testnet` and `core4.kxi-root-1108.testnet`, wasm sha256 `665caab5a582a58b2412dfb2e81f1caf2ff94339c8bcc9f8be9ebebb72239c64`, 655,387 bytes, reproducible container build (`view_code` read from testnet RPC and equal to `artifacts/SHA256SUMS`; `evidence/testnet-core3/verify-10-f0.txt` CODE line MATCH). A local build of the same source is `e85198ed...` (675,007 bytes) and is not what testnet runs; see LIMITATIONS item 9.
 
 ## 1. Change methods added or changed since the Wave 1 ABI
 
@@ -47,13 +47,13 @@ Deployed: `core3.kxi-root-1108.testnet`, wasm sha256 `e85198ed37c2aa1d6cd5f18571
 - `held.native` and `held.intents` are the two running liability sums (identity L6 in the module header of `solvency.rs`). They are updated at the single write choke point `save_state`, so every money path is covered without per-site arithmetic.
 - `check_solvency` compares the balance with the SMALLER of the liability at call time and at callback time, so a shortfall has to survive the whole window to count. A leg in flight across both snapshots can still read as short; the next check clears it.
 - The report is informational. The only effect it can have is `intents_alert`, which pauses NEW Intents commits. It cannot pause exits.
-- Checks C33 and C34 of the verifier (solvency views) have no live transcript in `evidence/`.
+- Checks C33 and C34 are named in the header of `scripts/verify.sh` but are not implemented; these views exist and nothing in the verifier recomputes them.
 
 ## 4. State layout and `migrate`
 
 - The `Contract` struct gained `x: Extra` (upgrade queue, queued force-resolves, stream extensions, owed NEAR, credited S4 hashes), `Config` gained `burn_mode` and `burn_mode_locked`, and `LaunchState` gained `halted`; the solvency counters live under the raw storage keys `kruxa:held` and `kruxa:last_check`.
 - State written by an older layout (core2) is not readable by this wasm. `core3` is a fresh `new` deploy, not a migration. A migration from core2 was not attempted [UNVERIFIED].
-- The redeploys over core3 (`e338f84d...` then `e85198ed...`) kept the layout, so `migrate` (identity) was not exercised on a layout change.
+- The redeploys over core3 (`e338f84d...`, then `e85198ed...`, then `665caab5...` in round 4) kept the layout, so `migrate` (identity) was not exercised on a layout change.
 - Any future layout change needs a `migrate` that reads the old struct and writes the new one, shipped through the 7-day queue.
 
 ## 5. Clock on the `demo` profile
@@ -71,7 +71,7 @@ Deployed: `core3.kxi-root-1108.testnet`, wasm sha256 `e85198ed37c2aa1d6cd5f18571
 | `R_UPGRADE_HASH` | `queue_upgrade` with a bad hash; `upgrade_core` with a wasm that does not hash to the queued value |
 | `R_GAS` | `create_trial` under 250 Tgas prepaid |
 | `R_VEST` | `create_trial` when `creator_bps > 0` and the rule set's cliff or total vest is out of bounds (`check_alloc_vest`) |
-| `R_STREAM_INIT`, `R_PAYEES` | defined in `kruxa-logic` `RuleCode` with the pure checks `check_stream_init` and `check_payees` (unit-tested in `rules.rs`). No core method calls them today: the stream initial release is fixed at 0 and the shipped Charter has no payee list, so they are reserved for Market M-B |
+| `R_STREAM_INIT`, `R_PAYEES` | defined in `kruxa-logic` `RuleCode` with the pure checks `check_stream_init` and `check_payees` (unit-tested in `rules.rs`). `R_STREAM_INIT` is checked at `settle` (`lifecycle.rs`) on the computed initial release, which is zero by construction; it is not checked at `create_trial`. No core method calls `check_payees`: the shipped Charter has no payee list, so `R_PAYEES` is reserved for Market M-B |
 
 Other codes reused by the new methods: `R_NOT_AUTHORIZED`, `R_NOTHING`, `R_NOT_YET`, `R_TOO_EARLY`, `R_TOO_LATE`, `R_WRONG_PHASE`, `R_DEPOSIT`, `R_SOLVENCY`, `R_GENESIS_STATE`, `R_GENESIS_ARG`, `R_STREAM`, `R_NO_POSITION`, `R_NO_LAUNCH`, `R_SIG`.
 
