@@ -70,15 +70,26 @@ function buildPlan(opts, root) {
   const ruleCap = [(BigInt(t.hard_cap) * 200n) / 10000n, 5n * BigInt(t.min_buy)].reduce((m, v) => (v > m ? v : m));
   if (ruleCap !== BigInt(t.wallet_cap)) throw new Error('recorded wallet_cap does not follow the wallet_bps 200 rule');
   const last = run.rounds[run.rounds.length - 1];
-  return { run, params, symbol, events, accounts: run.agents.map((a) => ({ id: a.id, name: acct(a), budget: a.budget, events: events.filter((e) => e.agent.id === a.id).length })), expect: { total: last.total_committed, funders: last.funders, settlement: run.settlement } };
+  return { run, params, symbol, events, accounts: run.agents.map((a) => accountPlan(a, acct(a), events)), expect: { total: last.total_committed, funders: last.funders, settlement: run.settlement } };
 }
-function fundNear(account) { return Math.ceil((0.0125 + 0.004 * account.events) * 1000) / 1000; } // storage + one 100 Tgas gas reservation + burnt gas per call
+// A call attaches 100 Tgas and the node holds gas x about 10 x the quoted gas price up front (measured 2026-11-11: 0.1009 NEAR for 100 Tgas at a quoted 1e8 yocto/gas),
+// which it refunds after the call. So an account needs that reservation on hand for every call, plus storage and the gas it really burns (about 0.005 NEAR per call).
+const RESERVE_100TGAS_NEAR = 0.11;
+// The recorded sim never checks a balance. Y1 has budget 100 USDC but one recorded attempt of 400 USDC, and S2 spends its whole budget in round 19 then retries 100 USDC in
+// round 21; the core refuses both (R_CAP_ACCOUNT, R_WRONG_PHASE) but on chain the token would panic "insufficient balance" first and the core would never see the call.
+// So each account holds its recorded budget (covers every attempt that passes) plus the amount of every attempt recorded as refused (so each refusal is funded on its own).
+function accountPlan(agent, name, events) {
+  const mine = events.filter((e) => e.agent.id === agent.id);
+  const refused = mine.filter((e) => e.result !== 'ok').reduce((sum, e) => sum + BigInt(e.amount), 0n);
+  return { id: agent.id, name, budget: agent.budget, usdc: (BigInt(agent.budget) + refused).toString(), events: mine.length };
+}
+function fundNear(account) { return Math.ceil((RESERVE_100TGAS_NEAR + 0.005 * account.events) * 1000) / 1000; }
 
 function printPlan(plan, opts, core) {
   const rs = opts.roundSecs;
   console.log(`swarm-testnet PLAN ONLY (nothing is sent, no keys read): seed ${opts.seed}, ${plan.events.length} recorded events, ${plan.accounts.length} sub-accounts, round ${rs} s, core ${core}`);
   console.log('== setup (root signs; each account gets a fresh throwaway key saved under ~/.kruxa-secrets/instant-testnet/, never printed)');
-  for (const a of plan.accounts) console.log(`  create ${a.name} with ${fundNear(a)} NEAR; usdc.storage_deposit; usdc.mint ${a.budget} micro-USDC`);
+  for (const a of plan.accounts) console.log(`  create ${a.name} with ${fundNear(a)} NEAR; usdc.storage_deposit; usdc.mint ${a.usdc} micro-USDC`);
   console.log(`== create: ${CREATOR_NAME} creates token ${plan.symbol.toLowerCase()}.<factory> (mock FT) then create_trial ${plan.symbol} ${JSON.stringify(plan.params)}`);
   console.log(`== replay: each round fires at opens_at + (round + 0.5) x ${rs} s on the chain clock; same-round events go out in parallel`);
   for (const e of plan.events) console.log(`  round ${e.round}: ${e.who} ${e.action} ${e.amount} (recorded: ${e.result})`);
@@ -98,6 +109,11 @@ async function send(step, signer, contract, method, args, gasTgas, deposit = '0'
   const rec = await L.call(step, signer, contract, method, args, { gas: L.tgas(gasTgas), deposit });
   txCount++;
   return rec;
+}
+// A 300 Tgas call reserves about 11 x the quoted gas price x gas up front (0.30 NEAR measured on 2026-11-11), so the creator needs that on top of the deposit.
+async function gasReserveNear(tgas) {
+  const price = BigInt((await (await L.net()).connection.provider.gasPrice(null)).gas_price);
+  return Number(price * BigInt(tgas) * 10n ** 12n * 11n / 10n ** 18n) / 1e6;
 }
 const near = (n) => BigInt(Math.round(n * 1e6)) * 10n ** 18n;
 async function sendNear(from, to, amount, step) {
@@ -126,13 +142,13 @@ async function preflight(plan, opts, core) {
 }
 async function neededNear(plan, opts) {
   let setup = 0;
-  for (const a of plan.accounts) if (!(await L.exists(a.name))) setup += fundNear(a);
+  for (const a of plan.accounts) setup += (await L.exists(a.name)) ? Math.max(0, fundNear(a) - (await L.balanceRawNear(a.name))) : fundNear(a);
   setup += 0.00125 * plan.accounts.length + 0.002 * plan.accounts.length; // usdc storage_deposit + root gas for create and mint calls
   if (opts.setupOnly) return { setup, token: 0, creator: 0, total: setup, parts: `sub-accounts ${setup.toFixed(3)}` };
   const token = (await L.exists(`${plan.symbol.toLowerCase()}.${A.factory}`)) ? 0 : TOKEN_NEAR;
   const deposit = Number(BigInt(await L.view(A.core, 'required_deposit', { params: plan.params })) / 10n ** 18n) / 1e6;
   const creator = `${CREATOR_NAME}.${A.owner}`;
-  const short = Math.max(0, deposit + 0.05 - (await L.balanceRawNear(creator)));
+  const short = Math.max(0, deposit + (await gasReserveNear(300)) + 0.05 - (await L.balanceRawNear(creator)));
   const total = setup + token + short;
   return { setup, token, creator: short, total, parts: `sub-accounts ${setup.toFixed(3)}, token ${token.toFixed(3)}, creator top-up ${short.toFixed(3)}` };
 }
@@ -141,8 +157,15 @@ async function neededNear(plan, opts) {
 async function setupAccounts(plan) {
   for (const a of plan.accounts) {
     if (!(await L.exists(a.name))) { await L.ensureAccount(a.name, A.owner, fundNear(a)); txCount++; }
+    else {
+      const short = fundNear(a) - (await L.balanceRawNear(a.name));
+      if (short > 0) await sendNear(A.owner, a.name, Math.ceil(short * 1000) / 1000, `top up ${a.name} to cover the 100 Tgas reservation`);
+    }
     if (!(await L.view(A.usdc, 'storage_balance_of', { account_id: a.name }))) await send(`usdc.storage_deposit ${a.name}`, A.owner, A.usdc, 'storage_deposit', { account_id: a.name }, 30, L.yocto('0.00125'));
-    await send(`usdc.mint ${a.budget} to ${a.name}`, A.owner, A.usdc, 'mint', { account_id: a.name, amount: a.budget }, 30);
+    const held = BigInt(await L.view(A.usdc, 'ft_balance_of', { account_id: a.name }));
+    if (held >= BigInt(a.usdc)) continue; // already funded (a rerun, or a second core)
+    const missing = (BigInt(a.usdc) - held).toString();
+    await send(`usdc.mint ${missing} to ${a.name}`, A.owner, A.usdc, 'mint', { account_id: a.name, amount: missing }, 30);
   }
 }
 
@@ -160,7 +183,7 @@ async function createTrial(plan) {
   const creator = `${CREATOR_NAME}.${A.owner}`;
   const token = await ensureToken(plan.symbol);
   const need = await L.view(A.core, 'required_deposit', { params: plan.params });
-  const short = near(0.05) + BigInt(need) - BigInt((await (await L.net()).connection.provider.query({ request_type: 'view_account', finality: 'optimistic', account_id: creator })).amount);
+  const short = near((await gasReserveNear(300)) + 0.05) + BigInt(need) - BigInt((await (await L.net()).connection.provider.query({ request_type: 'view_account', finality: 'optimistic', account_id: creator })).amount);
   if (short > 0n) await sendNear(A.owner, creator, Number(short) / 1e24, `top up ${creator} for the trial deposit`);
   let id = 1;
   while ((await L.view(A.core, 'get_state', { launch_id: String(id) })) !== null) id++;
@@ -224,6 +247,8 @@ async function compareAll(plan, lid, read, replayResults) {
   checks.push(check('total_active before settle', read.before.total_active, exp.total));
   checks.push(check('active_funders before settle', read.before.active_funders, exp.funders));
   checks.push(check('verdict', read.after.status === 'Passed' ? 'PASS' : 'FAIL', s.verdict.startsWith('PASS') ? 'PASS' : 'FAIL'));
+  // recorded excess_refunded is the allocation's excess bucket (total_active - accepted = 207000000 in seed 1), which the contract freezes in Settlement.excess_pool
+  // (contracts/core/src/lifecycle.rs, allocate()). The sum of per-position refunds differs by rounding dust (206999992) and is a different number, not compared here.
   if (s.passed) for (const [mine, theirs] of [['accepted', 'accepted'], ['launch_fee', 'launch_fee'], ['lp_quote', 'lp_quote'], ['stream', 'stream'], ['excess_pool', 'excess_refunded']]) checks.push(check(`settlement.${mine}`, read.settlement && read.settlement[mine], s[theirs]));
   checks.push(check('get_invariants all_ok', read.invariants && read.invariants.all_ok, true));
   for (const a of plan.run.agents) checks.push(...await comparePosition(plan, lid, a, s.passed));
@@ -251,7 +276,7 @@ async function main() {
   const opts = parseArgs(process.argv.slice(2));
   const root = guardTestnet(opts);
   const plan = buildPlan(opts, root);
-  const core = `core3.${root}`;
+  const core = process.env.KXI_CORE || `core3.${root}`; // KXI_CORE=core4.<root> points the run at a fresh core (same value is read by core-testnet/common.mjs)
   if (!opts.yes) { printPlan(plan, opts, core); process.exit(0); }
   await loadChain();
   const stamp = new Date().toISOString().replace(/[:.]/g, '-');

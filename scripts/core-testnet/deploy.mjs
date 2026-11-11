@@ -20,11 +20,13 @@ async function registerOnUsdc(who) {
   await L.call(`usdc.storage_deposit ${who}`, A.owner, A.usdc, 'storage_deposit', { account_id: who }, { gas: L.tgas(30), deposit: L.yocto('0.00125') });
 }
 async function deployWithSha(account, name, initMethod, initArgs, fundNear) {
-  const bytes = fs.readFileSync(wasmPath(name));
+  const file = name === 'kruxa_core' && process.env.KXI_CORE_WASM ? process.env.KXI_CORE_WASM : wasmPath(name); // KXI_CORE_WASM: e.g. artifacts/kruxa_core.reproducible.wasm
+  const bytes = fs.readFileSync(file);
   const want = await sha256Hex(bytes);
+  if (name === 'kruxa_core' && process.env.EXPECT_SHA256 && process.env.EXPECT_SHA256 !== want) throw new Error(`refusing: ${file} hashes to ${want}, not EXPECT_SHA256`);
   if (!(await L.exists(account))) { await guard(fundNear); }
   await L.ensureAccount(account, A.owner, fundNear);
-  await L.deployWasm(account, wasmPath(name), initMethod, initArgs);
+  await L.deployWasm(account, file, initMethod, initArgs);
   const got = await onChainSha(account);
   if (got !== want) throw new Error(`on-chain sha256 ${got} != build ${want} for ${account}`);
   console.log(`view_code sha256 ${got} == build (${name}, ${bytes.length} B) on ${account}`);

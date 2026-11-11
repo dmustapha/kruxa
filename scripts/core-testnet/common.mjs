@@ -19,7 +19,7 @@ export const REPO = path.resolve(here, '../..');
 // Account ids of the core3 stack. Existing mocks are reused where the task says so; nothing existing is overwritten.
 export const A = {
   owner: ROOT,
-  core: `core3.${ROOT}`,
+  core: process.env.KXI_CORE || `core3.${ROOT}`, // KXI_CORE names a fresh core account (e.g. core4.<root>); default stays core3
   market: `market3.${ROOT}`,
   usdc: `usdc.${ROOT}`,
   guardian: `guardian.${ROOT}`,
