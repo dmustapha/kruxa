@@ -1,0 +1,10 @@
+{
+  "seed": 1,
+  "at": "2026-11-11T01:11:23.837Z",
+  "core": "core3.kxi-root-1108.testnet",
+  "problems": [
+    "GLOBAL CAP: headroom 700000000 is below the recorded hard_cap 1000000000; create_trial is refused R_CAP_GLOBAL, and commits would stop at 700000000 in any case",
+    "FUNDS: root spare 0.453 NEAR is below the 2.265 NEAR needed; short 1.812 NEAR (lend with scripts/core-testnet/core-lend.mjs or recycle a rehearsal token, then rerun)"
+  ],
+  "sent": 0
+}
