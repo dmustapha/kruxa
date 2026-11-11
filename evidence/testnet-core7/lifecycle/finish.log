@@ -1,0 +1,52 @@
+Receipts: EDjhXsnLDuJQY2bi78Ukn9QyeQrAZmeHwGk58htLbvAs, 2F5TF7pkvqHhhS4bvh9BuKuq8dsVudPyccAEVXSCnjXn, EYazLYqNpLWipTj5o3vpL4vxCbadyhQQU1sSvTpMdNFj
+	Log [core7.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"walked","data":[{"launch_id":"1","holder":"near:sw-h1.kxi-root-1108.testnet","amount":"36000000","total_active":"324000000","funders":9,"book_hash":"adfc5dd98ee79d5e5d1752e6bd9f131c9491aa373e51edc0672a4c365793f679"}]}
+Receipt: DBgxvtEgz34przU1NCGottCpQUc2iupUXgyVyEavLMoU
+	Log [core7.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"payout_resolved","data":[{"launch_id":"1","kind":"RefundNative","amount":"36000000","ok":true}]}
+OK   walk launch 1 in the tail (sw-h1.kxi-root-1108.testnet, NEAR key, 1 yocto) tx=5dGagrtEqsKkFTvCnUDEWVdtvCGNdQ1rLWErkkRxjaAs codes=
+Receipts: 3S9RgoeeJ4LauA2D4tFLCMK83Hs9qGMjnZzGBP5UArsT, 7oH4MAGNQRKj5TFMUt9nh2Uv8mUdPmYiy2RaknfpTX16, 85L4mFWp1pZhPra4zQNzNZXmU4VnxbBTsrJtM3iMPuUW
+	Log [core7.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"walked","data":[{"launch_id":"1","holder":"sol:GKjfHqn8BekaemwvimSUfLC9PaZCZ4pF7mCy3Yo1dLUT","amount":"36000000","total_active":"288000000","funders":8,"book_hash":"84e85909da0a27e1ff896e804d347ba9cfdb2424f64e43d806832249d4e616a5"}]}
+Receipt: J9qJ8hkkXNJUQ7LorqBHmsL5gtMGgAU55siWTu1dYyJA
+	Log [core7.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"payout_resolved","data":[{"launch_id":"1","kind":"RefundIntents","amount":"36000000","ok":true}]}
+OK   walk_signed launch 1 in the tail (sol:GKjfHqn8BekaemwvimSUfLC9PaZCZ4pF7mCy3Yo1dLUT, ed25519 signature, submitted by keeper) tx=HTy9GV57JjRG5kpX29fFhLJxxWUarQZwxEW4WwjjtRKa codes=
+Receipts: FkdqLWteJnRPU93AXdExfDG2g4BsXvTJFvdLiuhnJFJS, BotXZG7YZorLdzK7L5i4dSRUnxLowwXZHiDKMhVxcRob
+	Failure [core7.kxi-root-1108.testnet]: Error: {"index":0,"kind":{"index":0,"kind":{"FunctionCallError":{"ExecutionError":"Smart contract panicked: R_NO_POSITION: no position for this holder"}}}}
+FAIL walk launch 1 again (sw-h1.kxi-root-1108.testnet, expect refused: nothing active) tx=BTmaNmyQfptnB7AVAF6E8QSYTgaKVeuA7ju8Ww5zQrAj codes=R_NO_POSITION
+Receipt: 6bH38EtF4wVBdV1dABCfEsiWZA6Bf65xTfBh7ioCYCB5
+	Failure [core7.kxi-root-1108.testnet]: Error: {"index":0,"kind":{"index":0,"kind":{"FunctionCallError":{"ExecutionError":"Smart contract panicked: R_NOT_CLEAR: refunds are not all cleared"}}}}
+FAIL dissolve launch 1 before the verdict (expect refused R_NOT_CLEAR) tx=E5Qv6EKRyPc2uzFpqRnX9oD8WL28nHbAQCSNwXa1HMdh codes=R_NOT_CLEAR
+Receipt: 9bndpAFJhdNgSfcF26hVFgnnfGTAJmsXnSVCB6bJ4wUb
+	Log [core7.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"verdict","data":[{"launch_id":"1","outcome":"FAIL","reasons":3,"total_active":"288000000","funders":8}]}
+OK   settle launch 1 tx=BLuaiKU5gKC7gjS5GxfiXdpKvUvWBHjrVX6P33xRuEdM codes=
+OK   settle_positions_page launch 1 tx=72antRSESFtknDB31AsG8Gi61nesfdiixTAhLNgfNeSh codes=
+Receipt: 8VcsaBhKaR825tjwEFRiLm2wcvMAcbQGodFxL45X1TLQ
+	Failure [core7.kxi-root-1108.testnet]: Error: {"index":0,"kind":{"index":0,"kind":{"FunctionCallError":{"ExecutionError":"Smart contract panicked: R_NOT_CLEAR: refunds are not all cleared"}}}}
+FAIL dissolve launch 1 with refunds still due (expect refused R_NOT_CLEAR) tx=9CnKmSrDSzYyuQcSUC8TTtwvUQff3e65qbc9ipSAQFZ7 codes=R_NOT_CLEAR
+Receipt: 9QLKEhRRy6fT86HkevonRwkuY6YRiCn6L3EsF43yyj8A
+	Log [core7.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"payout_resolved","data":[{"launch_id":"1","kind":"RefundNative","amount":"36000000","ok":true}]}
+OK   claim_refund launch 1 (sw-h3.kxi-root-1108.testnet, called by the holder) tx=8Un5soPYm9ytYCSS4wZkezQ1mRkwCf8fDJWDvHx6Ads7 codes=
+Receipts: ArUAcfKqngiUrFYKoC7CvDSzpeQBjaq4P833yP2Dzauh, 3jnCYsgQLM8heV1mcpTPRXNwJo6yNABahRb2YbYndgYc, 8iqpeAuV8fhhzBs98XoCTxrm4tpuHRHbo4AMWEF5RavN, 53gKDe6dCo8zWJZNZ3rwmDusnpNhetnL5eURLnpiK6Cq, 56sCRuKemUFv7d1jjUihgMYEF9zLUtdow6m6oLpDg2Bh
+	Log [core7.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"refund_batch","data":[{"launch_id":"1","handled":2,"paid":2}]}
+Receipt: 52TtaPwgssaqWy3qGDKhoFShUVkq3rbHAF7aMFB7joUB
+	Log [core7.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"payout_resolved","data":[{"launch_id":"1","kind":"RefundNative","amount":"36000000","ok":true}]}
+Receipt: AcGW71zknG64qxGWUCKL8oM6bdvdvteGakrgRRWSYi9z
+	Log [core7.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"payout_resolved","data":[{"launch_id":"1","kind":"RefundIntents","amount":"36000000","ok":true}]}
+OK   claim_refund_batch launch 1 (2 holders, by keeper.kxi-root-1108.testnet) tx=2VhFcMFo3mLypVW7MmKDs5LDhmFdPrRCaYTKPvzTits4 codes=
+Receipt: GjrHTRCVNAqfSEPogDywpJX66HiGWW2aFV96rePK3dCX
+	Log [core7.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"payout_resolved","data":[{"launch_id":"1","kind":"RefundIntents","amount":"36000000","ok":true}]}
+OK   claim_refund launch 1 (sol:8FGkFQ, called by keeper, paid to the position's Intents account) tx=G8U5zzL7G1SgH533ZcEKCkao4dg79bwKSBeoF4E1TjTR codes=
+Receipt: C2nZ3NPhKZgoxv6iWuPuYLmLsxzKG48EuB1tArvn7eu1
+	Log [core7.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"payout_resolved","data":[{"launch_id":"1","kind":"RefundIntents","amount":"36000000","ok":true}]}
+OK   claim_refund launch 1 (sol:2ViKm9, called by keeper, paid to the position's Intents account) tx=BDgpz9YJhd4YjpvDoUU8FUcjCj8mMBddYBVCsz2KP6yr codes=
+Receipt: FXqURpvMe9KegqDhbhij9kkUS56mXk2r3RBfTSgsBkgf
+	Log [core7.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"payout_resolved","data":[{"launch_id":"1","kind":"RefundIntents","amount":"36000000","ok":true}]}
+OK   claim_refund launch 1 (sol:BNwLnz, called by keeper, paid to the position's Intents account) tx=37bZ4tVFBMFYxgKryN6SzYw5DLnWWHS1Y8LiRaaChcTB codes=
+Receipt: 44L5Z685baNQ36R7L8cHpyArp1VVp5YXzwifGykvpktB
+	Log [core7.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"payout_resolved","data":[{"launch_id":"1","kind":"RefundIntents","amount":"36000000","ok":true}]}
+OK   claim_refund launch 1 (sol:243TQd, called by keeper, paid to the position's Intents account) tx=4KhxWkmKQD6DMTZyZmPh1uML2UqHhZg4JVLUiS253Rkq codes=
+Receipt: CHABVPs8ySpBCi6G4zRZo7iLKfwHAJcuubeJbQLUg3wh
+	Log [core7.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"payout_resolved","data":[{"launch_id":"1","kind":"RefundIntents","amount":"36000000","ok":true}]}
+OK   claim_refund launch 1 (sol:9vn9Fy, called by keeper, paid to the position's Intents account) tx=EDYm6P9KbLhNyQZQas5onUBSpWrXrzXxjRtquAmRP8B1 codes=
+Receipt: 8kHCzsMoiP3fMQnnSRwWShYcRf5Wq2b6g5kbyPVwqoQr
+	Log [core7.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"dissolved","data":[{"launch_id":"1"}]}
+OK   dissolve launch 1 (every refund cleared) tx=DcjRXmnqy9amZrtoA2pN8waj1hDknpK3LcCMpgWBdRZd codes=
+status Dissolved, invariants all_ok true, walk txs 5dGagrtEqsKkFTvCnUDEWVdtvCGNdQ1rLWErkkRxjaAs HTy9GV57JjRG5kpX29fFhLJxxWUarQZwxEW4WwjjtRKa Ready 10

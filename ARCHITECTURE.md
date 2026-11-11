@@ -6423,7 +6423,7 @@ The core that ships is the Wave 1 trial lifecycle plus the surface Dami ruled "a
 | Item | Value | Proof |
 |---|---|---|
 | Core account | `core3.kxi-root-1108.testnet` (profile `demo`, short clock) and `core4.kxi-root-1108.testnet` (fresh deploy for SW-2) | `evidence/testnet-core3/deploy.json`, `evidence/swarm-testnet/deploy.json` |
-| Core wasm | sha256 `665caab5a582a58b2412dfb2e81f1caf2ff94339c8bcc9f8be9ebebb72239c64`, 655,387 bytes, reproducible container build on core3 (round 4, tx `Gu5Msp6rduKg6XZ8RFNbMeT6s2aKM2Tcvmp7GNTgWvza`) and core4; `verify.sh` CODE line MATCH. A local `cargo near` build of the same source is `e85198ed...`, 675,007 bytes (step B1 of `make judge`) | `artifacts/SHA256SUMS`, `evidence/testnet-core3/verify-10-f0.txt`, `evidence/swarm-testnet/deploy.json` |
+| Core wasm | sha256 `c55bffdbdec7909464c65511219ec77be7d8f765bc037a46350efe713cb8b13b`, 655,376 bytes, reproducible container build from commit `5c2874d` (includes the dissolve-after-walk fix), deployed on core7 (tx `y6hSbC7rdmYo3tYjpWoqDaUuJwmfXx2d22ukEYoCSC5`); `verify.sh` CODE line MATCH. core3 to core6 run the previous build `665caab5...` (655,387 bytes; round 4 tx `Gu5Msp6rduKg6XZ8RFNbMeT6s2aKM2Tcvmp7GNTgWvza`). A local `cargo near` build of the same source is about 675,000 bytes (step B1 of `make judge`) | `artifacts/SHA256SUMS`, `evidence/testnet-core7/`, `evidence/testnet-core3/verify-10-f0.txt` (old hash) |
 | Size budget | 700,000 bytes (`scripts/lint.sh`, Dami, 2026-11-10); supersedes D-13 (570 KB) | DECISIONS-PACK1 seventeenth block |
 | Earlier reproducible candidate | `d362ffa2...`, 655,251 bytes, built before the R_GAS change; superseded by `665caab5...` | `artifacts/SHA256SUMS.reproducible`, `rehearsal/LOG.md` A-4, R2-5 and R3-6 |
 | Market | `market3.kxi-root-1108.testnet`, market ABI 1.1.2 | `evidence/testnet-core3/deploy.json` |
@@ -6858,7 +6858,7 @@ Every row cites a committed file; nothing here is a mainnet result.
 
 | Check | Result | Evidence |
 |---|---|---|
-| Core wasm on core3 | sha256 `665caab5...`, 655,387 bytes, reproducible build, equal to `artifacts/SHA256SUMS`; `view_code` read from testnet RPC (round 4) | `artifacts/SHA256SUMS`, `evidence/testnet-core3/verify-10-f0.txt` |
+| Core wasm on core7 | sha256 `c55bffdb...`, 655,376 bytes, reproducible build, equal to `artifacts/SHA256SUMS`; `view_code` read from testnet RPC (`evidence/testnet-core7/deploy-core7.log`). Round 4 on core3 was the previous build `665caab5...` | `artifacts/SHA256SUMS`, `evidence/testnet-core7/verify-core7-launch1-FAIL-dissolved.txt`, `evidence/testnet-core3/verify-10-f0.txt` (old hash) |
 | F0 rehearsals through the contract gate | 6 of 6: launches 2, 5, 6 on `7d7b0da2...`, launch 8 on `e338f84d...`, launch 9 on the local build `e85198ed...`, launch 10 on the deployed reproducible `665caab5...`; `verify.sh` exit 0 each | `evidence/genesis/core3-f0-devnet-launch*.json`, `rehearsal/ROUND2.md`, `ROUND3.md`, `ROUND4.md` |
 | F1 | launch 4 on core3 passes, C16 now passes (genesis key swept to 890,880 lamports) | `evidence/testnet-core3/verify-4-f1.txt` |
 | verify tamper and dead RPC | `--tamper-all` exit 2 with MISMATCH lines; dead RPC exit 4 | `verify-8-tamper-all.txt`, `verify-2-dead-rpc.txt` |

@@ -1,0 +1,14 @@
+OK   keeper 2: settle tx=B2UhDdfGFYhiQbQm8eXGXf7XgqPjWtyj49xnAoEKJ8np codes=
+Receipt: HPBL2bPjAztFv1e3gT35XHFKxmgiKamfkP7Sk3sEBRzN
+	Log [core7.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"residue_swept","data":[{"launch_id":"2","amount":"8"}]}
+OK   keeper 2: sweep_residue tx=6puMG7HsGUK6wjiZfjdoV78aLWgVrVDpNQMnGqVrdiFu codes=
+Receipt: 4ThtPETzMJACt6yAfZn7XF7DgQcR3pEgTgpoh1pe2jus
+	Failure [core7.kxi-root-1108.testnet]: Error: {"index":0,"kind":{"index":0,"kind":{"FunctionCallError":{"ExecutionError":"Smart contract panicked: R_NOTHING_FREE: no settled Intents proceeds to move"}}}}
+FAIL keeper 2: consolidate tx=2n7Fu438b15eyoEwQX8qsqJxZipgYemuEoNB8akCADE2 codes=R_NOTHING_FREE
+Receipt: FQtXGu2Mf6LUGjukAcwZMzSAZF6oYh8eQpvFD7x3ZUAH
+	Log [core7.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"payout_resolved","data":[{"launch_id":"2","kind":"LaunchFee","amount":"15000000","ok":true}]}
+OK   keeper 2: pay_launch_fee tx=BJaDYPmNQzCBydpmgpZgBkJXqJYuoMdWNTCuRN4FmjPV codes=
+Receipt: GrhZxbxyjR8HQr6apRyKP9L5GxehKpMtgrJw4xQZaLjM
+	Failure [core7.kxi-root-1108.testnet]: Error: {"index":0,"kind":{"index":0,"kind":{"FunctionCallError":{"ExecutionError":"Smart contract panicked: R_NOTHING_FREE: no relay fees accrued"}}}}
+FAIL keeper 2: pay_relay_fees tx=6wE1ansmUJyminDK9tXHoELcJXbLrjvRhiqcbi6AqJSA codes=R_NOTHING_FREE
+final status Passed, positions_unsettled 0, residue_swept true

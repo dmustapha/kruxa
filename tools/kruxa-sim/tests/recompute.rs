@@ -242,6 +242,47 @@ fn ledger_a_view_without_its_fields_is_infrastructure() {
     assert_eq!((code, out.contains("MISMATCH")), (4, false));
 }
 
+/// A Dissolved FAIL launch: every refund paid, every position record deleted (dissolve requires it), no settlement.
+fn dissolved_views() -> Views {
+    let mut v = core_views();
+    put(&mut v, "c.get_state", json!({ "status": "Dissolved", "holder_count": 2 }));
+    put(
+        &mut v,
+        "c.get_ledger",
+        json!({ "credited": "300", "open_native": "0", "open_intents": "0", "due_native": "0", "due_intents": "0",
+        "inflight_native": "0", "inflight_intents": "0", "refunded": "300", "spent_native": "0", "spent_intents": "0", "consolidated": "0",
+        "excess_pool": "0", "launch_fee_due": "0", "launch_fee_paid": "0", "lp_seed_due": "0", "lp_seed_inflight": "0", "lp_seed_sent": "0",
+        "stream_total": "0", "stream_drawn": "0", "relay_fee_total": "0" }),
+    );
+    put(&mut v, "c.list_positions", json!([]));
+    put(&mut v, "c.get_settlement", json!(null));
+    v
+}
+
+#[test]
+fn ledger_dissolved_launch_with_no_positions_matches_and_skips_the_position_checks() {
+    let (code, out) = ledger(dissolved_views(), &[]);
+    assert_eq!(code, 0, "{out}");
+    assert!(out.contains("SKIP L3_positions, I2_book_sums") && !out.contains("infrastructure"), "{out}");
+    let (code, out) = ledger(dissolved_views(), &["--tamper-all"]);
+    assert_eq!(code, 2, "{out}");
+    assert!(!out.contains("TAMPER NOT DETECTED") && out.contains("MISMATCH refunded"), "{out}");
+}
+
+#[test]
+fn ledger_missing_positions_are_infrastructure_unless_the_launch_is_dissolved_and_empty() {
+    let mut v = core_views();
+    put(&mut v, "c.list_positions", json!([]));
+    let (code, out) = ledger(v, &[]);
+    assert_eq!((code, out.contains("MISMATCH")), (4, false), "{out}");
+    let mut v = dissolved_views();
+    let one = json!({ "contributed": "150", "open_native": "0", "open_intents": "0", "due_native": "0", "due_intents": "0",
+        "inflight": "0", "refunded": "150", "spent": "0", "tokens_entitled": "0", "bonus_entitled": "0", "claimed": "0" });
+    put(&mut v, "c.list_positions", json!([one]));
+    let (code, out) = ledger(v, &[]);
+    assert_eq!((code, out.contains("MISMATCH")), (4, false), "{out}");
+}
+
 #[test]
 fn ledger_unknown_tamper_field_is_usage() {
     assert_eq!(ledger(core_views(), &["--tamper", "nope"]).0, 64);

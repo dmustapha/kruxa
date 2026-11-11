@@ -1,0 +1,2 @@
+OK   reclaim_bond launch 1 (creator, after walk then FAIL then dissolve, new wasm c55bffdb) tx=gzcmhaZ8ZeqijCBzAEKjXHhbZDqYqemKsRHnE4HzYX3 codes=
+{"tx":"gzcmhaZ8ZeqijCBzAEKjXHhbZDqYqemKsRHnE4HzYX3","success":true,"codes":[],"creator_before":"0.3693","creator_after":"0.5650","delta":"0.1957","status":"Dissolved","bond":"195000000000000000000000"}

@@ -1,0 +1,17 @@
+launch 3 positions 13 sample keys holder,seq,deliver,contributed
+OK   claim_refund_batch launch 3 (4 holders, keeper) tx=2ZJ7DpizdeRn2TZ4tyhmUBvajkhwhELi8d8htRPdnxsh codes=
+OK   claim_refund_batch launch 3 (4 holders, keeper) tx=DZ9cTUTjUxoG2BBwXYtet1BQ4HxxN1bjfLNEGS16FR9g codes=
+OK   claim_refund_batch launch 3 (4 holders, keeper) tx=Gb3XAyoPbtNmnGdhyS4yA5spnun3EM3MTqSVCc7Fsh6R codes=
+OK   claim_refund_batch launch 3 (1 holders, keeper) tx=Fu6bsrCTEZJnn9Sh7Dho9HT81R6w2AL9uHnR2hgHnESQ codes=
+launch 3 positions_live after refunds 0
+OK   dissolve launch 3 (every refund cleared) tx=3DxRgwwaz8UnGaoJxDAFtMdVRkv4E3BTBhQSbWSP72Nj codes=
+launch 3 status Dissolved all_ok true
+launch 4 positions 14 sample keys holder,seq,deliver,contributed
+OK   claim_refund_batch launch 4 (4 holders, keeper) tx=DbrcxSCVfmR32cmihwisy7diBcftbh38eMFTczLMs28r codes=
+OK   claim_refund_batch launch 4 (4 holders, keeper) tx=9XT3qYFcN86Qx2RNLy3WNqzhy2AjneVPNW9z9Rw9D3yK codes=
+OK   claim_refund_batch launch 4 (4 holders, keeper) tx=8wjK9L2QStBTE7jAErr2S7zRuSwYJoM1WUL737VUKqX7 codes=
+OK   claim_refund_batch launch 4 (2 holders, keeper) tx=37eh2szwcJrG6n5dieARTKe1GVSaeReKaWg4W9VNxmeg codes=
+launch 4 positions_live after refunds 0
+OK   dissolve launch 4 (every refund cleared) tx=9bM1mjgqTTdMp22vGzwNmeC6hqwQRdUDXZb8bME76Vvc codes=
+launch 4 status Dissolved all_ok true
+global_held now 775333326

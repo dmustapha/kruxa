@@ -1,0 +1,33 @@
+== NEAR recompute (C31-C34, kruxa-sim)
+recomputed outcome=FAIL(reasons=3) inputs_hash=95543c7fc69cea7c8ec55498a0d45b55e7befb3ce88795ac71c3a871db7e53d1
+stored     pass=false inputs_hash=95543c7fc69cea7c8ec55498a0d45b55e7befb3ce88795ac71c3a871db7e53d1
+MATCH
+MISMATCH launch_id
+MISMATCH charter_hash
+MISMATCH total_active
+MISMATCH active_funders
+MISMATCH soft_cap
+MISMATCH min_funders
+MISMATCH cancelled
+C33 launch 1 on core7.kxi-root-1108.testnet: credited=360000000 open=0 due=0 inflight=0 refunded=360000000 spent=0 positions=0 held_native=0 held_intents=0
+SKIP L3_positions, I2_book_sums: launch 1 is Dissolved, so its position records are deleted by design (the ledger identities still run)
+PASS L1_flow
+PASS I5_no_overpay
+PASS L6_counters
+PASS I3_inputs_frozen
+MATCH C33 launch 1
+MISMATCH credited
+MISMATCH open_native
+MISMATCH due_native
+MISMATCH spent_native
+MISMATCH refunded
+MISMATCH held_native
+MISMATCH held_intents
+MISMATCH inputs_total_active
+PENDING market5.kxi-root-1108.testnet has no pool yet, so there is no platform_unpaid reading and nothing to recompute
+== operator lines (VX-2)
+KEYS: 1 full-access key(s): ed25519:B9HFEuKnKQUazkANBpKCXLZkwbzXM4EavXh6Cgm1gGZr; 0 function-call key(s)
+NOTE: a full-access key is present, so its owner can redeploy this contract.
+CODE: view_code sha256 c55bffdbdec7909464c65511219ec77be7d8f765bc037a46350efe713cb8b13b; reproducible build sha256 c55bffdbdec7909464c65511219ec77be7d8f765bc037a46350efe713cb8b13b; MATCH
+== Solana genesis (C3-C28)
+PENDING: no evidence/genesis-1.json (genesis record not published yet)

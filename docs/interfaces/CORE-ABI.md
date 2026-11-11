@@ -4,7 +4,7 @@ Status: CURRENT as of main `e1cdae4`. Source of truth is `contracts/core/src` (f
 
 Conventions: u64 and u128 are decimal strings in JSON. Panics (user calls) start with the rule code: `R_X: text`. Every `#[private]` callback never panics. `owner` and `guardian` are the config accounts; `require_live` refuses while PAUSED or FROZEN; `require_exit_open` refuses only while FROZEN (exits stay open while PAUSED).
 
-Deployed: `core3.kxi-root-1108.testnet` and `core4.kxi-root-1108.testnet`, wasm sha256 `665caab5a582a58b2412dfb2e81f1caf2ff94339c8bcc9f8be9ebebb72239c64`, 655,387 bytes, reproducible container build (`view_code` read from testnet RPC and equal to `artifacts/SHA256SUMS`; `evidence/testnet-core3/verify-10-f0.txt` CODE line MATCH). A local build of the same source is `e85198ed...` (675,007 bytes) and is not what testnet runs; see LIMITATIONS item 9.
+Deployed: `core7.kxi-root-1108.testnet`, wasm sha256 `c55bffdbdec7909464c65511219ec77be7d8f765bc037a46350efe713cb8b13b`, 655,376 bytes, reproducible container build from commit `5c2874d` (`view_code` read from testnet RPC and equal to `artifacts/SHA256SUMS`; `evidence/testnet-core7/verify-core7-launch1-FAIL-dissolved.txt` CODE line MATCH). The ABI and storage layout are the same as the previous build `665caab5...` that `core3` to `core6` still run; the only difference is that a walker's position record is deleted when its refund lands, so `dissolve` works after a walk (`docs/CORE-CHANGE-DISSOLVE.md`). A local build of the same source is about 675,000 bytes and is not what testnet runs; see LIMITATIONS item 9.
 
 ## 1. Change methods added or changed since the Wave 1 ABI
 

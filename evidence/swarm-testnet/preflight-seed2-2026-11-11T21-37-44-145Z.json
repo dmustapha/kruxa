@@ -1,0 +1,9 @@
+{
+  "seed": 2,
+  "at": "2026-11-11T21:37:53.873Z",
+  "core": "core7.kxi-root-1108.testnet",
+  "problems": [
+    "GLOBAL CAP: headroom 331666674 is below the recorded hard_cap 1000000000; create_trial is refused R_CAP_GLOBAL, and commits would stop at 331666674 in any case"
+  ],
+  "sent": 0
+}

@@ -257,6 +257,10 @@ async function compareAll(plan, lid, read, replayResults) {
 async function comparePosition(plan, lid, agent, passed) {
   const name = `sw-${agent.id.toLowerCase()}.${A.owner}`;
   const p = await L.view(A.core, 'get_position', { launch_id: lid, holder: `near:${name}` });
+  // A walker with nothing left committed has no record on a core with the dissolve-after-walk fix (the record is deleted when the refund lands,
+  // LIMITATIONS item 21 closed); older cores kept it, and then the spend and token checks below still apply. Anyone else must have a record.
+  const walkerGone = agent.walked && agent.final_commit === '0';
+  if (!p && walkerGone) return [check(`${agent.id} walker record deleted after its refund`, 'deleted', 'deleted')];
   if (!p) return [check(`${agent.id} position exists`, 'none', agent.peak_commit === '0' ? 'none' : 'present')];
   const spend = passed ? agent.spend : '0';
   return [check(`${agent.id} spent`, p.spent, spend), check(`${agent.id} tokens_entitled`, p.tokens_entitled, passed ? agent.tokens : '0'), check(`${agent.id} bonus_entitled`, p.bonus_entitled, passed ? agent.bonus_tokens : '0')];

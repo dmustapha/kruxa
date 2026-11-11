@@ -1,4 +1,19 @@
-# Core sandbox suite on the reproducible wasm 665caab5 (FG-24), OLD HASH ONLY
+# Core sandbox suite on the reproducible wasm (FG-24)
+
+## Final hash `c55bffdb` (the submitted core): GREEN
+
+`sandbox-suite-c55bffdb.log`: the whole sandbox suite run on the container build of commit `5c2874d` (sha256
+`c55bffdbdec7909464c65511219ec77be7d8f765bc037a46350efe713cb8b13b`, 655,376 bytes):
+
+    KXI_CORE_WASM=$PWD/artifacts/kruxa_core.wasm KXI_CORE_WASM_SHA256=c55bffdb... cargo test -p kruxa-tests --no-fail-fast -- --test-threads=2 --include-ignored --nocapture
+
+Result: EXIT 0, 324 passed, 0 failed, 0 ignored (including the attack gallery's 100 tests and `walk_then_fail_still_dissolves_and_returns_bond`).
+The log line `CORE_WASM_SHA256 c55bffdb...` is the proof that the sandbox deployed those exact bytes (`view_code` equals the file and the pin). The one
+"panicked" text in the log is the recorded STREAM_CAP refusal inside an outcome dump, not a test failure. The run rewrote `evidence/attack-gallery/records`
+(new sandbox tx hashes and gas figures that moved by about 0.00001 Tgas, same rule codes and outcomes); those rewrites were reverted so the committed
+records still match `docs/ATTACK-GALLERY.md`.
+
+## Old hash `665caab5` (superseded, kept as history)
 
 Superseded: main later merged a core fix (dissolve after a walk), so `665caab5...` is no longer the candidate. This record proves the
 mechanism (`KXI_CORE_WASM`, see `tests/src/lib.rs core_wasm_bytes()`) and the result for that one hash. FG-24 must be redone on the new

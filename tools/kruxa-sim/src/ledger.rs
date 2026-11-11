@@ -71,6 +71,8 @@ struct Settle {
 #[derive(Clone)]
 struct Rec {
     passed: bool,
+    /// A Dissolved launch has deleted every position record (that is what dissolve requires), so the per-position checks do not apply.
+    dissolved: bool,
     led: Led,
     positions: Vec<Pos>,
     settle: Option<Settle>,
@@ -93,10 +95,11 @@ fn check(r: &Rec) -> Vec<&'static str> {
     if r.positions.iter().any(|p| p.contributed != p.open + p.due + p.inflight + p.refunded + p.spent) {
         bad.push("L3_positions");
     }
-    if sum(r, |p| p.open) != open
-        || sum(r, |p| p.contributed) != l.credited
-        || sum(r, |p| p.refunded) != l.refunded
-        || sum(r, |p| p.spent) != spent
+    if !r.dissolved
+        && (sum(r, |p| p.open) != open
+            || sum(r, |p| p.contributed) != l.credited
+            || sum(r, |p| p.refunded) != l.refunded
+            || sum(r, |p| p.spent) != spent)
     {
         bad.push("I2_book_sums");
     }
@@ -183,12 +186,15 @@ fn read_position(v: &Value) -> Pos {
     }
 }
 
-fn read_positions(rpcs: &[String], contract: &str, launch: &str, count: u32) -> Vec<Pos> {
+fn read_positions(rpcs: &[String], contract: &str, launch: &str, count: u32, dissolved: bool) -> Vec<Pos> {
     let mut out = vec![];
     for from in (0..count).step_by(PAGE as usize) {
         let page = view(rpcs, contract, "list_positions", &json!({ "launch_id": launch, "from_seq": from, "limit": PAGE }));
         let rows = page.as_array().unwrap_or_else(|| infra(&format!("list_positions is not an array: {page}")));
         out.extend(rows.iter().map(read_position));
+    }
+    if dissolved && out.is_empty() {
+        return out;
     }
     if out.len() != count as usize {
         infra(&format!("list_positions returned {} of {count} positions", out.len()));
@@ -224,9 +230,11 @@ fn read(rpcs: &[String], contract: &str, launch: &str) -> Rec {
     let i: VerdictInputs =
         serde_json::from_value(vi["inputs"].clone()).unwrap_or_else(|e| infra(&format!("get_verdict_inputs inputs: {e}")));
     let sr = view(rpcs, contract, "solvency_report", &json!({}));
+    let dissolved = state["status"].as_str() == Some("Dissolved");
     Rec {
         passed: state["status"].as_str() == Some("Passed"),
-        positions: read_positions(rpcs, contract, launch, count),
+        dissolved,
+        positions: read_positions(rpcs, contract, launch, count, dissolved),
         settle: read_settle(&view(rpcs, contract, "get_settlement", &id)),
         inputs_total_active: i.total_active,
         inputs_hash: hex(&inputs_hash(&i)),
@@ -239,6 +247,9 @@ fn read(rpcs: &[String], contract: &str, launch: &str) -> Rec {
 /// The checks that apply to this launch; the L4 and I3 identities only exist once there is a settlement.
 fn applicable(r: &Rec) -> Vec<&'static str> {
     let mut a = vec!["L1_flow", "L3_positions", "I2_book_sums", "I5_no_overpay", "L6_counters"];
+    if r.dissolved {
+        a.retain(|c| *c != "L3_positions" && *c != "I2_book_sums");
+    }
     if r.passed {
         a.extend(["L4_buckets", "L4_settlement"]);
     }
@@ -280,5 +291,8 @@ pub fn run(args: &[String]) -> ! {
         r.held[0],
         r.held[1]
     );
+    if r.dissolved {
+        println!("SKIP L3_positions, I2_book_sums: launch {launch} is Dissolved, so its position records are deleted by design (the ledger identities still run)");
+    }
     conclude(&format!("C33 launch {launch}"), &r, &applicable(&r), check, (tamperable(&r), one, all), mutate)
 }

@@ -6,7 +6,7 @@ Last updated: 2026-11-11 (docs-sync after round 4, the full judge record, the in
 
 | Fact | Value | Source |
 |---|---|---|
-| Testnet core | `core3.kxi-root-1108.testnet` and `core4.kxi-root-1108.testnet`, `demo` profile, wasm sha256 `665caab5a582a58b2412dfb2e81f1caf2ff94339c8bcc9f8be9ebebb72239c64`, 655,387 bytes, reproducible container build; `verify.sh` CODE line MATCH | `artifacts/SHA256SUMS`, `evidence/testnet-core3/verify-10-f0.txt`, `evidence/swarm-testnet/deploy.json` |
+| Testnet core | `core7.kxi-root-1108.testnet` (market5 linked), `demo` profile, wasm sha256 `c55bffdbdec7909464c65511219ec77be7d8f765bc037a46350efe713cb8b13b`, 655,376 bytes, reproducible container build from commit `5c2874d`; `verify.sh` CODE line MATCH, C-04 and C-05 PASS. `core3` to `core6` run the previous `665caab5...` | `artifacts/SHA256SUMS`, `evidence/testnet-core7/`, `evidence/verify/claims-C05-core7.txt` |
 | Wasm budget | 700,000 bytes (Dami, 2026-11-10) | `scripts/lint.sh`, DECISIONS-PACK1 seventeenth block |
 | Local build | step B1 of `make judge` prints `e85198ed...`, 675,007 bytes: same source, different toolchain, not what testnet runs | `evidence/judge-run.txt`, `rehearsal/LOG.md` R3-6 |
 | Mainnet | nothing deployed | none |
@@ -26,7 +26,7 @@ Last updated: 2026-11-11 (docs-sync after round 4, the full judge record, the in
 |---|---|---|
 | Pure crates, `kruxa-sim`, `verify.sh` golden, tamper (exit 2), dead RPC (exit 4) | `evidence/judge-fast-run.txt` (U1, V1, T1 to T5), `evidence/verify-tamper.txt`, `evidence/verify-dead-rpc.txt` | |
 | Core lifecycle on NEAR testnet: PASS, FAIL, F0 launch, F1 launch, market trading, keeper | `evidence/testnet-core3/launches.json`, `keeper-*.log`, `verify-2-pass.txt`, `verify-3-fail.txt`, `market-flows.json` | play money; mock USDC, mock Intents, mock factory |
-| Solana genesis F0 through the contract gate | 6 rehearsals (launches 2, 5, 6, 8, 9, 10); launch 10 ran on the deployed `665caab5...`; `verify.sh` exit 0, tamper-all exit 2 each | `evidence/genesis/core3-f0-devnet-launch*.json`, `rehearsal/ROUND2.md`, `ROUND3.md`, `ROUND4.md` |
+| Solana genesis F0 through the contract gate | 6 rehearsals (launches 2, 5, 6, 8, 9, 10); launch 10 ran on the previous deployed `665caab5...` (F0 has not been rerun on the submitted `c55bffdb...`); `verify.sh` exit 0, tamper-all exit 2 each | `evidence/genesis/core3-f0-devnet-launch*.json`, `rehearsal/ROUND2.md`, `ROUND3.md`, `ROUND4.md` |
 | F1 fallback ceremony | launch 4, C16 now passes after the key sweep | `evidence/testnet-core3/verify-4-f1.txt` |
 | S3 against the real `intents.near` wasm | 6 sandbox tests on the hash-pinned wasm | `tests/tests/real_intents.rs`, `fixtures/intents_near.wasm` |
 | Real factory facts (cost kept, no `ft_burn`, `create_token` gas, repeated `storage_deposit` refunded) | `evidence/factory-probe.txt`, `evidence/testnet-core3/real-factory-probe.json` | testnet factory only |
@@ -38,7 +38,7 @@ Last updated: 2026-11-11 (docs-sync after round 4, the full judge record, the in
 
 | Deliverable | What is missing |
 |---|---|
-| Core sandbox suites on the deployed wasm | the sandbox suites run on the local build, not on `665caab5`; the last committed gate-g1 logs are from Nov 8 |
+| Core sandbox suites on the deployed wasm | the full sandbox suite ran on the container bytes `c55bffdb` (324 passed, 0 failed, 0 ignored, pin checked); the earlier pass on `665caab5` had 322 ok and 1 clock-race flake | `evidence/core-wasm-bytes/` |
 | Instant launcher (`contracts/instant`) | ran on testnet against the real factory (`evidence/instant-testnet/run2`); not on mainnet; the launcher has no reproducible build |
 | Core to real-factory `create_trial` | not run: the factory account is fixed at `new` and a fresh core needs about 7 NEAR; only direct factory probes were run (`rehearsal/ROUND2.md` step 2) |
 | API, app, relayer test suites | no committed run record for them (the judge run does not run them); the indexer's live testnet ingest is recorded (see section 1) |

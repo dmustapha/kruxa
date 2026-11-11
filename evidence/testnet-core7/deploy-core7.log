@@ -1,0 +1,9 @@
+created core7.kxi-root-1108.testnet tx=8jyu2EvFsNQNBJG335SrwYM11mHMQoqwcJe9s1LevQxU
+deployed artifacts/kruxa_core.reproducible.wasm -> core7.kxi-root-1108.testnet tx=y6hSbC7rdmYo3tYjpWoqDaUuJwmfXx2d22ukEYoCSC5
+OK   init core7.kxi-root-1108.testnet.new tx=5GcWtnsenH7ZZFZUFRNBjtT3jWCmrMh4MP1X3Hw5oBqD codes=
+view_code sha256 c55bffdbdec7909464c65511219ec77be7d8f765bc037a46350efe713cb8b13b == build (kruxa_core, 655376 B) on core7.kxi-root-1108.testnet
+OK   usdc.storage_deposit core7.kxi-root-1108.testnet tx=ANdgpAXbLbYna1pEgg55g854g6Cg2xxkhibCd3c2zRQU codes=
+Receipt: 73R5ncLto6soQ66WsYqoAWRbRDRTZR91razJ7RtWoTga
+	Log [core7.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"genesis_relayer_set","data":[{"account":"7218da57019c05386280b3a4196e7654279e32c66e129889e17a653fc229cc85"}]}
+OK   core.set_genesis_relayer tx=BhuEbnHycQ2o5S2g9zV5Tp5pzqNti6XRh8X2xfNG5YjU codes=
+root balance NEAR: 3.056

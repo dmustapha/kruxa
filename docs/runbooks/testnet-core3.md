@@ -4,7 +4,7 @@ Account ids and transaction hashes only. NEAR TESTNET and Solana DEVNET, play mo
 
 | Role | Account |
 |---|---|
-| Core, wasm sha256 `665caab5a582a58b2412dfb2e81f1caf2ff94339c8bcc9f8be9ebebb72239c64` (655,387 B, reproducible container build; deployed in round 4, tx `Gu5Msp6rduKg6XZ8RFNbMeT6s2aKM2Tcvmp7GNTgWvza`, equal to `view_code` and `artifacts/SHA256SUMS`; before that the local build `e85198ed...` (675,007 B, round 3), `e338f84d...` (674,863 B, create_token gas 110 Tgas) in round 2 and `7d7b0da2...` in round 1) | `core3.kxi-root-1108.testnet` |
+| Core, wasm sha256 `c55bffdbdec7909464c65511219ec77be7d8f765bc037a46350efe713cb8b13b` (655,376 B, reproducible container build from commit `5c2874d`) on `core7.kxi-root-1108.testnet` (tx `y6hSbC7rdmYo3tYjpWoqDaUuJwmfXx2d22ukEYoCSC5`, equal to `view_code` and `artifacts/SHA256SUMS`; `evidence/testnet-core7/`). Older, kept for their evidence: `665caab5a582a58b2412dfb2e81f1caf2ff94339c8bcc9f8be9ebebb72239c64` (655,387 B, deployed in round 4, tx `Gu5Msp6rduKg6XZ8RFNbMeT6s2aKM2Tcvmp7GNTgWvza`), the local build `e85198ed...` (675,007 B, round 3), `e338f84d...` (674,863 B, create_token gas 110 Tgas) in round 2 and `7d7b0da2...` in round 1 | `core3.kxi-root-1108.testnet` (old hashes), `core7.kxi-root-1108.testnet` (current) |
 | Market (sha256 `c80560d63663fe71526f88de9ebbf5c8c16979c00ed32d1eb11b13c087ae2b26`), core = core3 | `market3.kxi-root-1108.testnet` |
 | Owner / mock USDC / guardian / treasury / relay fees | `kxi-root-1108.testnet`, `usdc.`, `guardian.`, `treasury.`, `relay-fees.` under it |
 | Mock Intents (reused) / mock factory (reused) | `intents.kxa1-owner-1203.testnet`, `factory.kxi-root-0811.testnet` |

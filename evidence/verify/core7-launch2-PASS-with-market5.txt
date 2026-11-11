@@ -1,0 +1,27 @@
+== NEAR recompute (C31-C34, kruxa-sim)
+recomputed outcome=PASS inputs_hash=0684b30f87642bf17db8c565657f9bd9069583eb1643340c84142e82c56e57dd
+stored     pass=true inputs_hash=0684b30f87642bf17db8c565657f9bd9069583eb1643340c84142e82c56e57dd
+MATCH
+C33 launch 2 on core7.kxi-root-1108.testnet: credited=1207000000 open=0 due=206999992 inflight=0 refunded=0 spent=1000000008 positions=15 held_native=775333326 held_intents=0
+PASS L1_flow
+PASS L3_positions
+PASS I2_book_sums
+PASS I5_no_overpay
+PASS L6_counters
+PASS L4_buckets
+PASS L4_settlement
+PASS I3_inputs_frozen
+MATCH C33 launch 2
+C34 market market5.kxi-root-1108.testnet: pools=1 sum_q=435776156 global_q=435776156 platform_unpaid=91054 owed_usdc=0 usdc_expected=436170725 usdc_balance=436170725
+PASS global_q
+PASS usdc_identity
+PASS usdc_custody
+PASS token_identity
+PASS token_custody
+MATCH C34 market5.kxi-root-1108.testnet
+== operator lines (VX-2)
+KEYS: 1 full-access key(s): ed25519:B9HFEuKnKQUazkANBpKCXLZkwbzXM4EavXh6Cgm1gGZr; 0 function-call key(s)
+NOTE: a full-access key is present, so its owner can redeploy this contract.
+CODE: view_code sha256 c55bffdbdec7909464c65511219ec77be7d8f765bc037a46350efe713cb8b13b; reproducible build sha256 c55bffdbdec7909464c65511219ec77be7d8f765bc037a46350efe713cb8b13b; MATCH
+== Solana genesis (C3-C28)
+PENDING: no evidence/genesis-2.json (genesis record not published yet)

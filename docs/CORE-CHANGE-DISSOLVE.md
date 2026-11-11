@@ -32,3 +32,12 @@ Why this keeps every money-safety invariant:
 4. Re-run the testnet lifecycle that exposed the limit: `lifecycle-fail.mjs open` and `finish` with walkers, then `dissolve` and `reclaim_bond`; expect `Dissolved` and the creator bond returned. Add the transcripts under `evidence/` and remove LIMITATIONS item 21.
 5. Re-run the judge (`make judge`, `scripts/gate-g1.sh`, `gate-g2.sh`, `gate-g3.sh`), the attack gallery and the full sandbox suite on the frozen commit; refresh `evidence/judge-run.txt`, the gate evidence and `docs/ATTACK-GALLERY.md`. Earlier testnet evidence stays valid only for the old hash and must be labelled as such.
 6. Re-run the swarm and `verify.sh` against the new account, since the CODE check compares `view_code` with the sums file.
+
+## Status after the testnet rerun (2026-11-11, later)
+
+- Authoritative artifact: the container build of commit `5c2874d139a453839ec544431df0101b4b2cedeb`, sha256 `c55bffdbdec7909464c65511219ec77be7d8f765bc037a46350efe713cb8b13b`, 655,376 bytes, two runs byte-identical. It replaces the provisional `f83c6232...` above (which came from a scratch snapshot with a different embedded revision) and is now in `artifacts/` (core line of `SHA256SUMS`, `SHA256SUMS.reproducible`, `BUILD-KIND`). Market and instant lines were not touched.
+- Step 3 done: fresh deploy `core7.kxi-root-1108.testnet` with `EXPECT_SHA256`; `view_code` equals the hash; market5 linked (`evidence/testnet-core7/deploy-core7.log`, `deploy-market5.log`).
+- Step 4 done: `lifecycle-fail.mjs open` and `finish` with two walkers (one NEAR key, one Solana signature), FAIL, all refunds, `dissolve` succeeded (status Dissolved, invariants all_ok, every position record deleted), and the creator's `reclaim_bond` returned the 0.195 NEAR bond (`evidence/testnet-core7/README.md`, `lifecycle/`). LIMITATIONS item 21 is removed.
+- Verifier follow-up found by that run: `kruxa-sim verify-ledger` (C33) treated a Dissolved launch's empty `list_positions` as an infrastructure error (exit 4). It now accepts exactly zero positions on a Dissolved launch, skips L3 and I2 with a printed note, and still runs L1, L6, I3 and I5; any other count mismatch stays exit 4 (`tools/kruxa-sim/tests/recompute.rs`, two new tests).
+- Behaviour change: after a walker's refund lands, a second `walk` by that key returns `R_NO_POSITION` (the old wasm said "nothing active").
+- Steps 5 and 6 (judge, gates, gallery, full sandbox suite, swarm and `verify.sh` on the new account) are tracked in `rehearsal/LOG.md` and `rehearsal/GATE-EVIDENCE.md`.
