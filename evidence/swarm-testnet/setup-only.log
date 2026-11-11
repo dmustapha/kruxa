@@ -1,0 +1,53 @@
+preflight: core3.kxi-root-1108.testnet global_cap 3000000000 global_held 2300000000 headroom 700000000; trial hard_cap 1000000000; pause None
+preflight: root 1.453 NEAR (reserve 1, spare 0.453); needs 0.364 NEAR (sub-accounts 0.364)
+created sw-h1.kxi-root-1108.testnet tx=EnudAKyV481r5EXyLoXFGBB6qdT2vo2jJ9pnhxdzpLat
+OK   usdc.storage_deposit sw-h1.kxi-root-1108.testnet tx=BzLXP1dZnSQGiqgZiFjaKNAudD7RuCMTRtsdFm6zp8hZ codes=
+OK   usdc.mint 90000000 to sw-h1.kxi-root-1108.testnet tx=9v2coTjuomor9TQ2Sjtd6bVRDo8tMqWDvDX5VNorM1bm codes=
+created sw-h2.kxi-root-1108.testnet tx=AwmnvCpp4rkPAm2FHbXFtbKcM7hCMgq8A5egdGZneBfH
+OK   usdc.storage_deposit sw-h2.kxi-root-1108.testnet tx=7bPcoKDUXmubigCC6cxGo4s5k65xANTXiJ7xBscBfgC6 codes=
+OK   usdc.mint 44000000 to sw-h2.kxi-root-1108.testnet tx=Hzid98PT2AcHotu9sMBbHsRbZVwVLEfAirVYb9rjTgrq codes=
+created sw-h3.kxi-root-1108.testnet tx=49wqn3ZofhRrLXEdsE2b78m9iniHy1btBjQ9yxmx3edo
+OK   usdc.storage_deposit sw-h3.kxi-root-1108.testnet tx=8wbxLNqwJ3T8p7Pf5ngRwCknRXi15P8vmB7MxasiRjdk codes=
+OK   usdc.mint 59000000 to sw-h3.kxi-root-1108.testnet tx=8zpyW2fe9YKCdzJAYKubZjTVQjwEgZbE2Nshf9h5qJZ4 codes=
+created sw-h4.kxi-root-1108.testnet tx=7rTRQepZJqYp6N4yPX8uh4yQmk251d5ALcAw5ofKw5vU
+OK   usdc.storage_deposit sw-h4.kxi-root-1108.testnet tx=33i1cPnSCLLu86aQ6BRqj8qFufmTeqZRfXewfckZp4zC codes=
+OK   usdc.mint 91000000 to sw-h4.kxi-root-1108.testnet tx=2QoTy1QvPJNMJ4MExXRt9rPPXftWhyZ6PEBRuwzponVp codes=
+created sw-h5.kxi-root-1108.testnet tx=nUUHH5Qe9mHvxnCnqHFKDfdReNBYRwEQgoeCUMGLkra
+OK   usdc.storage_deposit sw-h5.kxi-root-1108.testnet tx=CLQM81S8GeXc8HrJCSzT7PWxk4vvsjufrPB8VJKKjNAB codes=
+OK   usdc.mint 27000000 to sw-h5.kxi-root-1108.testnet tx=2StbFDU8SaneWrgezesaanzybPix4ZGowugU1VDqFeEA codes=
+created sw-h6.kxi-root-1108.testnet tx=qgi7B3K3sLRApBjFG4Jf6ayj2SZxC6jWBjxvVmgy8dn
+OK   usdc.storage_deposit sw-h6.kxi-root-1108.testnet tx=EhMYHcNRVmebQtuNpLQX28ujb7AK2cS3XfeDsiXTPn5L codes=
+OK   usdc.mint 59000000 to sw-h6.kxi-root-1108.testnet tx=4Xe6Tm1ygWiw4Wa7TRBd5V4kGEKxWWKbQnAG12cs7Dvp codes=
+created sw-h7.kxi-root-1108.testnet tx=HC6bUw1k7uvgU2MNZmF6gTXJVcZ5bJhLvktBZXyW7YZg
+OK   usdc.storage_deposit sw-h7.kxi-root-1108.testnet tx=3AVcUemrsyJCjwUZgaFTwZtLa7nW9PvGBSKP3ATxao4d codes=
+OK   usdc.mint 41000000 to sw-h7.kxi-root-1108.testnet tx=4dZiGPzgvBf5vBGVoYHBGfSMQZYH2DmD86RjbwSZHFuN codes=
+created sw-w1.kxi-root-1108.testnet tx=6Thr9Ba4pCGogDkE5met1skRbZL6GXdTpwG5wKo5wJfj
+OK   usdc.storage_deposit sw-w1.kxi-root-1108.testnet tx=13yXb4f3Su3eZW54RZWuDFuTxE5EHbp9NbL35WaXSjVR codes=
+OK   usdc.mint 1000000000 to sw-w1.kxi-root-1108.testnet tx=8C3SoZduG2S4vpoKaAQ7scK6KcdqNUuFbwG4EHDrftmi codes=
+created sw-w2.kxi-root-1108.testnet tx=DCjU54k7gKqmpz2MhcNKe25g1zmwQijBmELoryPs5jUH
+OK   usdc.storage_deposit sw-w2.kxi-root-1108.testnet tx=B3GFaVuBiKiMCGmrWiXvpyKHydtKgzLVohcW8FANLmWx codes=
+OK   usdc.mint 1000000000 to sw-w2.kxi-root-1108.testnet tx=8E2wygUXiRiYz7sVAXamuMqUod9X3P9g3dnoave2KQh8 codes=
+created sw-s1.kxi-root-1108.testnet tx=5n3DSigLB1KivtpVqC8T8rKk46m925xcsbTNWrYWybtm
+OK   usdc.storage_deposit sw-s1.kxi-root-1108.testnet tx=HC3R1jKQcU6oT2DoXt5KBsPSicrE1cpdXp9BbbKhAhAa codes=
+OK   usdc.mint 100000000 to sw-s1.kxi-root-1108.testnet tx=D4oJWDozckfpnvVKafXgCH9wSvnuEXbub7QFkqXfdLft codes=
+created sw-s2.kxi-root-1108.testnet tx=Bmpyc9TQC2zguVVCMrBDGm8YnW9jPuRBG4DfZSekogqy
+OK   usdc.storage_deposit sw-s2.kxi-root-1108.testnet tx=ELNCpE9fLvT3JAe1ZBishCqT7FUyS6AWGPaHw21t6hmL codes=
+OK   usdc.mint 100000000 to sw-s2.kxi-root-1108.testnet tx=4e5TN6hiDs4wLiWXgmsXLcKRdCeMqSh4qfc5BWRyepRU codes=
+created sw-y1.kxi-root-1108.testnet tx=78nMd6PYUwk9ecuLuz8EY7sqGVFSERTXUfQyJzsopfVj
+OK   usdc.storage_deposit sw-y1.kxi-root-1108.testnet tx=6uTeu5YiHdjKUSQ5Dqod9LFboSDzT9cPXDeBhvJLvP5r codes=
+OK   usdc.mint 100000000 to sw-y1.kxi-root-1108.testnet tx=E9u53BvfwHvex8j9hkYBesu9o7ukmSgv2dam1NmT2Sjx codes=
+created sw-y2.kxi-root-1108.testnet tx=B4GofxnvhSRYxTGXf6pkz1ATUPVgVa3sfftZi4jnVi2K
+OK   usdc.storage_deposit sw-y2.kxi-root-1108.testnet tx=7yexoNB8uTcVj9C1BizbaKwzDhxwsz6ixqRMRxiL5bhU codes=
+OK   usdc.mint 100000000 to sw-y2.kxi-root-1108.testnet tx=DcQFvjHabAgXPpjBE2nHrWAh46MmA6xTdWJ9qjSx9nVv codes=
+created sw-y3.kxi-root-1108.testnet tx=2vBXNCPBzaryC1PLDkBPLbeXKZtcnGmLwZhcypYN6Xqc
+OK   usdc.storage_deposit sw-y3.kxi-root-1108.testnet tx=3Xumm6iszjpofaPzf6dpWVBC1AF85gMUnCCxBan3FSfo codes=
+OK   usdc.mint 100000000 to sw-y3.kxi-root-1108.testnet tx=27jg931cuhiPTNsWf8D1Yu4k2cN2Q63RgqwcSj5Uaqs5 codes=
+created sw-y4.kxi-root-1108.testnet tx=76ac62FiPXDyCdfWNoj8pwJ4WTDFkf273guRTeEMmork
+OK   usdc.storage_deposit sw-y4.kxi-root-1108.testnet tx=HFoemuJnTeDCWwXoJBmQdYetdgv8TcQWmctCL3jKE81E codes=
+OK   usdc.mint 100000000 to sw-y4.kxi-root-1108.testnet tx=2F5gzKxaLfMLq5U3HzpLAihm9QrPNZrxDzFeY6sxa6RT codes=
+created sw-f.kxi-root-1108.testnet tx=2XXqTZb6o77VJ7UGvJMstCp1CaibNYqfSVj6gGVLBwvt
+OK   usdc.storage_deposit sw-f.kxi-root-1108.testnet tx=HAofi3jSUSsCUYr9FmGB21zgRcgNgEtY5UmwqnMLfRdH codes=
+OK   usdc.mint 100000000 to sw-f.kxi-root-1108.testnet tx=6Jxu1fAD8anBQtorA9WsrG9QyguTXbT4YmCiLnj5pS1A codes=
+setup done
+transactions sent: 48
+SWARM-TESTNET SETUP-OK (setup only, not a swarm verdict)

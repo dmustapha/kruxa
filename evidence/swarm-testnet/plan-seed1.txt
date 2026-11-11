@@ -1,0 +1,48 @@
+swarm-testnet PLAN ONLY (nothing is sent, no keys read): seed 1, 26 recorded events, 16 sub-accounts, round 10 s, core core3.kxi-root-1108.testnet
+== setup (root signs; each account gets a fresh throwaway key saved under ~/.kruxa-secrets/instant-testnet/, never printed)
+  create sw-h1.kxi-root-1108.testnet with 0.017 NEAR; usdc.storage_deposit; usdc.mint 90000000 micro-USDC
+  create sw-h2.kxi-root-1108.testnet with 0.021 NEAR; usdc.storage_deposit; usdc.mint 44000000 micro-USDC
+  create sw-h3.kxi-root-1108.testnet with 0.017 NEAR; usdc.storage_deposit; usdc.mint 59000000 micro-USDC
+  create sw-h4.kxi-root-1108.testnet with 0.017 NEAR; usdc.storage_deposit; usdc.mint 91000000 micro-USDC
+  create sw-h5.kxi-root-1108.testnet with 0.017 NEAR; usdc.storage_deposit; usdc.mint 27000000 micro-USDC
+  create sw-h6.kxi-root-1108.testnet with 0.021 NEAR; usdc.storage_deposit; usdc.mint 59000000 micro-USDC
+  create sw-h7.kxi-root-1108.testnet with 0.017 NEAR; usdc.storage_deposit; usdc.mint 41000000 micro-USDC
+  create sw-w1.kxi-root-1108.testnet with 0.033 NEAR; usdc.storage_deposit; usdc.mint 1000000000 micro-USDC
+  create sw-w2.kxi-root-1108.testnet with 0.025 NEAR; usdc.storage_deposit; usdc.mint 1000000000 micro-USDC
+  create sw-s1.kxi-root-1108.testnet with 0.017 NEAR; usdc.storage_deposit; usdc.mint 100000000 micro-USDC
+  create sw-s2.kxi-root-1108.testnet with 0.021 NEAR; usdc.storage_deposit; usdc.mint 100000000 micro-USDC
+  create sw-y1.kxi-root-1108.testnet with 0.021 NEAR; usdc.storage_deposit; usdc.mint 100000000 micro-USDC
+  create sw-y2.kxi-root-1108.testnet with 0.017 NEAR; usdc.storage_deposit; usdc.mint 100000000 micro-USDC
+  create sw-y3.kxi-root-1108.testnet with 0.017 NEAR; usdc.storage_deposit; usdc.mint 100000000 micro-USDC
+  create sw-y4.kxi-root-1108.testnet with 0.017 NEAR; usdc.storage_deposit; usdc.mint 100000000 micro-USDC
+  create sw-f.kxi-root-1108.testnet with 0.017 NEAR; usdc.storage_deposit; usdc.mint 100000000 micro-USDC
+== create: creator-a creates token sw1t011119.<factory> (mock FT) then create_trial SW1T011119 {"symbol":"SW1T011119","name":"SW1T011119 Swarm Test","total_supply_whole":1000000000,"sale_bps":6000,"lp_bps":2500,"creator_bps":1000,"backer_bps":500,"hard_cap":"1000000000","soft_cap":"600000000","min_buy":"20000000","wallet_bps":200,"min_funders":10,"open_delay_secs":30,"commit_secs":200,"tail_secs":40,"stream_days":30}
+== replay: each round fires at opens_at + (round + 0.5) x 10 s on the chain clock; same-round events go out in parallel
+  round 0: sw-w1.kxi-root-1108.testnet commit 1000000000 (recorded: R_CAP_ACCOUNT)
+  round 1: sw-h6.kxi-root-1108.testnet commit 29500000 (recorded: ok)
+  round 1: sw-w1.kxi-root-1108.testnet commit 100000000 (recorded: ok)
+  round 2: sw-h2.kxi-root-1108.testnet commit 20000000 (recorded: ok)
+  round 2: sw-y1.kxi-root-1108.testnet commit 400000000 (recorded: R_CAP_ACCOUNT)
+  round 3: sw-h4.kxi-root-1108.testnet commit 91000000 (recorded: ok)
+  round 3: sw-h1.kxi-root-1108.testnet commit 90000000 (recorded: ok)
+  round 3: sw-y1.kxi-root-1108.testnet commit 100000000 (recorded: ok)
+  round 4: sw-f.kxi-root-1108.testnet commit 100000000 (recorded: ok)
+  round 5: sw-h2.kxi-root-1108.testnet commit 20000000 (recorded: ok)
+  round 6: sw-y2.kxi-root-1108.testnet commit 100000000 (recorded: ok)
+  round 6: sw-h7.kxi-root-1108.testnet commit 41000000 (recorded: ok)
+  round 6: sw-w1.kxi-root-1108.testnet commit 50000000 (recorded: R_CAP_ACCOUNT)
+  round 8: sw-h3.kxi-root-1108.testnet commit 59000000 (recorded: ok)
+  round 8: sw-w2.kxi-root-1108.testnet commit 1000000000 (recorded: R_CAP_ACCOUNT)
+  round 9: sw-w2.kxi-root-1108.testnet commit 100000000 (recorded: ok)
+  round 12: sw-y3.kxi-root-1108.testnet commit 100000000 (recorded: ok)
+  round 12: sw-w1.kxi-root-1108.testnet commit 50000000 (recorded: R_CAP_ACCOUNT)
+  round 13: sw-h5.kxi-root-1108.testnet commit 27000000 (recorded: ok)
+  round 14: sw-y4.kxi-root-1108.testnet commit 100000000 (recorded: ok)
+  round 14: sw-h6.kxi-root-1108.testnet commit 29500000 (recorded: ok)
+  round 14: sw-w2.kxi-root-1108.testnet commit 50000000 (recorded: R_CAP_ACCOUNT)
+  round 18: sw-w1.kxi-root-1108.testnet commit 50000000 (recorded: R_CAP_ACCOUNT)
+  round 19: sw-s2.kxi-root-1108.testnet commit 100000000 (recorded: ok)
+  round 21: sw-s1.kxi-root-1108.testnet commit 100000000 (recorded: R_WRONG_PHASE)
+  round 21: sw-s2.kxi-root-1108.testnet commit 100000000 (recorded: R_WRONG_PHASE)
+== read back: after walk_end keeper calls settle + settle_positions_page; compare with total 1207000000, funders 15, verdict PASS, settlement and 16 positions
+SWARM-TESTNET PLANNED (no transactions; not a pass)
