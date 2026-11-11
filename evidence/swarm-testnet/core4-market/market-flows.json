@@ -1,0 +1,94 @@
+{
+  "2": {
+    "launch_id": "2",
+    "market": "market4.kxi-root-1108.testnet",
+    "trader": "buyer.kxi-root-1108.testnet",
+    "steps": [
+      {
+        "label": "open_market (permissionless)",
+        "tx": "CgcCWSFaSFrVZ51D3mM6TJp7NYn544BSTo8EzkMvKUe5",
+        "success": false,
+        "codes": [
+          "R_NOTHING"
+        ]
+      },
+      {
+        "label": "mint 100 USDC to the trader (mock USDC)",
+        "tx": "BEDf579VaWKH9shhvgAp52oGEmhxwwUBKAbJ8tPNNznm",
+        "success": true,
+        "codes": []
+      },
+      {
+        "label": "buy 20 USDC (token payout to an unregistered trader is parked as owed)",
+        "tx": "dQGLc8o6X5BB7Zj7r2LkxsGf6iGgzkHyt2Brpkuc5jC",
+        "success": true,
+        "codes": []
+      },
+      {
+        "label": "claim_owed (the parked buy payout)",
+        "tx": "9kDUnngEKtFNC4UxCNag2w4nQCmyRc8w1VTG1dpaHWbG",
+        "success": false,
+        "codes": [
+          "R_NOTHING_TO_CLAIM"
+        ]
+      },
+      {
+        "label": "buy 20 USDC again (registered now)",
+        "tx": "3A16S2hQF5cmVctkPMeeAnuj5f8Yenb7J8fAmBMxFWqe",
+        "success": true,
+        "codes": []
+      },
+      {
+        "label": "sell half back",
+        "tx": "JD78ssxccu4iR4jnPkFfbndaVbVpTdKVN1tTJLnCnvun",
+        "success": true,
+        "codes": []
+      }
+    ],
+    "pool_after_open": {
+      "q": "416666674",
+      "t": "250000000000000",
+      "state": "Open"
+    },
+    "pool_invariants": {
+      "token_custody_identity": true,
+      "k_ge_k0": true
+    },
+    "market_invariants": {
+      "usdc_custody_identity": true,
+      "usdc_custody": "436170725",
+      "usdc_expected": "436170725",
+      "instant_q_matches": true,
+      "global_q": "435776156",
+      "parked_count": 0
+    },
+    "pool_final": {
+      "launch_id": "2",
+      "mode": "trial",
+      "creator": null,
+      "token": "sw1t020509.factory.kxi-root-0811.testnet",
+      "quote": "usdc.kxi-root-1108.testnet",
+      "state": "Open",
+      "q": "435776156",
+      "t": "239151875754080",
+      "opened_ns": "1794390270714384928",
+      "payout_recipient": "creator-a.kxi-root-1108.testnet",
+      "total_supply": "1000000000000000",
+      "charter_hash": "52690d328a74b84627bd5c2d0027d66b5832fad4a77e9396c60b302c02f4aa38",
+      "mint_authority": null,
+      "freeze_authority": null,
+      "terms": {
+        "total_fee_bps": 100,
+        "creator_bps": 5000,
+        "platform_bps": 1500,
+        "holders_bps": 1500,
+        "lp_bps": 1000,
+        "referral_bps": 1000,
+        "opening_fee_start_bps": 0,
+        "opening_decay_minutes": 0,
+        "fee_vest_bps": 5000,
+        "fee_vest_days": 90
+      }
+    }
+  }
+}
