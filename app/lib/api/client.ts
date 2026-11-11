@@ -1,6 +1,6 @@
 // Thin typed GET client for the indexer API. Never throws a bare TypeError at the UI: every failure is an ApiError with a code.
 import { CONFIG } from '../config';
-import { readSnapshot } from './snapshot';
+import { markSnapshotServed, readSnapshot } from './snapshot';
 
 export type ApiErrorCode = 'unreachable' | 'timeout' | 'not_found' | 'bad_request' | 'unavailable' | 'bad_response';
 
@@ -48,6 +48,8 @@ export async function apiGet<T>(path: string, query?: Query, opts: { signal?: Ab
     const code = err?.code ?? (res.status === 404 ? 'not_found' : res.status === 400 ? 'bad_request' : 'unavailable');
     throw new ApiError(code, err?.message ?? `The indexer answered ${res.status}.`, res.status);
   }
+  // A snapshot-mode API (services/api snapshot.ts serve) answers 200 with this header: show the RECORDED strip, never pass it off as live.
+  if (res.headers.get('x-kruxa-data') === 'snapshot') markSnapshotServed((body as { as_of?: { block_time?: number | null } })?.as_of?.block_time ?? null);
   return body as T;
 }
 

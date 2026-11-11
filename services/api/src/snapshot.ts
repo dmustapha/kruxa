@@ -15,7 +15,7 @@ import { createApp } from "./http.ts";
  * Files mirror API paths without the query string (api/launches.json, api/token/1/candles-1h.json). Everything served from a snapshot says so:
  * the header `x-kruxa-data: snapshot`, and `/api/health` carries `status: "snapshot"` with the bake time and the block it was taken at.
  */
-const CORS = { "access-control-allow-origin": "*", "access-control-allow-methods": "GET, HEAD, OPTIONS" };
+const CORS = { "access-control-allow-origin": "*", "access-control-allow-methods": "GET, HEAD, OPTIONS", "access-control-expose-headers": "x-kruxa-data" };
 
 export interface BakeResult {
   files: string[];

@@ -11,7 +11,7 @@ export const glossary: Page = {
     table(
       ['Term', 'Plain meaning'],
       ['Trial launch', 'A launch that is refundable until its deadline and trades only after PASS.'],
-      ['Instant launch', 'A higher-risk launch mode: the token is created and trades once the creator seeds and opens a pool. No trial, verdict, Walk or buyer refund. NEAR only, being built.'],
+      ['Instant launch', 'A higher-risk launch mode: the token is created and trades once the creator seeds and opens a pool. No trial, verdict, Walk or buyer refund. NEAR only, run on testnet, not on mainnet.'],
       ['Badge', 'The label on every launch: TRIAL-VERIFIED or INSTANT (NO TRIAL), plus status labels.'],
       ['Pool seed', 'The creator\'s own USDC that opens an Instant pool. It is not withdrawable.'],
       ['Creator allocation', 'The share of an Instant token\'s supply held for the creator, at most 10%, unlocking after a cliff and then linearly.'],

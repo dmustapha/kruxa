@@ -13,7 +13,7 @@ export const howItWorks: Page = {
   group: 'Start',
   summary: 'Two launch modes: a refundable Trial launch with a verdict anyone can recompute, and an Instant launch that trades at once with no trial and no refund.',
   blocks: [
-    note('warn', `Status on ${STATUS_DATE}, from the project documents: the contracts are tested in a sandbox. Nothing here is claimed to be live on mainnet, and the capped beta is closed. The Instant launcher is being built: its interface is a draft and it is not deployed. Mainnet is real money. Check the labels on each launch (SANDBOX, TESTNET, DEVNET, MAINNET) before you act.`, 'Where this runs today'),
+    note('warn', `Status on ${STATUS_DATE}, from the project documents: the contracts are tested in a sandbox. Nothing here is claimed to be live on mainnet, and the capped beta is closed. The Instant launcher is built, merged and sandbox-tested, and it has run on NEAR testnet, including through the real token factory. It is not deployed on mainnet. Mainnet is real money. Check the labels on each launch (SANDBOX, TESTNET, DEVNET, MAINNET) before you act.`, 'Where this runs today'),
     h2('Two ways to launch'),
     p('A creator picks one mode when they create a launch. Every launch page shows which mode it is, in a badge, so you can tell them apart before you act.'),
     ul(
@@ -124,7 +124,7 @@ export const howItWorks: Page = {
     ),
     p('Full numbers are on [Fees](/docs/fees).'),
     h2('The Instant launch in detail'),
-    note('unproven', 'The launcher contract and its interface are a draft (INSTANT-ABI 1.0.0, 2026-11-08). It has not been deployed or signed, and nothing about it is on mainnet. Treat everything in this section as how it is being built, not as something you can use yet.', 'Being built'),
+    note('unproven', 'The launcher contract and its interface (INSTANT-ABI 1.0.0) are built and merged. The launcher ran end to end on NEAR testnet, including through the real token factory (evidence/instant-testnet/run2). Nothing about it is on mainnet, and it has had no independent audit. Treat everything in this section as testnet behaviour, not as something you can use with real money.', 'Testnet only'),
     p('Instant launch is NEAR only. There is no Solana mint for an Instant token.'),
     ol(
       `The creator calls \`create_instant\` with a NEAR deposit (about ${I.depositNear} NEAR). The launcher creates a fixed-supply factory token of ${I.supplyWhole.toLocaleString('en-US')} whole tokens and checks that the full supply is where it should be.`,

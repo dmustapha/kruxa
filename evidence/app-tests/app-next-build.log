@@ -1,0 +1,55 @@
+▲ Next.js 16.4.5 (webpack)
+✓ Running next.config.mjs took 8ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 3.1s
+  Running TypeScript ...
+  Finished TypeScript in 2.3s ...
+  Collecting page data using 14 workers ...
+  Generating static pages using 14 workers (0/30) ...
+  Generating static pages using 14 workers (7/30) 
+  Generating static pages using 14 workers (14/30) 
+  Generating static pages using 14 workers (22/30) 
+✓ Generating static pages using 14 workers (30/30) in 175ms
+  Finalizing page optimization ...
+  Collecting build traces ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /AGENTS.md
+├ ○ /charter
+├ ○ /create
+├ ○ /creator
+├ ○ /docs
+├   /docs/[slug]
+│ ├ ● /docs/how-it-works
+│ ├ ● /docs/creators
+│ ├ ● /docs/buyers
+│ └ ● [+7 more paths]
+├ ○ /insights
+├ ƒ /launch/[id]
+├ ƒ /launch/[id]/opengraph-image
+├ ƒ /launch/[id]/verify
+├ ƒ /launches
+├ ○ /legal
+├   /legal/[slug]
+│ ├ ● /legal/terms
+│ ├ ● /legal/privacy
+│ └ ● /legal/risk
+├ ○ /llms.txt
+├ ○ /ops-log
+├ ○ /portfolio
+├ ○ /search
+├ ○ /settings
+├ ○ /status
+├ ƒ /token/[id]
+├ ƒ /token/[id]/opengraph-image
+└ ƒ /u/[account]
+
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses generateStaticParams)
+ƒ  (Dynamic)  server-rendered on demand
+
+exit=0

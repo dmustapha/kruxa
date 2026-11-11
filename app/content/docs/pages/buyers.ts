@@ -18,7 +18,7 @@ export const buyers: Page = {
       ['LAUNCHING, OPENS IN, TRADING', 'Where an Instant token is in its steps: creating, seeded and opening, or open for trading.'],
       ['LAUNCH FAILED', 'An Instant launch that never opened. It is not listed by default.'],
     ),
-    note('info', 'The Instant launcher is being built and is not deployed. These badges describe the planned app. Until Instant launches exist, you will only see Trial launches.', 'Being built'),
+    note('info', 'The Instant launcher is built and has run on NEAR testnet, including through the real token factory, but it is not deployed on mainnet. These badges describe what you will see when Instant launches exist on the network you are using. On mainnet you will only see Trial launches until the capped beta opens.', 'Testnet only'),
     h2('Commit from a NEAR wallet (Trial launches)'),
     ol(
       'Hold USDC on NEAR. If you hold something else, swap to USDC first. The app links a route but does not swap for you.',

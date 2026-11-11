@@ -1,0 +1,16 @@
+
+> kruxa-venue@0.1.0 test
+> vitest run
+
+
+ RUN  v3.2.4 /Users/MAC/near-hack/kruxa-repo/.claude/worktrees/agent-a9e31145ff9cbdf42/services/venue
+
+ ✓ test/network.test.ts (6 tests) 648ms
+   ✓ cli mainnet refusal > exits non-zero before any RPC call when mainnet lacks confirmation  646ms
+
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+   Start at  03:25:03
+   Duration  1.88s (transform 859ms, setup 0ms, collect 854ms, tests 648ms, environment 0ms, prepare 60ms)
+
+exit=0

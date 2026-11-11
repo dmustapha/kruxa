@@ -1,0 +1,56 @@
+
+> kruxa-api@1.0.0 test
+> node --test --test-concurrency=1 test/*.test.ts
+
+(node:26904) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ health reports fixture status and a stable state hash (18.288375ms)
+✔ launch feed: stages, search, filters, paging (7.210125ms)
+✔ launch detail, errors, and read-only (2.61825ms)
+✔ token page: safety indicators never invent facts (2.227167ms)
+✔ candles: ascending, fixture-labelled, latest-N and fill (1.348584ms)
+✔ trades page newest first without overlap; holders and depth (3.770292ms)
+✔ creator desk, portfolio and verify (4.082833ms)
+✔ csv exports have the documented headers (2.560667ms)
+✔ every path in the OpenAPI file is served (16.047ms)
+✔ SSE: a newly ingested trade arrives on the stream with a fixture label, and Last-Event-ID replays (65.250333ms)
+✔ phase and tab: exclusive, cover every launch, and the tab filter matches them (4.50275ms)
+✔ search matches name, symbol and accounts server side (3.6225ms)
+✔ token page: supply, token and market accounts, fee terms, window stats (2.992583ms)
+✔ genesis: confirmed with null authorities, pending, and none (3.333084ms)
+✔ stats: honest aggregates that reconcile with the underlying rows (1.77425ms)
+✔ ops-log: pause, freeze, cap and market events, newest first, paged, with launcher scope (2.710958ms)
+✔ external_pool event surfaces a venue link; unknown contracts cannot inject one (2.87125ms)
+✔ instant feed: launch_type filter, default hides failed instants, trial results unchanged (5.360584ms)
+✔ tabs stay exclusive and cover every launch, with instants included (5.2165ms)
+✔ instant launch detail: no verdict, no genesis, steps with receipts, vesting at the API clock (2.397416ms)
+✔ instant token page: pool mode and creator from the market, instant safety tiles only, windows and fees as for trials (2.046166ms)
+✔ trades flag declared wallets (creator, payout recipient) (0.648458ms)
+✔ creator desk and portfolio carry the instant allocation (1.298708ms)
+✔ stats keep trial and instant apart, with source labels (0.798458ms)
+(node:26905) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ /api/ops/status: operating state for the status page (11.946333ms)
+✔ /api/ops/status shows a freeze as paused once its time is up (18.193459ms)
+✔ upgrade queue endpoint: pending, applied and cancelled, newest first (2.07775ms)
+✔ halts endpoint: active filter and reasons (6.89925ms)
+✔ force-resolves endpoint: queue and execution (1.014041ms)
+✔ solvency endpoint: newest first, a failing report is visible (0.650125ms)
+✔ owed endpoint: outstanding balances, by account and scope (1.154625ms)
+✔ launch custody endpoint: token allocation, sweeps, refunds and the lengthened stream (2.649542ms)
+✔ the creator desk meter follows a lengthened stream and lists the alloc claim (0.864125ms)
+✔ launch genesis endpoint: reopen history, F0 messages, attestations (2.912208ms)
+✔ verify: the indexer replays the rolling book hash (2.003542ms)
+✔ ops-log carries the new events with categories, launch ids and filters (3.062625ms)
+✔ existing endpoints keep their shape: launch feed, token page, stats and health still answer (5.40525ms)
+✔ snapshot: bake from the fixture store, serve it, and every page equals the live API (37.767125ms)
+✔ OpenAPI documents every new endpoint and every $ref resolves (0.385375ms)
+ℹ tests 39
+ℹ suites 0
+ℹ pass 39
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 580.207
+exit=0

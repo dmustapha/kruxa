@@ -23,3 +23,16 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+  services:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        pkg: [services/indexer, services/api, services/venue, relayer]
+    defaults: { run: { working-directory: "${{ matrix.pkg }}" } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "24" }
+      - run: npm ci
+      - run: npm test

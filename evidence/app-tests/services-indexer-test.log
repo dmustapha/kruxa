@@ -1,0 +1,295 @@
+
+> kruxa-indexer@1.0.0 test
+> node --test --test-concurrency=2 test/*.test.ts
+
+indexer: skipped upgrade_queued at 122: bad code_hash
+indexer: skipped creator_alloc_claimed at 136: unknown launch 99
+(node:75816) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ every core event the contract emits is in the parser's allow list (0.430084ms)
+✔ new core events count only from the configured core account (0.27825ms)
+✔ halted and resumed track the halt per launch with a count and the first reason (7.966209ms)
+✔ upgrade queue: queue, supersede, cancel, apply (1.908542ms)
+✔ force-resolve: queued, executed against the oldest match, or recorded alone when the queue was missed (1.235542ms)
+✔ solvency_report keeps both legs, a missing intents leg as null, and the alert flag (0.95825ms)
+✔ owed balances: core NEAR, market token and launcher token are kept apart; balance is credited minus claimed (1.174833ms)
+✔ custody: creator allocation, sweeps, failed legs re-credit, stream lengthening, refund and refusal counters (3.004958ms)
+✔ genesis: abort keeps the reason, reopen resets the record and counts, F0 messages and attestations accumulate (3.710833ms)
+✔ pause, freeze, cap, relayer and gate events fold into the operating-state flags (1.461667ms)
+✔ book hash fold: the replay equals the logged hash on honest events and flags the first tampered one (44.380042ms)
+✔ the full fixture exercises every event kind this work added (3.070333ms)
+✔ reorg: rolling back to just before each new event kind equals a store that never saw it (1344.869916ms)
+✔ reorg: replacing the tail with a branch that carries different ops events converges on the branch (83.253ms)
+✔ idempotent replay: re-delivering the ops blocks, a rebuild, and a reversed delivery of the ops tail all give one state hash (1353.908208ms)
+✔ a database written by schema 3 is dropped and refolded, keeping its events (new projections appear) (75.03325ms)
+(node:75817) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ parseLogLine accepts kruxa 1.0.0 and rejects look-alikes (0.486917ms)
+✔ extractEvents drops logs from unwatched contracts, wrong-kind events and failed receipts (0.812834ms)
+(node:75818) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ RPC block scan rebuilds the same read model as the primary source, skipping unrelated transactions (71.207208ms)
+✔ RPC scan follows ft_transfer_call to a watched account, and scanAllTransactions resolves the rest (102.859083ms)
+✔ RPC scan: a skipped height reads as null, finalHeight is the final block, a window too small misses a late receipt (1.508ms)
+✔ fallback: a failing primary is served by the secondary, the breaker skips it, and it returns after the cooldown (4.165458ms)
+✔ fallback: neardata first, then RPC mid-stream, still converges on the same state as one source (59.005792ms)
+indexer: skipped verdict at 1038: unknown launch 4
+indexer: skipped pass_allocated at 1038: unknown launch 4
+indexer: skipped verdict at 1036: unknown launch 2
+indexer: skipped verdict at 1038: unknown launch 4
+indexer: skipped pass_allocated at 1038: unknown launch 4
+indexer: skipped verdict at 1034: unknown launch 1
+indexer: skipped pass_allocated at 1034: unknown launch 1
+indexer: skipped verdict at 1036: unknown launch 2
+indexer: skipped verdict at 1038: unknown launch 4
+indexer: skipped pass_allocated at 1038: unknown launch 4
+indexer: skipped verdict at 1034: unknown launch 1
+indexer: skipped pass_allocated at 1034: unknown launch 1
+indexer: skipped verdict at 1036: unknown launch 2
+indexer: skipped verdict at 1038: unknown launch 4
+indexer: skipped pass_allocated at 1038: unknown launch 4
+indexer: skipped verdict at 1034: unknown launch 1
+indexer: skipped pass_allocated at 1034: unknown launch 1
+indexer: skipped verdict at 1036: unknown launch 2
+indexer: skipped verdict at 1038: unknown launch 4
+indexer: skipped pass_allocated at 1038: unknown launch 4
+indexer: skipped verdict at 1034: unknown launch 1
+indexer: skipped pass_allocated at 1034: unknown launch 1
+indexer: skipped verdict at 1036: unknown launch 2
+indexer: skipped verdict at 1038: unknown launch 4
+indexer: skipped pass_allocated at 1038: unknown launch 4
+indexer: skipped contributed at 1026: unknown launch 4
+indexer: skipped verdict at 1034: unknown launch 1
+indexer: skipped pass_allocated at 1034: unknown launch 1
+indexer: skipped verdict at 1036: unknown launch 2
+indexer: skipped verdict at 1038: unknown launch 4
+indexer: skipped pass_allocated at 1038: unknown launch 4
+indexer: skipped contributed at 1024: unknown launch 4
+indexer: skipped contributed at 1026: unknown launch 4
+indexer: skipped verdict at 1034: unknown launch 1
+indexer: skipped pass_allocated at 1034: unknown launch 1
+indexer: skipped verdict at 1036: unknown launch 2
+indexer: skipped verdict at 1038: unknown launch 4
+indexer: skipped pass_allocated at 1038: unknown launch 4
+indexer: skipped contributed at 1022: unknown launch 4
+indexer: skipped contributed at 1024: unknown launch 4
+indexer: skipped contributed at 1026: unknown launch 4
+indexer: skipped verdict at 1034: unknown launch 1
+indexer: skipped pass_allocated at 1034: unknown launch 1
+indexer: skipped verdict at 1036: unknown launch 2
+indexer: skipped verdict at 1038: unknown launch 4
+indexer: skipped pass_allocated at 1038: unknown launch 4
+indexer: skipped contributed at 1020: unknown launch 2
+indexer: skipped contributed at 1022: unknown launch 4
+indexer: skipped contributed at 1024: unknown launch 4
+indexer: skipped contributed at 1026: unknown launch 4
+indexer: skipped verdict at 1034: unknown launch 1
+indexer: skipped pass_allocated at 1034: unknown launch 1
+indexer: skipped verdict at 1036: unknown launch 2
+indexer: skipped verdict at 1038: unknown launch 4
+indexer: skipped pass_allocated at 1038: unknown launch 4
+indexer: skipped contributed at 1018: unknown launch 2
+indexer: skipped contributed at 1020: unknown launch 2
+indexer: skipped contributed at 1022: unknown launch 4
+indexer: skipped contributed at 1024: unknown launch 4
+indexer: skipped contributed at 1026: unknown launch 4
+indexer: skipped verdict at 1034: unknown launch 1
+indexer: skipped pass_allocated at 1034: unknown launch 1
+indexer: skipped verdict at 1036: unknown launch 2
+indexer: skipped verdict at 1038: unknown launch 4
+indexer: skipped pass_allocated at 1038: unknown launch 4
+indexer: skipped walked at 1016: unknown launch 1
+indexer: skipped contributed at 1018: unknown launch 2
+indexer: skipped contributed at 1020: unknown launch 2
+indexer: skipped contributed at 1022: unknown launch 4
+indexer: skipped contributed at 1024: unknown launch 4
+indexer: skipped contributed at 1026: unknown launch 4
+indexer: skipped verdict at 1034: unknown launch 1
+indexer: skipped pass_allocated at 1034: unknown launch 1
+indexer: skipped verdict at 1036: unknown launch 2
+indexer: skipped verdict at 1038: unknown launch 4
+indexer: skipped pass_allocated at 1038: unknown launch 4
+indexer: skipped contributed at 1014: unknown launch 1
+indexer: skipped walked at 1016: unknown launch 1
+indexer: skipped contributed at 1018: unknown launch 2
+indexer: skipped contributed at 1020: unknown launch 2
+indexer: skipped contributed at 1022: unknown launch 4
+indexer: skipped contributed at 1024: unknown launch 4
+indexer: skipped contributed at 1026: unknown launch 4
+indexer: skipped verdict at 1034: unknown launch 1
+indexer: skipped pass_allocated at 1034: unknown launch 1
+indexer: skipped verdict at 1036: unknown launch 2
+indexer: skipped verdict at 1038: unknown launch 4
+indexer: skipped pass_allocated at 1038: unknown launch 4
+indexer: skipped contributed at 1012: unknown launch 1
+indexer: skipped contributed at 1014: unknown launch 1
+indexer: skipped walked at 1016: unknown launch 1
+indexer: skipped contributed at 1018: unknown launch 2
+indexer: skipped contributed at 1020: unknown launch 2
+indexer: skipped contributed at 1022: unknown launch 4
+indexer: skipped contributed at 1024: unknown launch 4
+indexer: skipped contributed at 1026: unknown launch 4
+indexer: skipped verdict at 1034: unknown launch 1
+indexer: skipped pass_allocated at 1034: unknown launch 1
+indexer: skipped verdict at 1036: unknown launch 2
+indexer: skipped verdict at 1038: unknown launch 4
+indexer: skipped pass_allocated at 1038: unknown launch 4
+indexer: skipped contributed at 1010: unknown launch 1
+indexer: skipped contributed at 1012: unknown launch 1
+indexer: skipped contributed at 1014: unknown launch 1
+indexer: skipped walked at 1016: unknown launch 1
+indexer: skipped contributed at 1018: unknown launch 2
+indexer: skipped contributed at 1020: unknown launch 2
+indexer: skipped contributed at 1022: unknown launch 4
+indexer: skipped contributed at 1024: unknown launch 4
+indexer: skipped contributed at 1026: unknown launch 4
+indexer: skipped verdict at 1034: unknown launch 1
+indexer: skipped pass_allocated at 1034: unknown launch 1
+indexer: skipped verdict at 1036: unknown launch 2
+indexer: skipped verdict at 1038: unknown launch 4
+indexer: skipped pass_allocated at 1038: unknown launch 4
+indexer: skipped contributed at 1008: unknown launch 1
+indexer: skipped contributed at 1010: unknown launch 1
+indexer: skipped contributed at 1012: unknown launch 1
+indexer: skipped contributed at 1014: unknown launch 1
+indexer: skipped walked at 1016: unknown launch 1
+indexer: skipped contributed at 1018: unknown launch 2
+indexer: skipped contributed at 1020: unknown launch 2
+indexer: skipped contributed at 1022: unknown launch 4
+indexer: skipped contributed at 1024: unknown launch 4
+indexer: skipped contributed at 1026: unknown launch 4
+indexer: skipped verdict at 1034: unknown launch 1
+indexer: skipped pass_allocated at 1034: unknown launch 1
+indexer: skipped verdict at 1036: unknown launch 2
+indexer: skipped verdict at 1038: unknown launch 4
+indexer: skipped pass_allocated at 1038: unknown launch 4
+indexer: skipped contributed at 1006: unknown launch 1
+indexer: skipped contributed at 1008: unknown launch 1
+indexer: skipped contributed at 1010: unknown launch 1
+indexer: skipped contributed at 1012: unknown launch 1
+indexer: skipped contributed at 1014: unknown launch 1
+indexer: skipped walked at 1016: unknown launch 1
+indexer: skipped contributed at 1018: unknown launch 2
+indexer: skipped contributed at 1020: unknown launch 2
+indexer: skipped contributed at 1022: unknown launch 4
+indexer: skipped contributed at 1024: unknown launch 4
+indexer: skipped contributed at 1026: unknown launch 4
+indexer: skipped verdict at 1034: unknown launch 1
+indexer: skipped pass_allocated at 1034: unknown launch 1
+indexer: skipped verdict at 1036: unknown launch 2
+indexer: skipped verdict at 1038: unknown launch 4
+indexer: skipped pass_allocated at 1038: unknown launch 4
+indexer: skipped contributed at 1006: unknown launch 1
+indexer: skipped contributed at 1008: unknown launch 1
+indexer: skipped contributed at 1010: unknown launch 1
+indexer: skipped contributed at 1012: unknown launch 1
+indexer: skipped contributed at 1014: unknown launch 1
+indexer: skipped walked at 1016: unknown launch 1
+indexer: skipped contributed at 1018: unknown launch 2
+indexer: skipped contributed at 1020: unknown launch 2
+indexer: skipped verdict at 1034: unknown launch 1
+indexer: skipped pass_allocated at 1034: unknown launch 1
+indexer: skipped verdict at 1036: unknown launch 2
+indexer: skipped contributed at 1006: unknown launch 1
+indexer: skipped contributed at 1008: unknown launch 1
+indexer: skipped contributed at 1010: unknown launch 1
+indexer: skipped contributed at 1012: unknown launch 1
+indexer: skipped contributed at 1014: unknown launch 1
+indexer: skipped walked at 1016: unknown launch 1
+indexer: skipped verdict at 1034: unknown launch 1
+indexer: skipped pass_allocated at 1034: unknown launch 1
+indexer: skipped instant_opened at 1700: launcher event for trial id 1
+indexer: skipped verdict at 1702: core event for instant id 1000000000
+indexer: skipped pool_opened at 1704: pool mode instant does not match id 3
+indexer: skipped pool_opened at 1706: pool mode trial does not match id 1000000003
+indexer: skipped pool_opened at 1086: unknown launch 1000000000
+indexer: skipped swap at 1096: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1100: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1110: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1116: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1120: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1126: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1130: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1134: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1140: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1144: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1148: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1154: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1158: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1162: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1168: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1172: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1176: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1182: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1186: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1192: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1196: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1198: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1200: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1202: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1204: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1206: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1208: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1210: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1212: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1214: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1216: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1218: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1220: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1222: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1224: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1226: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1228: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1230: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1232: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1234: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1236: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1238: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1240: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1242: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1246: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1248: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1250: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1252: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1254: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1256: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1258: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1260: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1262: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1264: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1266: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1268: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1270: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1272: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1274: swap before pool_opened for launch 1000000000
+indexer: skipped swap at 1276: swap before pool_opened for launch 1000000000
+(node:75836) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ fixture fold: launches, verdicts, pool, balances (90.254875ms)
+✔ candles: OHLC invariants and volume equals trade volume at every interval (73.308834ms)
+✔ idempotent: re-delivering every block changes nothing (104.594959ms)
+✔ replay: same events always yield the same state hash (incremental, rebuild, fresh store, file-backed) (205.167ms)
+✔ out-of-order delivery of whole blocks converges on the same hash (89.457ms)
+✔ reorg: a different hash at a known height raises, rollback then re-ingest of the new branch is clean (93.9115ms)
+✔ file-backed store uses WAL and survives reopen with the same hash (84.497292ms)
+✔ name and total supply come from charter_created; nothing is invented when absent (85.724ms)
+✔ swaps follow MARKET-ABI M-A: holders and referral are 0, red_* ride inside lp, slices sum to the fee (85.051792ms)
+✔ failed launch fixture: every backer refunded, one payout retried, launch dissolved (81.221083ms)
+✔ genesis events fold; later committed never downgrades confirmed (82.962417ms)
+✔ a database from an older schema is refolded from its events on open (106.656ms)
+✔ instant launch folds: mode from the authenticated pool, no verdict or book, vesting claim recorded (81.791917ms)
+✔ id namespaces: launcher cannot touch trial ids, core cannot touch instant ids, pool mode must match (99.848584ms)
+✔ launcher logs from unconfigured accounts are ignored, and a store without a launcher still folds trials (21.071459ms)
+(node:76669) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ tailer catches up through skipped heights and resumes from the checkpoint (65.898542ms)
+✔ tailer follows a reorg: orphaned blocks vanish, the new branch is folded (76.69275ms)
+ℹ tests 40
+ℹ suites 0
+ℹ pass 40
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3071.910041
+exit=0
