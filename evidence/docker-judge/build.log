@@ -1,0 +1,2502 @@
+attempt 3, trixie base
+#0 building with "colima" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.judge
+#1 transferring dockerfile: 2.84kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/rust:1.95.0-trixie
+#2 DONE 2.9s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 220B done
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 transferring context: 200.79kB 0.1s done
+#4 DONE 0.1s
+
+#5 [1/6] FROM docker.io/library/rust:1.95.0-trixie@sha256:f49565f188ee00bc2a18dd418183f2c5f23ef7d6e691890517ed341a598f67c3
+#5 resolve docker.io/library/rust:1.95.0-trixie@sha256:f49565f188ee00bc2a18dd418183f2c5f23ef7d6e691890517ed341a598f67c3 done
+#5 sha256:a1cf2cb93351b346d344327f955d34c9f46e3023fa4e5caa0b7c0e5812adbbab 0B / 179.51MB 0.2s
+#5 sha256:2882152811f66f9d033b8e9ebaa0473ab189d50d1a24186fe1ee418225e96521 0B / 226.33MB 0.2s
+#5 sha256:39feea71264a587b284d92fded7754becc4682529629dd95c8bc3dd25a948a27 0B / 67.59MB 0.2s
+#5 sha256:f28313c8eaf165ac06f26bda4877768677cf5e44e5c61ec169a81b436b2e985b 0B / 25.03MB 0.2s
+#5 sha256:a1cf2cb93351b346d344327f955d34c9f46e3023fa4e5caa0b7c0e5812adbbab 9.44MB / 179.51MB 4.0s
+#5 sha256:f28313c8eaf165ac06f26bda4877768677cf5e44e5c61ec169a81b436b2e985b 2.10MB / 25.03MB 3.9s
+#5 sha256:2882152811f66f9d033b8e9ebaa0473ab189d50d1a24186fe1ee418225e96521 2.10MB / 226.33MB 5.2s
+#5 sha256:39feea71264a587b284d92fded7754becc4682529629dd95c8bc3dd25a948a27 1.05MB / 67.59MB 5.2s
+#5 sha256:f28313c8eaf165ac06f26bda4877768677cf5e44e5c61ec169a81b436b2e985b 4.19MB / 25.03MB 6.0s
+#5 sha256:a1cf2cb93351b346d344327f955d34c9f46e3023fa4e5caa0b7c0e5812adbbab 18.87MB / 179.51MB 6.9s
+#5 sha256:f28313c8eaf165ac06f26bda4877768677cf5e44e5c61ec169a81b436b2e985b 6.29MB / 25.03MB 8.1s
+#5 sha256:a1cf2cb93351b346d344327f955d34c9f46e3023fa4e5caa0b7c0e5812adbbab 28.31MB / 179.51MB 9.4s
+#5 sha256:f28313c8eaf165ac06f26bda4877768677cf5e44e5c61ec169a81b436b2e985b 8.39MB / 25.03MB 10.2s
+#5 sha256:2882152811f66f9d033b8e9ebaa0473ab189d50d1a24186fe1ee418225e96521 4.19MB / 226.33MB 10.3s
+#5 sha256:39feea71264a587b284d92fded7754becc4682529629dd95c8bc3dd25a948a27 3.15MB / 67.59MB 10.3s
+#5 sha256:a1cf2cb93351b346d344327f955d34c9f46e3023fa4e5caa0b7c0e5812adbbab 37.75MB / 179.51MB 12.5s
+#5 sha256:f28313c8eaf165ac06f26bda4877768677cf5e44e5c61ec169a81b436b2e985b 10.49MB / 25.03MB 12.4s
+#5 sha256:f28313c8eaf165ac06f26bda4877768677cf5e44e5c61ec169a81b436b2e985b 12.58MB / 25.03MB 14.2s
+#5 sha256:2882152811f66f9d033b8e9ebaa0473ab189d50d1a24186fe1ee418225e96521 8.39MB / 226.33MB 15.4s
+#5 sha256:39feea71264a587b284d92fded7754becc4682529629dd95c8bc3dd25a948a27 5.24MB / 67.59MB 15.4s
+#5 sha256:a1cf2cb93351b346d344327f955d34c9f46e3023fa4e5caa0b7c0e5812adbbab 47.19MB / 179.51MB 15.8s
+#5 sha256:f28313c8eaf165ac06f26bda4877768677cf5e44e5c61ec169a81b436b2e985b 14.68MB / 25.03MB 16.1s
+#5 sha256:f28313c8eaf165ac06f26bda4877768677cf5e44e5c61ec169a81b436b2e985b 16.78MB / 25.03MB 17.9s
+#5 sha256:a1cf2cb93351b346d344327f955d34c9f46e3023fa4e5caa0b7c0e5812adbbab 56.62MB / 179.51MB 19.3s
+#5 sha256:f28313c8eaf165ac06f26bda4877768677cf5e44e5c61ec169a81b436b2e985b 18.87MB / 25.03MB 19.7s
+#5 sha256:2882152811f66f9d033b8e9ebaa0473ab189d50d1a24186fe1ee418225e96521 12.58MB / 226.33MB 20.5s
+#5 sha256:39feea71264a587b284d92fded7754becc4682529629dd95c8bc3dd25a948a27 7.34MB / 67.59MB 20.5s
+#5 sha256:f28313c8eaf165ac06f26bda4877768677cf5e44e5c61ec169a81b436b2e985b 20.97MB / 25.03MB 21.2s
+#5 sha256:f28313c8eaf165ac06f26bda4877768677cf5e44e5c61ec169a81b436b2e985b 23.07MB / 25.03MB 22.5s
+#5 sha256:a1cf2cb93351b346d344327f955d34c9f46e3023fa4e5caa0b7c0e5812adbbab 66.06MB / 179.51MB 22.8s
+#5 sha256:f28313c8eaf165ac06f26bda4877768677cf5e44e5c61ec169a81b436b2e985b 25.03MB / 25.03MB 24.9s done
+#5 sha256:635135721e54f918d2d81497bc66b71f98aee3b440dd6498218827c56d7d277f 0B / 49.67MB 0.2s
+#5 sha256:a1cf2cb93351b346d344327f955d34c9f46e3023fa4e5caa0b7c0e5812adbbab 75.50MB / 179.51MB 25.7s
+#5 sha256:2882152811f66f9d033b8e9ebaa0473ab189d50d1a24186fe1ee418225e96521 16.78MB / 226.33MB 25.5s
+#5 sha256:39feea71264a587b284d92fded7754becc4682529629dd95c8bc3dd25a948a27 9.44MB / 67.59MB 25.5s
+#5 sha256:a1cf2cb93351b346d344327f955d34c9f46e3023fa4e5caa0b7c0e5812adbbab 84.93MB / 179.51MB 29.3s
+#5 sha256:635135721e54f918d2d81497bc66b71f98aee3b440dd6498218827c56d7d277f 3.15MB / 49.67MB 5.1s
+#5 sha256:2882152811f66f9d033b8e9ebaa0473ab189d50d1a24186fe1ee418225e96521 20.97MB / 226.33MB 30.6s
+#5 sha256:39feea71264a587b284d92fded7754becc4682529629dd95c8bc3dd25a948a27 11.53MB / 67.59MB 30.6s
+#5 sha256:a1cf2cb93351b346d344327f955d34c9f46e3023fa4e5caa0b7c0e5812adbbab 94.37MB / 179.51MB 32.7s
+#5 sha256:635135721e54f918d2d81497bc66b71f98aee3b440dd6498218827c56d7d277f 6.29MB / 49.67MB 9.7s
+#5 sha256:2882152811f66f9d033b8e9ebaa0473ab189d50d1a24186fe1ee418225e96521 26.21MB / 226.33MB 35.7s
+#5 sha256:39feea71264a587b284d92fded7754becc4682529629dd95c8bc3dd25a948a27 14.68MB / 67.59MB 35.7s
+#5 sha256:a1cf2cb93351b346d344327f955d34c9f46e3023fa4e5caa0b7c0e5812adbbab 103.81MB / 179.51MB 37.2s
+#5 sha256:635135721e54f918d2d81497bc66b71f98aee3b440dd6498218827c56d7d277f 9.44MB / 49.67MB 14.7s
+#5 sha256:a1cf2cb93351b346d344327f955d34c9f46e3023fa4e5caa0b7c0e5812adbbab 113.25MB / 179.51MB 40.5s
+#5 sha256:2882152811f66f9d033b8e9ebaa0473ab189d50d1a24186fe1ee418225e96521 31.46MB / 226.33MB 40.8s
+#5 sha256:39feea71264a587b284d92fded7754becc4682529629dd95c8bc3dd25a948a27 17.83MB / 67.59MB 40.8s
+#5 sha256:a1cf2cb93351b346d344327f955d34c9f46e3023fa4e5caa0b7c0e5812adbbab 122.68MB / 179.51MB 43.5s
+#5 sha256:635135721e54f918d2d81497bc66b71f98aee3b440dd6498218827c56d7d277f 12.58MB / 49.67MB 19.2s
+#5 sha256:2882152811f66f9d033b8e9ebaa0473ab189d50d1a24186fe1ee418225e96521 35.65MB / 226.33MB 45.9s
+#5 sha256:39feea71264a587b284d92fded7754becc4682529629dd95c8bc3dd25a948a27 20.97MB / 67.59MB 45.9s
+#5 sha256:a1cf2cb93351b346d344327f955d34c9f46e3023fa4e5caa0b7c0e5812adbbab 132.12MB / 179.51MB 46.5s
+#5 sha256:635135721e54f918d2d81497bc66b71f98aee3b440dd6498218827c56d7d277f 15.73MB / 49.67MB 23.1s
+#5 sha256:a1cf2cb93351b346d344327f955d34c9f46e3023fa4e5caa0b7c0e5812adbbab 141.56MB / 179.51MB 49.4s
+#5 sha256:2882152811f66f9d033b8e9ebaa0473ab189d50d1a24186fe1ee418225e96521 39.85MB / 226.33MB 51.0s
+#5 sha256:39feea71264a587b284d92fded7754becc4682529629dd95c8bc3dd25a948a27 24.12MB / 67.59MB 51.0s
+#5 sha256:635135721e54f918d2d81497bc66b71f98aee3b440dd6498218827c56d7d277f 18.87MB / 49.67MB 27.2s
+#5 sha256:a1cf2cb93351b346d344327f955d34c9f46e3023fa4e5caa0b7c0e5812adbbab 150.99MB / 179.51MB 52.8s
+#5 sha256:a1cf2cb93351b346d344327f955d34c9f46e3023fa4e5caa0b7c0e5812adbbab 160.43MB / 179.51MB 55.8s
+#5 sha256:635135721e54f918d2d81497bc66b71f98aee3b440dd6498218827c56d7d277f 22.02MB / 49.67MB 30.8s
+#5 sha256:2882152811f66f9d033b8e9ebaa0473ab189d50d1a24186fe1ee418225e96521 44.04MB / 226.33MB 56.1s
+#5 sha256:39feea71264a587b284d92fded7754becc4682529629dd95c8bc3dd25a948a27 26.21MB / 67.59MB 56.1s
+#5 sha256:a1cf2cb93351b346d344327f955d34c9f46e3023fa4e5caa0b7c0e5812adbbab 169.87MB / 179.51MB 58.7s
+#5 sha256:635135721e54f918d2d81497bc66b71f98aee3b440dd6498218827c56d7d277f 25.17MB / 49.67MB 34.2s
+#5 sha256:2882152811f66f9d033b8e9ebaa0473ab189d50d1a24186fe1ee418225e96521 46.14MB / 226.33MB 61.2s
+#5 sha256:39feea71264a587b284d92fded7754becc4682529629dd95c8bc3dd25a948a27 29.36MB / 67.59MB 61.2s
+#5 sha256:a1cf2cb93351b346d344327f955d34c9f46e3023fa4e5caa0b7c0e5812adbbab 179.31MB / 179.51MB 61.8s
+#5 sha256:a1cf2cb93351b346d344327f955d34c9f46e3023fa4e5caa0b7c0e5812adbbab 179.51MB / 179.51MB 61.9s done
+#5 sha256:635135721e54f918d2d81497bc66b71f98aee3b440dd6498218827c56d7d277f 28.31MB / 49.67MB 37.2s
+#5 sha256:635135721e54f918d2d81497bc66b71f98aee3b440dd6498218827c56d7d277f 31.46MB / 49.67MB 39.9s
+#5 sha256:39feea71264a587b284d92fded7754becc4682529629dd95c8bc3dd25a948a27 33.55MB / 67.59MB 65.1s
+#5 sha256:2882152811f66f9d033b8e9ebaa0473ab189d50d1a24186fe1ee418225e96521 51.38MB / 226.33MB 66.3s
+#5 sha256:635135721e54f918d2d81497bc66b71f98aee3b440dd6498218827c56d7d277f 34.60MB / 49.67MB 42.2s
+#5 sha256:39feea71264a587b284d92fded7754becc4682529629dd95c8bc3dd25a948a27 37.75MB / 67.59MB 68.4s
+#5 sha256:635135721e54f918d2d81497bc66b71f98aee3b440dd6498218827c56d7d277f 37.75MB / 49.67MB 44.6s
+#5 sha256:635135721e54f918d2d81497bc66b71f98aee3b440dd6498218827c56d7d277f 40.89MB / 49.67MB 46.2s
+#5 sha256:39feea71264a587b284d92fded7754becc4682529629dd95c8bc3dd25a948a27 41.94MB / 67.59MB 71.1s
+#5 sha256:2882152811f66f9d033b8e9ebaa0473ab189d50d1a24186fe1ee418225e96521 59.77MB / 226.33MB 71.4s
+#5 sha256:635135721e54f918d2d81497bc66b71f98aee3b440dd6498218827c56d7d277f 44.04MB / 49.67MB 47.8s
+#5 sha256:39feea71264a587b284d92fded7754becc4682529629dd95c8bc3dd25a948a27 46.14MB / 67.59MB 73.8s
+#5 sha256:635135721e54f918d2d81497bc66b71f98aee3b440dd6498218827c56d7d277f 47.19MB / 49.67MB 49.3s
+#5 sha256:635135721e54f918d2d81497bc66b71f98aee3b440dd6498218827c56d7d277f 49.67MB / 49.67MB 50.4s
+#5 sha256:635135721e54f918d2d81497bc66b71f98aee3b440dd6498218827c56d7d277f 49.67MB / 49.67MB 50.5s done
+#5 extracting sha256:635135721e54f918d2d81497bc66b71f98aee3b440dd6498218827c56d7d277f
+#5 extracting sha256:635135721e54f918d2d81497bc66b71f98aee3b440dd6498218827c56d7d277f 0.6s done
+#5 extracting sha256:f28313c8eaf165ac06f26bda4877768677cf5e44e5c61ec169a81b436b2e985b
+#5 sha256:2882152811f66f9d033b8e9ebaa0473ab189d50d1a24186fe1ee418225e96521 70.25MB / 226.33MB 76.5s
+#5 extracting sha256:f28313c8eaf165ac06f26bda4877768677cf5e44e5c61ec169a81b436b2e985b 0.3s done
+#5 sha256:39feea71264a587b284d92fded7754becc4682529629dd95c8bc3dd25a948a27 50.33MB / 67.59MB 76.8s
+#5 sha256:39feea71264a587b284d92fded7754becc4682529629dd95c8bc3dd25a948a27 54.53MB / 67.59MB 79.8s
+#5 sha256:2882152811f66f9d033b8e9ebaa0473ab189d50d1a24186fe1ee418225e96521 81.79MB / 226.33MB 80.9s
+#5 sha256:39feea71264a587b284d92fded7754becc4682529629dd95c8bc3dd25a948a27 58.72MB / 67.59MB 82.1s
+#5 sha256:2882152811f66f9d033b8e9ebaa0473ab189d50d1a24186fe1ee418225e96521 93.32MB / 226.33MB 84.2s
+#5 sha256:39feea71264a587b284d92fded7754becc4682529629dd95c8bc3dd25a948a27 62.91MB / 67.59MB 85.2s
+#5 sha256:2882152811f66f9d033b8e9ebaa0473ab189d50d1a24186fe1ee418225e96521 104.86MB / 226.33MB 88.5s
+#5 sha256:39feea71264a587b284d92fded7754becc4682529629dd95c8bc3dd25a948a27 67.11MB / 67.59MB 88.7s
+#5 sha256:39feea71264a587b284d92fded7754becc4682529629dd95c8bc3dd25a948a27 67.59MB / 67.59MB 88.9s done
+#5 extracting sha256:39feea71264a587b284d92fded7754becc4682529629dd95c8bc3dd25a948a27
+#5 extracting sha256:39feea71264a587b284d92fded7754becc4682529629dd95c8bc3dd25a948a27 1.1s done
+#5 sha256:2882152811f66f9d033b8e9ebaa0473ab189d50d1a24186fe1ee418225e96521 116.39MB / 226.33MB 92.1s
+#5 sha256:2882152811f66f9d033b8e9ebaa0473ab189d50d1a24186fe1ee418225e96521 127.93MB / 226.33MB 96.3s
+#5 sha256:2882152811f66f9d033b8e9ebaa0473ab189d50d1a24186fe1ee418225e96521 139.46MB / 226.33MB 99.9s
+#5 sha256:2882152811f66f9d033b8e9ebaa0473ab189d50d1a24186fe1ee418225e96521 150.99MB / 226.33MB 102.9s
+#5 sha256:2882152811f66f9d033b8e9ebaa0473ab189d50d1a24186fe1ee418225e96521 162.53MB / 226.33MB 107.0s
+#5 sha256:2882152811f66f9d033b8e9ebaa0473ab189d50d1a24186fe1ee418225e96521 174.06MB / 226.33MB 111.0s
+#5 sha256:2882152811f66f9d033b8e9ebaa0473ab189d50d1a24186fe1ee418225e96521 185.60MB / 226.33MB 116.1s
+#5 sha256:2882152811f66f9d033b8e9ebaa0473ab189d50d1a24186fe1ee418225e96521 197.13MB / 226.33MB 119.1s
+#5 sha256:2882152811f66f9d033b8e9ebaa0473ab189d50d1a24186fe1ee418225e96521 208.67MB / 226.33MB 122.4s
+#5 sha256:2882152811f66f9d033b8e9ebaa0473ab189d50d1a24186fe1ee418225e96521 220.20MB / 226.33MB 125.7s
+#5 sha256:2882152811f66f9d033b8e9ebaa0473ab189d50d1a24186fe1ee418225e96521 226.33MB / 226.33MB 127.4s done
+#5 extracting sha256:2882152811f66f9d033b8e9ebaa0473ab189d50d1a24186fe1ee418225e96521
+#5 extracting sha256:2882152811f66f9d033b8e9ebaa0473ab189d50d1a24186fe1ee418225e96521 3.4s done
+#5 DONE 130.8s
+
+#5 [1/6] FROM docker.io/library/rust:1.95.0-trixie@sha256:f49565f188ee00bc2a18dd418183f2c5f23ef7d6e691890517ed341a598f67c3
+#5 extracting sha256:a1cf2cb93351b346d344327f955d34c9f46e3023fa4e5caa0b7c0e5812adbbab
+#5 extracting sha256:a1cf2cb93351b346d344327f955d34c9f46e3023fa4e5caa0b7c0e5812adbbab 2.5s done
+#5 DONE 133.3s
+
+#6 [2/6] RUN apt-get update  && apt-get install -y --no-install-recommends python3 jq curl ca-certificates build-essential pkg-config libssl-dev libudev-dev clang  && rm -rf /var/lib/apt/lists/*
+#6 1.493 Get:1 http://deb.debian.org/debian trixie InRelease [140 kB]
+#6 2.276 Get:2 http://deb.debian.org/debian trixie-updates InRelease [47.3 kB]
+#6 2.520 Get:3 http://deb.debian.org/debian-security trixie-security InRelease [43.4 kB]
+#6 2.914 Get:4 http://deb.debian.org/debian trixie/main arm64 Packages [9614 kB]
+#6 23.75 Get:5 http://deb.debian.org/debian trixie-updates/main arm64 Packages [1108 B]
+#6 23.90 Get:6 http://deb.debian.org/debian-security trixie-security/main arm64 Packages [302 kB]
+#6 24.32 Fetched 10.1 MB in 24s (422 kB/s)
+#6 24.32 Reading package lists...
+#6 24.61 Reading package lists...
+#6 24.90 Building dependency tree...
+#6 24.97 Reading state information...
+#6 25.09 python3 is already the newest version (3.13.5-1).
+#6 25.09 python3 set to manually installed.
+#6 25.09 The following additional packages will be installed:
+#6 25.09   clang-19 libcap-dev libcap2 libclang-common-19-dev libclang-cpp19
+#6 25.09   libclang1-19 libcurl3t64-gnutls libcurl4-openssl-dev libcurl4t64 libgc1
+#6 25.09   libjq1 libllvm19 libobjc-14-dev libobjc4 libonig5 libssl3t64 libz3-4
+#6 25.09   llvm-19-linker-tools openssl openssl-provider-legacy
+#6 25.09 Suggested packages:
+#6 25.09   clang-19-doc wasi-libc manpages-dev
+#6 25.09 Recommended packages:
+#6 25.09   llvm-19-dev clang-tools-19 libclang-rt-19-dev
+#6 25.19 The following NEW packages will be installed:
+#6 25.19   build-essential clang clang-19 jq libcap-dev libclang-common-19-dev
+#6 25.19   libclang-cpp19 libclang1-19 libgc1 libjq1 libllvm19 libobjc-14-dev libobjc4
+#6 25.19   libonig5 libudev-dev libz3-4 llvm-19-linker-tools pkg-config
+#6 25.19 The following packages will be upgraded:
+#6 25.19   ca-certificates curl libcap2 libcurl3t64-gnutls libcurl4-openssl-dev
+#6 25.19   libcurl4t64 libssl-dev libssl3t64 openssl openssl-provider-legacy
+#6 25.70 10 upgraded, 18 newly installed, 0 to remove and 126 not upgraded.
+#6 25.70 Need to get 62.6 MB of archives.
+#6 25.70 After this operation, 282 MB of additional disk space will be used.
+#6 25.70 Get:1 http://deb.debian.org/debian trixie/main arm64 libcap2 arm64 1:2.75-10+deb13u1+b3 [28.6 kB]
+#6 26.06 Get:2 http://deb.debian.org/debian-security trixie-security/main arm64 libssl-dev arm64 3.5.7-1~deb13u3 [3399 kB]
+#6 28.31 Get:3 http://deb.debian.org/debian-security trixie-security/main arm64 openssl-provider-legacy arm64 3.5.7-1~deb13u3 [314 kB]
+#6 28.50 Get:4 http://deb.debian.org/debian-security trixie-security/main arm64 libssl3t64 arm64 3.5.7-1~deb13u3 [2770 kB]
+#6 30.77 Get:5 http://deb.debian.org/debian-security trixie-security/main arm64 openssl arm64 3.5.7-1~deb13u3 [1473 kB]
+#6 39.07 Get:6 http://deb.debian.org/debian-security trixie-security/main arm64 ca-certificates all 20250419+deb13u1 [161 kB]
+#6 39.57 Get:7 http://deb.debian.org/debian trixie/main arm64 build-essential arm64 12.12 [4624 B]
+#6 39.57 Get:8 http://deb.debian.org/debian trixie/main arm64 libz3-4 arm64 4.13.3-1 [7507 kB]
+#6 49.83 Get:9 http://deb.debian.org/debian trixie/main arm64 libllvm19 arm64 1:19.1.7-3+b1 [23.3 MB]
+#6 82.45 Get:10 http://deb.debian.org/debian trixie/main arm64 libclang-cpp19 arm64 1:19.1.7-3+b1 [12.0 MB]
+#6 91.37 Get:11 http://deb.debian.org/debian trixie/main arm64 libgc1 arm64 1:8.2.8-1 [241 kB]
+#6 91.63 Get:12 http://deb.debian.org/debian trixie/main arm64 libobjc4 arm64 14.2.0-19 [39.4 kB]
+#6 91.86 Get:13 http://deb.debian.org/debian trixie/main arm64 libobjc-14-dev arm64 14.2.0-19 [166 kB]
+#6 92.39 Get:14 http://deb.debian.org/debian trixie/main arm64 libclang-common-19-dev arm64 1:19.1.7-3+b1 [740 kB]
+#6 93.52 Get:15 http://deb.debian.org/debian trixie/main arm64 llvm-19-linker-tools arm64 1:19.1.7-3+b1 [1100 kB]
+#6 96.11 Get:16 http://deb.debian.org/debian trixie/main arm64 libclang1-19 arm64 1:19.1.7-3+b1 [6866 kB]
+#6 111.3 Get:17 http://deb.debian.org/debian trixie/main arm64 clang-19 arm64 1:19.1.7-3+b1 [113 kB]
+#6 111.4 Get:18 http://deb.debian.org/debian trixie/main arm64 clang arm64 1:19.0-63 [6244 B]
+#6 111.7 Get:19 http://deb.debian.org/debian-security trixie-security/main arm64 libcurl4-openssl-dev arm64 8.14.1-2+deb13u7 [496 kB]
+#6 112.8 Get:20 http://deb.debian.org/debian-security trixie-security/main arm64 curl arm64 8.14.1-2+deb13u7 [263 kB]
+#6 113.5 Get:21 http://deb.debian.org/debian-security trixie-security/main arm64 libcurl4t64 arm64 8.14.1-2+deb13u7 [361 kB]
+#6 114.5 Get:22 http://deb.debian.org/debian trixie/main arm64 libonig5 arm64 6.9.9-1+b1 [181 kB]
+#6 115.0 Get:23 http://deb.debian.org/debian-security trixie-security/main arm64 libjq1 arm64 1.7.1-6+deb13u4 [152 kB]
+#6 115.5 Get:24 http://deb.debian.org/debian-security trixie-security/main arm64 jq arm64 1.7.1-6+deb13u4 [78.4 kB]
+#6 116.0 Get:25 http://deb.debian.org/debian trixie/main arm64 libcap-dev arm64 1:2.75-10+deb13u1+b3 [471 kB]
+#6 117.6 Get:26 http://deb.debian.org/debian-security trixie-security/main arm64 libcurl3t64-gnutls arm64 8.14.1-2+deb13u7 [354 kB]
+#6 118.6 Get:27 http://deb.debian.org/debian trixie/main arm64 libudev-dev arm64 257.13-1~deb13u1 [75.2 kB]
+#6 118.8 Get:28 http://deb.debian.org/debian trixie/main arm64 pkg-config arm64 1.8.1-4 [14.0 kB]
+#6 119.7 Preconfiguring packages ...
+#6 119.9 Fetched 62.6 MB in 1min 35s (658 kB/s)
+#6 119.9 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 26150 files and directories currently installed.)
+#6 119.9 Preparing to unpack .../libcap2_1%3a2.75-10+deb13u1+b3_arm64.deb ...
+#6 119.9 Unpacking libcap2:arm64 (1:2.75-10+deb13u1+b3) over (1:2.75-10+deb13u1+b1) ...
+#6 120.0 Setting up libcap2:arm64 (1:2.75-10+deb13u1+b3) ...
+#6 120.0 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 26150 files and directories currently installed.)
+#6 120.0 Preparing to unpack .../libssl-dev_3.5.7-1~deb13u3_arm64.deb ...
+#6 120.0 Unpacking libssl-dev:arm64 (3.5.7-1~deb13u3) over (3.5.6-1~deb13u1) ...
+#6 120.5 Preparing to unpack .../openssl-provider-legacy_3.5.7-1~deb13u3_arm64.deb ...
+#6 120.5 Unpacking openssl-provider-legacy (3.5.7-1~deb13u3) over (3.5.6-1~deb13u1) ...
+#6 120.6 Setting up openssl-provider-legacy (3.5.7-1~deb13u3) ...
+#6 120.6 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 26150 files and directories currently installed.)
+#6 120.6 Preparing to unpack .../libssl3t64_3.5.7-1~deb13u3_arm64.deb ...
+#6 120.6 Unpacking libssl3t64:arm64 (3.5.7-1~deb13u3) over (3.5.6-1~deb13u1) ...
+#6 120.7 Setting up libssl3t64:arm64 (3.5.7-1~deb13u3) ...
+#6 120.8 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 26150 files and directories currently installed.)
+#6 120.8 Preparing to unpack .../00-openssl_3.5.7-1~deb13u3_arm64.deb ...
+#6 120.8 Unpacking openssl (3.5.7-1~deb13u3) over (3.5.6-1~deb13u1) ...
+#6 121.1 Preparing to unpack .../01-ca-certificates_20250419+deb13u1_all.deb ...
+#6 121.1 Unpacking ca-certificates (20250419+deb13u1) over (20250419) ...
+#6 121.3 Selecting previously unselected package build-essential.
+#6 121.3 Preparing to unpack .../02-build-essential_12.12_arm64.deb ...
+#6 121.3 Unpacking build-essential (12.12) ...
+#6 121.3 Selecting previously unselected package libz3-4:arm64.
+#6 121.3 Preparing to unpack .../03-libz3-4_4.13.3-1_arm64.deb ...
+#6 121.3 Unpacking libz3-4:arm64 (4.13.3-1) ...
+#6 121.6 Selecting previously unselected package libllvm19:arm64.
+#6 121.6 Preparing to unpack .../04-libllvm19_1%3a19.1.7-3+b1_arm64.deb ...
+#6 121.6 Unpacking libllvm19:arm64 (1:19.1.7-3+b1) ...
+#6 122.3 Selecting previously unselected package libclang-cpp19.
+#6 122.3 Preparing to unpack .../05-libclang-cpp19_1%3a19.1.7-3+b1_arm64.deb ...
+#6 122.3 Unpacking libclang-cpp19 (1:19.1.7-3+b1) ...
+#6 122.7 Selecting previously unselected package libgc1:arm64.
+#6 122.7 Preparing to unpack .../06-libgc1_1%3a8.2.8-1_arm64.deb ...
+#6 122.7 Unpacking libgc1:arm64 (1:8.2.8-1) ...
+#6 122.7 Selecting previously unselected package libobjc4:arm64.
+#6 122.7 Preparing to unpack .../07-libobjc4_14.2.0-19_arm64.deb ...
+#6 122.7 Unpacking libobjc4:arm64 (14.2.0-19) ...
+#6 122.7 Selecting previously unselected package libobjc-14-dev:arm64.
+#6 122.7 Preparing to unpack .../08-libobjc-14-dev_14.2.0-19_arm64.deb ...
+#6 122.7 Unpacking libobjc-14-dev:arm64 (14.2.0-19) ...
+#6 122.8 Selecting previously unselected package libclang-common-19-dev:arm64.
+#6 122.8 Preparing to unpack .../09-libclang-common-19-dev_1%3a19.1.7-3+b1_arm64.deb ...
+#6 122.8 Unpacking libclang-common-19-dev:arm64 (1:19.1.7-3+b1) ...
+#6 122.8 Selecting previously unselected package llvm-19-linker-tools.
+#6 122.8 Preparing to unpack .../10-llvm-19-linker-tools_1%3a19.1.7-3+b1_arm64.deb ...
+#6 122.8 Unpacking llvm-19-linker-tools (1:19.1.7-3+b1) ...
+#6 122.9 Selecting previously unselected package libclang1-19.
+#6 122.9 Preparing to unpack .../11-libclang1-19_1%3a19.1.7-3+b1_arm64.deb ...
+#6 122.9 Unpacking libclang1-19 (1:19.1.7-3+b1) ...
+#6 123.1 Selecting previously unselected package clang-19.
+#6 123.1 Preparing to unpack .../12-clang-19_1%3a19.1.7-3+b1_arm64.deb ...
+#6 123.1 Unpacking clang-19 (1:19.1.7-3+b1) ...
+#6 123.1 Selecting previously unselected package clang.
+#6 123.1 Preparing to unpack .../13-clang_1%3a19.0-63_arm64.deb ...
+#6 123.1 Unpacking clang (1:19.0-63) ...
+#6 123.1 Preparing to unpack .../14-libcurl4-openssl-dev_8.14.1-2+deb13u7_arm64.deb ...
+#6 123.1 Unpacking libcurl4-openssl-dev:arm64 (8.14.1-2+deb13u7) over (8.14.1-2+deb13u3) ...
+#6 123.2 Preparing to unpack .../15-curl_8.14.1-2+deb13u7_arm64.deb ...
+#6 123.2 Unpacking curl (8.14.1-2+deb13u7) over (8.14.1-2+deb13u3) ...
+#6 123.3 Preparing to unpack .../16-libcurl4t64_8.14.1-2+deb13u7_arm64.deb ...
+#6 123.3 Unpacking libcurl4t64:arm64 (8.14.1-2+deb13u7) over (8.14.1-2+deb13u3) ...
+#6 123.3 Selecting previously unselected package libonig5:arm64.
+#6 123.3 Preparing to unpack .../17-libonig5_6.9.9-1+b1_arm64.deb ...
+#6 123.3 Unpacking libonig5:arm64 (6.9.9-1+b1) ...
+#6 123.4 Selecting previously unselected package libjq1:arm64.
+#6 123.4 Preparing to unpack .../18-libjq1_1.7.1-6+deb13u4_arm64.deb ...
+#6 123.4 Unpacking libjq1:arm64 (1.7.1-6+deb13u4) ...
+#6 123.4 Selecting previously unselected package jq.
+#6 123.4 Preparing to unpack .../19-jq_1.7.1-6+deb13u4_arm64.deb ...
+#6 123.4 Unpacking jq (1.7.1-6+deb13u4) ...
+#6 123.4 Selecting previously unselected package libcap-dev:arm64.
+#6 123.4 Preparing to unpack .../20-libcap-dev_1%3a2.75-10+deb13u1+b3_arm64.deb ...
+#6 123.4 Unpacking libcap-dev:arm64 (1:2.75-10+deb13u1+b3) ...
+#6 123.4 Preparing to unpack .../21-libcurl3t64-gnutls_8.14.1-2+deb13u7_arm64.deb ...
+#6 123.5 Unpacking libcurl3t64-gnutls:arm64 (8.14.1-2+deb13u7) over (8.14.1-2+deb13u3) ...
+#6 123.5 Selecting previously unselected package libudev-dev:arm64.
+#6 123.5 Preparing to unpack .../22-libudev-dev_257.13-1~deb13u1_arm64.deb ...
+#6 123.5 Unpacking libudev-dev:arm64 (257.13-1~deb13u1) ...
+#6 123.5 Selecting previously unselected package pkg-config:arm64.
+#6 123.5 Preparing to unpack .../23-pkg-config_1.8.1-4_arm64.deb ...
+#6 123.5 Unpacking pkg-config:arm64 (1.8.1-4) ...
+#6 123.6 Setting up libcurl4t64:arm64 (8.14.1-2+deb13u7) ...
+#6 123.6 Setting up libclang-common-19-dev:arm64 (1:19.1.7-3+b1) ...
+#6 123.6 Setting up libcurl3t64-gnutls:arm64 (8.14.1-2+deb13u7) ...
+#6 123.6 Setting up libz3-4:arm64 (4.13.3-1) ...
+#6 123.6 Setting up libssl-dev:arm64 (3.5.7-1~deb13u3) ...
+#6 123.6 Setting up pkg-config:arm64 (1.8.1-4) ...
+#6 123.6 Setting up libgc1:arm64 (1:8.2.8-1) ...
+#6 123.6 Setting up build-essential (12.12) ...
+#6 123.6 Setting up curl (8.14.1-2+deb13u7) ...
+#6 123.6 Setting up openssl (3.5.7-1~deb13u3) ...
+#6 123.6 Setting up libcap-dev:arm64 (1:2.75-10+deb13u1+b3) ...
+#6 123.6 Setting up libonig5:arm64 (6.9.9-1+b1) ...
+#6 123.7 Setting up libllvm19:arm64 (1:19.1.7-3+b1) ...
+#6 123.7 Setting up libclang1-19 (1:19.1.7-3+b1) ...
+#6 123.7 Setting up libjq1:arm64 (1.7.1-6+deb13u4) ...
+#6 123.7 Setting up libobjc4:arm64 (14.2.0-19) ...
+#6 123.7 Setting up libobjc-14-dev:arm64 (14.2.0-19) ...
+#6 123.7 Setting up ca-certificates (20250419+deb13u1) ...
+#6 124.3 Updating certificates in /etc/ssl/certs...
+#6 124.7 rehash: warning: skipping ca-certificates.crt, it does not contain exactly one certificate or CRL
+#6 124.7 0 added, 2 removed; done.
+#6 124.7 Setting up libcurl4-openssl-dev:arm64 (8.14.1-2+deb13u7) ...
+#6 124.7 Setting up libudev-dev:arm64 (257.13-1~deb13u1) ...
+#6 124.7 Setting up jq (1.7.1-6+deb13u4) ...
+#6 124.7 Setting up llvm-19-linker-tools (1:19.1.7-3+b1) ...
+#6 124.7 Setting up libclang-cpp19 (1:19.1.7-3+b1) ...
+#6 124.7 Setting up clang-19 (1:19.1.7-3+b1) ...
+#6 124.7 Setting up clang (1:19.0-63) ...
+#6 124.8 Processing triggers for libc-bin (2.41-12+deb13u3) ...
+#6 124.9 Processing triggers for ca-certificates (20250419+deb13u1) ...
+#6 124.9 Updating certificates in /etc/ssl/certs...
+#6 125.1 0 added, 0 removed; done.
+#6 125.1 Running hooks in /etc/ca-certificates/update.d...
+#6 125.1 done.
+#6 DONE 125.3s
+
+#7 [3/6] RUN cargo install cargo-near --version 0.23.0 --locked
+#7 0.277     Updating crates.io index
+#7 2.341  Downloading crates ...
+#7 3.440   Downloaded cargo-near v0.23.0
+#7 3.932   Installing cargo-near v0.23.0
+#7 3.938     Updating crates.io index
+#7 85.81 warning: package `chacha20 v0.10.0` in Cargo.lock is yanked in registry `crates-io`, consider running without --locked
+#7 85.92     Updating crates.io index
+#7 91.13  Downloading crates ...
+#7 91.99   Downloaded brownstone v3.0.0
+#7 92.22   Downloaded block-buffer v0.9.0
+#7 92.23   Downloaded digest v0.9.0
+#7 92.31   Downloaded dirs v6.0.0
+#7 92.39   Downloaded futures-io v0.3.32
+#7 92.40   Downloaded binary-merge v0.1.2
+#7 92.42   Downloaded enum-map-derive v0.17.0
+#7 92.44   Downloaded dunce v1.0.5
+#7 92.51   Downloaded dirs-sys v0.5.0
+#7 92.54   Downloaded dirs-next v2.0.0
+#7 92.56   Downloaded document-features v0.2.12
+#7 92.60   Downloaded block-buffer v0.10.4
+#7 92.95   Downloaded is-docker v0.2.0
+#7 92.95   Downloaded inplace-vec-builder v0.1.1
+#7 92.95   Downloaded hyper-tls v0.6.0
+#7 92.96   Downloaded heck v0.5.0
+#7 92.96   Downloaded futures-macro v0.3.32
+#7 92.96   Downloaded errno v0.3.14
+#7 92.96   Downloaded equivalent v1.0.2
+#7 93.33   Downloaded idna_adapter v1.2.2
+#7 93.34   Downloaded http-body v1.0.1
+#7 93.34   Downloaded funty v2.0.0
+#7 93.36   Downloaded indent_write v2.2.0
+#7 93.36   Downloaded futures-task v0.3.32
+#7 93.46   Downloaded futures-sink v0.3.32
+#7 93.46   Downloaded foreign-types v0.3.2
+#7 93.55   Downloaded hex v0.4.3
+#7 93.77   Downloaded indenter v0.3.4
+#7 93.78   Downloaded heck v0.4.1
+#7 93.78   Downloaded generic-array v0.14.7
+#7 93.78   Downloaded futures-core v0.3.32
+#7 93.78   Downloaded form_urlencoded v1.2.2
+#7 93.78   Downloaded fnv v1.0.7
+#7 94.02   Downloaded foreign-types-shared v0.1.1
+#7 94.04   Downloaded hmac v0.9.0
+#7 94.18   Downloaded ident_case v1.0.1
+#7 94.19   Downloaded arrayref v0.3.9
+#7 94.19   Downloaded fixed-hash v0.7.0
+#7 94.19   Downloaded dirs-sys-next v0.1.2
+#7 94.19   Downloaded is_terminal_polyfill v1.70.2
+#7 94.19   Downloaded is-wsl v0.4.0
+#7 94.29   Downloaded joinery v2.1.0
+#7 94.33   Downloaded keccak v0.1.6
+#7 94.34   Downloaded json_comments v0.2.2
+#7 94.42   Downloaded enum-map v2.7.3
+#7 94.42   Downloaded ed25519 v2.2.3
+#7 94.42   Downloaded dyn-clone v1.0.20
+#7 94.44   Downloaded elsa v1.11.2
+#7 94.48   Downloaded fallible-iterator v0.3.0
+#7 94.48   Downloaded easy-ext v0.2.9
+#7 94.53   Downloaded erased-serde v0.4.10
+#7 94.56   Downloaded either v1.16.0
+#7 94.58   Downloaded fuzzy-matcher v0.3.7
+#7 94.59   Downloaded easy-ext v1.0.3
+#7 94.61   Downloaded find-msvc-tools v0.1.9
+#7 94.64   Downloaded hyper-rustls v0.27.9
+#7 94.65   Downloaded filetime v0.2.29
+#7 94.65   Downloaded fallible-iterator v0.2.0
+#7 94.85   Downloaded foldhash v0.2.0
+#7 94.86   Downloaded fastrand v2.4.1
+#7 94.95   Downloaded futures-executor v0.3.32
+#7 94.96   Downloaded humantime v2.3.0
+#7 95.09   Downloaded darling_macro v0.20.11
+#7 95.32   Downloaded ipnet v2.12.0
+#7 95.33   Downloaded http-body-util v0.1.3
+#7 95.33   Downloaded hex-conservative v0.2.2
+#7 95.33   Downloaded fs_extra v1.3.0
+#7 95.65   Downloaded foldhash v0.1.5
+#7 95.74   Downloaded adler2 v2.0.1
+#7 95.88   Downloaded globset v0.4.18
+#7 95.91   Downloaded anstyle-query v1.1.5
+#7 95.92   Downloaded autocfg v1.5.1
+#7 96.02   Downloaded displaydoc v0.2.6
+#7 96.07   Downloaded ledger-transport v0.11.0
+#7 96.07   Downloaded leb128 v0.2.7
+#7 96.08   Downloaded ledger-transport-hid v0.11.0
+#7 96.08   Downloaded ledger-apdu v0.11.0
+#7 96.21   Downloaded cfg-if v1.0.4
+#7 96.26   Downloaded link-cplusplus v1.0.12
+#7 96.30   Downloaded linked-hash-map v0.5.6
+#7 96.33   Downloaded crunchy v0.2.4
+#7 96.34   Downloaded darling_macro v0.21.3
+#7 96.55   Downloaded crypto-common v0.1.7
+#7 96.72   Downloaded mime v0.3.17
+#7 96.72   Downloaded matchers v0.2.0
+#7 96.72   Downloaded lru-slab v0.1.2
+#7 96.79   Downloaded maybe-owned v0.3.4
+#7 96.81   Downloaded cxxbridge-flags v1.0.194
+#7 97.09   Downloaded jobserver v0.1.34
+#7 97.10   Downloaded cfg_aliases v0.2.1
+#7 97.24   Downloaded eyre v0.6.12
+#7 97.65   Downloaded iana-time-zone v0.1.65
+#7 97.66   Downloaded interactive-clap-derive v0.3.2
+#7 97.67   Downloaded futures-channel v0.3.32
+#7 97.91   Downloaded derive_builder_macro v0.20.2
+#7 98.84   Downloaded near-schema-checker-macro v0.38.0
+#7 98.86   Downloaded near-schema-checker-core v0.38.0
+#7 99.22   Downloaded new_debug_unreachable v1.0.6
+#7 99.22   Downloaded no-std-compat v0.4.1
+#7 99.61   Downloaded number_prefix v0.4.0
+#7 99.65   Downloaded option-ext v0.2.0
+#7 99.84   Downloaded opaque-debug v0.3.1
+#7 100.1   Downloaded pathdiff v0.2.3
+#7 100.7   Downloaded atomic-waker v1.1.2
+#7 100.7   Downloaded getrandom v0.4.3
+#7 100.9   Downloaded icu_provider v2.2.0
+#7 101.2   Downloaded crypto-mac v0.9.1
+#7 102.2   Downloaded cargo-platform v0.2.0
+#7 102.2   Downloaded near-stdx v0.38.0
+#7 102.2   Downloaded derive_arbitrary v1.4.2
+#7 102.6   Downloaded colorchoice v1.0.5
+#7 102.8   Downloaded ordered-float v4.6.0
+#7 103.0   Downloaded precomputed-hash v0.1.1
+#7 103.1   Downloaded anstyle v1.0.14
+#7 103.1   Downloaded is-terminal v0.4.17
+#7 103.3   Downloaded httparse v1.10.1
+#7 103.4   Downloaded getrandom v0.3.4
+#7 103.4   Downloaded indexmap v1.9.3
+#7 103.8   Downloaded near-abi v0.4.4
+#7 103.9   Downloaded near-indexer-primitives v0.38.0
+#7 103.9   Downloaded near-schema-checker-lib v0.38.0
+#7 104.3   Downloaded memmap2 v0.9.11
+#7 104.3   Downloaded lock_api v0.4.14
+#7 104.3   Downloaded near-time v0.38.0
+#7 104.3   Downloaded near-slip10 v0.4.8
+#7 104.4   Downloaded native-tls v0.2.18
+#7 104.4   Downloaded openssl-probe v0.2.1
+#7 104.6   Downloaded clap_lex v1.1.1
+#7 104.7   Downloaded bytesize v1.3.3
+#7 104.9   Downloaded getrandom v0.2.17
+#7 105.0   Downloaded encode_unicode v1.0.0
+#7 105.4   Downloaded near-config-utils v0.38.0
+#7 105.5   Downloaded near-gas v0.3.6
+#7 105.5   Downloaded cpufeatures v0.2.17
+#7 105.6   Downloaded percent-encoding v2.3.2
+#7 105.6   Downloaded plain v0.2.3
+#7 105.6   Downloaded primitive-types v0.10.1
+#7 105.7   Downloaded debugid v0.8.0
+#7 105.7   Downloaded anyhow v1.0.102
+#7 105.8   Downloaded num-conv v0.2.2
+#7 105.9   Downloaded libloading v0.8.9
+#7 106.1   Downloaded openssl-macros v0.1.1
+#7 106.2   Downloaded nu-ansi-term v0.50.3
+#7 106.2   Downloaded num-rational v0.3.2
+#7 106.4   Downloaded potential_utf v0.1.5
+#7 106.5   Downloaded ppv-lite86 v0.2.21
+#7 106.5   Downloaded async-trait v0.1.89
+#7 106.8   Downloaded near-account-id v3.0.0
+#7 107.0   Downloaded indicatif v0.17.11
+#7 107.4   Downloaded color-spantrace v0.3.0
+#7 107.5   Downloaded indicatif v0.18.4
+#7 107.9   Downloaded phf_shared v0.11.3
+#7 107.9   Downloaded pkcs8 v0.10.2
+#7 107.9   Downloaded pin-project-lite v0.2.17
+#7 107.9   Downloaded pkg-config v0.3.33
+#7 108.4   Downloaded litemap v0.8.2
+#7 108.5   Downloaded openssl-probe v0.1.6
+#7 108.8   Downloaded proc-macro-error-attr v1.0.4
+#7 109.0   Downloaded ref-cast v1.0.25
+#7 109.1   Downloaded parking_lot_core v0.9.12
+#7 109.1   Downloaded arbitrary v1.4.2
+#7 109.2   Downloaded elementtree v1.2.3
+#7 109.4   Downloaded ignore v0.4.26
+#7 109.7   Downloaded radium v0.7.0
+#7 109.9   Downloaded near-fmt v0.38.0
+#7 109.9   Downloaded derive_builder_core v0.20.2
+#7 110.5   Downloaded scroll_derive v0.12.1
+#7 110.5   Downloaded lazy_static v1.5.0
+#7 110.5   Downloaded itoa v1.0.18
+#7 110.5   Downloaded digest v0.10.7
+#7 110.5   Downloaded near-token v0.3.4
+#7 110.6   Downloaded ordered-float v2.10.1
+#7 110.8   Downloaded proc-macro-crate v3.5.0
+#7 111.0   Downloaded addr2line v0.25.1
+#7 111.0   Downloaded ref-cast-impl v1.0.25
+#7 111.0   Downloaded base64ct v1.8.3
+#7 111.3   Downloaded cargo-util v0.2.21
+#7 111.5   Downloaded icu_properties v2.2.0
+#7 111.6   Downloaded futures v0.3.32
+#7 111.9   Downloaded scopeguard v1.2.0
+#7 111.9   Downloaded cmake v0.1.58
+#7 112.0   Downloaded bs58 v0.4.0
+#7 112.0   Downloaded crossbeam-deque v0.8.6
+#7 112.1   Downloaded near-chain-configs v0.38.0
+#7 112.1   Downloaded bitflags v1.3.2
+#7 112.2   Downloaded byteorder v1.5.0
+#7 112.2   Downloaded convert_case v0.10.0
+#7 112.2   Downloaded rand_chacha v0.3.1
+#7 112.2   Downloaded rustc-hash v2.1.2
+#7 112.2   Downloaded rustc_version v0.4.1
+#7 112.3   Downloaded litrs v1.0.0
+#7 112.4   Downloaded near-socialdb-client v0.17.0
+#7 112.4   Downloaded log v0.4.33
+#7 112.5   Downloaded nom-supreme v0.8.0
+#7 112.5   Downloaded owo-colors v4.3.0
+#7 112.6   Downloaded open v5.3.5
+#7 112.6   Downloaded num-integer v0.1.46
+#7 112.6   Downloaded near-verify-rs v0.3.3
+#7 112.6   Downloaded powerfmt v0.2.0
+#7 112.7   Downloaded same-file v1.0.6
+#7 112.9   Downloaded icu_collections v2.2.0
+#7 112.9   Downloaded hashbrown v0.12.3
+#7 113.1   Downloaded bitflags v2.13.0
+#7 113.1   Downloaded bitcoin_hashes v0.14.2
+#7 113.2   Downloaded flate2 v1.1.9
+#7 113.2   Downloaded borsh-derive v1.6.1
+#7 113.3   Downloaded darling v0.21.3
+#7 113.4   Downloaded anstyle-parse v1.0.0
+#7 113.4   Downloaded clap_derive v4.6.7
+#7 113.5   Downloaded camino v1.2.3
+#7 113.5   Downloaded scratch v1.0.9
+#7 113.5   Downloaded darling v0.20.11
+#7 113.5   Downloaded crossbeam-epoch v0.9.20
+#7 113.5   Downloaded dbus-secret-service v4.1.0
+#7 113.5   Downloaded console v0.15.11
+#7 113.6   Downloaded names v0.14.0
+#7 113.6   Downloaded anstream v1.0.0
+#7 114.0   Downloaded rand_chacha v0.9.0
+#7 114.1   Downloaded rand_core v0.10.1
+#7 114.1   Downloaded deranged v0.5.8
+#7 114.3   Downloaded serde_spanned v0.6.9
+#7 114.5   Downloaded csv-core v0.1.13
+#7 114.5   Downloaded crossbeam-utils v0.8.21
+#7 114.5   Downloaded cargo_metadata v0.21.0
+#7 114.5   Downloaded console v0.16.3
+#7 114.6   Downloaded colored v3.1.1
+#7 114.6   Downloaded cargo-util-schemas v0.8.2
+#7 114.8   Downloaded arrayvec v0.7.7
+#7 114.9   Downloaded derive_builder v0.20.2
+#7 115.0   Downloaded signature v2.2.0
+#7 115.0   Downloaded quote v1.0.46
+#7 115.4   Downloaded serde_urlencoded v0.7.1
+#7 115.6   Downloaded proc-macro-error v1.0.4
+#7 115.6   Downloaded range-collections v0.2.4
+#7 115.9   Downloaded icu_normalizer v2.2.0
+#7 116.7   Downloaded schemars_derive v0.8.22
+#7 116.7   Downloaded scroll v0.11.0
+#7 116.7   Downloaded codespan-reporting v0.13.1
+#7 116.8   Downloaded crc32fast v1.5.0
+#7 116.8   Downloaded blake2 v0.10.6
+#7 117.1   Downloaded chacha20 v0.10.0
+#7 117.1   Downloaded simd-adler32 v0.3.9
+#7 117.5   Downloaded pdb-addr2line v0.10.4
+#7 117.6   Downloaded rand_pcg v0.10.2
+#7 118.1   Downloaded synstructure v0.13.2
+#7 118.1   Downloaded parking_lot v0.12.5
+#7 118.1   Downloaded signal-hook-registry v1.4.8
+#7 118.3   Downloaded rustversion v1.0.22
+#7 118.4   Downloaded self-replace v1.5.0
+#7 118.4   Downloaded shell-escape v0.1.5
+#7 118.8   Downloaded icu_normalizer_data v2.2.0
+#7 119.1   Downloaded tinyvec_macros v0.1.1
+#7 119.2   Downloaded slab v0.4.12
+#7 119.4   Downloaded serde_repr v0.1.20
+#7 119.5   Downloaded shell-words v1.1.1
+#7 119.7   Downloaded near-crypto v0.38.0
+#7 119.7   Downloaded near-jsonrpc-client v0.23.0
+#7 119.8   Downloaded near-primitives-core v0.38.0
+#7 119.9   Downloaded tower-layer v0.3.3
+#7 119.9   Downloaded rand_core v0.9.5
+#7 119.9   Downloaded semver v1.0.28
+#7 119.9   Downloaded rand_core v0.6.4
+#7 120.0   Downloaded shellexpand v3.1.2
+#7 120.1   Downloaded smart-default v0.7.1
+#7 120.2   Downloaded subtle v2.6.1
+#7 120.3   Downloaded termcolor v1.4.1
+#7 120.5   Downloaded num-traits v0.2.19
+#7 120.6   Downloaded allocator-api2 v0.2.21
+#7 120.7   Downloaded quinn-udp v0.5.14
+#7 120.7   Downloaded const-oid v0.9.6
+#7 121.0   Downloaded stable_deref_trait v1.2.1
+#7 121.0   Downloaded srcsrv v0.2.3
+#7 121.0   Downloaded strum v0.24.1
+#7 121.0   Downloaded strsim v0.11.1
+#7 121.9   Downloaded try-lock v0.2.5
+#7 122.0   Downloaded serde-value v0.7.0
+#7 122.0   Downloaded scroll v0.12.0
+#7 122.0   Downloaded signal-hook-mio v0.2.5
+#7 122.0   Downloaded sync_wrapper v1.0.2
+#7 122.6   Downloaded once_cell v1.21.4
+#7 122.7   Downloaded prettytable v0.10.0
+#7 122.8   Downloaded rustls-pki-types v1.14.1
+#7 122.9   Downloaded siphasher v1.0.3
+#7 123.3   Downloaded untrusted v0.7.1
+#7 123.5   Downloaded tower-service v0.3.3
+#7 123.5   Downloaded toml_datetime v1.1.1+spec-1.1.0
+#7 123.8   Downloaded proc-macro2 v1.0.106
+#7 124.0   Downloaded serde-untagged v0.1.9
+#7 124.1   Downloaded bs58 v0.5.1
+#7 124.3   Downloaded urlencoding v2.1.3
+#7 124.3   Downloaded utf8parse v0.2.2
+#7 124.3   Downloaded utf8_iter v1.0.4
+#7 124.7   Downloaded ed25519-dalek v2.2.0
+#7 124.7   Downloaded inquire v0.9.4
+#7 124.7   Downloaded time-core v0.1.9
+#7 124.7   Downloaded indexmap v2.14.0
+#7 124.7   Downloaded icu_locale_core v2.2.0
+#7 124.7   Downloaded hyper-util v0.1.20
+#7 124.8   Downloaded thiserror-impl v2.0.18
+#7 124.9   Downloaded toml_write v0.1.2
+#7 125.2   Downloaded rustc-demangle v0.1.27
+#7 125.4   Downloaded toml_datetime v0.6.11
+#7 125.5   Downloaded version_check v0.9.5
+#7 125.5   Downloaded unit-prefix v0.5.2
+#7 125.7   Downloaded want v0.3.1
+#7 125.7   Downloaded miniz_oxide v0.8.9
+#7 125.9   Downloaded string_cache v0.8.9
+#7 125.9   Downloaded shlex v2.0.1
+#7 126.1   Downloaded typeid v1.0.3
+#7 126.1   Downloaded tempfile v3.27.0
+#7 126.5   Downloaded wasm-opt-cxx-sys v0.116.0
+#7 126.5   Downloaded near-ledger v0.9.4
+#7 126.5   Downloaded near-jsonrpc-primitives v0.38.0
+#7 126.6   Downloaded darling_core v0.20.11
+#7 126.6   Downloaded cargo-near-build v0.11.5
+#7 127.0   Downloaded tokio-macros v2.7.0
+#7 127.0   Downloaded spki v0.7.3
+#7 127.0   Downloaded keyring v3.6.3
+#7 127.3   Downloaded thread_local v1.1.9
+#7 127.4   Downloaded thiserror v1.0.69
+#7 127.4   Downloaded openssl-sys v0.9.117
+#7 127.7   Downloaded self_update v0.42.0
+#7 127.7   Downloaded tracing-indicatif v0.3.14
+#7 127.8   Downloaded tracing-log v0.2.0
+#7 127.9   Downloaded static_assertions v1.1.0
+#7 128.0   Downloaded tokio-native-tls v0.3.1
+#7 128.5   Downloaded strum_macros v0.24.3
+#7 128.6   Downloaded tap v1.0.1
+#7 128.8   Downloaded untrusted v0.9.0
+#7 129.1   Downloaded bytes v1.12.0
+#7 129.3   Downloaded tracing-error v0.2.1
+#7 129.4   Downloaded unicode-xid v0.2.6
+#7 129.4   Downloaded unix_str v1.0.0
+#7 129.5   Downloaded near-parameters v0.38.0
+#7 129.6   Downloaded zerofrom-derive v0.1.7
+#7 129.8   Downloaded tinystr v0.8.3
+#7 129.8   Downloaded sharded-slab v0.1.7
+#7 129.9   Downloaded toml v0.8.23
+#7 130.3   Downloaded serde_derive_internals v0.29.1
+#7 130.3   Downloaded http v1.4.2
+#7 130.3   Downloaded snafu-derive v0.8.9
+#7 130.3   Downloaded smallvec v1.15.2
+#7 130.4   Downloaded unicode-linebreak v0.1.5
+#7 130.4   Downloaded tokio-rustls v0.26.4
+#7 130.6   Downloaded zipsign-api v0.1.5
+#7 130.7   Downloaded thiserror v2.0.18
+#7 130.9   Downloaded serde_with_macros v3.17.0
+#7 131.0   Downloaded xattr v1.6.1
+#7 131.0   Downloaded sha2 v0.9.9
+#7 131.0   Downloaded zerofrom v0.1.8
+#7 131.0   Downloaded symbolic-ppdb v12.18.3
+#7 131.0   Downloaded symbolic-common v12.18.3
+#7 131.4   Downloaded toml_parser v1.1.2+spec-1.1.0
+#7 131.4   Downloaded unix_path v1.0.1
+#7 131.5   Downloaded borsh v1.6.1
+#7 131.5   Downloaded bon v3.9.3
+#7 131.7   Downloaded smawk v0.3.3
+#7 131.7   Downloaded thiserror-impl v1.0.69
+#7 131.7   Downloaded derive_more v2.1.1
+#7 131.7   Downloaded der v0.7.10
+#7 131.7   Downloaded base64 v0.22.1
+#7 132.0   Downloaded clap v4.6.7
+#7 132.0   Downloaded memchr v2.8.2
+#7 132.0   Downloaded cc v1.2.65
+#7 132.1   Downloaded zeroize v1.9.0
+#7 132.3   Downloaded time-macros v0.2.30
+#7 132.2   Downloaded zeroize_derive v1.5.0
+#7 132.5   Downloaded zmij v1.0.21
+#7 132.5   Downloaded walkdir v2.5.0
+#7 132.6   Downloaded serde_core v1.0.228
+#7 132.7   Downloaded signal-hook v0.3.18
+#7 132.8   Downloaded tar v0.4.46
+#7 132.9   Downloaded textwrap v0.16.2
+#7 132.9   Downloaded bon-macros v3.9.3
+#7 132.9   Downloaded derive_more-impl v2.1.1
+#7 132.9   Downloaded cxx-build v1.0.194
+#7 133.0   Downloaded base64 v0.21.7
+#7 133.0   Downloaded backtrace v0.3.76
+#7 133.2   Downloaded cxxbridge-macro v1.0.194
+#7 133.2   Downloaded bumpalo v3.20.3
+#7 133.2   Downloaded bip39 v2.2.2
+#7 133.2   Downloaded tinyvec v1.11.0
+#7 133.2   Downloaded quinn v0.11.11
+#7 133.2   Downloaded darling_core v0.21.3
+#7 133.3   Downloaded socket2 v0.6.4
+#7 133.4   Downloaded prettyplease v0.2.37
+#7 133.4   Downloaded num-bigint v0.3.3
+#7 133.5   Downloaded serde_yaml v0.9.34+deprecated
+#7 133.6   Downloaded unsafe-libyaml v0.2.11
+#7 133.7   Downloaded dbus v0.9.11
+#7 134.1   Downloaded uuid v1.23.3
+#7 134.1   Downloaded secp256k1 v0.27.0
+#7 134.4   Downloaded zstd v0.14.3
+#7 134.4   Downloaded zopfli v0.8.3
+#7 134.4   Downloaded schemars v1.2.1
+#7 134.5   Downloaded toml_edit v0.25.12+spec-1.1.0
+#7 134.8   Downloaded zerotrie v0.2.4
+#7 135.3   Downloaded crossterm v0.29.0
+#7 135.7   Downloaded uint v0.9.5
+#7 135.7   Downloaded watto v0.2.0
+#7 135.7   Downloaded yoke-derive v0.8.2
+#7 135.8   Downloaded zerovec-derive v0.11.3
+#7 135.8   Downloaded clap_builder v4.6.7
+#7 136.1   Downloaded tower v0.5.3
+#7 136.1   Downloaded typed-path v0.12.3
+#7 136.3   Downloaded unicode-segmentation v1.13.3
+#7 136.7   Downloaded sha2 v0.10.9
+#7 137.1   Downloaded schemars v0.8.22
+#7 137.7   Downloaded aho-corasick v1.1.4
+#7 137.7   Downloaded hidapi v2.6.6
+#7 138.0   Downloaded vt100 v0.16.2
+#7 138.4   Downloaded serde_json v1.0.150
+#7 138.4   Downloaded serde_derive v1.0.228
+#7 138.8   Downloaded wyz v0.5.1
+#7 138.8   Downloaded zstd-safe v7.2.4
+#7 139.0   Downloaded quick-xml v0.37.5
+#7 139.0   Downloaded tokio-util v0.7.18
+#7 139.1   Downloaded zip v7.2.0
+#7 139.5   Downloaded tower-http v0.6.11
+#7 139.8   Downloaded bitvec v1.1.1
+#7 139.8   Downloaded ryu v1.0.23
+#7 140.5   Downloaded winnow v0.7.15
+#7 140.7   Downloaded vte v0.15.0
+#7 140.7   Downloaded serde_with v3.17.0
+#7 140.9   Downloaded cxx v1.0.194
+#7 141.0   Downloaded yoke v0.8.3
+#7 141.1   Downloaded chrono v0.4.45
+#7 141.3   Downloaded zlib-rs v0.6.4
+#7 141.5   Downloaded tracing-subscriber v0.3.23
+#7 141.7   Downloaded aws-lc-rs v1.19.0
+#7 142.0   Downloaded schemars v0.9.0
+#7 142.2   Downloaded icu_properties_data v2.2.0
+#7 142.4   Downloaded curve25519-dalek v4.1.3
+#7 142.4   Downloaded time v0.3.51
+#7 142.5   Downloaded term v0.7.0
+#7 142.7   Downloaded syn v1.0.109
+#7 142.7   Downloaded openssl v0.10.81
+#7 142.8   Downloaded writeable v0.6.3
+#7 142.8   Downloaded zstd v0.13.3
+#7 142.8   Downloaded wasmparser v0.263.0
+#7 142.8   Downloaded syn v2.0.118
+#7 142.9   Downloaded rand v0.8.6
+#7 143.1   Downloaded syn v3.0.6
+#7 143.1   Downloaded wasmparser v0.243.0
+#7 143.1   Downloaded unicode-width v0.2.2
+#7 143.1   Downloaded snafu v0.8.9
+#7 143.1   Downloaded rustls-webpki v0.103.13
+#7 143.4   Downloaded minimal-lexical v0.2.1
+#7 143.5   Downloaded bstr v1.12.1
+#7 143.6   Downloaded serde v1.0.228
+#7 143.6   Downloaded regex-syntax v0.8.11
+#7 143.7   Downloaded rustls v0.23.41
+#7 143.7   Downloaded hyper v1.10.1
+#7 143.8   Downloaded hashbrown v0.15.5
+#7 144.0   Downloaded itertools v0.14.0
+#7 144.1   Downloaded pdb v0.8.0
+#7 144.5   Downloaded unicode-ident v1.0.24
+#7 144.7   Downloaded zstd-safe v8.2.0
+#7 144.8   Downloaded rand v0.9.4
+#7 144.8   Downloaded mio v1.2.1
+#7 144.8   Downloaded tracing v0.1.44
+#7 144.8   Downloaded rand v0.10.1
+#7 145.0   Downloaded tracing-attributes v0.1.31
+#7 145.3   Downloaded nom v7.1.3
+#7 145.5   Downloaded url v2.5.8
+#7 145.5   Downloaded idna v1.1.0
+#7 145.5   Downloaded hashbrown v0.17.1
+#7 145.7   Downloaded color-eyre v0.6.5
+#7 145.8   Downloaded goblin v0.8.2
+#7 145.8   Downloaded toml_edit v0.22.27
+#7 146.0   Downloaded tracing-core v0.1.36
+#7 146.4   Downloaded futures-util v0.3.32
+#7 146.9   Downloaded csv v1.4.0
+#7 146.9   Downloaded sha3 v0.10.9
+#7 147.1   Downloaded tokio v1.52.3
+#7 147.2   Downloaded reqwest v0.12.28
+#7 147.3   Downloaded typenum v1.20.1
+#7 147.6   Downloaded h2 v0.4.16
+#7 147.7   Downloaded symbolic-debuginfo v12.18.3
+#7 148.3   Downloaded unicode-normalization v0.1.25
+#7 148.3   Downloaded rust_decimal v1.43.0
+#7 148.6   Downloaded zerovec v0.11.6
+#7 148.6   Downloaded git2 v0.20.4
+#7 148.8   Downloaded portable-atomic v1.13.1
+#7 149.4   Downloaded regex v1.12.4
+#7 150.5   Downloaded quinn-proto v0.11.18
+#7 150.5   Downloaded gimli v0.32.3
+#7 151.2   Downloaded webpki-roots v1.0.10
+#7 151.7   Downloaded winnow v1.0.3
+#7 151.7   Downloaded vcpkg v0.2.15
+#7 151.9   Downloaded near-primitives v0.38.0
+#7 152.2   Downloaded unicode-width v0.1.14
+#7 152.7   Downloaded interactive-clap v0.3.2
+#7 154.0   Downloaded object v0.37.3
+#7 154.1   Downloaded zerocopy v0.8.52
+#7 154.5   Downloaded nix v0.30.1
+#7 154.7   Downloaded near-cli-rs v0.31.1
+#7 156.0   Downloaded rustix v1.1.4
+#7 159.5   Downloaded wasm-opt v0.116.1
+#7 159.8   Downloaded libssh2-sys v0.3.1
+#7 160.9   Downloaded regex-automata v0.4.14
+#7 163.3   Downloaded aws-lc-sys v0.47.0
+#7 164.0   Downloaded zstd-sys v2.1.2+zstd.1.5.7
+#7 164.1   Downloaded libc v0.2.186
+#7 164.7   Downloaded libz-sys v1.1.31
+#7 166.9   Downloaded libdbus-sys v0.2.7
+#7 169.2   Downloaded encoding_rs v0.8.35
+#7 170.5   Downloaded ring v0.17.14
+#7 172.3   Downloaded libgit2-sys v0.18.5+1.9.4
+#7 173.1   Downloaded wasm-opt-sys v0.116.0
+#7 174.8   Downloaded secp256k1-sys v0.8.2
+#7 176.2   Downloaded linux-raw-sys v0.12.1
+#7 192.9   Downloaded openssl-src v300.6.1+3.6.3
+#7 193.4    Compiling proc-macro2 v1.0.106
+#7 193.4    Compiling unicode-ident v1.0.24
+#7 193.4    Compiling quote v1.0.46
+#7 193.4    Compiling libc v0.2.186
+#7 193.6    Compiling serde_core v1.0.228
+#7 193.8    Compiling shlex v2.0.1
+#7 193.8    Compiling find-msvc-tools v0.1.9
+#7 194.1    Compiling syn v2.0.118
+#7 194.2    Compiling jobserver v0.1.34
+#7 194.3    Compiling cc v1.2.65
+#7 194.3    Compiling cfg-if v1.0.4
+#7 194.4    Compiling serde v1.0.228
+#7 194.5    Compiling pkg-config v0.3.33
+#7 194.7    Compiling memchr v2.8.2
+#7 195.1    Compiling version_check v0.9.5
+#7 195.1    Compiling once_cell v1.21.4
+#7 195.2    Compiling smallvec v1.15.2
+#7 195.2    Compiling log v0.4.33
+#7 195.3    Compiling pin-project-lite v0.2.17
+#7 195.4    Compiling itoa v1.0.18
+#7 195.4    Compiling foldhash v0.2.0
+#7 195.4    Compiling equivalent v1.0.2
+#7 195.4    Compiling hashbrown v0.17.1
+#7 195.5    Compiling generic-array v0.14.7
+#7 195.6    Compiling typenum v1.20.1
+#7 195.6    Compiling autocfg v1.5.1
+#7 195.8    Compiling indexmap v2.14.0
+#7 195.9    Compiling subtle v2.6.1
+#7 196.0    Compiling stable_deref_trait v1.2.1
+#7 196.2    Compiling synstructure v0.13.2
+#7 196.2    Compiling tracing-core v0.1.36
+#7 196.4    Compiling bitflags v2.13.0
+#7 196.6    Compiling cfg_aliases v0.2.1
+#7 196.6    Compiling num-traits v0.2.19
+#7 196.6    Compiling serde_derive v1.0.228
+#7 196.7    Compiling tracing-attributes v0.1.31
+#7 196.7    Compiling zerofrom-derive v0.1.7
+#7 196.7    Compiling yoke-derive v0.8.2
+#7 197.4    Compiling getrandom v0.2.17
+#7 197.4    Compiling zerofrom v0.1.8
+#7 197.5    Compiling tracing v0.1.44
+#7 197.5    Compiling strsim v0.11.1
+#7 197.5    Compiling ident_case v1.0.1
+#7 197.6    Compiling fnv v1.0.7
+#7 197.6    Compiling yoke v0.8.3
+#7 197.7    Compiling winnow v1.0.3
+#7 197.7    Compiling bytes v1.12.0
+#7 197.7    Compiling vcpkg v0.2.15
+#7 198.2    Compiling zerovec-derive v0.11.3
+#7 198.6    Compiling toml_parser v1.1.2+spec-1.1.0
+#7 199.0    Compiling block-buffer v0.10.4
+#7 199.1    Compiling crypto-common v0.1.7
+#7 199.2    Compiling anyhow v1.0.102
+#7 199.2    Compiling thiserror v2.0.18
+#7 199.3    Compiling toml_datetime v1.1.1+spec-1.1.0
+#7 199.3    Compiling digest v0.10.7
+#7 199.3    Compiling toml_edit v0.25.12+spec-1.1.0
+#7 199.4    Compiling thiserror-impl v2.0.18
+#7 199.4    Compiling zerovec v0.11.6
+#7 199.4    Compiling displaydoc v0.2.6
+#7 199.7    Compiling cpufeatures v0.2.17
+#7 199.8    Compiling rustversion v1.0.22
+#7 199.9    Compiling syn v1.0.109
+#7 199.9    Compiling proc-macro-crate v3.5.0
+#7 200.0    Compiling zeroize_derive v1.5.0
+#7 200.0    Compiling borsh v1.6.1
+#7 200.1    Compiling openssl-src v300.6.1+3.6.3
+#7 200.1    Compiling zmij v1.0.21
+#7 200.2    Compiling borsh-derive v1.6.1
+#7 200.2    Compiling openssl-sys v0.9.117
+#7 200.3    Compiling zeroize v1.9.0
+#7 200.6    Compiling mio v1.2.1
+#7 200.6    Compiling serde_json v1.0.150
+#7 200.7    Compiling futures-core v0.3.32
+#7 201.2    Compiling tinystr v0.8.3
+#7 201.3    Compiling writeable v0.6.3
+#7 201.4    Compiling litemap v0.8.2
+#7 201.4    Compiling icu_locale_core v2.2.0
+#7 202.2    Compiling zerotrie v0.2.4
+#7 202.2    Compiling sha2 v0.10.9
+#7 202.7    Compiling potential_utf v0.1.5
+#7 202.7    Compiling darling_core v0.21.3
+#7 202.7    Compiling proc-macro-error-attr v1.0.4
+#7 202.7    Compiling zstd-sys v2.1.2+zstd.1.5.7
+#7 202.8    Compiling futures-sink v0.3.32
+#7 202.9    Compiling heck v0.4.1
+#7 202.9    Compiling icu_normalizer_data v2.2.0
+#7 202.9    Compiling parking_lot_core v0.9.12
+#7 203.0    Compiling percent-encoding v2.3.2
+#7 203.0    Compiling icu_properties_data v2.2.0
+#7 203.1    Compiling utf8_iter v1.0.4
+#7 203.1    Compiling icu_collections v2.2.0
+#7 203.5    Compiling strum_macros v0.24.3
+#7 203.7    Compiling darling_macro v0.21.3
+#7 204.0    Compiling icu_provider v2.2.0
+#7 204.0    Compiling rand_core v0.6.4
+#7 204.1    Compiling tokio-macros v2.7.0
+#7 204.2    Compiling proc-macro-error v1.0.4
+#7 204.3    Compiling aho-corasick v1.1.4
+#7 204.4    Compiling socket2 v0.6.4
+#7 204.7    Compiling base64 v0.22.1
+#7 204.9    Compiling unicode-segmentation v1.13.3
+#7 205.0    Compiling zerocopy v0.8.52
+#7 205.2    Compiling scopeguard v1.2.0
+#7 205.2    Compiling regex-syntax v0.8.11
+#7 206.1    Compiling regex-automata v0.4.14
+#7 208.9    Compiling lock_api v0.4.14
+#7 209.1    Compiling convert_case v0.10.0
+#7 209.3    Compiling tokio v1.52.3
+#7 213.5    Compiling strum v0.24.1
+#7 213.8    Compiling darling v0.21.3
+#7 214.1    Compiling hex v0.4.3
+#7 214.2    Compiling semver v1.0.28
+#7 214.3    Compiling slab v0.4.12
+#7 214.4    Compiling unicode-xid v0.2.6
+#7 214.4    Compiling rustc_version v0.4.1
+#7 214.4    Compiling derive_more-impl v2.1.1
+#7 214.6    Compiling icu_properties v2.2.0
+#7 215.5    Compiling parking_lot v0.12.5
+#7 216.1    Compiling icu_normalizer v2.2.0
+#7 217.0    Compiling futures-channel v0.3.32
+#7 217.2    Compiling ryu v1.0.23
+#7 217.7    Compiling interactive-clap-derive v0.3.2
+#7 218.4    Compiling derive_more v2.1.1
+#7 218.5    Compiling idna_adapter v1.2.2
+#7 218.5    Compiling curve25519-dalek v4.1.3
+#7 218.7    Compiling form_urlencoded v1.2.2
+#7 218.8    Compiling http v1.4.2
+#7 219.0    Compiling ppv-lite86 v0.2.21
+#7 219.1    Compiling futures-macro v0.3.32
+#7 219.5    Compiling num-bigint v0.3.3
+#7 219.6    Compiling cmake v0.1.58
+#7 219.7    Compiling futures-io v0.3.32
+#7 219.7    Compiling rustix v1.1.4
+#7 219.8    Compiling fs_extra v1.3.0
+#7 219.9    Compiling futures-task v0.3.32
+#7 219.9    Compiling arrayvec v0.7.7
+#7 219.9    Compiling dunce v1.0.5
+#7 219.9    Compiling aws-lc-sys v0.47.0
+#7 220.0    Compiling futures-util v0.3.32
+#7 220.6    Compiling rand_chacha v0.3.1
+#7 221.2    Compiling idna v1.1.0
+#7 221.3    Compiling interactive-clap v0.3.2
+#7 221.3    Compiling num-integer v0.1.46
+#7 221.5    Compiling darling_core v0.20.11
+#7 222.2    Compiling num-rational v0.3.2
+#7 222.3    Compiling ring v0.17.14
+#7 222.4    Compiling byteorder v1.5.0
+#7 222.5    Compiling crunchy v0.2.4
+#7 222.6    Compiling near-schema-checker-core v0.38.0
+#7 222.6    Compiling near-schema-checker-macro v0.38.0
+#7 222.6    Compiling linux-raw-sys v0.12.1
+#7 222.7    Compiling signature v2.2.0
+#7 222.7    Compiling zstd-safe v7.2.4
+#7 222.8    Compiling ed25519 v2.2.3
+#7 222.8    Compiling near-schema-checker-lib v0.38.0
+#7 224.2    Compiling darling_macro v0.20.11
+#7 225.8    Compiling url v2.5.8
+#7 227.9    Compiling rand v0.8.6
+#7 228.3    Compiling http-body v1.0.1
+#7 228.3    Compiling serde_with_macros v3.17.0
+#7 229.0    Compiling near-account-id v3.0.0
+#7 229.1    Compiling enum-map-derive v0.17.0
+#7 229.4    Compiling derive_arbitrary v1.4.2
+#7 230.3    Compiling secp256k1-sys v0.8.2
+#7 230.5    Compiling bs58 v0.4.0
+#7 230.6    Compiling httparse v1.10.1
+#7 230.9    Compiling static_assertions v1.1.0
+#7 230.9    Compiling scratch v1.0.9
+#7 231.0    Compiling simd-adler32 v0.3.9
+#7 233.7    Compiling arbitrary v1.4.2
+#7 234.2    Compiling enum-map v2.7.3
+#7 234.3    Compiling serde_with v3.17.0
+#7 235.1    Compiling ed25519-dalek v2.2.0
+#7 235.3    Compiling darling v0.20.11
+#7 235.4    Compiling near-token v0.3.4
+#7 235.5    Compiling near-gas v0.3.6
+#7 235.6    Compiling tokio-util v0.7.18
+#7 235.7    Compiling rustls-pki-types v1.14.1
+#7 236.0    Compiling serde_repr v0.1.20
+#7 236.1    Compiling link-cplusplus v1.0.12
+#7 236.2    Compiling foreign-types-shared v0.1.1
+#7 236.2    Compiling base64 v0.21.7
+#7 236.3    Compiling openssl v0.10.81
+#7 236.3    Compiling untrusted v0.9.0
+#7 236.4    Compiling aws-lc-rs v1.19.0
+#7 236.4    Compiling tower-service v0.3.3
+#7 236.5    Compiling adler2 v2.0.1
+#7 236.5    Compiling lazy_static v1.5.0
+#7 236.5    Compiling unicode-width v0.2.2
+#7 236.6    Compiling radium v0.7.0
+#7 236.6    Compiling termcolor v1.4.1
+#7 236.8    Compiling atomic-waker v1.1.2
+#7 236.9    Compiling try-lock v0.2.5
+#7 236.9    Compiling h2 v0.4.16
+#7 236.9    Compiling want v0.3.1
+#7 237.0    Compiling codespan-reporting v0.13.1
+#7 237.2    Compiling miniz_oxide v0.8.9
+#7 239.9    Compiling near-primitives-core v0.38.0
+#7 240.1    Compiling foreign-types v0.3.2
+#7 240.2    Compiling uint v0.9.5
+#7 240.3    Compiling derive_builder_core v0.20.2
+#7 240.7    Compiling zstd v0.13.3
+#7 240.8    Compiling fixed-hash v0.7.0
+#7 240.9    Compiling keccak v0.1.6
+#7 240.9    Compiling openssl-macros v0.1.1
+#7 241.1    Compiling deranged v0.5.8
+#7 241.2    Compiling getrandom v0.4.3
+#7 241.3    Compiling native-tls v0.2.18
+#7 241.3    Compiling tap v1.0.1
+#7 241.4    Compiling untrusted v0.7.1
+#7 241.4    Compiling either v1.16.0
+#7 241.5    Compiling num-conv v0.2.2
+#7 241.5    Compiling time-core v0.1.9
+#7 241.5    Compiling thiserror v1.0.69
+#7 241.6    Compiling powerfmt v0.2.0
+#7 241.6    Compiling crc32fast v1.5.0
+#7 241.7    Compiling unsafe-libyaml v0.2.11
+#7 241.7    Compiling rustls v0.23.41
+#7 241.8    Compiling heck v0.5.0
+#7 241.8    Compiling cxxbridge-flags v1.0.194
+#7 241.8    Compiling json_comments v0.2.2
+#7 241.9    Compiling near-config-utils v0.38.0
+#7 242.1    Compiling serde_yaml v0.9.34+deprecated
+#7 242.5    Compiling cxx v1.0.194
+#7 242.7    Compiling time v0.3.51
+#7 243.7    Compiling wyz v0.5.1
+#7 243.9    Compiling sha3 v0.10.9
+#7 244.1    Compiling primitive-types v0.10.1
+#7 244.2    Compiling cxx-build v1.0.194
+#7 245.4    Compiling hyper v1.10.1
+#7 245.5    Compiling secp256k1 v0.27.0
+#7 245.8    Compiling derive_builder_macro v0.20.2
+#7 246.1    Compiling rustls-webpki v0.103.13
+#7 247.9    Compiling blake2 v0.10.6
+#7 248.1    Compiling bytesize v1.3.3
+#7 248.2    Compiling libz-sys v1.1.31
+#7 248.2    Compiling thiserror-impl v1.0.69
+#7 248.5    Compiling thread_local v1.1.9
+#7 248.7    Compiling funty v2.0.0
+#7 249.2    Compiling openssl-probe v0.2.1
+#7 249.3    Compiling typeid v1.0.3
+#7 249.3    Compiling near-stdx v0.38.0
+#7 249.4    Compiling iana-time-zone v0.1.65
+#7 249.4    Compiling ipnet v2.12.0
+#7 249.8    Compiling camino v1.2.3
+#7 250.0    Compiling hyper-util v0.1.20
+#7 250.3    Compiling chrono v0.4.45
+#7 251.5    Compiling bitvec v1.1.1
+#7 253.1    Compiling derive_builder v0.20.2
+#7 253.4    Compiling near-time v0.38.0
+#7 254.7    Compiling near-parameters v0.38.0
+#7 258.8    Compiling itertools v0.14.0
+#7 259.5    Compiling near-fmt v0.38.0
+#7 259.6    Compiling ordered-float v4.6.0
+#7 259.8    Compiling sync_wrapper v1.0.2
+#7 259.8    Compiling toml_datetime v0.6.11
+#7 260.0    Compiling serde_spanned v0.6.9
+#7 260.1    Compiling smart-default v0.7.1
+#7 260.3    Compiling fastrand v2.4.1
+#7 260.4    Compiling winnow v0.7.15
+#7 261.4    Compiling fallible-iterator v0.3.0
+#7 261.5    Compiling portable-atomic v1.13.1
+#7 261.7    Compiling erased-serde v0.4.10
+#7 261.8    Compiling eyre v0.6.12
+#7 261.9    Compiling easy-ext v0.2.9
+#7 261.9    Compiling crossbeam-utils v0.8.21
+#7 262.2    Compiling uuid v1.23.3
+#7 262.1    Compiling tower-layer v0.3.3
+#7 262.3    Compiling toml_write v0.1.2
+#7 262.3    Compiling toml_edit v0.22.27
+#7 262.3    Compiling tower v0.5.3
+#7 262.7    Compiling gimli v0.32.3
+#7 263.9    Compiling tempfile v3.27.0
+#7 264.3    Compiling tokio-rustls v0.26.4
+#7 264.7    Compiling wasm-opt-sys v0.116.0
+#7 265.1    Compiling snafu-derive v0.8.9
+#7 266.0    Compiling sharded-slab v0.1.7
+#7 266.2    Compiling webpki-roots v1.0.10
+#7 266.2    Compiling http-body-util v0.1.3
+#7 266.3    Compiling matchers v0.2.0
+#7 266.4    Compiling tracing-log v0.2.0
+#7 266.7    Compiling libssh2-sys v0.3.1
+#7 267.0    Compiling libdbus-sys v0.2.7
+#7 267.1    Compiling errno v0.3.14
+#7 267.2    Compiling foldhash v0.1.5
+#7 267.2    Compiling signal-hook v0.3.18
+#7 267.3    Compiling zlib-rs v0.6.4
+#7 267.3    Compiling allocator-api2 v0.2.21
+#7 267.5    Compiling indenter v0.3.4
+#7 267.5    Compiling nu-ansi-term v0.50.3
+#7 267.7    Compiling crossbeam-epoch v0.9.20
+#7 267.8    Compiling tracing-subscriber v0.3.23
+#7 269.5    Compiling flate2 v1.1.9
+#7 269.9    Compiling hashbrown v0.15.5
+#7 270.2    Compiling signal-hook-registry v1.4.8
+#7 270.4    Compiling hyper-rustls v0.27.9
+#7 270.7    Compiling snafu v0.8.9
+#7 277.4    Compiling toml v0.8.23
+#7 279.2    Compiling tower-http v0.6.11
+#7 279.5    Compiling serde_urlencoded v0.7.1
+#7 279.6    Compiling ordered-float v2.10.1
+#7 279.7    Compiling cxxbridge-macro v1.0.194
+#7 281.1    Compiling digest v0.9.0
+#7 281.2    Compiling serde_derive_internals v0.29.1
+#7 281.5    Compiling hidapi v2.6.6
+#7 281.7    Compiling encoding_rs v0.8.35
+#7 283.7    Compiling schemars v0.8.22
+#7 283.8    Compiling object v0.37.3
+#7 283.9    Compiling arrayref v0.3.9
+#7 283.9    Compiling dyn-clone v1.0.20
+#7 283.9    Compiling mime v0.3.17
+#7 284.1    Compiling owo-colors v4.3.0
+#7 284.2    Compiling prettyplease v0.2.37
+#7 284.3    Compiling siphasher v1.0.3
+#7 284.3    Compiling no-std-compat v0.4.1
+#7 284.4    Compiling utf8parse v0.2.2
+#7 284.4    Compiling anstyle-parse v1.0.0
+#7 284.5    Compiling ledger-apdu v0.11.0
+#7 284.5    Compiling phf_shared v0.11.3
+#7 284.8    Compiling schemars_derive v0.8.22
+#7 285.7    Compiling serde-value v0.7.0
+#7 286.2    Compiling serde-untagged v0.1.9
+#7 286.5    Compiling pathdiff v0.2.3
+#7 286.5    Compiling near-crypto v0.38.0
+#7 287.5    Compiling near-primitives v0.38.0
+#7 287.9    Compiling debugid v0.8.0
+#7 288.1    Compiling wasm-opt-cxx-sys v0.116.0
+#7 288.5    Compiling vte v0.15.0
+#7 288.6    Compiling regex v1.12.4
+#7 289.3    Compiling async-trait v0.1.89
+#7 289.8    Compiling scroll_derive v0.12.1
+#7 290.1    Compiling nix v0.30.1
+#7 290.2    Compiling block-buffer v0.9.0
+#7 290.3    Compiling crypto-mac v0.9.1
+#7 290.4    Compiling inplace-vec-builder v0.1.1
+#7 290.5    Compiling libgit2-sys v0.18.5+1.9.4
+#7 290.7    Compiling bstr v1.12.1
+#7 291.0    Compiling filetime v0.2.29
+#7 291.1    Compiling dirs-sys-next v0.1.2
+#7 291.3    Compiling memmap2 v0.9.11
+#7 291.4    Compiling anstyle v1.0.14
+#7 291.5    Compiling option-ext v0.2.0
+#7 291.6    Compiling scroll v0.11.0
+#7 291.7    Compiling opaque-debug v0.3.1
+#7 291.7    Compiling same-file v1.0.6
+#7 291.8    Compiling leb128 v0.2.7
+#7 291.8    Compiling minimal-lexical v0.2.1
+#7 292.0    Compiling fallible-iterator v0.2.0
+#7 292.2    Compiling zstd-safe v8.2.0
+#7 292.2    Compiling is_terminal_polyfill v1.70.2
+#7 292.2    Compiling wasmparser v0.243.0
+#7 292.3    Compiling color-spantrace v0.3.0
+#7 292.4    Compiling anstyle-query v1.1.5
+#7 292.5    Compiling bumpalo v3.20.3
+#7 292.6    Compiling binary-merge v0.1.2
+#7 292.7    Compiling colorchoice v1.0.5
+#7 292.7    Compiling new_debug_unreachable v1.0.6
+#7 292.7    Compiling tinyvec_macros v0.1.1
+#7 292.8    Compiling precomputed-hash v0.1.1
+#7 292.8    Compiling litrs v1.0.0
+#7 293.0    Compiling document-features v0.2.12
+#7 293.3    Compiling string_cache v0.8.9
+#7 293.4    Compiling tinyvec v1.11.0
+#7 293.7    Compiling anstream v1.0.0
+#7 293.9    Compiling range-collections v0.2.4
+#7 294.0    Compiling cargo-util-schemas v0.8.2
+#7 295.3    Compiling near-chain-configs v0.38.0
+#7 301.3    Compiling tokio-native-tls v0.3.1
+#7 301.4    Compiling hyper-tls v0.6.0
+#7 304.1    Compiling reqwest v0.12.28
+#7 309.9    Compiling near-indexer-primitives v0.38.0
+#7 310.1    Compiling near-jsonrpc-primitives v0.38.0
+#7 316.2    Compiling zopfli v0.8.3
+#7 317.2    Compiling pdb v0.8.0
+#7 317.4    Compiling nom v7.1.3
+#7 319.0    Compiling watto v0.2.0
+#7 319.3    Compiling walkdir v2.5.0
+#7 319.7    Compiling sha2 v0.9.9
+#7 319.7    Compiling dirs-sys v0.5.0
+#7 320.0    Compiling symbolic-common v12.18.3
+#7 320.2    Compiling dirs-next v2.0.0
+#7 320.2    Compiling globset v0.4.18
+#7 320.3    Compiling hmac v0.9.0
+#7 320.3    Compiling scroll v0.12.0
+#7 320.4    Compiling ledger-transport v0.11.0
+#7 320.4    Compiling vt100 v0.16.2
+#7 321.3    Compiling signal-hook-mio v0.2.5
+#7 321.4    Compiling dbus v0.9.11
+#7 322.0    Compiling crossbeam-deque v0.8.6
+#7 328.1    Compiling tracing-error v0.2.1
+#7 328.2    Compiling addr2line v0.25.1
+#7 328.2    Compiling console v0.16.3
+#7 328.5    Compiling brownstone v3.0.0
+#7 328.5    Compiling hex-conservative v0.2.2
+#7 328.6    Compiling cargo-platform v0.2.0
+#7 329.0    Compiling elsa v1.11.2
+#7 329.0    Compiling is-docker v0.2.0
+#7 329.1    Compiling csv-core v0.1.13
+#7 329.1    Compiling syn v3.0.6
+#7 329.3    Compiling rustc-demangle v0.1.27
+#7 329.9    Compiling unix_str v1.0.0
+#7 330.1    Compiling unit-prefix v0.5.2
+#7 330.2    Compiling rust_decimal v1.43.0
+#7 330.5    Compiling plain v0.2.3
+#7 330.6    Compiling typed-path v0.12.3
+#7 331.1    Compiling clap_lex v1.1.1
+#7 331.3    Compiling indent_write v2.2.0
+#7 331.3    Compiling bitflags v1.3.2
+#7 331.4    Compiling bs58 v0.5.1
+#7 331.9    Compiling maybe-owned v0.3.4
+#7 332.0    Compiling joinery v2.1.0
+#7 332.1    Compiling shell-words v1.1.1
+#7 332.2    Compiling nom-supreme v0.8.0
+#7 332.3    Compiling pdb-addr2line v0.10.4
+#7 332.2    Compiling clap_builder v4.6.7
+#7 334.2    Compiling zip v7.2.0
+#7 335.9    Compiling clap_derive v4.6.7
+#7 337.0    Compiling goblin v0.8.2
+#7 339.1    Compiling indicatif v0.18.4
+#7 341.4    Compiling unix_path v1.0.1
+#7 341.7    Compiling backtrace v0.3.76
+#7 342.8    Compiling csv v1.4.0
+#7 343.4    Compiling is-wsl v0.4.0
+#7 343.6    Compiling cargo_metadata v0.21.0
+#7 344.8    Compiling bitcoin_hashes v0.14.2
+#7 346.0    Compiling bon-macros v3.9.3
+#7 346.8    Compiling ledger-transport-hid v0.11.0
+#7 347.1    Compiling dbus-secret-service v4.1.0
+#7 348.4    Compiling near-abi v0.4.4
+#7 348.9    Compiling ignore v0.4.26
+#7 350.8    Compiling crossterm v0.29.0
+#7 352.6    Compiling near-slip10 v0.4.8
+#7 353.0    Compiling term v0.7.0
+#7 353.3    Compiling symbolic-ppdb v12.18.3
+#7 354.2    Compiling dirs v6.0.0
+#7 354.9    Compiling near-jsonrpc-client v0.23.0
+#7 368.4    Compiling unicode-normalization v0.1.25
+#7 369.1    Compiling elementtree v1.2.3
+#7 370.8    Compiling fuzzy-matcher v0.3.7
+#7 371.6    Compiling console v0.15.11
+#7 372.2    Compiling xattr v1.6.1
+#7 372.9    Compiling futures-executor v0.3.32
+#7 373.4    Compiling srcsrv v0.2.3
+#7 373.4    Compiling is-terminal v0.4.17
+#7 374.2    Compiling unicode-linebreak v0.1.5
+#7 374.4    Compiling unicode-width v0.1.14
+#7 374.6    Compiling smawk v0.3.3
+#7 374.6    Compiling encode_unicode v1.0.0
+#7 374.7    Compiling number_prefix v0.4.0
+#7 374.8    Compiling names v0.14.0
+#7 375.1    Compiling shell-escape v0.1.5
+#7 375.2    Compiling openssl-probe v0.1.6
+#7 375.3    Compiling self_update v0.42.0
+#7 375.4    Compiling colored v3.1.1
+#7 375.4    Compiling git2 v0.20.4
+#7 375.8    Compiling near-verify-rs v0.3.3
+#7 379.2    Compiling inquire v0.9.4
+#7 379.3    Compiling cargo-util v0.2.21
+#7 381.4    Compiling prettytable v0.10.0
+#7 381.5    Compiling indicatif v0.17.11
+#7 382.2    Compiling textwrap v0.16.2
+#7 383.3    Compiling symbolic-debuginfo v12.18.3
+#7 384.0    Compiling futures v0.3.32
+#7 384.0    Compiling tar v0.4.46
+#7 384.8    Compiling bip39 v2.2.2
+#7 385.9    Compiling near-socialdb-client v0.17.0
+#7 386.2    Compiling zstd v0.14.3
+#7 387.2    Compiling shellexpand v3.1.2
+#7 387.5    Compiling near-ledger v0.9.4
+#7 387.9    Compiling bon v3.9.3
+#7 387.9    Compiling keyring v3.6.3
+#7 390.2    Compiling color-eyre v0.6.5
+#7 392.2    Compiling open v5.3.5
+#7 392.3    Compiling tracing-indicatif v0.3.14
+#7 393.1    Compiling clap v4.6.7
+#7 393.2    Compiling self-replace v1.5.0
+#7 393.9    Compiling wasmparser v0.263.0
+#7 394.1    Compiling linked-hash-map v0.5.6
+#7 394.3    Compiling quick-xml v0.37.5
+#7 395.6    Compiling libloading v0.8.9
+#7 395.8    Compiling humantime v2.3.0
+#7 396.2    Compiling easy-ext v1.0.3
+#7 396.9    Compiling urlencoding v2.1.3
+#7 402.4    Compiling near-cli-rs v0.31.1
+#7 672.3    Compiling wasm-opt v0.116.1
+#7 672.5    Compiling cargo-near-build v0.11.5
+#7 673.6    Compiling cargo-near v0.23.0
+#7 687.3     Finished `release` profile [optimized] target(s) in 11m 38s
+#7 687.4   Installing /usr/local/cargo/bin/cargo-near
+#7 687.4    Installed package `cargo-near v0.23.0` (executable `cargo-near`)
+#7 DONE 687.8s
+
+#8 [4/6] WORKDIR /kruxa
+#8 DONE 0.4s
+
+#9 [5/6] COPY . .
+#9 DONE 0.2s
+
+#10 [6/6] RUN rustup show  && cargo fetch --locked  && ./scripts/fetch-intents-wasm.sh  && ./scripts/build.sh  && ./scripts/market-build.sh  && ./scripts/instant-build.sh  && ./scripts/build-artifacts.sh --local  && cargo test --locked --no-run -p kruxa-tests --test judge_lifecycle  && cargo build --locked -p kruxa-sim -p market-sim -p swarm-sim  && cargo test --locked --no-run -p kruxa-math -p kruxa-logic -p kruxa-sim -p kruxa-market -p kruxa-instant -p swarm-sim
+#10 0.212 Default host: aarch64-unknown-linux-gnu
+#10 0.212 rustup home:  /usr/local/rustup
+#10 0.212 
+#10 0.267 info: syncing channel updates for 1.95.0-aarch64-unknown-linux-gnu
+#10 3.347 info: latest update on 2026-04-16 for version 1.95.0 (59807616e 2026-04-14)
+#10 3.355 info: downloading 3 components
+#10 42.31 installed toolchains
+#10 42.31 --------------------
+#10 42.31 1.95.0-aarch64-unknown-linux-gnu (active, default)
+#10 42.31 
+#10 42.31 active toolchain
+#10 42.31 ----------------
+#10 42.31 name: 1.95.0-aarch64-unknown-linux-gnu
+#10 42.31 active because: overridden by '/kruxa/rust-toolchain.toml'
+#10 42.31 installed targets:
+#10 42.31   aarch64-unknown-linux-gnu
+#10 42.31   wasm32-unknown-unknown
+#10 42.39     Updating crates.io index
+#10 55.96  Downloading crates ...
+#10 57.35   Downloaded winapi-util v0.1.11
+#10 57.36   Downloaded openssl-probe v0.2.2
+#10 57.71   Downloaded jiff-tzdb-platform v0.1.3
+#10 57.71   Downloaded darling_macro v0.24.1
+#10 58.50   Downloaded want v0.3.2
+#10 58.56   Downloaded near-abi-client-impl v0.1.1
+#10 58.63   Downloaded iana-time-zone-haiku v0.1.2
+#10 59.32   Downloaded windows-result v0.4.1
+#10 59.33   Downloaded near_schemafy_core v0.7.0
+#10 59.37   Downloaded near-abi-client v0.1.1
+#10 59.41   Downloaded rustc-hash v2.1.3
+#10 59.43   Downloaded cfg_aliases v0.2.2
+#10 60.02   Downloaded jni-sys-macros v0.4.1
+#10 60.72   Downloaded zerofrom-derive v0.1.8
+#10 60.86   Downloaded curve25519-dalek-derive v0.1.1
+#10 60.87   Downloaded near-abi-client-macros v0.1.1
+#10 60.89   Downloaded tokio-retry v0.3.2
+#10 61.00   Downloaded windows-targets v0.52.6
+#10 61.03   Downloaded jiff-static v0.2.40
+#10 61.06   Downloaded http-body v1.1.0
+#10 61.62   Downloaded potential_utf v0.1.6
+#10 61.64   Downloaded jni-sys v0.4.1
+#10 61.76   Downloaded windows-link v0.2.1
+#10 61.85   Downloaded cfg-if v1.0.5
+#10 61.94   Downloaded crypto-common v0.1.6
+#10 62.31   Downloaded equivalent v1.0.3
+#10 62.38   Downloaded ref-cast-impl v1.0.27
+#10 62.57   Downloaded near-abi v0.4.5
+#10 62.58   Downloaded cpufeatures v0.3.1
+#10 62.74   Downloaded wasm-bindgen-futures v0.4.80
+#10 62.81   Downloaded serde_repr v0.1.21
+#10 62.82   Downloaded wasm-bindgen-macro v0.2.130
+#10 62.87   Downloaded windows-strings v0.5.1
+#10 63.05   Downloaded android_system_properties v0.1.6
+#10 63.26   Downloaded rustls-platform-verifier-android v0.2.0
+#10 63.27   Downloaded near_schemafy_lib v0.7.0
+#10 63.51   Downloaded fs2 v0.4.3
+#10 63.86   Downloaded ref-cast v1.0.27
+#10 63.88   Downloaded utf8-zero v0.8.1
+#10 63.88   Downloaded tokio-macros v2.7.2
+#10 64.03   Downloaded utf8_iter v1.1.0
+#10 64.28   Downloaded wait-timeout v0.2.1
+#10 64.30   Downloaded http-body-util v0.1.5
+#10 64.72   Downloaded displaydoc v0.2.7
+#10 64.75   Downloaded yoke-derive v0.8.4
+#10 64.85   Downloaded wasm-bindgen-shared v0.2.130
+#10 64.88   Downloaded windows-interface v0.59.3
+#10 64.88   Downloaded simd-adler32 v0.3.10
+#10 64.88   Downloaded futures-task v0.3.34
+#10 64.94   Downloaded lru-slab v0.1.3
+#10 64.99   Downloaded lazy_static v1.5.1
+#10 65.22   Downloaded rand_xorshift v0.5.0
+#10 65.48   Downloaded quick-error v1.2.3
+#10 66.03   Downloaded thiserror-impl v2.0.21
+#10 66.03   Downloaded zmij v1.0.23
+#10 66.60   Downloaded rustc-hex v2.1.0
+#10 66.74   Downloaded rusty-fork v0.3.1
+#10 66.78   Downloaded windows-implement v0.60.2
+#10 66.87   Downloaded derive_arbitrary v1.5.0
+#10 67.00   Downloaded zerovec-derive v0.11.7
+#10 67.41   Downloaded pkg-config v0.3.34
+#10 67.47   Downloaded futures-core v0.3.34
+#10 67.58   Downloaded convert_case v0.5.0
+#10 67.58   Downloaded Inflector v0.11.4
+#10 67.58   Downloaded powerfmt v0.2.1
+#10 67.95   Downloaded near-token v0.3.6
+#10 68.03   Downloaded toml_datetime v1.1.3+spec-1.1.0
+#10 68.07   Downloaded rustls-native-certs v0.8.5
+#10 68.36   Downloaded quote v1.0.47
+#10 68.41   Downloaded zstd v0.13.4
+#10 68.55   Downloaded generic-array v0.14.9
+#10 68.77   Downloaded primeorder v0.13.6
+#10 68.81   Downloaded near-gas v0.3.7
+#10 68.83   Downloaded quinn-udp v0.5.16
+#10 68.91   Downloaded near-crypto-hash v0.2.0
+#10 68.98   Downloaded num-integer v0.1.47
+#10 69.01   Downloaded utf_types v1.0.0
+#10 69.14   Downloaded yoke v0.8.4
+#10 69.17   Downloaded json-patch v2.0.0
+#10 69.17   Downloaded either v1.19.0
+#10 69.21   Downloaded synstructure v0.14.0
+#10 69.33   Downloaded fastrand v2.5.0
+#10 69.44   Downloaded security-framework-sys v2.17.0
+#10 69.45   Downloaded web-time v1.1.0
+#10 69.62   Downloaded core-foundation v0.10.1
+#10 69.84   Downloaded core_detect v1.0.0
+#10 69.84   Downloaded toml_parser v1.1.5+spec-1.1.0
+#10 70.00   Downloaded zeroize v1.9.1
+#10 70.06   Downloaded json-patch v4.2.0
+#10 70.15   Downloaded arbitrary v1.5.0
+#10 70.19   Downloaded unarray v0.1.4
+#10 70.21   Downloaded near-sys v0.4.1
+#10 70.23   Downloaded rfc6979 v0.4.0
+#10 70.23   Downloaded webpki-roots v0.26.11
+#10 70.50   Downloaded tinystr v0.8.5
+#10 70.52   Downloaded writeable v0.6.4
+#10 70.63   Downloaded rustversion v1.0.23
+#10 70.68   Downloaded chacha20 v0.10.2
+#10 70.74   Downloaded jobserver v0.1.35
+#10 70.78   Downloaded cookie_store v0.22.1
+#10 70.92   Downloaded rustls-pki-types v1.15.1
+#10 70.96   Downloaded jsonptr v0.4.7
+#10 71.02   Downloaded base16ct v0.2.0
+#10 71.15   Downloaded schannel v0.1.30
+#10 71.17   Downloaded thiserror v2.0.21
+#10 71.18   Downloaded hyper-rustls v0.27.10
+#10 71.37   Downloaded core-foundation-sys v0.8.7
+#10 71.63   Downloaded borsh-derive v1.8.1
+#10 71.80   Downloaded smallvec v1.16.5
+#10 71.81   Downloaded redox_syscall v0.5.18
+#10 71.92   Downloaded wasi v0.11.1+wasi-snapshot-preview1
+#10 71.93   Downloaded ripemd v0.1.3
+#10 72.02   Downloaded threadpool v1.8.1
+#10 72.06   Downloaded num_cpus v1.17.0
+#10 72.06   Downloaded near-sdk-env v0.1.9
+#10 72.06   Downloaded strum v0.26.3
+#10 72.06   Downloaded bit-set v0.11.1
+#10 72.07   Downloaded bit-vec v0.10.1
+#10 72.14   Downloaded spin v0.9.9
+#10 72.17   Downloaded futures-channel v0.3.34
+#10 72.20   Downloaded fs4 v0.13.1
+#10 72.31   Downloaded dashmap v6.2.1
+#10 72.34   Downloaded keccak v0.2.2
+#10 72.35   Downloaded time-macros v0.2.32
+#10 72.35   Downloaded digest-io v0.1.0
+#10 72.35   Downloaded crypto-common v0.2.2
+#10 72.38   Downloaded hex-literal v1.1.0
+#10 72.68   Downloaded tokio-rustls v0.26.6
+#10 72.69   Downloaded litemap v0.8.3
+#10 72.91   Downloaded find-msvc-tools v0.1.15
+#10 73.06   Downloaded rustls-platform-verifier v0.7.1
+#10 73.07   Downloaded log v0.4.35
+#10 73.19   Downloaded deranged v0.5.9
+#10 73.42   Downloaded glob v0.3.4
+#10 73.43   Downloaded ff v0.13.1
+#10 73.43   Downloaded socket2 v0.6.5
+#10 73.43   Downloaded proc-macro2 v1.0.107
+#10 73.44   Downloaded unicode-ident v1.0.27
+#10 73.47   Downloaded bitflags v2.13.2
+#10 73.49   Downloaded near-digest v0.1.5
+#10 73.62   Downloaded near-global-contracts v0.3.3
+#10 73.77   Downloaded uint v0.10.2
+#10 73.81   Downloaded impl-tools v0.12.0
+#10 73.81   Downloaded ecdsa v0.16.9
+#10 73.91   Downloaded proc-macro-error-attr3 v3.1.1
+#10 73.93   Downloaded lru v0.18.5
+#10 73.94   Downloaded digest v0.11.3
+#10 73.94   Downloaded proc-macro-error3 v3.1.1
+#10 73.94   Downloaded strum_macros v0.26.4
+#10 73.95   Downloaded ipnet v2.12.2
+#10 74.33   Downloaded r-efi v6.0.0
+#10 74.63   Downloaded icu_normalizer_data v2.4.0
+#10 74.73   Downloaded group v0.13.0
+#10 74.73   Downloaded sec1 v0.7.3
+#10 75.22   Downloaded serde_core v1.0.229
+#10 75.28   Downloaded serde_derive v1.0.229
+#10 75.29   Downloaded near-sdk-macros v5.30.1
+#10 75.46   Downloaded hmac v0.12.1
+#10 75.51   Downloaded simdutf8 v0.1.5
+#10 75.79   Downloaded icu_provider v2.4.0
+#10 75.97   Downloaded security-framework v3.7.0
+#10 76.10   Downloaded async-trait v0.1.92
+#10 76.36   Downloaded cfg_eval v0.1.2
+#10 76.66   Downloaded bytes v1.12.1
+#10 77.00   Downloaded block-buffer v0.12.1
+#10 77.15   Downloaded icu_locale_core v2.4.0
+#10 77.16   Downloaded zerotrie v0.2.5
+#10 77.18   Downloaded wasm-bindgen v0.2.130
+#10 77.22   Downloaded rustls-webpki v0.103.16
+#10 77.53   Downloaded icu_collections v2.4.0
+#10 77.85   Downloaded crypto-bigint v0.5.5
+#10 77.86   Downloaded serde v1.0.229
+#10 77.91   Downloaded litrs v1.0.1
+#10 78.00   Downloaded memchr v2.8.3
+#10 78.08   Downloaded near-workspaces v0.24.0
+#10 78.13   Downloaded rand v0.10.3
+#10 78.18   Downloaded http v1.5.0
+#10 78.42   Downloaded mio v1.2.4
+#10 78.49   Downloaded uriparse v0.6.4
+#10 78.50   Downloaded fluent-uri v0.1.4
+#10 78.86   Downloaded sha2 v0.11.1
+#10 78.95   Downloaded cookie v0.18.2
+#10 79.12   Downloaded indexmap v2.14.2
+#10 79.40   Downloaded darling v0.24.1
+#10 79.57   Downloaded tinyvec v1.13.3
+#10 80.04   Downloaded zerovec v0.11.9
+#10 80.09   Downloaded p256 v0.13.2
+#10 80.11   Downloaded wasm-bindgen-macro-support v0.2.130
+#10 80.43   Downloaded impl-tools-lib v0.12.0
+#10 80.44   Downloaded zstd-safe v7.4.0
+#10 80.44   Downloaded windows-core v0.62.2
+#10 80.44   Downloaded jsonptr v0.7.1
+#10 80.97   Downloaded rand v0.8.8
+#10 80.98   Downloaded near-sdk-core v4.4.2
+#10 80.98   Downloaded jni-macros v0.22.4
+#10 80.98   Downloaded hybrid-array v0.4.15
+#10 80.98   Downloaded hermit-abi v0.5.3
+#10 80.98   Downloaded serde_with_macros v3.24.0
+#10 81.24   Downloaded jiff-tzdb v0.1.9
+#10 81.24   Downloaded crc32fast v1.5.4
+#10 81.29   Downloaded miniz_oxide v0.9.1
+#10 81.50   Downloaded portable-atomic-util v0.2.8
+#10 81.50   Downloaded near-sandbox v0.4.0
+#10 81.51   Downloaded cc v1.11.1
+#10 81.51   Downloaded js-sys v0.3.107
+#10 81.70   Downloaded reqwest v0.13.5
+#10 82.03   Downloaded zeropool-bn v0.5.11
+#10 82.04   Downloaded crossbeam-utils v0.8.23
+#10 82.04   Downloaded prettyplease v0.1.25
+#10 82.04   Downloaded openssl-sys v0.9.118
+#10 82.05   Downloaded anyhow v1.0.104
+#10 82.05   Downloaded ureq-proto v0.7.1
+#10 82.60   Downloaded borsh v1.8.1
+#10 82.61   Downloaded icu_properties v2.4.0
+#10 82.78   Downloaded webpki-root-certs v1.0.11
+#10 82.78   Downloaded schemars v1.2.3
+#10 82.80   Downloaded toml_edit v0.25.19+spec-1.1.0
+#10 82.81   Downloaded elliptic-curve v0.13.8
+#10 83.02   Downloaded darling_core v0.24.1
+#10 83.03   Downloaded flate2 v1.1.11
+#10 83.21   Downloaded futures-util v0.3.34
+#10 83.36   Downloaded base64 v0.23.1
+#10 83.37   Downloaded quinn v0.11.12
+#10 83.37   Downloaded const-oid v0.10.2
+#10 83.55   Downloaded serde_json v1.0.154
+#10 83.60   Downloaded hashbrown v0.14.5
+#10 83.61   Downloaded jiff-core v0.1.3
+#10 83.62   Downloaded icu_properties_data v2.4.0
+#10 83.66   Downloaded combine v4.6.9
+#10 83.67   Downloaded hyper-util v0.1.21
+#10 83.91   Downloaded ureq v2.12.1
+#10 83.92   Downloaded zerocopy-derive v0.8.63
+#10 84.43   Downloaded regex v1.13.1
+#10 84.45   Downloaded hyper v1.12.0
+#10 84.64   Downloaded winnow v1.0.5
+#10 84.69   Downloaded ureq v3.5.1
+#10 84.69   Downloaded webpki-roots v1.0.11
+#10 85.01   Downloaded aho-corasick v1.1.5
+#10 85.02   Downloaded jni v0.22.4
+#10 85.04   Downloaded portable-atomic v1.15.0
+#10 85.05   Downloaded zlib-rs v0.6.8
+#10 85.06   Downloaded serde_with v3.24.0
+#10 85.57   Downloaded time v0.3.55
+#10 85.59   Downloaded quinn-proto v0.11.19
+#10 85.72   Downloaded near-sdk v5.30.1
+#10 86.05   Downloaded simd_cesu8 v1.2.0
+#10 86.06   Downloaded openssl v0.10.82
+#10 86.07   Downloaded blst v0.3.17
+#10 86.08   Downloaded zerocopy v0.8.63
+#10 86.43   Downloaded proptest v1.12.0
+#10 86.59   Downloaded fiat-crypto v0.2.9
+#10 86.62   Downloaded sha3 v0.11.0
+#10 86.86   Downloaded regex-automata v0.4.18
+#10 86.88   Downloaded jiff v0.2.40
+#10 87.68   Downloaded winapi v0.3.9
+#10 88.61   Downloaded windows-sys v0.59.0
+#10 89.29   Downloaded winapi-i686-pc-windows-gnu v0.4.0
+#10 90.36   Downloaded syn v3.0.9
+#10 90.37   Downloaded syn v2.0.119
+#10 92.00   Downloaded rustls v0.23.46
+#10 93.29   Downloaded windows_aarch64_gnullvm v0.52.6
+#10 93.32   Downloaded windows_x86_64_gnullvm v0.52.6
+#10 93.89   Downloaded rustix v1.1.6
+#10 94.39   Downloaded windows_i686_gnullvm v0.52.6
+#10 95.45   Downloaded icu_normalizer v2.4.0
+#10 97.62   Downloaded web-sys v0.3.107
+#10 98.69   Downloaded windows_x86_64_msvc v0.52.6
+#10 99.12   Downloaded windows_aarch64_msvc v0.52.6
+#10 99.14   Downloaded windows_i686_gnu v0.52.6
+#10 99.18   Downloaded windows_x86_64_gnu v0.52.6
+#10 99.20   Downloaded libc v0.2.191
+#10 99.39   Downloaded windows_i686_msvc v0.52.6
+#10 99.59   Downloaded tokio v1.54.1
+#10 100.9   Downloaded near-vm-runner v0.38.0
+#10 102.9   Downloaded windows-sys v0.61.2
+#10 103.0   Downloaded windows-sys v0.52.0
+#10 103.1   Downloaded winapi-x86_64-pc-windows-gnu v0.4.0
+#10 110.2 intents.near wasm ok (1297551 bytes, code hash BtA1BEFNS619KkvXFsgcpQ21Tb5yMm32aaUkn7xNothk)
+#10 110.2 Note: `near` CLI configuration is stored in "/root/.config/near-cli/config.toml"
+#10 110.2 • Collecting cargo project metadata...
+#10 110.5 • done
+#10 110.5 
+#10 110.5 • Checking rustc version...
+#10 110.5 INFO: contract's near-sdk targets protocol version 85; rustc 1.95.0 accepted (bulk-memory opcodes supported by nearcore VM)
+#10 110.5 • done
+#10 110.5 
+#10 110.5 • Checking the host environment...
+#10 110.5 • done
+#10 110.5 
+#10 110.5 • Building contract
+#10 110.6  │    Compiling proc-macro2 v1.0.107
+#10 110.6  │    Compiling unicode-ident v1.0.27
+#10 110.6  │    Compiling quote v1.0.47
+#10 110.6  │    Compiling typenum v1.20.1
+#10 110.7  │    Compiling serde_core v1.0.229
+#10 110.8  │    Compiling winnow v1.0.5
+#10 110.9  │    Compiling ident_case v1.0.1
+#10 111.0  │    Compiling hashbrown v0.17.1
+#10 111.3  │    Compiling equivalent v1.0.3
+#10 111.3  │    Compiling syn v3.0.9
+#10 111.4  │    Compiling syn v2.0.119
+#10 111.4  │    Compiling indexmap v2.14.2
+#10 111.6  │    Compiling toml_parser v1.1.5+spec-1.1.0
+#10 111.9  │    Compiling toml_datetime v1.1.3+spec-1.1.0
+#10 112.0  │    Compiling zmij v1.0.23
+#10 112.0  │    Compiling toml_edit v0.25.19+spec-1.1.0
+#10 112.6  │    Compiling cfg_aliases v0.2.2
+#10 112.6  │    Compiling serde v1.0.229
+#10 112.6  │    Compiling borsh v1.8.1
+#10 112.7  │    Compiling proc-macro-crate v3.5.0
+#10 112.7  │    Compiling once_cell v1.21.4
+#10 112.8  │    Compiling strsim v0.11.1
+#10 112.9  │    Compiling version_check v0.9.5
+#10 112.9  │    Compiling darling_core v0.24.1
+#10 113.0  │    Compiling generic-array v0.14.9
+#10 113.2  │    Compiling hex v0.4.3
+#10 113.4  │    Compiling proc-macro-error-attr3 v3.1.1
+#10 113.5  │    Compiling hybrid-array v0.4.15
+#10 113.8  │    Compiling serde_derive v1.0.229
+#10 113.8  │    Compiling borsh-derive v1.8.1
+#10 113.9  │    Compiling serde_json v1.0.154
+#10 114.3  │    Compiling darling_macro v0.24.1
+#10 114.5  │    Compiling proc-macro-error3 v3.1.1
+#10 114.6  │    Compiling darling v0.24.1
+#10 114.7  │    Compiling foldhash v0.2.0
+#10 114.7  │    Compiling memchr v2.8.3
+#10 114.7  │    Compiling rustversion v1.0.23
+#10 114.8  │    Compiling fnv v1.0.7
+#10 114.9  │    Compiling near-sys v0.4.1
+#10 114.9  │    Compiling crunchy v0.2.4
+#10 114.9  │    Compiling itoa v1.0.18
+#10 114.9  │    Compiling near-sdk-env v0.1.9
+#10 115.0  │    Compiling darling_core v0.20.11
+#10 115.0  │    Compiling serde_with_macros v3.24.0
+#10 115.5  │    Compiling impl-tools-lib v0.12.0
+#10 115.7  │    Compiling crypto-common v0.2.2
+#10 116.2  │    Compiling block-buffer v0.12.1
+#10 116.3  │    Compiling base64 v0.23.1
+#10 116.5  │    Compiling bs58 v0.5.1
+#10 116.6  │    Compiling serde_with v3.24.0
+#10 116.6  │    Compiling darling_macro v0.20.11
+#10 116.7  │    Compiling digest v0.11.3
+#10 116.7  │    Compiling impl-tools v0.12.0
+#10 116.7  │    Compiling near-account-id v3.0.0
+#10 117.0  │    Compiling near-gas v0.3.7
+#10 117.0  │    Compiling near-token v0.3.6
+#10 117.2  │    Compiling crypto-common v0.1.6
+#10 117.2  │    Compiling block-buffer v0.10.4
+#10 117.3  │    Compiling heck v0.5.0
+#10 117.5  │    Compiling base64 v0.22.1
+#10 117.5  │    Compiling static_assertions v1.1.0
+#10 117.5  │    Compiling near-sdk-macros v5.30.1
+#10 117.6  │    Compiling near-crypto-hash v0.2.0
+#10 117.6  │    Compiling byteorder v1.5.0
+#10 117.7  │    Compiling uint v0.10.2
+#10 117.7  │    Compiling strum_macros v0.26.4
+#10 117.7  │    Compiling digest v0.10.7
+#10 117.8  │    Compiling near-sdk-core v4.4.2
+#10 117.9  │    Compiling near-digest v0.1.5
+#10 117.9  │    Compiling darling v0.20.11
+#10 118.0  │    Compiling cfg_eval v0.1.2
+#10 118.1  │    Compiling Inflector v0.11.4
+#10 118.2  │    Compiling cfg-if v1.0.5
+#10 118.3  │    Compiling strum v0.26.3
+#10 118.3  │    Compiling sha2 v0.10.9
+#10 118.3  │    Compiling near-global-contracts v0.3.3
+#10 118.4  │    Compiling kruxa-math v0.1.0 (/kruxa/crates/kruxa-math)
+#10 118.8  │    Compiling hex-literal v1.1.0
+#10 118.8  │    Compiling kruxa-logic v0.1.0 (/kruxa/crates/kruxa-logic)
+#10 120.2  │    Compiling near-sdk v5.30.1
+#10 121.0  │    Compiling kruxa-core v0.1.0 (/kruxa/contracts/core)
+#10 126.5  │     Finished `release` profile [optimized] target(s) in 15.97s
+#10 126.6 
+#10 126.6 • Running an optimize for size post-step with wasm-opt --enable-nontrapping-float-to-int --enable-bulk-memory...
+#10 127.8     Finished wasm-opt -O in 1s 251ms
+#10 127.8 • done
+#10 127.8 
+#10 127.8 ✓ Contract successfully built! (in CARGO_NEAR_BUILD_ENVIRONMENT=host)
+#10 127.8      -                Binary: /kruxa/target/near/kruxa_core/kruxa_core.wasm
+#10 127.8      -                  Size: 675.0 KB (674962 bytes)
+#10 127.8      - SHA-256 checksum hex : 9e815d748e42c96934f534310150d95d6a4fc31f731aeb053c507ef0062775e9
+#10 127.8      - SHA-256 checksum bs58: BfjpzF3YJM7a3z9MGnVn1jPB42U643z6kdE8KHfoGMU4
+#10 127.8     Finished cargo near build in 17s
+#10 127.9 Here is the console command if you ever need to re-run it again:
+#10 127.9 cargo near build non-reproducible-wasm --no-abi
+#10 127.9 • Collecting cargo project metadata...
+#10 128.2 • done
+#10 128.2 
+#10 128.2 • Checking rustc version...
+#10 128.2 • done
+#10 128.2 
+#10 128.2 • Checking the host environment...
+#10 128.2 INFO: contract's near-sdk targets protocol version 85; rustc 1.95.0 accepted (bulk-memory opcodes supported by nearcore VM)
+#10 128.2 • done
+#10 128.2 
+#10 128.2 • Building contract
+#10 128.3  │    Compiling mock-ft v0.1.0 (/kruxa/contracts/mock-ft)
+#10 129.0  │     Finished `release` profile [optimized] target(s) in 0.76s
+#10 129.0 
+#10 129.0 • Running an optimize for size post-step with wasm-opt --enable-nontrapping-float-to-int --enable-bulk-memory...
+#10 129.3 • done
+#10 129.3 
+#10 129.3     Finished wasm-opt -O in 310ms
+#10 129.3 ✓ Contract successfully built! (in CARGO_NEAR_BUILD_ENVIRONMENT=host)
+#10 129.3      -                Binary: /kruxa/target/near/mock_ft/mock_ft.wasm
+#10 129.3      -                  Size: 162.4 KB (162431 bytes)
+#10 129.3      - SHA-256 checksum hex : dc1fd25d97671f1b7f7142ac265739e35b262468fff0e4326b65a3d99f49b1d8
+#10 129.3      - SHA-256 checksum bs58: FpGqY3sr1gyB7CqES28qBkFRBY1EXynFTS7qTyQX1bpj
+#10 129.3     Finished cargo near build in 1s
+#10 129.3 Here is the console command if you ever need to re-run it again:
+#10 129.3 cargo near build non-reproducible-wasm --no-abi
+#10 129.4 • Collecting cargo project metadata...
+#10 129.5 • done
+#10 129.5 
+#10 129.5 • Checking rustc version...
+#10 129.5 INFO: contract's near-sdk targets protocol version 85; rustc 1.95.0 accepted (bulk-memory opcodes supported by nearcore VM)
+#10 129.5 • done
+#10 129.5 
+#10 129.5 • Checking the host environment...
+#10 129.5 • done
+#10 129.5 
+#10 129.5 • Building contract
+#10 129.6  │    Compiling mock-intents v0.1.0 (/kruxa/contracts/mock-intents)
+#10 130.1  │     Finished `release` profile [optimized] target(s) in 0.58s
+#10 130.1 
+#10 130.1 • Running an optimize for size post-step with wasm-opt --enable-nontrapping-float-to-int --enable-bulk-memory...
+#10 130.4 • done
+#10 130.4 
+#10 130.4     Finished wasm-opt -O in 285ms
+#10 130.4 ✓ Contract successfully built! (in CARGO_NEAR_BUILD_ENVIRONMENT=host)
+#10 130.4      -                Binary: /kruxa/target/near/mock_intents/mock_intents.wasm
+#10 130.4      -                  Size: 168.9 KB (168886 bytes)
+#10 130.4      - SHA-256 checksum hex : 1d061b8e38d3e96955e3494a1b9bb6da0475d823e398fbb9110f5f199e86fcae
+#10 130.4      - SHA-256 checksum bs58: 2xJE3SFS6Nbxvvz3dsx9orXfGyA5JXRGe1qmubZuGAdj
+#10 130.4     Finished cargo near build in 1s
+#10 130.4 Here is the console command if you ever need to re-run it again:
+#10 130.4 cargo near build non-reproducible-wasm --no-abi
+#10 130.5 • Collecting cargo project metadata...
+#10 130.6 • done
+#10 130.6 
+#10 130.6 • Checking rustc version...
+#10 130.6 •INFO: contract's near-sdk targets protocol version 85; rustc 1.95.0 accepted (bulk-memory opcodes supported by nearcore VM)
+#10 130.6  done
+#10 130.6 
+#10 130.6 • Checking the host environment...
+#10 130.6 • done
+#10 130.6 
+#10 130.6 • Building contract
+#10 130.7  │    Compiling mock-factory v0.1.0 (/kruxa/contracts/mock-factory)
+#10 130.9  │     Finished `release` profile [optimized] target(s) in 0.23s
+#10 130.9 
+#10 130.9 • Running an optimize for size post-step with wasm-opt --enable-nontrapping-float-to-int --enable-bulk-memory...
+#10 131.1     Finished wasm-opt -O in 170ms
+#10 131.1 • done
+#10 131.1 
+#10 131.1 ✓ Contract successfully built! (in CARGO_NEAR_BUILD_ENVIRONMENT=host)
+#10 131.1      -                Binary: /kruxa/target/near/mock_factory/mock_factory.wasm
+#10 131.1      -                  Size: 100.0 KB (100044 bytes)
+#10 131.1      - SHA-256 checksum hex : 39b670f08e1ea24c53806f4a29c5f31a4b3a0f9334a18a7a656e0b8a9e0dd801
+#10 131.1      - SHA-256 checksum bs58: 4tHbG1Wu8xrBWeNs29gG6vAciWLV7brV683wWKHWgaVW
+#10 131.1     Finished cargo near build in 0s
+#10 131.1 Here is the console command if you ever need to re-run it again:
+#10 131.1 cargo near build non-reproducible-wasm --no-abi
+#10 131.7 • Collecting cargo project metadata...
+#10 131.8 INFO: contract's near-sdk targets protocol version 85; rustc 1.95.0 accepted (bulk-memory opcodes supported by nearcore VM)
+#10 131.8 • done
+#10 131.8 
+#10 131.8 • Checking rustc version...
+#10 131.8 • done
+#10 131.8 
+#10 131.8 • Checking the host environment...
+#10 131.8 • done
+#10 131.8 
+#10 131.8 • Building contract
+#10 131.9  │    Compiling mock-market v0.1.0 (/kruxa/contracts/mock-market)
+#10 132.1  │     Finished `release` profile [optimized] target(s) in 0.29s
+#10 132.1 
+#10 132.1 • Running an optimize for size post-step with wasm-opt --enable-nontrapping-float-to-int --enable-bulk-memory...
+#10 132.3 • done
+#10 132.3 
+#10 132.3     Finished wasm-opt -O in 249ms
+#10 132.3 ✓ Contract successfully built! (in CARGO_NEAR_BUILD_ENVIRONMENT=host)
+#10 132.3      -                Binary: /kruxa/target/near/mock_market/mock_market.wasm
+#10 132.3      -                  Size: 127.4 KB (127363 bytes)
+#10 132.3      - SHA-256 checksum hex : 0224c1e6613759bf56eefbd890bc1a0c5dfececf84caa14e749b4c2e33b39934
+#10 132.3      - SHA-256 checksum bs58: 9NKnR9DzuypE81jKpoNXrv4zxBBmc1Ny8FrenHPso4X
+#10 132.3     Finished cargo near build in 0s
+#10 132.3 Here is the console command if you ever need to re-run it again:
+#10 132.3 cargo near build non-reproducible-wasm --no-abi
+#10 132.5 -rw------- 1 root root 674962 Nov 11 18:47 target/near/kruxa_core/kruxa_core.wasm
+#10 132.5 -rw------- 1 root root 100044 Nov 11 18:47 target/near/mock_factory/mock_factory.wasm
+#10 132.5 -rw------- 1 root root 162431 Nov 11 18:47 target/near/mock_ft/mock_ft.wasm
+#10 132.5 -rw------- 1 root root 168886 Nov 11 18:47 target/near/mock_intents/mock_intents.wasm
+#10 132.5 -rw------- 1 root root 127363 Nov 11 18:47 target/near/mock_market/mock_market.wasm
+#10 132.6 • Collecting cargo project metadata...
+#10 132.8 INFO: contract's near-sdk targets protocol version 85; rustc 1.95.0 accepted (bulk-memory opcodes supported by nearcore VM)
+#10 132.8 • done
+#10 132.8 
+#10 132.8 • Checking rustc version...
+#10 132.8 • done
+#10 132.8 
+#10 132.8 • Checking the host environment...
+#10 132.9 • done
+#10 132.9 
+#10 132.9 • Building contract
+#10 133.1  │    Compiling kruxa-market v0.1.0 (/kruxa/crates/kruxa-market)
+#10 133.3  │    Compiling kruxa-market-contract v0.1.0 (/kruxa/contracts/market)
+#10 135.7  │     Finished `release` profile [optimized] target(s) in 3.24s
+#10 135.8 • Running an optimize for size post-step with wasm-opt --enable-nontrapping-float-to-int --enable-bulk-memory...
+#10 135.8 
+#10 136.8     Finished wasm-opt -O in 995ms
+#10 136.8 • done
+#10 136.8 
+#10 136.8 ✓ Contract successfully built! (in CARGO_NEAR_BUILD_ENVIRONMENT=host)
+#10 136.8      -                Binary: /kruxa/target/near/kruxa_market_contract/kruxa_market_contract.wasm
+#10 136.8      -                  Size: 261.1 KB (261098 bytes)
+#10 136.8      - SHA-256 checksum hex : 0a614c90adf259e939fd56793a99c18dca5621ee3ad75283e6caba2ec6bceca1
+#10 136.8      - SHA-256 checksum bs58: hX8UDS9Tk4UWtHThwkuKktorYLiqRXnHS3bUjfgYDNg
+#10 136.8     Finished cargo near build in 4s
+#10 136.8 Here is the console command if you ever need to re-run it again:
+#10 136.8 cargo near build non-reproducible-wasm --no-abi
+#10 136.9 • Collecting cargo project metadata...
+#10 137.4 • done
+#10 137.4 
+#10 137.4 • Checking rustc version...
+#10 137.4 INFO: contract's near-sdk targets protocol version 85; rustc 1.95.0 accepted (bulk-memory opcodes supported by nearcore VM)
+#10 137.4 • done
+#10 137.4 
+#10 137.4 • Checking the host environment...
+#10 137.4 • done
+#10 137.4 
+#10 137.4 • Building contract
+#10 137.6  │    Compiling mock-ft-ret v0.1.0 (/kruxa/contracts/market/mock-ft-ret)
+#10 138.5  │     Finished `release` profile [optimized] target(s) in 1.11s
+#10 138.6 
+#10 138.6 • Running an optimize for size post-step with wasm-opt --enable-nontrapping-float-to-int --enable-bulk-memory...
+#10 139.0 • done
+#10 139.0 
+#10 139.0     Finished wasm-opt -O in 393ms
+#10 139.0 ✓ Contract successfully built! (in CARGO_NEAR_BUILD_ENVIRONMENT=host)
+#10 139.0     Finished cargo near build in 2s
+#10 139.0      -                Binary: /kruxa/target/near/mock_ft_ret/mock_ft_ret.wasm
+#10 139.0      -                  Size: 155.0 KB (155043 bytes)
+#10 139.0      - SHA-256 checksum hex : 57519e166867ff8e1536cc687d75e6e614c4a0efe9a9ec7d2b19ab12530270bf
+#10 139.0      - SHA-256 checksum bs58: 6srerZBrV7RRkJPVkT2e6W6HHB2XtupySYwt4xGusiKx
+#10 139.0 Here is the console command if you ever need to re-run it again:
+#10 139.0 cargo near build non-reproducible-wasm --no-abi
+#10 139.0 • Collecting cargo project metadata...
+#10 139.2 • done
+#10 139.2 
+#10 139.2 • Checking rustc version...
+#10 139.2 • done
+#10 139.2 
+#10 139.2 • Checking the host environment...
+#10 139.2 INFO: contract's near-sdk targets protocol version 85; rustc 1.95.0 accepted (bulk-memory opcodes supported by nearcore VM)
+#10 139.3 • done
+#10 139.3 
+#10 139.3 • Building contract
+#10 139.4  │     Finished `release` profile [optimized] target(s) in 0.11s
+#10 139.4 
+#10 139.4 Modification timestamps of:
+#10 139.4  |    "/kruxa/target/wasm32-unknown-unknown/release/mock_ft.wasm" = SystemTime { tv_sec: 1794422836, tv_nsec: 30501741 }
+#10 139.4  |    "/kruxa/target/near/mock_ft/mock_ft.wasm" = SystemTime { tv_sec: 1794422836, tv_nsec: 363668241 }
+#10 139.4 
+#10 139.4 
+#10 139.4 • Skipped running wasm-opt as final target exists and is newer than wasm produced by cargo
+#10 139.4 ✓ Contract successfully built! (in CARGO_NEAR_BUILD_ENVIRONMENT=host)
+#10 139.4      -                Binary: /kruxa/target/near/mock_ft/mock_ft.wasm
+#10 139.4      -                  Size: 162.4 KB (162431 bytes)
+#10 139.4      - SHA-256 checksum hex : dc1fd25d97671f1b7f7142ac265739e35b262468fff0e4326b65a3d99f49b1d8
+#10 139.4      - SHA-256 checksum bs58: FpGqY3sr1gyB7CqES28qBkFRBY1EXynFTS7qTyQX1bpj
+#10 139.4     Finished cargo near build in 0s
+#10 139.4 Here is the console command if you ever need to re-run it again:
+#10 139.4 cargo near build non-reproducible-wasm --no-abi
+#10 140.1 -rw------- 1 root root 261098 Nov 11 18:47 target/near/kruxa_market_contract/kruxa_market_contract.wasm
+#10 140.1 -rw------- 1 root root 162431 Nov 11 18:47 target/near/mock_ft/mock_ft.wasm
+#10 140.1 -rw------- 1 root root 155043 Nov 11 18:47 target/near/mock_ft_ret/mock_ft_ret.wasm
+#10 140.1 -rw------- 1 root root 127363 Nov 11 18:47 target/near/mock_market/mock_market.wasm
+#10 140.1 • Collecting cargo project metadata...
+#10 140.4 • done
+#10 140.4 
+#10 140.4 • Checking rustc version...
+#10 140.4 INFO: contract's near-sdk targets protocol version 85; rustc 1.95.0 accepted (bulk-memory opcodes supported by nearcore VM)
+#10 140.4 • done
+#10 140.4 
+#10 140.4 • Checking the host environment...
+#10 140.4 • done
+#10 140.4 
+#10 140.4 • Building contract
+#10 140.5  │    Compiling serde_json v1.0.154
+#10 140.5  │    Compiling kruxa-instant v0.1.0 (/kruxa/crates/kruxa-instant)
+#10 141.0  │    Compiling serde_with v3.24.0
+#10 141.8  │    Compiling near-sdk-core v4.4.2
+#10 141.9  │    Compiling near-global-contracts v0.3.3
+#10 142.0  │    Compiling near-sdk v5.30.1
+#10 142.5  │    Compiling kruxa-instant-contract v0.1.0 (/kruxa/contracts/instant)
+#10 143.6  │     Finished `release` profile [optimized] target(s) in 3.16s
+#10 143.6 • Running an optimize for size post-step with wasm-opt --enable-nontrapping-float-to-int --enable-bulk-memory...
+#10 143.6 
+#10 143.9     Finished wasm-opt -O in 463ms
+#10 143.9 • done
+#10 143.9 
+#10 143.9 ✓ Contract successfully built! (in CARGO_NEAR_BUILD_ENVIRONMENT=host)
+#10 143.9      -                Binary: /kruxa/target/near/kruxa_instant_contract/kruxa_instant_contract.wasm
+#10 143.9      -                  Size: 273.3 KB (273253 bytes)
+#10 143.9      - SHA-256 checksum hex : 164be78fcfc8669b3ba9fc5bf77dbba7ea0b304c01266a8f82c6b3d5d598f0bd
+#10 143.9      - SHA-256 checksum bs58: 2W36nRSHC4jSMH3ArBbhtfyiDVrvkxigJX6eTPWb2pvx
+#10 143.9     Finished cargo near build in 3s
+#10 143.9 Here is the console command if you ever need to re-run it again:
+#10 143.9 cargo near build non-reproducible-wasm --no-abi
+#10 144.0 • Collecting cargo project metadata...
+#10 144.2 • done
+#10 144.2 
+#10 144.2 • Checking rustc version...
+#10 144.2 INFO: contract's near-sdk targets protocol version 85; rustc 1.95.0 accepted (bulk-memory opcodes supported by nearcore VM)
+#10 144.2 • done
+#10 144.2 
+#10 144.2 • Checking the host environment...
+#10 144.2 • done
+#10 144.2 
+#10 144.2 • Building contract
+#10 144.3  │     Finished `release` profile [optimized] target(s) in 0.08s
+#10 144.3 • Skipped running wasm-opt as final target exists and is newer than wasm produced by cargo
+#10 144.3 ✓ Contract successfully built! (in CARGO_NEAR_BUILD_ENVIRONMENT=host)
+#10 144.3 
+#10 144.3 Modification timestamps of:
+#10 144.3  |    "/kruxa/target/wasm32-unknown-unknown/release/mock_ft.wasm" = SystemTime { tv_sec: 1794422836, tv_nsec: 30501741 }
+#10 144.3  |    "/kruxa/target/near/mock_ft/mock_ft.wasm" = SystemTime { tv_sec: 1794422836, tv_nsec: 363668241 }
+#10 144.3 
+#10 144.3 
+#10 144.3     Finished cargo near build in 0s
+#10 144.3      -                Binary: /kruxa/target/near/mock_ft/mock_ft.wasm
+#10 144.3      -                  Size: 162.4 KB (162431 bytes)
+#10 144.3      - SHA-256 checksum hex : dc1fd25d97671f1b7f7142ac265739e35b262468fff0e4326b65a3d99f49b1d8
+#10 144.3      - SHA-256 checksum bs58: FpGqY3sr1gyB7CqES28qBkFRBY1EXynFTS7qTyQX1bpj
+#10 144.3 Here is the console command if you ever need to re-run it again:
+#10 144.3 cargo near build non-reproducible-wasm --no-abi
+#10 144.8 • Collecting cargo project metadata...
+#10 144.9 • done
+#10 144.9 
+#10 144.9 • Checking rustc version...
+#10 144.9 • done
+#10 144.9 
+#10 144.9 • Checking the host environment...
+#10 144.9 INFO: contract's near-sdk targets protocol version 85; rustc 1.95.0 accepted (bulk-memory opcodes supported by nearcore VM)
+#10 144.9 • done
+#10 144.9 
+#10 144.9 • Building contract
+#10 145.0  │     Finished `release` profile [optimized] target(s) in 0.07s
+#10 145.0 
+#10 145.0 Modification timestamps of:
+#10 145.0  |    "/kruxa/target/wasm32-unknown-unknown/release/mock_factory.wasm" = SystemTime { tv_sec: 1794422837, tv_nsec: 904438242 }
+#10 145.0  |    "/kruxa/target/near/mock_factory/mock_factory.wasm" = SystemTime { tv_sec: 1794422838, tv_nsec: 91531742 }
+#10 145.0 
+#10 145.0 
+#10 145.0 • Skipped running wasm-opt as final target exists and is newer than wasm produced by cargo
+#10 145.0 ✓ Contract successfully built! (in CARGO_NEAR_BUILD_ENVIRONMENT=host)
+#10 145.0      -                Binary: /kruxa/target/near/mock_factory/mock_factory.wasm
+#10 145.0      -                  Size: 100.0 KB (100044 bytes)
+#10 145.0      - SHA-256 checksum hex : 39b670f08e1ea24c53806f4a29c5f31a4b3a0f9334a18a7a656e0b8a9e0dd801
+#10 145.0      - SHA-256 checksum bs58: 4tHbG1Wu8xrBWeNs29gG6vAciWLV7brV683wWKHWgaVW
+#10 145.0     Finished cargo near build in 0s
+#10 145.0 Here is the console command if you ever need to re-run it again:
+#10 145.0 cargo near build non-reproducible-wasm --no-abi
+#10 145.8 • Collecting cargo project metadata...
+#10 145.9 • done
+#10 145.9 
+#10 145.9 • Checking rustc version...
+#10 145.9 INFO: contract's near-sdk targets protocol version 85; rustc 1.95.0 accepted (bulk-memory opcodes supported by nearcore VM)
+#10 145.9 • done
+#10 145.9 
+#10 145.9 • Checking the host environment...
+#10 145.9 • done
+#10 145.9 
+#10 145.9 • Building contract
+#10 146.0  │     Finished `release` profile [optimized] target(s) in 0.07s
+#10 146.0 • Skipped running wasm-opt as final target exists and is newer than wasm produced by cargo
+#10 146.0 ✓ Contract successfully built! (in CARGO_NEAR_BUILD_ENVIRONMENT=host)
+#10 146.0 
+#10 146.0 Modification timestamps of:
+#10 146.0  |    "/kruxa/target/wasm32-unknown-unknown/release/mock_market.wasm" = SystemTime { tv_sec: 1794422839, tv_nsec: 114042743 }
+#10 146.0  |    "/kruxa/target/near/mock_market/mock_market.wasm" = SystemTime { tv_sec: 1794422839, tv_nsec: 384177743 }
+#10 146.0 
+#10 146.0 
+#10 146.0      -                Binary: /kruxa/target/near/mock_market/mock_market.wasm
+#10 146.0      -                  Size: 127.4 KB (127363 bytes)
+#10 146.0      - SHA-256 checksum hex : 0224c1e6613759bf56eefbd890bc1a0c5dfececf84caa14e749b4c2e33b39934
+#10 146.0      - SHA-256 checksum bs58: 9NKnR9DzuypE81jKpoNXrv4zxBBmc1Ny8FrenHPso4X
+#10 146.0     Finished cargo near build in 0s
+#10 146.0 Here is the console command if you ever need to re-run it again:
+#10 146.0 cargo near build non-reproducible-wasm --no-abi
+#10 146.8 • Collecting cargo project metadata...
+#10 146.9 • done
+#10 146.9 
+#10 146.9 • Checking rustc version...
+#10 146.9 INFO: contract's near-sdk targets protocol version 85; rustc 1.95.0 accepted (bulk-memory opcodes supported by nearcore VM)
+#10 146.9 • done
+#10 146.9 
+#10 146.9 • Checking the host environment...
+#10 146.9 • done
+#10 146.9 
+#10 146.9 • Building contract
+#10 147.0  │     Finished `release` profile [optimized] target(s) in 0.07s
+#10 147.0 • Skipped running wasm-opt as final target exists and is newer than wasm produced by cargo
+#10 147.0 ✓ Contract successfully built! (in CARGO_NEAR_BUILD_ENVIRONMENT=host)
+#10 147.0 
+#10 147.0 Modification timestamps of:
+#10 147.0  |    "/kruxa/target/wasm32-unknown-unknown/release/kruxa_market_contract.wasm" = SystemTime { tv_sec: 1794422842, tv_nsec: 674017521 }
+#10 147.0  |    "/kruxa/target/near/kruxa_market_contract/kruxa_market_contract.wasm" = SystemTime { tv_sec: 1794422843, tv_nsec: 870617476 }
+#10 147.0 
+#10 147.0 
+#10 147.0     Finished cargo near build in 0s
+#10 147.0      -                Binary: /kruxa/target/near/kruxa_market_contract/kruxa_market_contract.wasm
+#10 147.0      -                  Size: 261.1 KB (261098 bytes)
+#10 147.0      - SHA-256 checksum hex : 0a614c90adf259e939fd56793a99c18dca5621ee3ad75283e6caba2ec6bceca1
+#10 147.0      - SHA-256 checksum bs58: hX8UDS9Tk4UWtHThwkuKktorYLiqRXnHS3bUjfgYDNg
+#10 147.0 Here is the console command if you ever need to re-run it again:
+#10 147.0 cargo near build non-reproducible-wasm --no-abi
+#10 147.7 -rw------- 1 root root 273253 Nov 11 18:47 target/near/kruxa_instant_contract/kruxa_instant_contract.wasm
+#10 147.7 -rw------- 1 root root 261098 Nov 11 18:47 target/near/kruxa_market_contract/kruxa_market_contract.wasm
+#10 147.7 -rw------- 1 root root 100044 Nov 11 18:47 target/near/mock_factory/mock_factory.wasm
+#10 147.7 -rw------- 1 root root 162431 Nov 11 18:47 target/near/mock_ft/mock_ft.wasm
+#10 147.7 -rw------- 1 root root 155043 Nov 11 18:47 target/near/mock_ft_ret/mock_ft_ret.wasm
+#10 147.7 -rw------- 1 root root 127363 Nov 11 18:47 target/near/mock_market/mock_market.wasm
+#10 147.7 9e815d748e42c96934f534310150d95d6a4fc31f731aeb053c507ef0062775e9  artifacts/kruxa_core.wasm
+#10 147.7 0a614c90adf259e939fd56793a99c18dca5621ee3ad75283e6caba2ec6bceca1  artifacts/kruxa_market_contract.wasm
+#10 147.7 164be78fcfc8669b3ba9fc5bf77dbba7ea0b304c01266a8f82c6b3d5d598f0bd  artifacts/kruxa_instant_contract.wasm
+#10 147.7 build kind: non-reproducible (local cargo-near)
+#10 147.7 SHA256SUMS ok
+#10 147.9    Compiling proc-macro2 v1.0.107
+#10 147.9    Compiling quote v1.0.47
+#10 147.9    Compiling unicode-ident v1.0.27
+#10 147.9    Compiling libc v0.2.191
+#10 148.0    Compiling serde_core v1.0.229
+#10 148.1    Compiling serde v1.0.229
+#10 148.2    Compiling cfg-if v1.0.5
+#10 148.2    Compiling shlex v2.0.1
+#10 148.5    Compiling syn v3.0.9
+#10 148.6    Compiling find-msvc-tools v0.1.15
+#10 148.7    Compiling jobserver v0.1.35
+#10 148.7    Compiling syn v2.0.119
+#10 148.9    Compiling cc v1.11.1
+#10 149.3    Compiling itoa v1.0.18
+#10 149.4    Compiling once_cell v1.21.4
+#10 149.5    Compiling memchr v2.8.3
+#10 149.8    Compiling pkg-config v0.3.34
+#10 150.1    Compiling zmij v1.0.23
+#10 150.1    Compiling serde_json v1.0.154
+#10 150.3    Compiling bytes v1.12.1
+#10 150.9    Compiling hashbrown v0.17.1
+#10 151.4    Compiling equivalent v1.0.3
+#10 151.5    Compiling pin-project-lite v0.2.17
+#10 151.5    Compiling indexmap v2.14.2
+#10 151.9    Compiling winnow v1.0.5
+#10 152.1    Compiling cfg_aliases v0.2.2
+#10 152.2    Compiling zeroize v1.9.1
+#10 152.3    Compiling toml_datetime v1.1.3+spec-1.1.0
+#10 152.3    Compiling serde_derive v1.0.229
+#10 152.3    Compiling smallvec v1.16.5
+#10 152.5    Compiling subtle v2.6.1
+#10 152.5    Compiling parking_lot_core v0.9.12
+#10 152.6    Compiling version_check v0.9.5
+#10 152.7    Compiling scopeguard v1.2.0
+#10 152.8    Compiling toml_parser v1.1.5+spec-1.1.0
+#10 152.9    Compiling generic-array v0.14.9
+#10 153.0    Compiling borsh v1.8.1
+#10 153.2    Compiling synstructure v0.14.0
+#10 153.3    Compiling toml_edit v0.25.19+spec-1.1.0
+#10 153.4    Compiling cmake v0.1.58
+#10 153.7    Compiling getrandom v0.2.17
+#10 153.7    Compiling dunce v1.0.5
+#10 153.7    Compiling proc-macro-crate v3.5.0
+#10 153.8    Compiling fs_extra v1.3.0
+#10 153.8    Compiling autocfg v1.5.1
+#10 154.0    Compiling aws-lc-sys v0.47.0
+#10 154.0    Compiling borsh-derive v1.8.1
+#10 154.3    Compiling ring v0.17.14
+#10 154.9    Compiling errno v0.3.14
+#10 155.0    Compiling log v0.4.35
+#10 155.1    Compiling typenum v1.20.1
+#10 155.4    Compiling ident_case v1.0.1
+#10 155.4    Compiling strsim v0.11.1
+#10 155.5    Compiling lock_api v0.4.14
+#10 155.7    Compiling parking_lot v0.12.5
+#10 156.2    Compiling signal-hook-registry v1.4.8
+#10 156.5    Compiling zerofrom-derive v0.1.8
+#10 157.1    Compiling rustls-pki-types v1.15.1
+#10 157.4    Compiling tracing-core v0.1.36
+#10 157.5    Compiling mio v1.2.4
+#10 157.6    Compiling socket2 v0.6.5
+#10 158.1    Compiling fnv v1.0.7
+#10 158.1    Compiling zerofrom v0.1.8
+#10 158.2    Compiling yoke-derive v0.8.4
+#10 158.2    Compiling serde_derive_internals v0.29.1
+#10 158.2    Compiling schemars v0.8.22
+#10 158.4    Compiling thiserror v2.0.21
+#10 158.6    Compiling semver v1.0.28
+#10 158.8    Compiling stable_deref_trait v1.2.1
+#10 158.9    Compiling base64 v0.23.1
+#10 158.9    Compiling aws-lc-rs v1.19.0
+#10 159.1    Compiling schemars_derive v0.8.22
+#10 159.2    Compiling yoke v0.8.4
+#10 159.3    Compiling block-buffer v0.10.4
+#10 159.4    Compiling crypto-common v0.1.6
+#10 159.4    Compiling thiserror-impl v2.0.21
+#10 159.5    Compiling bitflags v2.13.2
+#10 159.7    Compiling dyn-clone v1.0.20
+#10 159.7    Compiling untrusted v0.9.0
+#10 159.8    Compiling percent-encoding v2.3.2
+#10 159.9    Compiling digest v0.10.7
+#10 160.1    Compiling num-traits v0.2.19
+#10 160.2    Compiling zerovec-derive v0.11.7
+#10 160.6    Compiling untrusted v0.7.1
+#10 160.7    Compiling tokio-macros v2.7.2
+#10 161.1    Compiling zerovec v0.11.9
+#10 161.3    Compiling displaydoc v0.2.7
+#10 161.5    Compiling tracing-attributes v0.1.31
+#10 161.8    Compiling cpufeatures v0.2.17
+#10 161.9    Compiling syn v1.0.109
+#10 162.0    Compiling tokio v1.54.1
+#10 162.6    Compiling http v1.5.0
+#10 162.7    Compiling tracing v0.1.44
+#10 162.8    Compiling futures-core v0.3.34
+#10 162.9    Compiling anyhow v1.0.104
+#10 163.1    Compiling crunchy v0.2.4
+#10 163.7    Compiling darling_core v0.24.1
+#10 165.7    Compiling unicode-segmentation v1.13.3
+#10 166.1    Compiling zerocopy v0.8.63
+#10 166.2    Compiling static_assertions v1.1.0
+#10 166.2    Compiling httparse v1.10.1
+#10 166.4    Compiling convert_case v0.10.0
+#10 166.5    Compiling darling_macro v0.24.1
+#10 167.0    Compiling tinystr v0.8.5
+#10 167.0    Compiling sha2 v0.10.9
+#10 167.1    Compiling hex v0.4.3
+#10 167.1    Compiling num-bigint v0.3.3
+#10 167.2    Compiling litemap v0.8.3
+#10 167.3    Compiling unicode-xid v0.2.6
+#10 167.3    Compiling utf_types v1.0.0
+#10 167.3    Compiling writeable v0.6.4
+#10 167.4    Compiling vcpkg v0.2.15
+#10 167.5    Compiling byteorder v1.5.0
+#10 167.6    Compiling icu_locale_core v2.4.0
+#10 167.8    Compiling openssl-sys v0.9.118
+#10 167.9    Compiling utf8_iter v1.1.0
+#10 168.1    Compiling derive_more-impl v2.1.1
+#10 168.5    Compiling darling v0.24.1
+#10 168.8    Compiling num-integer v0.1.47
+#10 169.0    Compiling zerotrie v0.2.5
+#10 169.2    Compiling potential_utf v0.1.6
+#10 169.3    Compiling rustc_version v0.4.1
+#10 169.5    Compiling darling_core v0.20.11
+#10 170.9    Compiling near-account-id v3.0.0
+#10 171.2    Compiling num-rational v0.3.2
+#10 171.3    Compiling rand_core v0.6.4
+#10 171.3    Compiling zstd-sys v2.1.2+zstd.1.5.7
+#10 171.3    Compiling icu_normalizer_data v2.4.0
+#10 171.4    Compiling rustversion v1.0.23
+#10 171.5    Compiling near-schema-checker-core v0.38.0
+#10 171.5    Compiling icu_properties_data v2.4.0
+#10 171.6    Compiling near-schema-checker-macro v0.38.0
+#10 171.7    Compiling darling_macro v0.20.11
+#10 171.8    Compiling near-schema-checker-lib v0.38.0
+#10 171.8    Compiling ppv-lite86 v0.2.21
+#10 171.9    Compiling derive_more v2.1.1
+#10 172.0    Compiling curve25519-dalek v4.1.3
+#10 172.2    Compiling icu_collections v2.4.0
+#10 172.2    Compiling icu_provider v2.4.0
+#10 172.8    Compiling serde_with_macros v3.24.0
+#10 173.7    Compiling http-body v1.1.0
+#10 173.7    Compiling near-token v0.3.6
+#10 173.9    Compiling derive_arbitrary v1.5.0
+#10 173.8    Compiling enum-map-derive v0.17.0
+#10 174.3    Compiling secp256k1-sys v0.8.2
+#10 174.4    Compiling aho-corasick v1.1.5
+#10 174.6    Compiling futures-task v0.3.34
+#10 174.7    Compiling slab v0.4.12
+#10 174.9    Compiling lazy_static v1.5.1
+#10 174.9    Compiling ryu v1.0.23
+#10 175.1    Compiling rustix v1.1.6
+#10 175.4    Compiling bs58 v0.4.0
+#10 175.5    Compiling regex-syntax v0.8.11
+#10 176.3    Compiling futures-util v0.3.34
+#10 177.6    Compiling regex-automata v0.4.18
+#10 180.2    Compiling arbitrary v1.5.0
+#10 180.9    Compiling enum-map v2.7.3
+#10 181.0    Compiling serde_with v3.24.0
+#10 181.6    Compiling darling v0.20.11
+#10 181.6    Compiling rand_chacha v0.3.1
+#10 182.3    Compiling near-gas v0.3.7
+#10 182.5    Compiling serde_repr v0.1.21
+#10 182.8    Compiling linux-raw-sys v0.12.1
+#10 183.1    Compiling openssl-probe v0.2.2
+#10 183.2    Compiling signature v2.2.0
+#10 183.2    Compiling radium v0.7.0
+#10 183.4    Compiling base64 v0.21.7
+#10 183.6    Compiling tower-service v0.3.3
+#10 183.6    Compiling try-lock v0.2.5
+#10 183.6    Compiling heck v0.4.1
+#10 183.7    Compiling rustls v0.23.46
+#10 183.8    Compiling zstd-safe v7.4.0
+#10 183.8    Compiling strum_macros v0.24.3
+#10 183.8    Compiling want v0.3.2
+#10 183.9    Compiling near-primitives-core v0.38.0
+#10 184.4    Compiling rustls-webpki v0.103.16
+#10 184.7    Compiling ed25519 v2.2.3
+#10 184.8    Compiling icu_properties v2.4.0
+#10 184.8    Compiling icu_normalizer v2.4.0
+#10 185.2    Compiling rand v0.8.8
+#10 185.3    Compiling derive_builder_core v0.20.2
+#10 185.8    Compiling regex v1.13.1
+#10 185.9    Compiling uint v0.9.5
+#10 185.9    Compiling fixed-hash v0.7.0
+#10 185.9    Compiling keccak v0.1.6
+#10 185.9    Compiling deranged v0.5.9
+#10 186.2    Compiling openssl v0.10.82
+#10 186.2    Compiling tap v1.0.1
+#10 186.3    Compiling json_comments v0.2.2
+#10 186.3    Compiling crc32fast v1.5.4
+#10 186.3    Compiling foreign-types-shared v0.1.1
+#10 186.4    Compiling unsafe-libyaml v0.2.11
+#10 186.5    Compiling num-conv v0.2.2
+#10 186.5    Compiling atomic-waker v1.1.2
+#10 186.6    Compiling time-core v0.1.9
+#10 186.6    Compiling powerfmt v0.2.1
+#10 186.7    Compiling hyper v1.12.0
+#10 186.7    Compiling time v0.3.55
+#10 186.7    Compiling foreign-types v0.3.2
+#10 186.7    Compiling near-config-utils v0.38.0
+#10 186.9    Compiling serde_yaml v0.9.34+deprecated
+#10 187.0    Compiling wyz v0.5.1
+#10 187.5    Compiling sha3 v0.10.9
+#10 187.8    Compiling Inflector v0.11.4
+#10 188.0    Compiling ed25519-dalek v2.2.0
+#10 188.3    Compiling primitive-types v0.10.1
+#10 188.3    Compiling derive_builder_macro v0.20.2
+#10 188.5    Compiling secp256k1 v0.27.0
+#10 188.9    Compiling idna_adapter v1.2.2
+#10 189.2    Compiling strum v0.24.1
+#10 189.2    Compiling uriparse v0.6.4
+#10 190.1    Compiling futures-channel v0.3.34
+#10 190.4    Compiling blake2 v0.10.6
+#10 190.5    Compiling form_urlencoded v1.2.2
+#10 190.6    Compiling webpki-roots v1.0.11
+#10 190.7    Compiling near_schemafy_core v0.7.0
+#10 190.8    Compiling openssl-macros v0.1.1
+#10 191.4    Compiling iana-time-zone v0.1.65
+#10 191.4    Compiling utf8-zero v0.8.1
+#10 191.5    Compiling native-tls v0.2.18
+#10 191.6    Compiling near-stdx v0.38.0
+#10 191.6    Compiling getrandom v0.4.3
+#10 191.7    Compiling adler2 v2.0.1
+#10 191.8    Compiling ipnet v2.12.2
+#10 191.9    Compiling fastrand v2.5.0
+#10 192.1    Compiling rand_core v0.10.1
+#10 192.1    Compiling funty v2.0.0
+#10 192.2    Compiling either v1.19.0
+#10 192.5    Compiling simd-adler32 v0.3.10
+#10 192.7    Compiling miniz_oxide v0.9.1
+#10 192.8    Compiling bitvec v1.1.1
+#10 193.0    Compiling itertools v0.14.0
+#10 193.8    Compiling hyper-util v0.1.21
+#10 194.8    Compiling near-crypto v0.38.0
+#10 195.5    Compiling chrono v0.4.45
+#10 197.0    Compiling near-parameters v0.38.0
+#10 197.9    Compiling zstd v0.13.4
+#10 198.0    Compiling idna v1.1.0
+#10 198.7    Compiling derive_builder v0.20.2
+#10 198.9    Compiling near-time v0.38.0
+#10 199.5    Compiling near-fmt v0.38.0
+#10 199.5    Compiling sync_wrapper v1.0.2
+#10 199.6    Compiling ordered-float v4.6.0
+#10 199.6    Compiling jsonptr v0.7.1
+#10 199.6    Compiling bytesize v1.3.3
+#10 199.7    Compiling smart-default v0.7.1
+#10 199.8    Compiling filetime v0.2.29
+#10 200.0    Compiling near-sandbox v0.4.0
+#10 200.1    Compiling tower-layer v0.3.3
+#10 200.2    Compiling easy-ext v0.2.9
+#10 200.2    Compiling tower v0.5.3
+#10 200.3    Compiling ureq-proto v0.7.1
+#10 200.5    Compiling tar v0.4.46
+#10 200.6    Compiling near-primitives v0.38.0
+#10 201.0    Compiling json-patch v4.2.0
+#10 201.3    Compiling flate2 v1.1.11
+#10 201.6    Compiling url v2.5.8
+#10 202.4    Compiling fs4 v0.13.1
+#10 202.5    Compiling http-body-util v0.1.5
+#10 202.7    Compiling tempfile v3.27.0
+#10 203.3    Compiling ureq v3.5.1
+#10 204.1    Compiling near-abi v0.4.5
+#10 204.9    Compiling tower-http v0.6.11
+#10 205.1    Compiling tokio-native-tls v0.3.1
+#10 205.2    Compiling near_schemafy_lib v0.7.0
+#10 205.8    Compiling prettyplease v0.1.25
+#10 205.9    Compiling thiserror v1.0.69
+#10 206.1    Compiling near-abi-client-impl v0.1.1
+#10 206.1    Compiling hyper-tls v0.6.0
+#10 206.4    Compiling tokio-rustls v0.26.6
+#10 206.5    Compiling chacha20 v0.10.2
+#10 206.7    Compiling serde_urlencoded v0.7.1
+#10 207.3    Compiling rustls-native-certs v0.8.5
+#10 207.7    Compiling thiserror-impl v1.0.69
+#10 208.6    Compiling base64 v0.22.1
+#10 209.0    Compiling reqwest v0.12.28
+#10 209.6    Compiling near-workspaces v0.24.0
+#10 212.0    Compiling rustls-platform-verifier v0.7.1
+#10 212.4    Compiling rand v0.10.3
+#10 213.0    Compiling hyper-rustls v0.27.10
+#10 213.1    Compiling near-abi-client-macros v0.1.1
+#10 214.6    Compiling near-chain-configs v0.38.0
+#10 214.6    Compiling near-indexer-primitives v0.38.0
+#10 215.6    Compiling uint v0.10.2
+#10 215.8    Compiling jsonptr v0.4.7
+#10 215.8    Compiling convert_case v0.5.0
+#10 216.6    Compiling near-jsonrpc-primitives v0.38.0
+#10 216.6    Compiling near-abi-client v0.1.1
+#10 218.1    Compiling json-patch v2.0.0
+#10 218.4    Compiling kruxa-math v0.1.0 (/kruxa/crates/kruxa-math)
+#10 219.0    Compiling reqwest v0.13.5
+#10 219.2    Compiling tokio-retry v0.3.2
+#10 222.0    Compiling near-jsonrpc-client v0.23.0
+#10 222.1    Compiling async-trait v0.1.92
+#10 222.6    Compiling fs2 v0.4.3
+#10 222.7    Compiling bs58 v0.5.1
+#10 222.8    Compiling kruxa-logic v0.1.0 (/kruxa/crates/kruxa-logic)
+#10 265.0    Compiling kruxa-tests v0.1.0 (/kruxa/tests)
+#10 271.0     Finished `test` profile [unoptimized + debuginfo] target(s) in 2m 05s
+#10 271.1   Executable tests/judge_lifecycle.rs (target/debug/deps/judge_lifecycle-43e7bc67c42f158b)
+#10 271.4    Compiling proc-macro2 v1.0.107
+#10 271.4    Compiling unicode-ident v1.0.27
+#10 271.4    Compiling libc v0.2.191
+#10 271.4    Compiling quote v1.0.47
+#10 271.5    Compiling serde_core v1.0.229
+#10 271.6    Compiling equivalent v1.0.3
+#10 271.6    Compiling hashbrown v0.17.1
+#10 271.9    Compiling indexmap v2.14.2
+#10 272.0    Compiling syn v3.0.9
+#10 272.2    Compiling serde v1.0.229
+#10 272.2    Compiling toml_edit v0.25.19+spec-1.1.0
+#10 272.4    Compiling cc v1.11.1
+#10 272.6    Compiling proc-macro-crate v3.5.0
+#10 272.7    Compiling borsh v1.8.1
+#10 272.8    Compiling crypto-common v0.1.6
+#10 272.8    Compiling hex v0.4.3
+#10 272.8    Compiling digest v0.10.7
+#10 272.9    Compiling uint v0.10.2
+#10 272.9    Compiling cpufeatures v0.2.17
+#10 272.9    Compiling serde_json v1.0.154
+#10 272.9    Compiling sha2 v0.10.9
+#10 273.0    Compiling smallvec v1.16.5
+#10 273.0    Compiling getrandom v0.2.17
+#10 273.1    Compiling crc32fast v1.5.4
+#10 273.1    Compiling ring v0.17.14
+#10 273.2    Compiling percent-encoding v2.3.2
+#10 273.2    Compiling form_urlencoded v1.2.2
+#10 273.6    Compiling synstructure v0.14.0
+#10 273.6    Compiling subtle v2.6.1
+#10 273.7    Compiling webpki-roots v0.26.11
+#10 273.7    Compiling flate2 v1.1.11
+#10 273.9    Compiling zerofrom-derive v0.1.8
+#10 273.9    Compiling yoke-derive v0.8.4
+#10 273.9    Compiling zerovec-derive v0.11.7
+#10 273.9    Compiling displaydoc v0.2.7
+#10 274.3    Compiling serde_derive v1.0.229
+#10 274.4    Compiling borsh-derive v1.8.1
+#10 274.4    Compiling zerofrom v0.1.8
+#10 274.5    Compiling yoke v0.8.4
+#10 274.6    Compiling zerovec v0.11.9
+#10 274.9    Compiling tinystr v0.8.5
+#10 275.0    Compiling icu_locale_core v2.4.0
+#10 275.2    Compiling potential_utf v0.1.6
+#10 275.3    Compiling zerotrie v0.2.5
+#10 275.4    Compiling icu_provider v2.4.0
+#10 275.5    Compiling icu_collections v2.4.0
+#10 275.5    Compiling rustls-webpki v0.103.16
+#10 275.7    Compiling icu_normalizer v2.4.0
+#10 275.7    Compiling icu_properties v2.4.0
+#10 275.9    Compiling rustls v0.23.46
+#10 276.0    Compiling kruxa-math v0.1.0 (/kruxa/crates/kruxa-math)
+#10 276.1    Compiling idna_adapter v1.2.2
+#10 276.1    Compiling kruxa-logic v0.1.0 (/kruxa/crates/kruxa-logic)
+#10 276.4    Compiling idna v1.1.0
+#10 276.5    Compiling url v2.5.8
+#10 276.7    Compiling kruxa-market v0.1.0 (/kruxa/crates/kruxa-market)
+#10 276.8    Compiling swarm-sim v0.1.0 (/kruxa/tools/swarm-sim)
+#10 276.9    Compiling market-sim v0.1.0 (/kruxa/tools/market-sim)
+#10 277.3    Compiling ureq v2.12.1
+#10 277.9    Compiling kruxa-sim v0.1.0 (/kruxa/tools/kruxa-sim)
+#10 279.0     Finished `dev` profile [unoptimized + debuginfo] target(s) in 8.04s
+#10 279.2    Compiling sha2 v0.10.9
+#10 279.2    Compiling num-traits v0.2.19
+#10 279.2    Compiling wait-timeout v0.2.1
+#10 279.2    Compiling bit-vec v0.10.1
+#10 279.4    Compiling kruxa-logic v0.1.0 (/kruxa/crates/kruxa-logic)
+#10 279.4    Compiling quick-error v1.2.3
+#10 279.4    Compiling rusty-fork v0.3.1
+#10 279.4    Compiling bit-set v0.11.1
+#10 279.5    Compiling rand v0.10.3
+#10 279.6    Compiling rand_xorshift v0.5.0
+#10 279.6    Compiling core_detect v1.0.0
+#10 279.7    Compiling unarray v0.1.4
+#10 279.7    Compiling getrandom v0.2.17
+#10 279.7    Compiling proptest v1.12.0
+#10 279.7    Compiling ring v0.17.14
+#10 279.8    Compiling kruxa-market v0.1.0 (/kruxa/crates/kruxa-market)
+#10 280.0    Compiling swarm-sim v0.1.0 (/kruxa/tools/swarm-sim)
+#10 280.2    Compiling kruxa-instant v0.1.0 (/kruxa/crates/kruxa-instant)
+#10 280.4    Compiling rustls-webpki v0.103.16
+#10 280.7    Compiling rustls v0.23.46
+#10 283.8    Compiling ureq v2.12.1
+#10 285.7    Compiling kruxa-math v0.1.0 (/kruxa/crates/kruxa-math)
+#10 286.3    Compiling kruxa-sim v0.1.0 (/kruxa/tools/kruxa-sim)
+#10 289.6     Finished `test` profile [unoptimized + debuginfo] target(s) in 10.66s
+#10 289.6   Executable unittests src/lib.rs (target/debug/deps/kruxa_instant-00725653a491bd13)
+#10 289.6   Executable unittests src/lib.rs (target/debug/deps/kruxa_logic-f2b93831cc73e5a5)
+#10 289.6   Executable tests/properties.rs (target/debug/deps/properties-d52131f512f4c760)
+#10 289.6   Executable unittests src/lib.rs (target/debug/deps/kruxa_market-ddaaaf626d9128b8)
+#10 289.6   Executable tests/props.rs (target/debug/deps/props-c2732fec3970a952)
+#10 289.6   Executable unittests src/lib.rs (target/debug/deps/kruxa_math-ec8f1ed997fdee9f)
+#10 289.6   Executable unittests src/main.rs (target/debug/deps/kruxa_sim-a3311579ada9efa8)
+#10 289.6   Executable tests/commands.rs (target/debug/deps/commands-44d3edd74f6a21ce)
+#10 289.6   Executable tests/exit_codes.rs (target/debug/deps/exit_codes-8464d8e728981f5b)
+#10 289.6   Executable tests/recompute.rs (target/debug/deps/recompute-a4464b965aa3d2fb)
+#10 289.6   Executable unittests src/lib.rs (target/debug/deps/swarm_sim-1b161b6ef2236c9e)
+#10 289.6   Executable unittests src/main.rs (target/debug/deps/swarm_sim-928f35dc88a03571)
+#10 289.6   Executable tests/sim.rs (target/debug/deps/sim-59a000e30406f296)
+#10 DONE 290.1s
+
+#11 exporting to image
+#11 exporting layers
+#11 exporting layers 69.7s done
+#11 exporting manifest sha256:b17a161a23dbe7d880b6d3ba429df60188b1d366b9c6aef51d0a968267041b88 0.0s done
+#11 exporting config sha256:05bdd2761622322e48a00e2d30fa568d29b043df8283809814f92240abb39915 done
+#11 exporting attestation manifest sha256:f559d390c3d040ab6a74db6934f4471f9e8eb30aa8a81c6aca0778024a7fe5ac 0.0s done
+#11 exporting manifest list sha256:b063a1f2628c25eb0f254f5860f24ee4234677debfc90411c69747b96b806823 done
+#11 naming to docker.io/library/kruxa-judge-fg01:latest done
+#11 unpacking to docker.io/library/kruxa-judge-fg01:latest
+#11 unpacking to docker.io/library/kruxa-judge-fg01:latest 15.3s done
+#11 DONE 85.2s
+docker build rc=0

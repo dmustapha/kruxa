@@ -1,0 +1,31 @@
+A0.log
+A1.log
+L1.log
+M2.log
+T1.log
+T2.log
+T3.log
+T4.log
+T5.log
+V1.log
+W1.log
+steps.tsv
+
+running 1 test
+/kruxa/target/debug/build/near-sandbox-76c626f0b047ac0c/out/.near/near-sandbox-2.14.0/near-sandbox: /lib/aarch64-linux-gnu/libc.so.6: version `GLIBC_2.39' not found (required by /kruxa/target/debug/build/near-sandbox-76c626f0b047ac0c/out/.near/near-sandbox-2.14.0/near-sandbox)
+/kruxa/target/debug/build/near-sandbox-76c626f0b047ac0c/out/.near/near-sandbox-2.14.0/near-sandbox: /lib/aarch64-linux-gnu/libc.so.6: version `GLIBC_2.38' not found (required by /kruxa/target/debug/build/near-sandbox-76c626f0b047ac0c/out/.near/near-sandbox-2.14.0/near-sandbox)
+Error: Could not startup and run sandbox node
+
+Caused by:
+    0: Error while performing r/w on config file: No such file or directory (os error 2)
+    1: Error while performing r/w on config file: No such file or directory (os error 2)
+judge_lifecycle_narrated --- FAILED
+
+failures:
+
+failures:
+    judge_lifecycle_narrated
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p kruxa-tests --test judge_lifecycle`
