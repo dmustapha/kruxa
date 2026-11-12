@@ -11,7 +11,7 @@ Last updated: 2026-11-11 (docs-sync after round 4, the full judge record, the in
 | Local build | step B1 of `make judge` prints `e85198ed...`, 675,007 bytes: same source, different toolchain, not what testnet runs | `evidence/judge-run.txt`, `rehearsal/LOG.md` R3-6 |
 | Mainnet | nothing deployed | none |
 | Attack gallery | 100 attacks: 81 refused with a rule code, 14 no effect, 5 bounded, 0 failed, 10 not done (sandbox hashes, own red team) | `docs/ATTACK-GALLERY.md` |
-| Full judge run | `make judge`: 20 of 20 steps GREEN, 2,512 s, git `64ea392`; five tracks GREEN (Memecoins With Mechanics, AI Security & Defense, AI Swarms, Investment Thesis, Open Innovation) | `evidence/judge-run.txt` |
+| Full judge run | `make judge`: 20 of 20 steps GREEN (git head and wall time in `evidence/judge-run.txt`); five tracks GREEN (Memecoins With Mechanics, AI Security & Defense, AI Swarms, Investment Thesis, Open Innovation) | `evidence/judge-run.txt` |
 | Fast judge run | 19 of 19 steps GREEN, 553 s, git `b4b4c8a` | `evidence/judge-fast-run.txt` |
 | Gate G3 | NO-GO as last recorded on 2026-11-10, before rounds 3 and 4; not re-run (GR-3, 7, 8, 9, 11, 13, 14, 17) | `evidence/testnet-core3/gate-g3.txt` |
 | Gate G2 | GREEN 9 of 9 on core3 at round 4 (PASS launch 10 on the deployed wasm, FAIL launch 3; G2-01 read the existing gate-g1 logs, not a re-run) | `evidence/testnet-core3/gate-g2-round4.txt` |
@@ -47,7 +47,7 @@ Last updated: 2026-11-11 (docs-sync after round 4, the full judge record, the in
 | Test 1 (OV4, OV15) | RECORDED but thin: only the OV15 NEAR tx hash was kept; no OV4 tx hashes; OV3 unproven |
 | Thesis pack | `evidence/thesis.txt` exists; the dashboard review (PD-15) is Dami's |
 | Reproducible build | core: done and deployed (core3, core4). Market and launcher: local builds only |
-| `Dockerfile.judge` | exists, untested; no clean-container run recorded. The full `make judge` run is recorded (2,512 s) |
+| `Dockerfile.judge` | built and run clean once on an earlier tree (`JUDGE PREBUILT GREEN`, 12 of 12 steps, 109 s, `--network none`, `evidence/docker-judge/`); not repeated on the final tree; its wasm is a local non-reproducible build and its base image tag is not digest-pinned. The full `make judge` run is recorded in `evidence/judge-run.txt` |
 
 ### Missing
 
