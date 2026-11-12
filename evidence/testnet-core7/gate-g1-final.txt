@@ -1,0 +1,17 @@
+PASS G1-01 toolchain (rustc 1.95.0 (59807616e 2026-04-14))
+PASS G1-04 wasm build (4 files, kruxa_core 674996 B)
+PASS G1-02 lint (lint ok, kruxa_core.wasm   674996 bytes (budget 700000))
+PASS G1-03 pure tests (64 in kruxa-math + kruxa-logic, 108 with kruxa-sim)
+     sandbox suite: exit 0, 324 passed
+PASS G1-05 PASS path (undersubscribed, oversubscribed)
+PASS G1-06 FAIL path (refund all, dissolve, bond back)
+PASS G1-07 stream-lite (output shows STREAM_CAP)
+PASS G1-08 refund safety (callback fail, partial leg, reentrancy, double)
+PASS G1-09 invariants L1,L3,L4,I2-I5 after every step (whole sandbox suite exit 0)
+PASS G1-10 golden (PASS, FAIL(reasons=1), spend 40000000 refund 60000000)
+FAIL G1-11 secret scan and offline claims -- ==> target/gate-g1/scan.log <== evidence/verify/instant-1111-1000000001.txt SECRET-SCAN FAIL  ==> target/gate-g1/claims.log <== C-06 SKIP (needs testnet deploy / source file) C-07 SKIP (needs testnet deploy / source file) 
+PASS G1-12 mainnet deploy refused
+FAIL G1-13 no near-sandbox or next-server left -- 51131 next-server (v15.5.29) CLAUDE_CODE_MESSAGING_TOKEN=<redacted> NoDefaultCurrentDirectoryInExePath=1 DEEPSEEK_API_KEY=sk-9e04820bca394da9f453a3135f61d2e9 TERM_PROGRAM=vscode
+PASS G1-14 DC table: W1-DC-1,3,4,5,6,7 = Yes, evidence ok in this run
+G1 RED (2 failing). STOP and re-plan per PLAN DT-R14; never ship the bare floor.
+EXIT 1

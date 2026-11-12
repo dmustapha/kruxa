@@ -25,6 +25,7 @@ const SPECS = {
   G: { sym: 'KXCG', mode: 'F0', creator: 'creator-b', buyers: 12, amount: 30n, note: 'F0 run on the final wasm e338f84d (round 2)' },
   H: { sym: 'KXCH', mode: 'F0', creator: 'creator-a', buyers: 12, amount: 30n, note: 'F0 run on the final wasm e338f84d (round 2, create_trial with 300 Tgas)' },
   I: { sym: 'KXCI', mode: 'F0', creator: 'creator-a', buyers: 12, amount: 30n, note: 'F0 run on the FINAL wasm e85198ed with the R_GAS guard (round 3, PD-18)' },
+  K: { sym: 'KXDS', mode: 'F0', creator: 'creator-a', buyers: 12, amount: 30n, note: 'F0 run on the FINAL reproducible wasm c55bffdb (core7, dissolve-after-walk core)' },
   J: { sym: 'KXDR', mode: 'F0', creator: 'creator-a', buyers: 12, amount: 30n, note: 'F0 run on the REPRODUCIBLE wasm 665caab5 (round 4, create_trial with 300 Tgas)' },
 };
 
@@ -120,10 +121,11 @@ const token = await ensureToken(spec.sym);
 const creator = await ensureActor(spec.creator, 0.75);
 const id = await nextLaunchId();
 const holders = Array.from({ length: spec.buyers }, newSolKey);
-const holdersFile = path.join(os.homedir(), '.kruxa-secrets', 'genesis', `holders-core3-${id}.json`);
+const coreShort = A.core.split('.')[0]; // core3 keeps its historic file names; any other core gets its own so a launch id never overwrites another core's holder keys
+const holdersFile = path.join(os.homedir(), '.kruxa-secrets', 'genesis', `holders-${coreShort}-${id}.json`);
 fs.writeFileSync(holdersFile, JSON.stringify(holders.map((h) => h.secret64)), { mode: 0o600 });
 const amount = spec.amount * USDC_;
-const rec = { id, name: which, note: spec.note, symbol: spec.sym, mode: spec.mode, token, creator, core: A.core, holders_file_local: `~/.kruxa-secrets/genesis/holders-core3-${id}.json`, txs: {}, buyers: [] };
+const rec = { id, name: which, note: spec.note, symbol: spec.sym, mode: spec.mode, token, creator, core: A.core, holders_file_local: `~/.kruxa-secrets/genesis/holders-${coreShort}-${id}.json`, txs: {}, buyers: [] };
 
 // fund first (the commit window is short): one mint into the mock Intents, one mt_deposit per Solana buyer; native buyers get USDC directly
 const total = amount * BigInt(spec.buyers + (spec.natives || []).length);

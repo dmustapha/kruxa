@@ -1,0 +1,20 @@
+waiting for the walk tail to end (phase Open)
+Receipt: 3yp9peoJMJXYz8yd7TthuzRZS96vSwHwP1iPntoyhMCk
+	Log [core7.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"verdict","data":[{"launch_id":"6","outcome":"PASS","inputs_hash":"cd8468fc6126cde3e31822b54b051a260e058b053dedf405814fbd6574e68053","total_active":"360000000","funders":12}]}
+	Log [core7.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"pass_allocated","data":[{"launch_id":"6","accepted":"360000000","launch_fee":"10000000","lp_quote":"150000000","stream":"200000000","excess_pool":"0"}]}
+OK   keeper 6: settle tx=D22mGzM6qHHDuES5EiEbcQrknbVjhV5dbDfiTwyYjsfZ codes=
+OK   keeper 6: settle_positions_page tx=8JHGZdhWRfyZg1aF1NNx8UPLQK2zgrr1az5c91yhbeSj codes=
+Receipt: Ha4zWq2BPjm5Fm1cLMoKnHWLzsedGwEHnKUhxWvoC4jg
+	Log [core7.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"residue_swept","data":[{"launch_id":"6","amount":"0"}]}
+OK   keeper 6: sweep_residue tx=1YrHbd3c1ScS5Qgvqb1Y9bvoi5UAfKGaR3ZUSSbpcxK codes=
+Receipt: SvTEUcwoKAK9QRnJLV2VKodTRb3Ht11L3YQXhuyCb24
+	Log [core7.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"payout_resolved","data":[{"launch_id":"6","kind":"Consolidate","amount":"360000000","ok":true}]}
+OK   keeper 6: consolidate tx=H9FRafMY2yKJsyeorho8VK8RCXubyZsRfvo9Ju4j64yD codes=
+Receipt: 3C7ToAofECGhdi6cQ4irxuPz7hb2n5izXi78vHZc8pV3
+	Log [core7.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"payout_resolved","data":[{"launch_id":"6","kind":"LaunchFee","amount":"10000000","ok":true}]}
+OK   keeper 6: pay_launch_fee tx=9xEgqFV6HE2tCKPi6evFxoirKvndcujpgNdCfx5HVqdP codes=
+Receipt: FJWC8pe1rj2gjPvkFeujdgKaUqcLcnxptFpmMvsofnfE
+	Failure [core7.kxi-root-1108.testnet]: Error: {"index":0,"kind":{"index":0,"kind":{"FunctionCallError":{"ExecutionError":"Smart contract panicked: R_NOTHING_FREE: no relay fees accrued"}}}}
+FAIL keeper 6: pay_relay_fees tx=2krMdBuYrVmPmRTMfXyeTEauWgRwAwFADzwvp43MvbtH codes=R_NOTHING_FREE
+final status Passed, positions_unsettled 0, residue_swept true
+EXIT 0

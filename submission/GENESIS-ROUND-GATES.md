@@ -1,29 +1,30 @@
 # Genesis Round gates (GR-1 to GR-18)
 
-State as of 2026-11-11T17:48Z on tree 402423f. Source of truth: `./scripts/gate-g3.sh` (read-only) reading `rehearsal/GATE-EVIDENCE.md`. Gate result: NO-GO.
-Hash note: the core wasm `665caab5...` is SUPERSEDED by the dissolve-after-walk core fix. Rows that cite it are proven for that hash only; the
-new reproducible hash is PENDING and the FREEZE row (GR-14) has not been written. Nobody but Dami writes it.
+State as of 2026-11-12T05:45Z on the final core build `c55bffdb` (commit `5c2874d`, deployed on `core7.kxi-root-1108.testnet`). Source of truth: `./scripts/gate-g3.sh` (read-only) reading `rehearsal/GATE-EVIDENCE.md`. Gate result: NO-GO, blocked by GR-3 GR-7 GR-8 GR-9 GR-10 GR-11 GR-13 GR-14 GR-17 (`evidence/testnet-core7/gate-g3-final.txt`).
+Hash note: the previous core wasm `665caab5...` is SUPERSEDED by the dissolve-after-walk core fix; the rows below were rerun on `c55bffdb...`. The FREEZE row (GR-14) has not been written. Nobody but Dami writes it.
 
 | Row | Kind | Status | Evidence pointer | Owner | What is needed |
 |---|---|---|---|---|---|
-| GR-1 | HARD | PASS (stale logs) | `evidence/core-wasm-bytes/` (suite on 665caab5: 322 ok, 1 load flake that passes alone); Nov 10 gate-g1 logs | agent | rerun suites on the new wasm (`KXI_CORE_WASM`, FG-24) |
-| GR-2 | HARD | PASS on 665caab5 | `evidence/testnet-core3/gate-g2-round4.txt` | coordinator or Dami | redeploy new core on testnet, rerun `gate-g2.sh` (signs testnet txs) |
+| GR-1 | HARD | PASS | `evidence/core-wasm-bytes/sandbox-suite-c55bffdb.log` (full suite on the container bytes: 324 passed, 0 failed, pin `c55bffdb` checked); `evidence/testnet-core7/gate-g1-final.txt` (12 of 14 rows PASS; G1-11 failed on the secret-scan allowlist, since fixed in `scripts/secret-scan.sh` (it matched only public keys); G1-13 failed on another project's `next-server`, see below) | agent | none for the tests; rerun `scripts/gate-g1.sh` once no foreign `next-server` is running to see 14 of 14 |
+| GR-2 | HARD | PASS on c55bffdb | `evidence/testnet-core7/gate-g2-core7.txt` (GREEN 9 of 9: F0 launch 6 and FAIL launch 1 on core7); `evidence/verify/core7-launch6-F0.txt` (exit 0, CODE MATCH), `...-tamper-all.txt` (exit 2) | none | none |
 | GR-3 | WAIVABLE | UNKNOWN | `evidence/test1-ov15.json`, SUBMISSION_STATUS (Test 1 thin) | Dami | accept Test 1 or drop Solana-landing claims; README edit then follows |
 | GR-4 | HARD | PASS | `evidence/factory-probe.txt`, `docs/benchmarks.md` B-FACTORY | none | none |
-| GR-5 | HARD | PASS | 3 cap tests in the gate-g1 logs | agent | rerun with GR-1 |
-| GR-6 | HARD | PASS | 2 pause and freeze tests | agent | rerun with GR-1 |
+| GR-5 | HARD | PASS | 3 cap tests in the gate-g1 logs | agent | none (read from the same-day gate-g1 logs) |
+| GR-6 | HARD | PASS | 2 pause and freeze tests | agent | none (read from the same-day gate-g1 logs) |
 | GR-7 | HARD | UNKNOWN | `evidence/genesis/squads-devnet-*.txt` (single-party demo vault) | Dami | 3 hardware wallets, 48 h lock rehearsal line |
 | GR-8 | HARD | UNKNOWN | `app/app/charter/page.tsx` (seven disclosures coded, not published) | Dami | hosting, domain, publish |
 | GR-9 | HARD | UNKNOWN | `app/app/legal/` pages exist | Dami | counsel review (P-14) |
-| GR-10 | HARD | PASS, 12 min margin | clock check in gate-g3 | Dami | limit is Nov 11 18:00 UTC; turns FAIL after it unless ruled |
+| GR-10 | HARD | FAIL (clock) | clock check in gate-g3: the open-by limit was Nov 11 18:00 UTC and has passed | Dami | rule the limit (move it, or accept the later date) |
 | GR-11 | HARD | PENDING | `rehearsal/CONFIRMATIONS.md` (does not exist yet) | Dami | per-action confirmations at execution |
-| GR-12 | HARD | PASS on 665caab5 | `evidence/genesis/core3-f0-devnet-launch10.json`, `rehearsal/ROUND4.md` | coordinator or Dami | accept, or one F0 on the new wasm |
+| GR-12 | HARD | PASS on c55bffdb (one F0) | `evidence/genesis/core7-f0-devnet-launch6.json` and `.log`, `evidence/verify/core7-launch6-F0.txt`; earlier F0 runs (launches 2, 5, 6, 8, 9, 10 on core3) were on older hashes | none | none, or ask for two more F0 runs on the final hash if the 3 of 3 rule must be met on one hash |
 | GR-13 | WAIVABLE | UNKNOWN | `spikes/meteora/RESULTS.md` (local rehearsal only) | Dami | devnet SOL and signatures, or waive: NEAR pool only for round one |
 | GR-14 | HARD | UNKNOWN | no FREEZE row in `rehearsal/LOG.md` | Dami | `gate-freeze.sh freeze` on the new reproducible hash |
-| GR-15 | HARD | PASS | 2 open_market tests | agent | rerun with GR-1 |
-| GR-16 | WAIVABLE | PASS | `evidence/testnet-core3/market-flows.json` | none | none |
+| GR-15 | HARD | PASS | 2 open_market tests | agent | none (read from the same-day gate-g1 logs) |
+| GR-16 | WAIVABLE | PASS | `evidence/testnet-core7/market-flow-launch2.log` (market5 on core7), C34 MATCH in `verify.sh 2` and `6` | none | none |
 | GR-17 | HARD | UNKNOWN | no rulings recorded | Dami | brand-token supply and allocation, USDC payout address, pool and LP-seed amounts |
-| GR-18 | WAIVABLE | PASS | 1 payout_recipient test | agent | rerun with GR-1 |
+| GR-18 | WAIVABLE | PASS | 1 payout_recipient test | agent | none (read from the same-day gate-g1 logs) |
+
+Note on G1-13: the gate greps every `next-server` on the machine; the one it found (pid 51131, port 3100) belongs to a different project (`~/wif-hack/terra-firma/web`), so it was left running.
 
 Tracks claimed (`submission/track-claims.json`, written by `scripts/claimed-tracks.sh --json` from the `make judge` table made on 44b1bce):
 Memecoins With Mechanics, AI Security & Defense, AI Swarms, Open Innovation, Investment Thesis. Not claimed (RED): Unstoppable DeFi, Agent Economy.

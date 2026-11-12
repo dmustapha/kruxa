@@ -21,3 +21,10 @@ Behaviour change to know: a walker whose refund has landed has no record any mor
 
 Funding: 6 NEAR of testnet play money moved from `kxi-root-1111` to `kxi-root-1108` (logged in `lifecycle/txlog.jsonl`).
 Not covered here: market linking, swarm, `verify.sh` and Solana genesis on core7 (see the follow-up files in this directory when present).
+
+## Later additions (same day)
+
+- Swarm seeds 1, 2 and 3 on core7, all GREEN (56 of 56, 47 of 47, 49 of 49); seed 2's first run was RED because the runner still expected a record for walkers (kept, `evidence/swarm-testnet/run-seed2-core7-run1-RED-walker-record-deleted.json`), and failed launches 3 and 4 were refunded and dissolved afterwards (`refund-and-dissolve-launches-3-4.log`).
+- PASS launch 2: keeper, market5 pool (`market-flow-launch2.log`), `verify.sh 2` exit 3 only because swarm trials have no Solana genesis (`evidence/verify/core7-launch2-PASS-with-market5*.txt`).
+- F0 launch 6 (`seed-K-f0.log`, `keeper-launch6-f0.log`, `evidence/genesis/core7-f0-devnet-launch6.json`): verify exit 0 and tamper-all exit 2 (`evidence/verify/core7-launch6-F0*.txt`), gate-g2 GREEN 9 of 9 (`gate-g2-core7.txt`). The first seed attempt's `create_trial` was never included in a block (creator balance too low, kept as `seed-K-f0-attempt1-...log`); the first driver start failed before sending anything (missing `tools/squads` install, kept in `evidence/genesis/`).
+- gate-g1 (`gate-g1-final.txt`): 12 of 14 rows PASS; G1-11 (secret scan: the scan matched public keys in verify outputs, allowlist extended in `scripts/secret-scan.sh`) and G1-13 (another project's `next-server`, left running). gate-g3 (`gate-g3-final.txt`): NO-GO, blocked only by rows that need Dami plus GR-10 (clock).

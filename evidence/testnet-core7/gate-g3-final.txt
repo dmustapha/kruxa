@@ -1,0 +1,20 @@
+GR-1   HARD      PASS     Wave 1 + D-1 + D-3 suites ok in the last gate-g1 run (324 sandbox tests ok)
+GR-2   HARD      PASS     devnet end to end, verify exit 0, tamper-all exit 2:  round 5, the FINAL reproducible wasm c55bffdb (commit 5c2874d, dissolve-after-walk) on core7.kxi-root-1108.testnet (view_code sha256 c55bffdbdec7909464c65511219ec77be7d8f765bc037a46350efe713cb8b13b, deploy tx y6hSbC7rdmYo3tYjpWoqDaUuJwmfXx2d22ukEYoCSC5): scripts/gate-g2.sh GREEN 9 of 9 with PASS launch 6 (F0) and FAIL launch 1 (evidence/testnet-core7/gate-g2-core7.txt). verify.sh 6 exit 0 (21 passed, 7 skipped, CODE line MATCH c55bffdb), tamper-all exit 2 (38 MISMATCH lines, none undetected) (evidence/verify/core7-launch6-F0.txt, core7-launch6-F0-tamper-all.txt). G2-01 read the full gate-g1 logs of the same day (324 sandbox tests ok) 
+GR-3   WAIVABLE  UNKNOWN  Intents path decided (Test 1 or Solana-landing claims dropped): no line in rehearsal/GATE-EVIDENCE.md
+GR-4   HARD      PASS     evidence/factory-probe.txt: cost and ft_burn recorded; docs/benchmarks.md B-FACTORY
+GR-5   HARD      PASS     caps in code: 3 tests ok in the last run
+GR-6   HARD      PASS     pause, freeze, guardian; exits open while PAUSED: 2 tests ok in the last run
+GR-7   HARD      UNKNOWN  Squads vault rehearsed on devnet, 48 h lock, 3 hardware wallets: no line in rehearsal/GATE-EVIDENCE.md
+GR-8   HARD      UNKNOWN  disclosure pages published: no line in rehearsal/GATE-EVIDENCE.md
+GR-9   HARD      UNKNOWN  legal minimum: no line in rehearsal/GATE-EVIDENCE.md
+GR-10  HARD      FAIL     now 2026-11-12T05:43:43Z is after the Nov 11 18:00 UTC open-by limit
+GR-11  HARD      PENDING  filled at execution, not now
+GR-12  HARD      PASS     genesis mode decided (F0 3 of 3 or F1 disclosed):  round 5: F0 on the final wasm c55bffdb through the core gate (commit_genesis, register_f0_message x2, sign_genesis x2, predecessor = core7), launch 6 (KXDS, 12 Solana buyers, 360 USDC), signatures verified offline before broadcast, confirm_genesis ok, Merkle root matches the core, claim ok, distributor admin NULL (evidence/genesis/core7-f0-devnet-launch6.json and .log; first attempt of the driver failed before sending anything for a missing tools/squads npm install, log kept). One F0 on the final hash; the 3 of 3 rule was met on earlier hashes (launches 2, 5, 6, 8, 9, 10 on core3) 
+GR-13  WAIVABLE  UNKNOWN  Meteora spike result recorded: no line in rehearsal/GATE-EVIDENCE.md
+GR-14  HARD      UNKNOWN  no A-4 FREEZE row with a sha256 in rehearsal/LOG.md
+GR-15  HARD      PASS     open_market handoff against the stub and the real market: 2 tests ok in the last run
+GR-16  WAIVABLE  PASS     Market-lite testnet e2e (make market-demo); otherwise the market stays testnet:  market5.kxi-root-1108.testnet (linked to core7 by set_market) opened for launch 2 through core open_market; buy, claim_owed, buy, sell; pool and market invariants true, usdc_custody equals usdc_expected 436170725 (evidence/testnet-core7/market-flow-launch2.log); C34 MATCH in verify.sh 2 and 6 
+GR-17  HARD      UNKNOWN  brand-token supply and allocation, USDC payout address, pool and LP-seed amounts ruled: no line in rehearsal/GATE-EVIDENCE.md
+GR-18  WAIVABLE  PASS     payout_recipient alias in get_charter and get_state: 1 tests ok in the last run
+
+NO-GO (blocked by: GR-3 GR-7 GR-8 GR-9 GR-10 GR-11 GR-13 GR-14 GR-17)

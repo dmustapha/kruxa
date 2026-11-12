@@ -1,0 +1,64 @@
+topped up factory.kxi-root-0811.testnet with 1.747 NEAR tx=2bKngJ9Fmw2Fp5RP8zdSpJxVtV8iiatq2p14fwq1PKPx
+created kxds.factory.kxi-root-0811.testnet tx=9HY6ZH1tjWSXWHc6JuK2tZnQmor2DpnHUivDnYSzKk1j
+deployed /Users/MAC/near-hack/kruxa-repo/target/near/mock_ft/mock_ft.wasm -> kxds.factory.kxi-root-0811.testnet tx=4TymvqbM6bwKjRGPV3do1Vsf5fTTAMXVZ3au3eEdqGnr
+OK   init kxds.factory.kxi-root-0811.testnet.new tx=DWVE8cdY3YsWezgTrdfVRqzhNF6X7YxW2F5QCF5e3jSq codes=
+OK   K: usdc.mint to intents tx=AmoMT1o1w7Jw51gqFXniZbBLrxKKXgzeKuDfoHDdEkJT codes=
+OK   K: intents.mt_deposit EiFzS6 tx=9aoPNhpnHcfo9xL1w5F2t5T9vN46jXCo6SHdJjDvgqSY codes=
+OK   K: intents.mt_deposit 4Z2iH7 tx=7wJVKVbbmo8wkBvh74j1Pem6y9Z5jpPD2pxH6RHBE6vY codes=
+OK   K: intents.mt_deposit 2rW44o tx=8seihFFEtLY1HvZKjXWvQue1kbsKjngEhBzczYD9tTbS codes=
+OK   K: intents.mt_deposit CKUMti tx=J68aDJVvsw6QKiF5n7yKevLCsRtSfysYTfnHKNuNsHjm codes=
+OK   K: intents.mt_deposit 8nWxQP tx=FSBXe52BrDwNYH4j9XPUDbSGKnrpmTfgzjZGfjroiquw codes=
+OK   K: intents.mt_deposit Fgj8Qm tx=6ToshaN9qydRiJPMrwBnmxpgJ2CvkcRL2EUGWuE25dxP codes=
+OK   K: intents.mt_deposit G7DcpV tx=GPCbrwNRrpdx96vXMEk2CpMtm214SVUXbeM6SqEJVKdK codes=
+OK   K: intents.mt_deposit 3zyUxz tx=vbCbLw77mLVFyjHcUDNGxkZ8qnuyhBBm5uWA8hZfR4M codes=
+OK   K: intents.mt_deposit GziDHG tx=HocxxPARfMLiWRpw1Ltsguzz9pHn3agCxU9SDS2cBeC1 codes=
+OK   K: intents.mt_deposit 6Cb7a1 tx=3w8ypZJdKcyxdLkSrcTkAgpNixa7gP5wp2ZE87me3NnJ codes=
+OK   K: intents.mt_deposit FcBcVz tx=4iAtqdFFgqDz4SHZRC11FvCDkbT5rLnWW7EfzwJRqkKP codes=
+OK   K: intents.mt_deposit E3ckKb tx=DXHcA4LyjrmGy63DvJ48NXjyfa9uhHbcYk5G3Mog8QcA codes=
+FAIL K: create_trial KXDS (F0) tx=DdHF2Cn1xwrZaRBcfEyRHiAqbAYCN4LPWHMjYH2swRHi codes=
+launch 6 (K) is Open; committing 12 Solana + 0 native buyers
+Receipt: 12aRZ2dR7PbWqWo9yYR3sE33VuhrH552HRtP6PxkXS1E
+	Log [intents.kxa1-owner-1203.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"deposit_rejected","data":[{"payer":"cbb9b155328ee480faff67c35d63e2e1fe88406a6b7af09213af439be04fa656","amount":"30000000","code":"R_NO_LAUNCH","detail":"R_NO_LAUNCH: launch_id = 6 violates exists"}]}
+OK   K: commit sol:EiFzS6 30 USDC tx=3Ekb4YhUjvVTqDeLEjSTK6RtYJTDh5shJP5hYuo8BfXQ codes=R_NO_LAUNCH
+Receipt: 6SNm7MgFcsN16xSFYCh4KazW7qHMfgXh5Bu6hWgN8mAN
+	Log [intents.kxa1-owner-1203.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"deposit_rejected","data":[{"payer":"34c7950340dd4feb53a0729b88b7e6996887fbe9fb7c5ea5aadf772b7ef8c777","amount":"30000000","code":"R_NO_LAUNCH","detail":"R_NO_LAUNCH: launch_id = 6 violates exists"}]}
+OK   K: commit sol:4Z2iH7 30 USDC tx=CSzmPb3C1a6VEprGxsR7q19LKuzS8a24JCroR1t5Yxy codes=R_NO_LAUNCH
+Receipt: 4UNKXFRVLsKhqZavD6c9dz4qB8HTjXXs3UdBS8StRCRy
+	Log [intents.kxa1-owner-1203.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"deposit_rejected","data":[{"payer":"1b89ff2a5a8d5a9a8df38becba3d5345f2424f25887b7cef46ac5ba7db295586","amount":"30000000","code":"R_NO_LAUNCH","detail":"R_NO_LAUNCH: launch_id = 6 violates exists"}]}
+OK   K: commit sol:2rW44o 30 USDC tx=E9AGi1sTq6f9vZfeaRKioYAQ7XyGtNDN1YzBZ9B2kMDj codes=R_NO_LAUNCH
+Receipt: EEtWYf5eMgyydzvPNmHBmijCv2irkUAsg6RqTxZUJ8hZ
+	Log [intents.kxa1-owner-1203.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"deposit_rejected","data":[{"payer":"a82bf270bbf92974f9e4b6ae251f99e98d5fefb54787663e73ddbf0371b5e7dd","amount":"30000000","code":"R_NO_LAUNCH","detail":"R_NO_LAUNCH: launch_id = 6 violates exists"}]}
+OK   K: commit sol:CKUMti 30 USDC tx=DAjn7tycgr8Hx5aE78oCNEGYQFPb2fSfsq9zFpQ5Ef3b codes=R_NO_LAUNCH
+Receipt: GQVPVxLMsrrPhMwsvqgnyosv66oQCaydypyVpnMkmNCv
+	Log [intents.kxa1-owner-1203.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"deposit_rejected","data":[{"payer":"73aad0bc7f6909b748655dc6fdd90617b00f462a56f5a7bf5c9afb01acc02428","amount":"30000000","code":"R_NO_LAUNCH","detail":"R_NO_LAUNCH: launch_id = 6 violates exists"}]}
+OK   K: commit sol:8nWxQP 30 USDC tx=7ss7s46CKnpV3Mps5CrdzcijLdqeLBDFTUpXhNfazcSt codes=R_NO_LAUNCH
+Receipt: Bktqe5gXLeUrwgZJh7NUQ62JNEAeg7dDWX9Y4KRxmzoz
+	Log [intents.kxa1-owner-1203.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"deposit_rejected","data":[{"payer":"da30e70bf8b60099856fc3fe00256a6189340842747da1c61597db8a216b01bc","amount":"30000000","code":"R_NO_LAUNCH","detail":"R_NO_LAUNCH: launch_id = 6 violates exists"}]}
+OK   K: commit sol:Fgj8Qm 30 USDC tx=HXG2YLEArMfBH7tDbiigzuBJZyGE4oHtn5uHDNPSULSe codes=R_NO_LAUNCH
+Receipt: FyomptvUPhFcQBnHEWRGHzujXdRPJqHZCjpF5KeANeti
+	Log [intents.kxa1-owner-1203.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"deposit_rejected","data":[{"payer":"e0770e33ea493d306613c4b849b63cd8e316d51dbcbb14f275dd30cb46471a01","amount":"30000000","code":"R_NO_LAUNCH","detail":"R_NO_LAUNCH: launch_id = 6 violates exists"}]}
+OK   K: commit sol:G7DcpV 30 USDC tx=6eBaXGxnCgX3vX8NfqJKbxVYtNDLFZQPYVDoqpgrrfeU codes=R_NO_LAUNCH
+Receipt: 7wyUnRTDaLkDdX1FtjGVYuwcenEsWrk2W26RuNvu7brL
+	Log [intents.kxa1-owner-1203.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"deposit_rejected","data":[{"payer":"2c91583486b6f55fd2538497907d4380d24ac3be80b33761279d105a02af5881","amount":"30000000","code":"R_NO_LAUNCH","detail":"R_NO_LAUNCH: launch_id = 6 violates exists"}]}
+OK   K: commit sol:3zyUxz 30 USDC tx=FzQTKC3ZHVWWJvgpBY5gQjMU776ziYJubTQf6ackmhDj codes=R_NO_LAUNCH
+Receipt: Qi3rr8s1DGC5f97MVvpcc1iiEksv3ZnAw5W91tjDU5F
+	Log [intents.kxa1-owner-1203.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"deposit_rejected","data":[{"payer":"eda8021dbe8024051582fb6b33c67c430688e7d76c40acbcf737e5f83f0ab058","amount":"30000000","code":"R_NO_LAUNCH","detail":"R_NO_LAUNCH: launch_id = 6 violates exists"}]}
+OK   K: commit sol:GziDHG 30 USDC tx=H9BkRCiv8b622hPYFMDQ16wZMBE6Wj8sR1KaBstS7DLy codes=R_NO_LAUNCH
+Receipt: AUc9kYePjr7bzc5PeK95fX3V21vMfexPBNRQF6UXv2A1
+	Log [intents.kxa1-owner-1203.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"deposit_rejected","data":[{"payer":"4d426540a6b645478fc616859ccd188217c6ca2995c77cd6dee1f9966f72a2e8","amount":"30000000","code":"R_NO_LAUNCH","detail":"R_NO_LAUNCH: launch_id = 6 violates exists"}]}
+OK   K: commit sol:6Cb7a1 30 USDC tx=DyAwimU23dB1LRPj37M5oWXif5oQjQdCWKZkbWZJSK8i codes=R_NO_LAUNCH
+Receipt: 273axYGS9CTGeq8jskBxX62HCYkU6KiWq1QVYRj8nfc4
+	Log [intents.kxa1-owner-1203.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"deposit_rejected","data":[{"payer":"d906f1c39187c3ade35be2986c137dac6b1b536727485d365a511cccbebacbd6","amount":"30000000","code":"R_NO_LAUNCH","detail":"R_NO_LAUNCH: launch_id = 6 violates exists"}]}
+OK   K: commit sol:FcBcVz 30 USDC tx=8vhKU6n5Gwdq87MfKDAeUbwSfDJBghWrTMzLQcmgb9x1 codes=R_NO_LAUNCH
+Receipt: 7cnWyyKGoGNTtWTSqFCUVbWYdTRKyVhHcxPcngwehLLK
+	Log [intents.kxa1-owner-1203.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"deposit_rejected","data":[{"payer":"c1d382c502f4fe1a6db05cb53f136202a362204e99ea1b67d80e757f7c4cb4c0","amount":"30000000","code":"R_NO_LAUNCH","detail":"R_NO_LAUNCH: launch_id = 6 violates exists"}]}
+OK   K: commit sol:E3ckKb 30 USDC tx=sjp9vp5XMpXZjSeKQyZAaLETpc1jN2RMNRs2ViYeFZb codes=R_NO_LAUNCH
+file:///Users/MAC/near-hack/kruxa-repo/scripts/core-testnet/seed.mjs:167
+rec.after_commit = { total_active: st.total_active, active_funders: st.active_funders, holder_count: st.holder_count, phase: st.phase };
+                                      ^
+
+TypeError: Cannot read properties of null (reading 'total_active')
+    at file:///Users/MAC/near-hack/kruxa-repo/scripts/core-testnet/seed.mjs:167:39
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+Node.js v24.10.0

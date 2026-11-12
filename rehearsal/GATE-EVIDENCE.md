@@ -9,6 +9,9 @@
 | GR-12 | PASS | 2026-11-10T19:25Z | round 3: F0 on the exact deployed wasm (e85198ed) through the core gate, launch 9, mint 7unMFFxMcyMrQa75D3WJUW8qqV4QPE9naj4uCo4NMgf5, verify exit 0, tamper-all exit 2 (evidence/genesis/core3-f0-devnet-launch9.json, rehearsal/ROUND3.md) |
 | GR-2 | PASS | 2026-11-10T22:00Z | round 4, the REPRODUCIBLE wasm 665caab5 deployed on core3.kxi-root-1108.testnet (view_code sha256 665caab5a582a58b2412dfb2e81f1caf2ff94339c8bcc9f8be9ebebb72239c64, deploy tx Gu5Msp6rduKg6XZ8RFNbMeT6s2aKM2Tcvmp7GNTgWvza): scripts/gate-g2.sh GREEN 9 of 9 with PASS launch 10 and FAIL launch 3 (evidence/testnet-core3/gate-g2-round4.txt); verify.sh 10 exit 0 (CODE line MATCH 665caab5), tamper-all exit 2 (19 MISMATCH). The shared RPC throttled (HTTP 429): two earlier verify attempts (both exit 4) are kept next to the passing one, and the passing runs went through a local retry proxy to the same RPC. G2-01 read the existing gate-g1 logs |
 | GR-12 | PASS | 2026-11-10T22:00Z | round 4: F0 on the reproducible wasm 665caab5 through the core gate, launch 10, mint 6MMpWcv7vnpc9ZFKJoykK8dnMAmSzkKfYqHzNf4GRZqC, tx1 44XqjTqYkzwA2D6EsqLScZfK9LvLKh1oDseGH1o4L5CqaZYgCtgZw6hCBbE2iZSyiQUBZiAW282uJ9R2Ud8G8Wzg, tx2 3RTQY8GvNQPGdHuiQCid8xChZnZx4KB6CGhFzBNB1m4kqoKdhUG4iTrXL5gNZqaWe7vLceyi7jrpsW1st4BhbeVo, claim ok. First tx2 attempt failed on an expired blockhash (RPC throttling); recovered with abort_genesis (guardian) and reopen_genesis (owner) and a resume, so this run is a PASS with one reopen (evidence/genesis/core3-f0-devnet-launch10.log and the attempt logs, rehearsal/ROUND4.md) |
+| GR-2 | PASS | 2026-11-12T05:40Z | round 5, the FINAL reproducible wasm c55bffdb (commit 5c2874d, dissolve-after-walk) on core7.kxi-root-1108.testnet (view_code sha256 c55bffdbdec7909464c65511219ec77be7d8f765bc037a46350efe713cb8b13b, deploy tx y6hSbC7rdmYo3tYjpWoqDaUuJwmfXx2d22ukEYoCSC5): scripts/gate-g2.sh GREEN 9 of 9 with PASS launch 6 (F0) and FAIL launch 1 (evidence/testnet-core7/gate-g2-core7.txt). verify.sh 6 exit 0 (21 passed, 7 skipped, CODE line MATCH c55bffdb), tamper-all exit 2 (38 MISMATCH lines, none undetected) (evidence/verify/core7-launch6-F0.txt, core7-launch6-F0-tamper-all.txt). G2-01 read the full gate-g1 logs of the same day (324 sandbox tests ok) |
+| GR-12 | PASS | 2026-11-12T05:40Z | round 5: F0 on the final wasm c55bffdb through the core gate (commit_genesis, register_f0_message x2, sign_genesis x2, predecessor = core7), launch 6 (KXDS, 12 Solana buyers, 360 USDC), signatures verified offline before broadcast, confirm_genesis ok, Merkle root matches the core, claim ok, distributor admin NULL (evidence/genesis/core7-f0-devnet-launch6.json and .log; first attempt of the driver failed before sending anything for a missing tools/squads npm install, log kept). One F0 on the final hash; the 3 of 3 rule was met on earlier hashes (launches 2, 5, 6, 8, 9, 10 on core3) |
+| GR-16 | PASS | 2026-11-12T05:40Z | market5.kxi-root-1108.testnet (linked to core7 by set_market) opened for launch 2 through core open_market; buy, claim_owed, buy, sell; pool and market invariants true, usdc_custody equals usdc_expected 436170725 (evidence/testnet-core7/market-flow-launch2.log); C34 MATCH in verify.sh 2 and 6 |
 
 ## FG-07 refresh of the gate-g3 result (2026-11-11T17:48Z, tree 402423f, read-only run, no FREEZE row written)
 
@@ -40,3 +43,23 @@ must be regenerated on the new reproducible wasm before the freeze (FG-24, run b
 
 Result: NO-GO (blocked by GR-3 GR-7 GR-8 GR-9 GR-11 GR-13 GR-14 GR-17). Nothing in the blocked list can be closed by an agent without funds, signing,
 hosting or a ruling. Full output: `evidence/testnet-core3/gate-g3-2026-11-11.txt`.
+
+## Refresh on the final build c55bffdb (2026-11-12T05:45Z, read-only gate-g3 run, no FREEZE row written)
+
+`./scripts/gate-g3.sh` read the same-day gate-g1 logs (324 sandbox tests ok) and the GR-2, GR-12 and GR-16 rows added above. Full output:
+`evidence/testnet-core7/gate-g3-final.txt`. Rows below are a table of the run, not gate rows.
+
+| Row | Kind | State | What remains | Who |
+|---|---|---|---|---|
+| row GR-1 2 4 5 6 12 15 16 18 | HARD or WAIVABLE | PASS | none | none |
+| row GR-3 | WAIVABLE | UNKNOWN | accept thin Test 1 or drop the Solana-landing claims | Dami |
+| row GR-7 | HARD | UNKNOWN | 3 hardware wallets, 48 h lock rehearsal line | Dami only |
+| row GR-8 | HARD | UNKNOWN | hosting and domain for the seven disclosures | Dami only |
+| row GR-9 | HARD | UNKNOWN | counsel review | Dami only |
+| row GR-10 | HARD | FAIL | the Nov 11 18:00 UTC open-by limit has passed; needs a ruling | Dami |
+| row GR-11 | HARD | PENDING | per-step confirmations at execution | Dami only |
+| row GR-13 | WAIVABLE | UNKNOWN | devnet SOL and signatures for the Meteora checks, or a waiver | Dami only |
+| row GR-14 | HARD | UNKNOWN | the FREEZE row for `c55bffdb...` | Dami only |
+| row GR-17 | HARD | UNKNOWN | brand-token numbers, payout address, pool and LP-seed amounts | Dami only |
+
+Result: NO-GO (blocked by GR-3 GR-7 GR-8 GR-9 GR-10 GR-11 GR-13 GR-14 GR-17).
