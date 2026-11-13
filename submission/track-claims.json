@@ -1,6 +1,6 @@
 {
   "schema": "kruxa.track-claims/1",
-  "git_head": "025eaf289bee17c5b8acced67952f9e6be991e6b",
+  "git_head": "b260340b6fe9eda71059e8b0662d25458bfb5b20",
   "tracked_files_modified": false,
   "source": "scripts/judge-run.sh track table",
   "claimed": [

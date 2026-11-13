@@ -1,22 +1,22 @@
-# Judge run record. Written by scripts/judge-run.sh --record on git 025eaf289bee17c5b8acced67952f9e6be991e6b.
+# Judge run record. Written by scripts/judge-run.sh --record on git b260340b6fe9eda71059e8b0662d25458bfb5b20.
 # Every quoted README output string must appear in this file or in another committed evidence file (scripts/readme-lint.sh --evidence).
 # Host: Darwin arm64, cores 15
 
 P0  GREEN     0s  prerequisites: Rust 1.95.0, cargo-near, python3, jq, curl
 N1  GREEN     6s  network: crates.io fetch and the hash-pinned intents.near wasm
-N2  GREEN    10s  compile all test binaries (sandbox binary download on a cold machine)
-B1  GREEN    13s  build core, market and launcher wasm with cargo-near, print their sha256
-U1  GREEN    26s  pure unit and property tests (math, logic, sim, market, launcher, swarm)
-V1  GREEN     3s  golden vectors: PASS at the soft cap, FAIL one micro-USDC below, oversubscription refund
-C1  GREEN  1259s  core in the sandbox: lifecycle, adversarial, creator gate, payout, hand-off, real intents.near wasm, genesis
+N2  GREEN     0s  compile all test binaries (sandbox binary download on a cold machine)
+B1  GREEN    15s  build core, market and launcher wasm with cargo-near, print their sha256
+U1  GREEN    24s  pure unit and property tests (math, logic, sim, market, launcher, swarm)
+V1  GREEN     2s  golden vectors: PASS at the soft cap, FAIL one micro-USDC below, oversubscription refund
+C1  GREEN  1697s  core in the sandbox: lifecycle, adversarial, creator gate, payout, hand-off, real intents.near wasm, genesis
 M1  GREEN    94s  market in the sandbox: AMM, fee split, caps, pause, adversarial
-I1  GREEN   362s  launcher (Instant mode) in the sandbox: flow, adversarial, review regressions, real market
+I1  GREEN   374s  launcher (Instant mode) in the sandbox: flow, adversarial, review regressions, real market
 M2  GREEN     1s  market demo: buy and sell, five fee slices add up, custody unchanged
-M3  GREEN     0s  market simulation: creator share bound over 60 days
-A1  GREEN   863s  attack gallery: every attack refused, harmless, or a disclosed bound; invariants held
-T1  GREEN     1s  verify: recorded launch lifecycle replays to its recorded book hash
-T2  GREEN     1s  tamper: one micro-USDC changed in the record is detected, exit 2
-T3  GREEN     0s  verify: recorded Solana devnet genesis (F0, signed through NEAR Chain Signatures, real testnet core) re-checks clean
+M3  GREEN     1s  market simulation: creator share bound over 60 days
+A1  GREEN   894s  attack gallery: every attack refused, harmless, or a disclosed bound; invariants held
+T1  GREEN     2s  verify: recorded launch lifecycle replays to its recorded book hash
+T2  GREEN     0s  tamper: one micro-USDC changed in the record is detected, exit 2
+T3  GREEN     1s  verify: recorded Solana devnet genesis (F0, signed through NEAR Chain Signatures, real testnet core) re-checks clean
 T4  GREEN     0s  tamper-all: every recorded Solana input flipped, each run detected, exit 2
 T5  GREEN     0s  dead RPC exits 4 and never prints MISMATCH
 W1  GREEN     1s  swarm: 16 agents, 24 rounds, invariants every round, recorded runs reproduce, 300-seed sweep
@@ -31,7 +31,7 @@ Unstoppable DeFi             RED   no sandbox-only proof: the dry quote needs a 
 Investment Thesis            GREEN steps H1
 Agent Economy                RED   track cut (CHANGE-ORDER-6 E-2): no agent module is built
 
-JUDGE RUN GREEN  (20 of 20 steps green, wall 2657s)
+JUDGE RUN GREEN  (20 of 20 steps green, wall 3127s)
 
 # Key output lines, copied from the step logs
 sha256 kruxa_core.wasm 4771da48d5b8268431124b799e398318462e72df9fdbd98e3e18fe9888aaa949 674996 bytes
