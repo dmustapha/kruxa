@@ -90,7 +90,7 @@ m=$(NEAR_ENV=mainnet KRUXA_TESTNET_ROOT=x.testnet KRUXA_OWNER=a ./scripts/testne
 row G1-12 "mainnet deploy refused" "$?" "rc=$rc out=$m"
 
 # G1-13 no stray processes (global pgrep, as the plan specifies: another session's sandbox would show here)
-p=$(pgrep -fl 'near-sandbox|next-server' || true)
+p=$(pgrep -fl 'near-sandbox|next-server' | awk '{print $1, $2}' || true) # pid and first word only: a full command line can carry environment values
 row G1-13 "no near-sandbox or next-server left" "$([ -z "$p" ] && echo 0 || echo 1)" "$p"
 
 # G1-14 DC table: W1-DC-1,3,4,5,6,7 must be Yes and verified; W1-DC-14 is this gate

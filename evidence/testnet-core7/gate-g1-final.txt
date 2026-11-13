@@ -11,7 +11,7 @@ PASS G1-09 invariants L1,L3,L4,I2-I5 after every step (whole sandbox suite exit 
 PASS G1-10 golden (PASS, FAIL(reasons=1), spend 40000000 refund 60000000)
 FAIL G1-11 secret scan and offline claims -- ==> target/gate-g1/scan.log <== evidence/verify/instant-1111-1000000001.txt SECRET-SCAN FAIL  ==> target/gate-g1/claims.log <== C-06 SKIP (needs testnet deploy / source file) C-07 SKIP (needs testnet deploy / source file) 
 PASS G1-12 mainnet deploy refused
-FAIL G1-13 no near-sandbox or next-server left -- 51131 next-server (v15.5.29) CLAUDE_CODE_MESSAGING_TOKEN=<redacted> NoDefaultCurrentDirectoryInExePath=1 DEEPSEEK_API_KEY=sk-9e04820bca394da9f453a3135f61d2e9 TERM_PROGRAM=vscode
+FAIL G1-13 no near-sandbox or next-server left -- 51131 next-server (another project's dev server, port 3100; the original line printed the process environment and was cut to pid and name because it carried secret values)
 PASS G1-14 DC table: W1-DC-1,3,4,5,6,7 = Yes, evidence ok in this run
 G1 RED (2 failing). STOP and re-plan per PLAN DT-R14; never ship the bare floor.
 EXIT 1

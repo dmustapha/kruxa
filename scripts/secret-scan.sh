@@ -3,7 +3,7 @@
 # Allowlist: docs that describe the guard (ARCHITECTURE.md, DECISIONS.md, docs/), the commented example env line, and this script (its own pattern).
 set -uo pipefail
 cd "$(dirname "$0")/.."
-pat='(ed25519:[1-9A-HJ-NP-Za-km-z]{40,}|-----BEGIN [A-Z ]*PRIVATE KEY|"secret_key"|private_key *[=:] *[0-9a-fA-F]{32,}|NEXT_PUBLIC_MAINNET_CONFIRMED=DAMI)'
+pat='(sk-[A-Za-z0-9_-]{20,}|[A-Z_]*(API_KEY|_TOKEN|_SECRET)=[A-Za-z0-9_./+-]{12,}|ed25519:[1-9A-HJ-NP-Za-km-z]{40,}|-----BEGIN [A-Z ]*PRIVATE KEY|"secret_key"|private_key *[=:] *[0-9a-fA-F]{32,}|NEXT_PUBLIC_MAINNET_CONFIRMED=DAMI)'
 # relayer/src/f0.test.ts holds PUBLIC keys only (the MPC signer root key and a derived child key, recorded as test vectors).
 # evidence/genesis* and evidence/testnet-core3 hold public ceremony records and verify outputs: the MPC signer root key and the core owner full-access PUBLIC key printed by the KEYS line.
 # evidence/verify and evidence/testnet-core7 hold verify.sh outputs: the only matches are the PUBLIC full-access keys printed by the KEYS line (44-character base58, 32 bytes; a secret key is 64 bytes).
