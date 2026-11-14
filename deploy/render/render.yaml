@@ -1,0 +1,44 @@
+# Render Blueprint: the Kruxa indexer + API as ONE web service with a persistent disk for the SQLite file.
+# Testnet only. No secrets in this file. Every value below is a public contract account id or a tuning number.
+#
+# Use: Render dashboard, New, Blueprint, pick this repo, set "Blueprint file path" to deploy/render/render.yaml.
+# Plan: Render has no variables inside a Blueprint, so change `plan:` by hand. A persistent disk needs a PAID
+# instance type (the free type has no disk). Plan names change over time: check Render's pricing page (UNVERIFIED here).
+# The disk pins the service to one instance and means a redeploy has a short gap while the old container stops.
+# Keeper and watcher are NOT here (a Blueprint cannot switch a service off): see deploy/render/render-daemons.yaml.
+services:
+  - type: web
+    name: kruxa-api
+    runtime: docker
+    plan: starter                    # CHANGE ME: smallest paid web plan that allows a disk. Check the pricing page.
+    dockerfilePath: ./deploy/render/Dockerfile
+    dockerContext: ./
+    healthCheckPath: /api/health     # real route in services/api/src/http.ts; answers 200 while the process is up
+    autoDeploy: false                # deploy on purpose (Manual Deploy), not on every push
+    disk:
+      name: kruxa-data
+      mountPath: /data               # KRUXA_DB below lives here; the Dockerfile default is the same path
+      sizeGB: 1
+    envVars:
+      - key: KRUXA_DB
+        value: /data/indexer.db
+      - key: KRUXA_NETWORK
+        value: testnet
+      - key: KRUXA_CORE
+        value: core3.kxi-root-1108.testnet
+      - key: KRUXA_MARKET
+        value: market3.kxi-root-1108.testnet
+      - key: KRUXA_LAUNCHER
+        value: demo-instant.kxi-root-1111.testnet
+      - key: KRUXA_START_HEIGHT
+        value: tip                   # read only while the database is empty
+      - key: KRUXA_RPC_URL
+        value: https://rpc.testnet.near.org     # block-scan fallback when neardata.xyz errors; public, no key
+      - key: KRUXA_MAX_LAG
+        value: "120"
+      - key: KRUXA_INSTANT_DAY_SECONDS
+        value: "86400"
+      # PORT is set by Render and read by the API (default 10000). Do not set it.
+      # Nothing else is secret. If you ever add a private RPC URL, add it as:
+      # - key: KRUXA_RPC_URL
+      #   sync: false                # prompts for the value in the dashboard, never stored in git

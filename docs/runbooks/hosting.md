@@ -133,3 +133,58 @@ Only one public IP is included. Keep it reserved (Step 1.4). Do not delete the V
 - [ ] Domain attached, `scripts/smoke-hosted.sh` prints ALL PASS
 - [ ] Fallback drill done (stop backend, site shows RECORDED, start again)
 - [ ] Off-box backup configured, uptime monitor added
+
+## Render or Railway instead of Oracle
+
+Use this when Oracle is not an option. Same backend (`ops/Dockerfile`, one process, one SQLite file, health at `/api/health`), no domain purchase: the platform gives a free subdomain with automatic HTTPS (`<name>.onrender.com` or `<name>.up.railway.app`). Files: `deploy/render/render.yaml`, `deploy/render/render-daemons.yaml`, `deploy/railway/`. Steps 4 to 6 above (verify, Vercel, smoke test) still apply with the platform URL in place of `api.kruxa.example`.
+
+### Which to pick
+
+Pick Render. It reads a Blueprint from the repo (one import instead of many clicks), supports a persistent disk on a web service, and has secret files, which the watcher needs (its keys are file paths only). Pick Railway only if you prefer its dashboard; it works for the indexer + API and the keeper (key as a variable) but not the watcher. Both need a PAID instance for the durable setup, because a persistent disk or volume is what keeps the SQLite file across restarts.
+
+### Free tier versus always-on
+
+Prices and limits change, so check each pricing page before you pay (all of the following is UNVERIFIED, from memory):
+
+- Render free web service: sleeps after a period without traffic, takes a while to wake, and has NO persistent disk, so the database is lost on every restart or redeploy and starts again from `KRUXA_START_HEIGHT=tip`. Usable for a demo only. The free type cannot take the `disk:` block in `render.yaml`; delete that block and the `KRUXA_DB` line if you try it.
+- Render paid web service: always on, can mount the disk. This is the setup in `render.yaml`. Price: check the Render pricing page.
+- Railway: usage-based with a trial or small plan; the service stays on while it has credit and a volume keeps the file. Price: check the Railway pricing page.
+
+### How the app survives the backend sleeping or being down
+
+The app asks the API with an 8 second timeout (`app/lib/api/client.ts`). On timeout or an unreachable host it reads the static snapshot under `/snapshot/api/...` on the Vercel site and shows the RECORDED strip. So a sleeping free instance costs the visitor one 8 second wait on the first call, then recorded data until the API answers again. This only works if `app/public/snapshot` is committed (Step 5.5 above). The snapshot is built from a database, so bake it from any copy you have, for example `evidence/indexer-testnet/snapshot-core3`.
+
+### Render, exact clicks
+
+1. Push the repo to GitHub (the Blueprint reads it from there). Render, New, Blueprint, connect GitHub, pick the repo.
+2. Blueprint file path: `deploy/render/render.yaml`. Branch `main`.
+3. Before applying, open `deploy/render/render.yaml` and set `plan:` to the smallest paid web plan that allows a disk (Blueprints have no variables for plans; edit the line and commit, or change the plan in the dashboard after).
+4. Apply. Render builds `deploy/render/Dockerfile` and starts `kruxa-api`. No secret prompts: every value is a public account id. Values already in the file: `KRUXA_NETWORK=testnet`, `KRUXA_CORE=core3.kxi-root-1108.testnet`, `KRUXA_MARKET=market3.kxi-root-1108.testnet`, `KRUXA_LAUNCHER=demo-instant.kxi-root-1111.testnet`, `KRUXA_START_HEIGHT=tip`, `KRUXA_DB=/data/indexer.db`, disk `kruxa-data` mounted at `/data`.
+5. Copy the service URL shown at the top of the service page (`https://kruxa-api-xxxx.onrender.com`). Verify: `curl -s https://<url>/api/health` returns `"status":"ok"` (a brief `"stale"` right after start is normal).
+6. Keeper and watcher (optional, later): New, Blueprint, file path `deploy/render/render-daemons.yaml`. Then for each worker: Environment, Secret Files, add `keeper.json` (keeper) or `near-testnet-f0.json` and `relayer-devnet.json` (watcher), pasting the key JSON. They start in dry-run. Set `KEEPER_SEND=1` / `WATCHER_SEND=1` only when you mean it. Say so before enabling: it puts signer keys on a third party host (testnet and devnet keys only).
+
+### Railway, exact clicks
+
+Follow `deploy/railway/README.md`: new project from the repo, config file `/deploy/railway/railway.json`, add a volume at `/data`, paste the variables (including `RAILWAY_RUN_UID=0`), Generate Domain.
+
+### Point the Vercel app at it
+
+Vercel, project, Settings, Environment Variables: set `NEXT_PUBLIC_KRUXA_API` to the platform URL with no trailing slash (for example `https://kruxa-api-xxxx.onrender.com`), for Production and Preview. It is baked in at build time, so Redeploy afterwards. https is required (an http API is blocked as mixed content); both platforms serve https by default. The API answers CORS for any origin, so no further setting is needed. Then run `scripts/smoke-hosted.sh <site url> <platform url>`.
+
+### Custom domain later (optional)
+
+Render: service, Settings, Custom Domains, add `api.yourdomain`, create the CNAME it shows. Railway: Settings, Networking, Custom Domain, same idea. Then update `NEXT_PUBLIC_KRUXA_API` and redeploy Vercel. The old platform URL keeps working.
+
+### GitHub Pages cannot host the API
+
+`github.io` serves static files only. The indexer is a running process that tails the chain and writes SQLite, so it cannot live there. Pages could host only the static snapshot, which Vercel already does.
+
+### Backups and rollback on Render or Railway
+
+- Database: the `nightly VACUUM INTO` job of `backup.sh` does not exist here. Use the platform: Render disk snapshots (paid, check the pricing page) or Railway volume backups. A lost disk degrades to RECORDED mode, as in the Oracle reclaim case.
+- Backend code: Render, Events or Deploys, pick the previous deploy, Rollback. Railway, Deployments, previous one, Redeploy.
+- Bad database: stop the service, restore the disk snapshot or delete the file so the indexer restarts from `KRUXA_START_HEIGHT`.
+
+### If the first deploy cannot write the database
+
+Symptom in the logs: `unable to open database file` or `EACCES` on `/data`. Render: the Dockerfile in `deploy/render/` already runs as root for this reason. Railway: confirm `RAILWAY_RUN_UID=0` is set and redeploy.

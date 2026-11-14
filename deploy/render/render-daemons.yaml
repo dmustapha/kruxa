@@ -1,0 +1,85 @@
+# OPTIONAL second Blueprint: keeper and genesis watcher as background workers. OFF unless you create it.
+# Use: Render dashboard, New, Blueprint, "Blueprint file path" deploy/render/render-daemons.yaml.
+# Both start in DRY-RUN (KEEPER_SEND=0, WATCHER_SEND=0): they print what they would send and sign nothing.
+# Testnet and devnet only; both refuse a non-.testnet core.
+#
+# KEY FILES: a Blueprint cannot create secret files. After the first sync, open each worker, Environment,
+# Secret Files, Add, and paste the JSON. Render mounts them read-only at /etc/secrets/<filename>:
+#   kruxa-keeper:  filename keeper.json            (NEAR credentials JSON: account_id + secret_key)
+#   kruxa-watcher: filename near-testnet-f0.json   (relayer NEAR key, must be the core's genesis_relayer)
+#                  filename relayer-devnet.json    (Solana devnet funder keypair JSON)
+# Until those files exist the workers cannot sign; in dry-run they load no key, so they run anyway.
+# Plan names: check Render's pricing page (UNVERIFIED here). Background workers have no free type.
+# See docs/runbooks/keeper-watcher.md for what each variable means and how to read the alerts.
+services:
+  - type: worker
+    name: kruxa-keeper
+    runtime: docker
+    plan: starter                    # CHANGE ME: check the pricing page
+    dockerfilePath: ./deploy/oracle/Dockerfile.keeper
+    dockerContext: ./
+    autoDeploy: false
+    envVars:
+      - key: KEEPER_CORE
+        value: core3.kxi-root-1108.testnet
+      - key: KEEPER_ACCOUNT_ID
+        value: keeper.kxi-root-1108.testnet
+      - key: KEEPER_KEY_FILE
+        value: /etc/secrets/keeper.json
+      - key: NEAR_RPC_URL
+        value: https://test.rpc.fastnear.com
+      - key: KEEPER_SEND
+        value: "0"                   # set to "1" only when you want it to sign and send
+      - key: KEEPER_INTERVAL_MS
+        value: "30000"
+      - key: KEEPER_MIN_CALL_INTERVAL_MS
+        value: "250"
+      - key: KEEPER_SOLVENCY_EVERY_MS
+        value: "600000"
+      - key: KEEPER_STUCK_AFTER_MS
+        value: "900000"
+      - key: KEEPER_ALERT_REPEAT_MS
+        value: "3600000"
+      - key: ALERT_WEBHOOK_URL
+        sync: false                  # optional; a webhook URL is a secret. Leave blank for log-only alerts.
+
+  - type: worker
+    name: kruxa-watcher
+    runtime: docker
+    plan: starter                    # CHANGE ME: check the pricing page
+    dockerfilePath: ./deploy/render/Dockerfile.watcher
+    dockerContext: ./
+    autoDeploy: false
+    disk:
+      name: kruxa-watcher-data
+      mountPath: /data               # ceremony records (WATCHER_RECORD_DIR) survive restarts here
+      sizeGB: 1
+    envVars:
+      - key: WATCHER_CORE
+        value: core3.kxi-root-1108.testnet
+      - key: WATCHER_CLUSTER
+        value: devnet
+      - key: NEAR_TESTNET_RPC
+        value: https://test.rpc.fastnear.com
+      - key: KRUXA_NEAR_KEY
+        value: /etc/secrets/near-testnet-f0.json
+      - key: KRUXA_RELAYER_KEY
+        value: /etc/secrets/relayer-devnet.json
+      - key: WATCHER_SEND
+        value: "0"                   # set to "1" only when you want it to sign and send
+      - key: WATCHER_RECORD_DIR
+        value: /data/genesis-records
+      - key: WATCHER_INTERVAL_MS
+        value: "30000"
+      - key: WATCHER_MAX_ATTEMPTS
+        value: "3"
+      - key: WATCHER_ALL
+        value: "0"
+      - key: WATCHER_ONLY_LAUNCHES
+        value: ""
+      - key: WATCHER_AUTO_ABORT_F1
+        value: "0"
+      - key: WATCHER_METADATA_URI_TEMPLATE
+        value: https://kruxa.example/rehearsal/{id}.json   # CHANGE ME to the real metadata URL
+      - key: ALERT_WEBHOOK_URL
+        sync: false
