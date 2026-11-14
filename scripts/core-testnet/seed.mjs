@@ -25,6 +25,7 @@ const SPECS = {
   G: { sym: 'KXCG', mode: 'F0', creator: 'creator-b', buyers: 12, amount: 30n, note: 'F0 run on the final wasm e338f84d (round 2)' },
   H: { sym: 'KXCH', mode: 'F0', creator: 'creator-a', buyers: 12, amount: 30n, note: 'F0 run on the final wasm e338f84d (round 2, create_trial with 300 Tgas)' },
   I: { sym: 'KXCI', mode: 'F0', creator: 'creator-a', buyers: 12, amount: 30n, note: 'F0 run on the FINAL wasm e85198ed with the R_GAS guard (round 3, PD-18)' },
+  L: { sym: 'KXDT', mode: 'F0', creator: 'creator-a', buyers: 12, amount: 30n, note: 'F0 run on the FINAL reproducible wasm 172800b8 (core9: freeze barrier, private init, 12 h window, 100 USDC bar, repo URL in NEP-330)' },
   K: { sym: 'KXDS', mode: 'F0', creator: 'creator-a', buyers: 12, amount: 30n, note: 'F0 run on the FINAL reproducible wasm c55bffdb (core7, dissolve-after-walk core)' },
   J: { sym: 'KXDR', mode: 'F0', creator: 'creator-a', buyers: 12, amount: 30n, note: 'F0 run on the REPRODUCIBLE wasm 665caab5 (round 4, create_trial with 300 Tgas)' },
 };
