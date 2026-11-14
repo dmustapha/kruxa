@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { askLauncher, isInstantId, launcherConfig } from './preview';
-import { DAY_NS, INSTANT_DEFAULTS, INSTANT_FEES, LOCAL_LIMITS, TOTAL_SUPPLY, cliffEnd, deriveInstant, rateLimited, termWord, unitInfo, unlockedAt, validateInstant, vestEnd, type InstantParams } from './rules';
+import { DAY_NS, INSTANT_DEFAULTS, INSTANT_FEES, LOCAL_LIMITS, TOTAL_SUPPLY, cliffEnd, deriveInstant, rateLimited, termWord, toInstantJson, unitInfo, unlockedAt, validateInstant, vestEnd, type InstantParams } from './rules';
 import { USDC } from '../charter/rules';
 import { OPEN_INSTANT_GAS_TGAS, abandonInstantNear, abortInstantNear, claimVestedNear, createInstantNear, openInstantNear, seedInstantNear } from '../actions';
 
@@ -16,16 +16,28 @@ describe('instant rules mirror (INSTANT-ABI section 5)', () => {
     expect(codes({ ...ok, vest_days: 29 })).toContain('R_VEST');
     expect(codes({ ...ok, cliff_days: 6 })).toContain('R_VEST');
     expect(codes({ ...ok, cliff_days: 30, vest_days: 30 })).toEqual([]);
+    expect(codes({ ...ok, trade_delay_secs: 3601 })).toContain('R_TRADE_DELAY');
+    expect(codes({ ...ok, trade_delay_secs: -1 })).toContain('R_TRADE_DELAY');
     expect(codes({ ...ok, seed_q: 99n * USDC })).toContain('R_SEED_RANGE');
     expect(codes({ ...ok, seed_q: 1001n * USDC })).toContain('R_SEED_RANGE');
     expect(codes({ ...ok, fees: { ...ok.fees, total_fee_bps: 201 } })).toContain('R_FEE_TOTAL');
   });
+  it('the announced open defaults to ten minutes and 0 and 3600 are inclusive', () => { expect(INSTANT_DEFAULTS.trade_delay_secs).toBe(600); expect(codes({ ...ok, trade_delay_secs: 0 })).toEqual([]); expect(codes({ ...ok, trade_delay_secs: 3600 })).toEqual([]); });
   it('boundaries are inclusive', () => { expect(codes({ ...ok, seed_q: 100n * USDC })).toEqual([]); expect(codes({ ...ok, seed_q: 1000n * USDC, creator_alloc_bps: 1000, vest_days: 365 })).toEqual([]); expect(codes({ ...ok, creator_alloc_bps: 0 })).toEqual([]); });
   it('the seed must exceed the launcher\'s own launch fee, and the launcher\'s bounds replace the local defaults', () => {
     expect(codes({ ...ok, seed_q: 100n * USDC }, { ...LOCAL_LIMITS, launchFee: 100n * USDC })).toContain('R_SEED_RANGE');
     expect(codes({ ...ok, seed_q: 50n * USDC }, { ...LOCAL_LIMITS, seedMin: 10n * USDC })).toEqual([]);
   });
   it('default fees carry the opening decay the launcher uses (500 bps over 60 minutes)', () => { expect(INSTANT_DEFAULTS.fees).toEqual(INSTANT_FEES); expect(INSTANT_FEES.opening_fee_start_bps).toBe(500); expect(INSTANT_FEES.opening_decay_minutes).toBe(60); expect(codes(ok)).toEqual([]); });
+});
+
+describe('create params on the wire', () => {
+  it('trade_delay_secs is sent as a number next to the stringified seed', () => {
+    const j = toInstantJson({ ...ok, trade_delay_secs: 300 });
+    expect(j.trade_delay_secs).toBe(300);
+    expect(j.seed_q).toBe('250000000');
+    expect(toInstantJson(ok).trade_delay_secs).toBe(600);
+  });
 });
 
 describe('derive (exact split)', () => {

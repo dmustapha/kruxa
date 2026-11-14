@@ -1,6 +1,6 @@
 /** SQLite schema. Derived tables are rebuilt from `events`; `events` and `blocks` are the only inputs. */
 /** Bump when a derived table changes; the store drops derived tables and refolds the kept events on open. */
-export const SCHEMA_VERSION = 4;
+export const SCHEMA_VERSION = 5;
 
 export const SCHEMA = `
 CREATE TABLE IF NOT EXISTS meta (k TEXT PRIMARY KEY, v TEXT NOT NULL);
@@ -31,7 +31,8 @@ CREATE TABLE IF NOT EXISTS pools (
   paused INTEGER NOT NULL, payout_recipient TEXT, token_decimals INTEGER NOT NULL, mint_authority_null INTEGER, freeze_authority_null INTEGER,
   creator_bps INTEGER, creator_claimed TEXT NOT NULL, creator_fees TEXT NOT NULL, fees_total TEXT NOT NULL, source TEXT NOT NULL,
   token TEXT, market TEXT, terms TEXT, mode TEXT, creator TEXT, fees_platform TEXT NOT NULL DEFAULT '0', fees_holders TEXT NOT NULL DEFAULT '0',
-  fees_lp TEXT NOT NULL DEFAULT '0', fees_referral TEXT NOT NULL DEFAULT '0'
+  fees_lp TEXT NOT NULL DEFAULT '0', fees_referral TEXT NOT NULL DEFAULT '0',
+  trade_from INTEGER
 );
 CREATE TABLE IF NOT EXISTS trades (
   launch_id INTEGER NOT NULL, block_height INTEGER NOT NULL, ord INTEGER NOT NULL, log_index INTEGER NOT NULL,
@@ -60,7 +61,8 @@ CREATE TABLE IF NOT EXISTS genesis (
 CREATE TABLE IF NOT EXISTS instants (
   launch_id INTEGER PRIMARY KEY, token TEXT, creator_alloc TEXT NOT NULL, pool_tokens TEXT NOT NULL, cliff_days INTEGER NOT NULL, vest_days INTEGER NOT NULL,
   seed_q TEXT NOT NULL, launch_fee TEXT NOT NULL, supply_model TEXT, terms TEXT, opened_at INTEGER, failure TEXT,
-  alloc_claimed TEXT NOT NULL DEFAULT '0', fee_credited TEXT NOT NULL DEFAULT '0', source TEXT NOT NULL
+  alloc_claimed TEXT NOT NULL DEFAULT '0', fee_credited TEXT NOT NULL DEFAULT '0', source TEXT NOT NULL,
+  trade_delay_secs INTEGER NOT NULL DEFAULT 0
 );
 CREATE TABLE IF NOT EXISTS external_pools (launch_id INTEGER NOT NULL, venue TEXT NOT NULL, pool TEXT NOT NULL, url TEXT NOT NULL, source TEXT NOT NULL, PRIMARY KEY (launch_id, venue, pool));
 CREATE TABLE IF NOT EXISTS flags (k TEXT PRIMARY KEY, v TEXT NOT NULL);

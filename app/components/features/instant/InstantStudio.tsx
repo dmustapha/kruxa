@@ -19,13 +19,13 @@ import { summarizeFees, summarizeOpening } from '@/lib/charter/summary';
 import { CONFIG, fmtUsdc } from '@/lib/config';
 import { fmtNear, microFromDollars } from '@/lib/format';
 import { phaseOf } from '@/lib/phase';
-import { INSTANT_DEFAULTS, deriveInstant, rateLimited, termWord, toInstantJson, unitInfo, validateInstant, type InstantParams } from '@/lib/instant/rules';
+import { INSTANT_DEFAULTS, MAX_TRADE_DELAY_SECS, deriveInstant, rateLimited, termWord, toInstantJson, unitInfo, validateInstant, type InstantParams } from '@/lib/instant/rules';
 import { askLauncher, getInstant, getInstantPhase, launcherConfig, limitsFrom } from '@/lib/instant/preview';
-import { summarizeAllocation, summarizeOpenPrice, summarizeSeed } from '@/lib/instant/summary';
+import { summarizeAllocation, summarizeOpenPrice, summarizeSeed, summarizeTradeDelay } from '@/lib/instant/summary';
 import { useTx } from '@/lib/useTx';
 
-interface Form { symbol: string; name: string; seed: string; allocPct: string; cliff: string; vest: string }
-const FORM0: Form = { symbol: '', name: '', seed: '250', allocPct: '5', cliff: '7', vest: '90' };
+interface Form { symbol: string; name: string; seed: string; allocPct: string; cliff: string; vest: string; tradeMin: string }
+const FORM0: Form = { symbol: '', name: '', seed: '250', allocPct: '5', cliff: '7', vest: '90', tradeMin: '10' };
 
 function toParams(f: Form): { ok: true; params: InstantParams } | { ok: false; errors: Partial<Record<keyof Form, string>> } {
   const errors: Partial<Record<keyof Form, string>> = {};
@@ -35,8 +35,9 @@ function toParams(f: Form): { ok: true; params: InstantParams } | { ok: false; e
   if (pct === null) errors.allocPct = 'Enter a percent, up to 2 decimals.';
   const cliff = /^\d+$/.test(f.cliff) ? Number(f.cliff) : null; if (cliff === null) errors.cliff = 'Enter whole days.';
   const vest = /^\d+$/.test(f.vest) ? Number(f.vest) : null; if (vest === null) errors.vest = 'Enter whole days.';
+  const tradeMin = /^\d+$/.test(f.tradeMin) ? Number(f.tradeMin) : null; if (tradeMin === null || tradeMin > MAX_TRADE_DELAY_SECS / 60) errors.tradeMin = 'Enter whole minutes, 0 to 60.';
   if (Object.keys(errors).length) return { ok: false, errors };
-  return { ok: true, params: { ...INSTANT_DEFAULTS, symbol: f.symbol.trim(), name: f.name.trim(), seed_q: seed ?? 0n, creator_alloc_bps: pct ?? 0, cliff_days: cliff ?? 0, vest_days: vest ?? 0 } };
+  return { ok: true, params: { ...INSTANT_DEFAULTS, symbol: f.symbol.trim(), name: f.name.trim(), seed_q: seed ?? 0n, creator_alloc_bps: pct ?? 0, cliff_days: cliff ?? 0, vest_days: vest ?? 0, trade_delay_secs: (tradeMin ?? 0) * 60 } };
 }
 
 function Field({ id, label, value, onChange, error, hint }: { id: string; label: string; value: string; onChange: (v: string) => void; error?: string; hint?: string }) {
@@ -169,6 +170,8 @@ export function InstantStudio() {
           <h2 id="iseed-h" style={{ marginTop: 0 }}>2. Pool seed</h2>
           <Field id="seed" label={`USDC seed (${fmtUsdc(limits.seedMin)} to ${fmtUsdc(limits.seedMax)})`} value={f.seed} onChange={set('seed')} error={errors.seed} hint="This USDC is locked in the pool permanently" />
           {p && <Summary text={summarizeSeed(p, launcherFee)} />}
+          <Field id="tradeMin" label="Trading opens after (minutes)" value={f.tradeMin} onChange={set('tradeMin')} error={errors.tradeMin} hint="0 to 60, default 10" />
+          {p && <Summary text={summarizeTradeDelay(p)} />}
           <p className="hint">{launcherFee === null ? 'Launch fee: read from the launcher; not known until it answers.' : launcherFee > 0n ? `Launch fee: a flat ${fmtUsdc(launcherFee)} taken from the seed (the launcher's figure).` : 'Launch fee: none on this launcher (its figure).'}</p>
         </section>
 

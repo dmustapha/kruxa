@@ -20,7 +20,7 @@ export type RuleCode =
   | 'R_SYMBOL' | 'R_SUPPLY' | 'R_BUCKETS' | 'R_ALLOC' | 'R_HARD_CAP' | 'R_SOFT_CAP' | 'R_MIN_BUY' | 'R_WALLET_CAP' | 'R_FUNDERS' | 'R_PASSABLE'
   | 'R_WINDOW' | 'R_STREAM' | 'R_CAP_GLOBAL' | 'R_FEE_TOTAL' | 'R_CREATOR_SHARE' | 'R_CREATOR_TAKE' | 'R_PLATFORM_FLOOR' | 'R_PLATFORM_FIXED'
   | 'R_HOLDER_RANGE' | 'R_LP_RANGE' | 'R_HOLDER_LP_FLOOR' | 'R_REFERRAL' | 'R_SPLIT_SUM' | 'R_FEE_VEST' | 'R_OPENING'
-  | 'R_VEST' | 'R_SEED_RANGE' | 'R_SYMBOL_RESERVED' | 'R_RATE_LIMIT' | 'R_CREATOR_GATE' | 'R_ACTIVE_TRIAL';
+  | 'R_VEST' | 'R_SEED_RANGE' | 'R_SYMBOL_RESERVED' | 'R_RATE_LIMIT' | 'R_CREATOR_GATE' | 'R_ACTIVE_TRIAL' | 'R_TRADE_DELAY';
 
 export interface Violation { code: RuleCode; field: string; got: string; limit: string }
 

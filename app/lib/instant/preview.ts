@@ -49,6 +49,8 @@ export interface InstantPhase { status: string; step: 'create' | 'seed' | 'open'
 export interface InstantRecord {
   launch_id: string; status: string; creator: string; seeded_at_ns?: string; seed_sent?: string; seed_inflight?: string; deposit_refundable?: string; payout_recipient: string; name: string; symbol: string; token: string | null; n_alloc: string; n_pool: string;
   creator_alloc_bps: number; cliff_days: number; vest_days: number; seed_q: string; launch_fee: string; pool_seed_q: string; opened_at_ns?: string; alloc_claimed?: string;
+  /** Announced open (INSTANT-ABI 1.1): declared delay, and the absolute instant the market accepts the first buy ("0" or absent: trading opened with the pool). */
+  trade_delay_secs?: number; trade_from_ns?: string;
 }
 export interface VestingView { recipient: string; total: string; unlocked: string; claimed: string; claimable: string; cliff_end_ns: string; vest_end_ns: string }
 

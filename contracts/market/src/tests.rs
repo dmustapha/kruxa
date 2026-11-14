@@ -86,3 +86,126 @@ fn a_queued_value_that_is_no_longer_a_raise_is_refused() {
     at("stranger.test.near", 8);
     assert!(refused(|| m.apply_max_instant_reserve()).contains("R_NOTHING"));
 }
+
+// ---- announced open (CO-7 2.7): trade_from_ns -------------------------------------------------------------------------
+
+mod announced_open {
+    use super::*;
+    use near_sdk::json_types::U64;
+    use near_sdk::serde_json::{json, Value};
+    use near_sdk::PromiseOrValue;
+
+    const SEC: u64 = 1_000_000_000;
+    const ID: u64 = INSTANT_ID_BASE;
+    const SEED: u128 = 250_000_000;
+
+    /// One `ft_on_transfer` from `token`; returns what the market handed back and the logs of the call.
+    fn call(m: &mut Market, token: &str, sender: &str, amount: u128, msg: Value, at_secs: u64) -> (u128, Vec<String>) {
+        testing_env!(VMContextBuilder::new()
+            .current_account_id(acct("market.test.near"))
+            .predecessor_account_id(acct(token))
+            .block_timestamp(at_secs * SEC)
+            .build());
+        let unused = match m.ft_on_transfer(acct(sender), U128(amount), msg.to_string()) {
+            PromiseOrValue::Value(v) => v.0,
+            PromiseOrValue::Promise(_) => 0,
+        };
+        (unused, get_logs())
+    }
+
+    fn terms() -> Value {
+        let t = kruxa_logic::FeeTerms { opening_fee_start_bps: 500, opening_decay_minutes: 60, ..kruxa_logic::FeeTerms::standard() };
+        near_sdk::serde_json::to_value(t).unwrap()
+    }
+
+    fn seed_msg(trade_from: Option<u64>) -> Value {
+        let mut v = json!({ "v": 1, "op": "seed_quote", "launch_id": ID.to_string(), "token": "tkn.test.near", "payout_recipient": "alice.test.near",
+                            "creator": "alice.test.near", "total_supply": "1000000000000000", "charter_hash": "00", "terms": terms() });
+        if let Some(t) = trade_from {
+            v["trade_from_ns"] = json!(t.to_string());
+        }
+        v
+    }
+
+    fn buy(m: &mut Market, at_secs: u64) -> (u128, Vec<String>) {
+        let msg = json!({ "v": 1, "op": "buy", "launch_id": ID.to_string(), "min_out": "1" });
+        call(m, "usdc.test.near", "bob.test.near", 20_000_000, msg, at_secs)
+    }
+
+    /// A market with a launcher, an instant pool seeded at t=100 s and opened (token leg) at t=101 s.
+    fn fresh_market() -> Market {
+        near_sdk::mock::with_mocked_blockchain(|b| drop(b.take_storage()));
+        market()
+    }
+
+    fn opened(trade_from: Option<u64>) -> Market {
+        let mut m = fresh_market();
+        at("owner.test.near", 0);
+        m.set_launcher(acct("launcher.test.near"));
+        let (unused, logs) = call(&mut m, "usdc.test.near", "launcher.test.near", SEED, seed_msg(trade_from), 100);
+        assert_eq!(unused, 0, "{logs:?}");
+        let tok = json!({ "v": 1, "op": "open_pool_token", "launch_id": ID.to_string() });
+        let (unused, logs) = call(&mut m, "tkn.test.near", "launcher.test.near", 950_000_000_000_000, tok, 101);
+        assert_eq!(unused, 0, "{logs:?}");
+        m
+    }
+
+    #[test]
+    fn a_pool_without_trade_from_trades_at_once() {
+        for tf in [None, Some(0)] {
+            let mut m = opened(tf);
+            assert_eq!(trade_from_of(ID), 0);
+            let (unused, logs) = buy(&mut m, 102);
+            assert_eq!(unused, 0, "{logs:?}");
+        }
+    }
+
+    #[test]
+    fn a_buy_before_trade_from_is_refunded_with_the_rule_code_and_one_at_or_after_is_accepted() {
+        let mut m = opened(Some(700 * SEC));
+        assert_eq!(trade_from_of(ID), 700 * SEC);
+        for t in [102, 699] {
+            let (unused, logs) = buy(&mut m, t);
+            assert_eq!(unused, 20_000_000, "the full amount comes back at {t}");
+            assert!(logs.iter().any(|l| l.contains("R_NOT_YET_TRADING")), "{logs:?}");
+        }
+        assert_eq!(m.pools.get(&ID).unwrap().q, SEED, "a refused buy moves no reserve");
+        let (unused, logs) = buy(&mut m, 700);
+        assert_eq!(unused, 0, "{logs:?}");
+        assert!(m.pools.get(&ID).unwrap().q > SEED);
+    }
+
+    #[test]
+    fn the_opening_fee_clock_starts_at_trade_from() {
+        let m = opened(Some(700 * SEC));
+        at("anyone.test.near", 0);
+        let first = m.quote_buy(U64(ID), U128(20_000_000), Some(U64(700 * SEC)));
+        let later = m.quote_buy(U64(ID), U128(20_000_000), Some(U64(1_300 * SEC)));
+        assert_eq!(first["ok"], true, "{first}");
+        assert_eq!(first["fee_bps"], "500", "{first}: the full opening fee at trade_from, not decayed since the pool opened");
+        let later_bps: u128 = later["fee_bps"].as_str().unwrap().parse().unwrap();
+        assert!((100..500).contains(&later_bps), "{later}");
+        let before = m.quote_buy(U64(ID), U128(20_000_000), Some(U64(699 * SEC)));
+        assert_eq!((before["ok"].clone(), before["code"].clone()), (json!(false), json!("R_NOT_YET_TRADING")));
+    }
+
+    #[test]
+    fn get_pool_shows_the_announced_open() {
+        let m = opened(Some(700 * SEC));
+        assert_eq!(m.get_pool(U64(ID))["trade_from_ns"], (700 * SEC).to_string());
+        assert_eq!(opened(None).get_pool(U64(ID))["trade_from_ns"], "0");
+    }
+
+    #[test]
+    fn a_seed_that_announces_more_than_an_hour_ahead_is_refused_and_returned() {
+        let mut m = fresh_market();
+        at("owner.test.near", 0);
+        m.set_launcher(acct("launcher.test.near"));
+        let (unused, logs) = call(&mut m, "usdc.test.near", "launcher.test.near", SEED, seed_msg(Some(100 * SEC + 3_601 * SEC)), 100);
+        assert_eq!(unused, SEED);
+        assert!(logs.iter().any(|l| l.contains("R_TRADE_FROM")), "{logs:?}");
+        assert!(m.pools.get(&ID).is_none());
+        let (unused, _) = call(&mut m, "usdc.test.near", "launcher.test.near", SEED, seed_msg(Some(100 * SEC + 3_600 * SEC)), 100);
+        assert_eq!(unused, 0, "exactly one hour is allowed");
+    }
+}

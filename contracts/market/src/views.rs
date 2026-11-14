@@ -1,5 +1,9 @@
+use crate::model::trade_from_of;
 use crate::{Market, MarketExt};
-use kruxa_market::{creator_unlocked, quote_buy as cp_buy, quote_sell as cp_sell, MarketError, Reserves, Routing, Swap};
+use kruxa_market::{
+    creator_unlocked, fee_elapsed_ns, quote_buy as cp_buy, quote_sell as cp_sell, trading_open, MarketError, Reserves, Routing, Swap,
+    R_NOT_YET_TRADING,
+};
 use near_sdk::json_types::{U128, U64};
 use near_sdk::serde_json::{json, Value};
 use near_sdk::{env, near, AccountId};
@@ -39,19 +43,23 @@ impl Market {
     pub fn get_pool(&self, launch_id: U64) -> Value {
         let Some(p) = self.pools.get(&launch_id.0) else { return Value::Null };
         json!({ "launch_id": s(p.launch_id as u128), "mode": p.mode.as_str(), "creator": p.creator, "token": p.token, "quote": self.usdc, "state": if p.open { "Open" } else { "AwaitToken" },
-                "q": s(p.q), "t": s(p.t), "opened_ns": s(p.opened_ns as u128), "payout_recipient": p.payout_recipient,
+                "q": s(p.q), "t": s(p.t), "opened_ns": s(p.opened_ns as u128), "trade_from_ns": s(trade_from_of(p.launch_id) as u128), "payout_recipient": p.payout_recipient,
                 "total_supply": s(p.total_supply), "charter_hash": p.charter_hash, "mint_authority": p.mint_authority, "freeze_authority": p.freeze_authority, "terms": p.terms })
     }
 
     pub fn quote_buy(&self, launch_id: U64, amount_in: U128, now_ns: Option<U64>) -> Value {
         let Some(p) = self.pools.get(&launch_id.0).filter(|p| p.open) else { return json!({ "ok": false, "code": "R_NO_POOL" }) };
-        let el = now_ns.map_or(env::block_timestamp(), |n| n.0).saturating_sub(p.opened_ns);
+        let (now, tf) = (now_ns.map_or(env::block_timestamp(), |n| n.0), trade_from_of(p.launch_id));
+        if !trading_open(now, tf) {
+            return json!({ "ok": false, "code": R_NOT_YET_TRADING, "trade_from_ns": s(tf as u128) });
+        }
+        let el = fee_elapsed_ns(now, p.opened_ns, tf);
         quote_json(cp_buy(p.reserves(), amount_in.0, 1, &p.terms, el, Routing::M_A), p.reserves())
     }
 
     pub fn quote_sell(&self, launch_id: U64, amount_in: U128, now_ns: Option<U64>) -> Value {
         let Some(p) = self.pools.get(&launch_id.0).filter(|p| p.open) else { return json!({ "ok": false, "code": "R_NO_POOL" }) };
-        let el = now_ns.map_or(env::block_timestamp(), |n| n.0).saturating_sub(p.opened_ns);
+        let el = fee_elapsed_ns(now_ns.map_or(env::block_timestamp(), |n| n.0), p.opened_ns, trade_from_of(p.launch_id));
         quote_json(cp_sell(p.reserves(), amount_in.0, 1, &p.terms, el, Routing::M_A), p.reserves())
     }
 

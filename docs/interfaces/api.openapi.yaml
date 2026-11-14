@@ -654,6 +654,7 @@ components:
         open: { type: boolean }
         paused: { type: boolean }
         opened_at: { type: integer, nullable: true }
+        trade_from: { type: integer, nullable: true, description: 'announced open (instant pools): unix seconds of the first accepted buy, from pool_opened.trade_from_ns; null when trading opened with the pool' }
         quote_reserve: { allOf: [ { $ref: '#/components/schemas/Amount' } ], nullable: true }
         token_reserve: { allOf: [ { $ref: '#/components/schemas/Amount' } ], nullable: true }
         fee_bps: { type: integer, nullable: true }
@@ -719,6 +720,7 @@ components:
         token: { type: string, nullable: true }
         supply_model: { type: string, example: near_factory_fixed }
         solana_mint: { type: string, enum: [none], description: 'instant launches have no Solana mint' }
+        trade_delay_secs: { type: integer, description: 'announced open the creator declared at creation (instant_created.trade_delay_secs); 0 = trading opens with the pool' }
         total_supply: { allOf: [ { $ref: '#/components/schemas/Amount' } ], nullable: true }
         creator_alloc: { $ref: '#/components/schemas/Amount' }
         pool_tokens: { $ref: '#/components/schemas/Amount' }

@@ -33,4 +33,5 @@ export const EXPLAIN: Record<RuleCode, string> = {
   R_RATE_LIMIT: 'One instant launch per account per 24 hours.',
   R_CREATOR_GATE: 'Creation is closed on this network until the capped beta opens.',
   R_ACTIVE_TRIAL: 'This account already has an active trial.',
+  R_TRADE_DELAY: 'Trading can open 0 to 60 minutes after the pool does.',
 };

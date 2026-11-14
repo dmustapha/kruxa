@@ -115,7 +115,7 @@ function poolInfo(ctx: Ctx, id: number): Json {
   const tr = p.token_reserve === null ? null : BigInt(String(p.token_reserve));
   const spot = qr !== null && tr !== null ? priceE12(qr, tr, Number(p.token_decimals)) : null;
   return {
-    open: true, mode: p.mode, creator: p.creator, paused: Number(p.paused) === 1, opened_at: p.opened_at, token: p.token, market: p.market,
+    open: true, mode: p.mode, creator: p.creator, paused: Number(p.paused) === 1, opened_at: p.opened_at, trade_from: p.trade_from, token: p.token, market: p.market,
     total_supply: one(ctx.store, "SELECT total_supply FROM launches WHERE launch_id = ?", id)?.total_supply ?? null, fee_terms: p.terms ? (JSON.parse(String(p.terms)) as unknown) : null, quote_reserve: p.quote_reserve, token_reserve: p.token_reserve, fee_bps: p.fee_bps,
     price: spot === null ? null : e12ToNumber(spot), tvl_quote: qr === null ? null : quoteToNumber(qr * 2n),
   };
@@ -228,7 +228,7 @@ export function instantInfo(ctx: Ctx, l: Row): Json | null {
   return {
     status: l.status, token: i.token, supply_model: i.supply_model, solana_mint: "none", total_supply: l.total_supply, creator_alloc: i.creator_alloc, pool_tokens: i.pool_tokens,
     seed: { seed_q: seed.toString(), launch_fee: fee.toString(), pool_seed_q: (seed > fee ? seed - fee : 0n).toString(), note: "locked in the pool permanently, not withdrawable" },
-    vesting: vestingOf(ctx, l), steps, failure: i.failure, source: sourceOf(ctx.store, [i, l]),
+    trade_delay_secs: Number(i.trade_delay_secs), vesting: vestingOf(ctx, l), steps, failure: i.failure, source: sourceOf(ctx.store, [i, l]),
   };
 }
 

@@ -1,6 +1,7 @@
 //! Read-only views (docs/interfaces/INSTANT-ABI.md section 7). u128 and u64 are decimal strings.
 use crate::events::{array, Obj};
 use crate::model::*;
+use crate::side;
 use crate::{Launcher, LauncherExt};
 use kruxa_instant::{derive, InstantParams, Violation};
 use near_sdk::json_types::U64;
@@ -34,6 +35,8 @@ impl Launcher {
             .n("cliff_days", r.params.cliff_days)
             .n("vest_days", r.params.vest_days)
             .s("seed_q", r.params.seed_q)
+            .n("trade_delay_secs", self.trade_delay_of(r.launch_id))
+            .s("trade_from_ns", self.trade_from_of(r.launch_id))
             .s("launch_fee", d.launch_fee)
             .s("pool_seed_q", d.pool_seed_q)
             .s("open_price_micro_per_token", d.open_price)
@@ -170,6 +173,50 @@ impl Launcher {
                 .s("vest_end_ns", r.opened_at + sc.vest_ns)
                 .raw(),
         )
+    }
+
+    /// The launches one creator made, oldest first, `limit` (default 20, at most 50) from `from_index`. Reads the creator index, so a
+    /// launch created before the index existed is listed only after `index_creators` covered it.
+    pub fn instants_by_creator(&self, creator: AccountId, from_index: Option<u64>, limit: Option<u64>) -> Box<RawValue> {
+        let total = self.creator_count(&creator);
+        let from = from_index.unwrap_or(0);
+        let take = limit.unwrap_or(side::DEFAULT_PAGE).min(side::MAX_PAGE);
+        let end = total.min(from.saturating_add(take));
+        let items: Vec<String> = (from..end)
+            .filter_map(|i| self.creator_item(&creator, i).and_then(|id| self.instants.get(&id)))
+            .map(|r| {
+                Obj::new()
+                    .s("launch_id", r.launch_id)
+                    .s("status", r.status.name())
+                    .s("symbol", &r.params.symbol)
+                    .s("name", &r.params.name)
+                    .s("token", &r.token)
+                    .s("created_at_ns", r.created_at)
+                    .finish()
+            })
+            .collect();
+        Obj::new().s("creator", &creator).s("total", total).s("from_index", from).r("items", &array(items)).raw()
+    }
+
+    /// The accounts that cannot buy this pool (the market's self-buy block): the creator and the payout recipient, once when they
+    /// are the same. Same shape as the core view. Not sybil resistance.
+    pub fn declared_wallets(&self, launch_id: U64) -> Option<Box<RawValue>> {
+        let r = self.instants.get(&launch_id.0)?;
+        let mut wallets = vec![format!("\"{}\"", r.creator)];
+        if r.payout_recipient != r.creator {
+            wallets.push(format!("\"{}\"", r.payout_recipient));
+        }
+        Some(Obj::new().s("creator", &r.creator).s("payout_recipient", &r.payout_recipient).r("wallets", &array(wallets)).raw())
+    }
+
+    /// Expected balance this launcher holds of `token_id` at rest, and the part of it that is owed to accounts. Custody at or above
+    /// this is solvent (donations only add). Same shape as the market's view; `get_invariants` carries the identities.
+    pub fn solvency_report(&self, token_id: AccountId) -> Box<RawValue> {
+        Obj::new()
+            .s("token", &token_id)
+            .s("expected_custody", self.custody_of(&token_id))
+            .s("owed_total", self.owed_total_of(&token_id))
+            .raw()
     }
 
     pub fn owed_of_account(&self, account: AccountId, token_id: AccountId) -> String {

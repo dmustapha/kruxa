@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DAY_NS, INSTANT_DEFAULTS } from './rules';
-import { cliffSharePct, summarizeAllocation, summarizeOpenPrice, summarizeSeed } from './summary';
+import { cliffSharePct, summarizeAllocation, summarizeOpenPrice, summarizeSeed, summarizeTradeDelay, tradeCountdown } from './summary';
 
 const p = { ...INSTANT_DEFAULTS, name: 'Zed', symbol: 'ZED' };
 const USDC = 1_000_000n;
@@ -27,5 +27,29 @@ describe('instant summaries', () => {
     expect(summarizeOpenPrice(p, 0n)).toMatch(/about 2\.63e-7 USDC per token/);
     expect(summarizeOpenPrice(p, 0n)).toContain('opening fee of 5% that falls to the base fee over 60 minutes');
     expect(summarizeOpenPrice({ ...p, fees: { ...p.fees, opening_fee_start_bps: 0, opening_decay_minutes: 0 } }, 0n)).not.toContain('opening fee');
+  });
+});
+
+describe('announced open (trade_delay_secs, trade_from_ns)', () => {
+  const NS = 1_000_000_000n;
+  const at = (secs: number): string => (BigInt(secs) * NS).toString();
+  it('counts down mm:ss to trade_from and ends at it', () => {
+    expect(tradeCountdown(at(1_600), 1_000_000)).toBe('Trading opens in 10:00');
+    expect(tradeCountdown(at(1_001), 1_000_000)).toBe('Trading opens in 00:01');
+    expect(tradeCountdown(at(1_000), 1_000_000)).toBeNull();
+    expect(tradeCountdown(at(900), 1_000_000)).toBeNull();
+  });
+  it('shows nothing for a pool that never announced an open, or a malformed value', () => {
+    for (const v of ['0', undefined, null, '', 'soon', '-5', '1.5']) expect(tradeCountdown(v, 1_000_000)).toBeNull();
+    expect(tradeCountdown(0, 1_000_000)).toBeNull();
+  });
+  it('rounds a part second up so the line never reads 00:00 while buys are still refused', () => {
+    expect(tradeCountdown(String(BigInt(1_000_000 + 400) * 1_000_000n), 1_000_000)).toBe('Trading opens in 00:01');
+  });
+  it('the form sentence names the delay and the zero case', () => {
+    expect(summarizeTradeDelay({ trade_delay_secs: 600 })).toContain('visible for 10 minutes');
+    expect(summarizeTradeDelay({ trade_delay_secs: 60 })).toContain('1 minute before');
+    expect(summarizeTradeDelay({ trade_delay_secs: 90 })).toContain('90 seconds');
+    expect(summarizeTradeDelay({ trade_delay_secs: 0 })).toContain('as soon as the pool does');
   });
 });

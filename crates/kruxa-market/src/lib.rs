@@ -4,10 +4,12 @@
 
 pub mod amm;
 pub mod fees;
+pub mod trading;
 pub mod vest;
 
 pub use amm::{quote_buy, quote_sell, Reserves, Swap};
 pub use fees::{base_rate_ppm, route_fee, validate_market_terms, FeeSlices, Routing};
+pub use trading::{fee_elapsed_ns, trade_from_in_range, trading_open, MAX_TRADE_DELAY_NS, R_NOT_YET_TRADING, R_TRADE_FROM};
 pub use vest::{creator_unlocked, epoch_of, fold_vested, record_creator_fee, EpochAccrual, EPOCH_NS};
 
 /// Fee denominator for rates in parts per million (finer than bps so the opening decay is smooth).
