@@ -221,7 +221,8 @@ test("snapshot: bake from the fixture store, serve it, and every page equals the
   const snap = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
   try {
     for (const p of ["/api/launches", "/api/ops/status", "/api/ops/halts", "/api/ops/force-resolves", "/api/ops/owed", "/api/launch/1", "/api/launch/4/genesis", "/api/launch/2/custody", "/api/token/1", "/api/token/1000000000", "/api/token/1/trades"]) {
-      const live = (await get(p === "/api/launches" ? "/api/launches?limit=200" : p)).body;
+      const wide = p === "/api/launches" || p === "/api/token/1/trades";
+      const live = (await get(wide ? `${p}?limit=200` : p)).body;
       const recorded = await get(p, snap);
       assert.equal(recorded.status, 200, p);
       assert.deepEqual(recorded.body, live, p);

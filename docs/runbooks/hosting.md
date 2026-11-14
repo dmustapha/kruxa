@@ -188,3 +188,68 @@ Render: service, Settings, Custom Domains, add `api.yourdomain`, create the CNAM
 ### If the first deploy cannot write the database
 
 Symptom in the logs: `unable to open database file` or `EACCES` on `/data`. Render: the Dockerfile in `deploy/render/` already runs as root for this reason. Railway: confirm `RAILWAY_RUN_UID=0` is set and redeploy.
+
+## Free path: GitHub Actions snapshots
+
+Use this when you will not pay for a server. There is NO always-on process. A scheduled GitHub Actions workflow (`.github/workflows/snapshot.yml`) wakes every 5 minutes, catches a SQLite copy of the indexer up to the chain, bakes every API page the app reads into static JSON, and publishes it on GitHub Pages. The Vercel app reads those files from `NEXT_PUBLIC_SNAPSHOT_BASE_URL` and labels them RECORDED. Cost: 0. Read-only: no key, no secret.
+
+How it works, one run: restore the SQLite file from the orphan branch `snapshot-state` (one commit, force-pushed each run, so it never grows), ingest new blocks from neardata for up to 4 minutes (paced to its rate limit, optional RPC backup), bake the pages (`services/api/src/snapshot-ci.ts`), refuse to publish if the bake is empty or older than what is already published (block height, event count or launch count would go down, contract config changed, required files missing, or the source failed with zero progress), push the new state, deploy the files to Pages. A failed run changes nothing: the last good pages stay up and the database on `snapshot-state` is untouched. Scripts: `deploy/github/build-site.sh`, `deploy/github/snapshot-state.sh`.
+
+### Owner steps (exact)
+
+1. Push the repo to GitHub and make it PUBLIC. (Actions minutes are unlimited on public repos; a private repo has a monthly cap that a 5 minute cron burns through. The repo holds only public contract ids and chain data, no secrets.)
+2. Settings, Pages, Build and deployment, Source: choose **GitHub Actions**.
+3. Settings, Secrets and variables, Actions, tab **Variables**, New repository variable. All are public values (same as `deploy/oracle/indexer.env.example`):
+
+   | Variable | Value |
+   |---|---|
+   | `KRUXA_CORE` | `core3.kxi-root-1108.testnet` |
+   | `KRUXA_MARKET` | `market3.kxi-root-1108.testnet` |
+   | `KRUXA_LAUNCHER` | `demo-instant.kxi-root-1111.testnet` |
+   | `KRUXA_NETWORK` | `testnet` (optional, the default) |
+   | `KRUXA_START_HEIGHT` | `tip` (default) or a block height to start from on the very first run |
+   | `KRUXA_NEARDATA_URL` | optional mirror of neardata, no trailing slash. Empty means `https://testnet.neardata.xyz` |
+   | `KRUXA_RPC_URL` | optional, `https://rpc.testnet.near.org`: block-scan backup when neardata errors |
+
+   The job does nothing until at least one of the three account variables exists.
+4. Actions tab, **snapshot**, Run workflow. After about 2 minutes the job summary shows the Pages URL, `https://<user>.github.io/<repo>`. Check `curl -s https://<user>.github.io/<repo>/api/health.json` (status `snapshot`, `as_of.block_height` set) and `.../api/launches.json`. If the deploy job fails with an environment protection error, Settings, Environments, github-pages, allow the default branch.
+5. Vercel, project, Settings, Environment Variables (Production and Preview): set `NEXT_PUBLIC_SNAPSHOT_BASE_URL=https://<user>.github.io/<repo>` (https, no trailing slash) and make sure `NEXT_PUBLIC_KRUXA_API` is **not set** (delete it). Keep the rest of `deploy/vercel/env.testnet.example`. Redeploy (these values are baked in at build time).
+6. Open the site: the strip says RECORDED with the as-of block time. Done. Wait 10 minutes and confirm the as-of time moved.
+
+If you keep a live API too (Render, Oracle, the Mac tunnel below), set both `NEXT_PUBLIC_KRUXA_API` and `NEXT_PUBLIC_SNAPSHOT_BASE_URL`: the app asks the live API first and falls back to the snapshot on a network failure, a timeout (8 s) or a 5xx. With only the snapshot variable set it never tries a live API. Unset, the app behaves exactly as before (live API, then its own `/snapshot` folder).
+
+First-run history: a fresh database starts at `KRUXA_START_HEIGHT`. With `tip` it only sees activity from then on, and the nine old testnet launches in `evidence/indexer-testnet/` are not in it. The app still checks its own `/snapshot` folder when a page is missing remotely (Step 5.5 above), but the feed is the remote one. To include older launches set `KRUXA_START_HEIGHT` to a block before them. The workflow catches up about 400 blocks a run (neardata allows roughly 2 requests a second) against about 300 new blocks per 5 minutes, so a start a few hours back catches up in a day and a start a week back effectively never does. Prefer a recent start height. After changing contracts or the start height, run the workflow once with **reset** ticked (or set `KRUXA_SNAPSHOT_RESET=1`, run, then delete the variable: leaving it set restarts the database every run).
+
+### Staleness
+
+Cron runs every 5 minutes but GitHub often starts a scheduled run 3 to 10 minutes late and can skip runs under load. A run takes about 1 to 4 minutes, Pages then propagates, and the app revalidates files on every read. Expect data about 5 to 10 minutes old, sometimes 15 to 20. The RECORDED strip shows the block time the data is as of. GitHub disables scheduled workflows after 60 days without repo activity: push any commit, or re-enable the workflow in the Actions tab.
+
+### What works and what does not in snapshot mode
+
+Writes never depend on any of this. Every action (create a launch, contribute, walk, trade, claim, sweep, withdraw) is signed in the wallet and sent straight to the chain; the contracts decide, not the site. After you act, the page will not show the result for 5 to 10 minutes (the app's own pending state covers the wait).
+
+Works, from recorded pages: launch feed (search, tabs and creator filter applied in the browser), launch and token pages, trades (latest 200), holders (top 200), depth ladder, candles (1m, 5m, 1h, 1d), verify page, custody and genesis pages, stats, operations log (all, or filtered by scope core, market or launcher; latest 200), status and ops pages, creator desk and portfolio for every account that appears in indexed events.
+
+Does not work offline:
+- Live updates: no SSE stream, no ticking prices. Pages are as of the last bake.
+- CSV exports (`/api/export/...`): live API only.
+- Paging past the baked rows (trades beyond 200, ops log "load more", cursors), per-trader trade filters, custom candle ranges (`from`, `to`, `fill`), ops log filters by category or launch id.
+- Creator desk or portfolio for an account with no indexed activity (a brand new wallet): shows "not in the recorded snapshot" instead of an empty page.
+- Anything newer than the last successful run. If the source is down for hours, the pages stay frozen at the last good bake (honestly labelled with their block time).
+- History before `KRUXA_START_HEIGHT`.
+
+### Optional bonus: a live API on your Mac through a Cloudflare quick tunnel
+
+For a demo with live numbers while your Mac is awake. No Cloudflare account is needed for a quick tunnel.
+
+    KRUXA_NETWORK=testnet KRUXA_CORE=core3.kxi-root-1108.testnet KRUXA_MARKET=market3.kxi-root-1108.testnet \
+      KRUXA_LAUNCHER=demo-instant.kxi-root-1111.testnet KRUXA_START_HEIGHT=tip ops/run.sh     # API on :8787
+    cloudflared tunnel --url http://localhost:8787                                            # prints https://<random>.trycloudflare.com
+
+Set `NEXT_PUBLIC_KRUXA_API` in Vercel to that URL and redeploy (keep `NEXT_PUBLIC_SNAPSHOT_BASE_URL` set). Caveats: the URL is random and changes every time `cloudflared` restarts, so each restart means a Vercel env change and a redeploy; there is no uptime guarantee (quick tunnels are for testing); the Mac must stay awake and online; the local database only has what it saw while running. When the tunnel is down the app falls back to the snapshot after the 8 second timeout, so a dead tunnel costs each first page load a wait. Stop both processes when you are done (`Ctrl-C`).
+
+### Optional: the keeper as a scheduled workflow (off by default)
+
+`.github/workflows/keeper.yml` runs one keeper cycle every 15 minutes (`--once`): the permissionless core methods plus solvency reports. It is disabled unless the repository variable `KEEPER_ENABLED=1` exists, and it is a dry run (prints what it would send) unless `KEEPER_SEND=1` or you tick **send** when running it by hand. Variables: `KEEPER_CORE`, `KEEPER_ACCOUNT_ID`, optional `KEEPER_RPC_URL`. Secret: `KEEPER_KEY`.
+
+WARNING: a repository secret is readable by anyone who can edit workflows in the repo, and the key sits on a GitHub runner for each run. Enable this ONLY with a dedicated low-privilege testnet account that holds a few NEAR for gas and owns nothing else. Never use an owner, treasury or deploy key. The keeper itself refuses non-testnet accounts, cores and RPC URLs. A 15 minute scheduled cycle is slower than the daemon's 30 second loop and has no stuck-launch memory between runs, so it is a safety net, not a replacement. See `docs/runbooks/keeper-watcher.md`.

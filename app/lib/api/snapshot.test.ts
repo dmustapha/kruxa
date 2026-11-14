@@ -16,10 +16,32 @@ describe('snapshotFile', () => {
     expect(snapshotFile('/api/token/7/candles', { interval: '1h' })).toBe('/snapshot/api/token/7/candles-1h.json');
   });
   it('has no snapshot for anything else, including other candle intervals and per-account reads', () => {
-    expect(snapshotFile('/api/token/7/candles', { interval: '1m' })).toBeNull();
-    expect(snapshotFile('/api/portfolio/alice.testnet')).toBeNull();
-    expect(snapshotFile('/api/stats')).toBeNull();
-    expect(snapshotFile('/api/ops-log')).toBeNull();
+    expect(snapshotFile('/api/token/7/candles', { interval: '9h' })).toBeNull();
+    expect(snapshotFile('/api/token/7/candles', { interval: '1h', from: 5 })).toBeNull();
+    expect(snapshotFile('/api/token/7/trades', { before: 'abc' })).toBeNull();
+    expect(snapshotFile('/api/ops-log', { before: 'abc' })).toBeNull();
+    expect(snapshotFile('/api/ops-log', { scope: 'weird' })).toBeNull();
+    expect(snapshotFile('/api/portfolio/bad%20name')).toBeNull();
+    expect(snapshotFile('/api/export/launches.csv')).toBeNull();
+    expect(snapshotFile('/api/launch/abc')).toBeNull();
+  });
+  it('maps every other read the app makes (stats, candles, trades, holders, depth, verify, ops, per-account)', () => {
+    expect(snapshotFile('/api/stats')).toBe('/snapshot/api/stats.json');
+    expect(snapshotFile('/api/ops-log', { limit: 50 })).toBe('/snapshot/api/ops-log.json');
+    expect(snapshotFile('/api/ops-log', { scope: 'core' })).toBe('/snapshot/api/ops-log-core.json');
+    expect(snapshotFile('/api/token/7/candles', { interval: '1m' })).toBe('/snapshot/api/token/7/candles-1m.json');
+    expect(snapshotFile('/api/token/7/candles?interval=5m&limit=500')).toBe('/snapshot/api/token/7/candles-5m.json');
+    expect(snapshotFile('/api/token/7/trades?limit=20')).toBe('/snapshot/api/token/7/trades.json');
+    expect(snapshotFile('/api/token/7/holders')).toBe('/snapshot/api/token/7/holders.json');
+    expect(snapshotFile('/api/token/7/depth')).toBe('/snapshot/api/token/7/depth.json');
+    expect(snapshotFile('/api/verify/7')).toBe('/snapshot/api/verify/7.json');
+    expect(snapshotFile('/api/launch/7/custody')).toBe('/snapshot/api/launch/7/custody.json');
+    expect(snapshotFile('/api/ops/solvency')).toBe('/snapshot/api/ops/solvency.json');
+    expect(snapshotFile('/api/portfolio/alice.testnet')).toBe('/snapshot/api/portfolio/alice.testnet.json');
+    expect(snapshotFile('/api/creator/near%3Aalice.testnet')).toBe('/snapshot/api/creator/alice.testnet.json');
+  });
+  it('builds the same path under a remote base', () => {
+    expect(snapshotFile('/api/launches', undefined, 'https://o.github.io/kruxa')).toBe('https://o.github.io/kruxa/api/launches.json');
   });
 });
 
@@ -60,5 +82,34 @@ describe('degrade to snapshot', () => {
   });
   it('readSnapshot returns null on a network failure', async () => {
     expect(await readSnapshot('/api/health', undefined, (async () => { throw new Error('x'); }) as unknown as typeof fetch)).toBeNull();
+  });
+});
+
+describe('remote snapshot base', () => {
+  const bases = ['https://o.github.io/kruxa', '/snapshot'];
+  it('reads the remote file first with revalidation, and marks the strip', async () => {
+    const f = vi.fn(async () => new Response(JSON.stringify({ as_of: { block_time: 77 }, items: [] }), { status: 200 }));
+    const body = await readSnapshot('/api/stats', undefined, f as unknown as typeof fetch, bases);
+    expect(body).toMatchObject({ as_of: { block_time: 77 } });
+    expect(f).toHaveBeenCalledTimes(1);
+    expect(f).toHaveBeenCalledWith('https://o.github.io/kruxa/api/stats.json', expect.objectContaining({ cache: 'no-cache' }));
+    expect(snapshotServed()).toEqual({ at: 77 });
+  });
+  it('falls through to the local /snapshot when the remote file is missing', async () => {
+    const f = vi.fn(async (u: string) => (u.startsWith('https://') ? new Response('nope', { status: 404 }) : new Response(JSON.stringify({ ok: 1 }), { status: 200 })));
+    expect(await readSnapshot('/api/stats', undefined, f as unknown as typeof fetch, bases)).toEqual({ ok: 1 });
+    expect(f.mock.calls.map((c) => c[0])).toEqual(['https://o.github.io/kruxa/api/stats.json', '/snapshot/api/stats.json']);
+  });
+  it('cuts trades to the asked limit and drops the cursor, since a recorded page cannot be paged', async () => {
+    const items = Array.from({ length: 30 }, (_, i) => ({ i }));
+    const f = async () => new Response(JSON.stringify({ items, next_cursor: 'x', as_of: { block_time: 1 } }), { status: 200 });
+    const body = (await readSnapshot('/api/token/7/trades?limit=5', undefined, f as unknown as typeof fetch, bases)) as { items: unknown[]; next_cursor: string | null };
+    expect(body.items.length).toBe(5);
+    expect(body.next_cursor).toBeNull();
+  });
+  it('is only the local /snapshot when the variable is unset', async () => {
+    const { snapshotBases } = await import('./snapshot');
+    expect(snapshotBases('')).toEqual(['/snapshot']);
+    expect(snapshotBases('https://o.github.io/kruxa')).toEqual(['https://o.github.io/kruxa', '/snapshot']);
   });
 });

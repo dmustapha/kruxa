@@ -1,0 +1,47 @@
+# OPTIONAL and OFF by default. The keeper calls the core's permissionless methods (sweeps, refunds, solvency reports). It needs a signing key.
+# WARNING: only enable this with a LOW-PRIVILEGE, TESTNET-ONLY key: a dedicated account that holds a few NEAR for gas and owns nothing else.
+# Never put an owner, treasury or deploy key in a repository secret. Anyone who can edit workflows in this repo can read that secret.
+# To enable: set the repository variable KEEPER_ENABLED=1, add the secret KEEPER_KEY (that account's bare key, `ed25519:...`), and set the
+# variables KEEPER_CORE and KEEPER_ACCOUNT_ID. It stays a DRY RUN (prints what it would send) until you also set KEEPER_SEND=1.
+name: keeper
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+    inputs:
+      send:
+        description: "Sign and send for real (default is a dry run)"
+        type: boolean
+        default: false
+
+concurrency:
+  group: kruxa-keeper
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  keeper:
+    if: ${{ vars.KEEPER_ENABLED == '1' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: services/keeper
+    env:
+      KEEPER_CORE: ${{ vars.KEEPER_CORE }}
+      KEEPER_ACCOUNT_ID: ${{ vars.KEEPER_ACCOUNT_ID }}
+      NEAR_RPC_URL: ${{ vars.KEEPER_RPC_URL || 'https://test.rpc.fastnear.com' }}
+      KEEPER_SEND: ${{ ((inputs.send || vars.KEEPER_SEND == '1') && '1') || '0' }}
+      KEEPER_KEY: ${{ secrets.KEEPER_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: services/keeper/package-lock.json
+      - run: npm ci
+      - name: Run one keeper cycle (the daemon refuses non-testnet accounts, cores and RPCs)
+        run: npx tsx src/cli.ts --once

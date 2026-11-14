@@ -1,14 +1,13 @@
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import { FIXTURE_CONTRACTS, FIXTURE_DAY_SECONDS, generateFullFixtureBlocks } from "../../indexer/src/fixtures.ts";
-import { FallbackSource, RpcSource, httpRpc } from "../../indexer/src/rpc.ts";
-import { NeardataSource } from "../../indexer/src/sources.ts";
 import type { BlockSource } from "../../indexer/src/types.ts";
 import { Store } from "../../indexer/src/store.ts";
 import { Tailer } from "../../indexer/src/tailer.ts";
 import { asOf } from "./common.ts";
 import type { Ctx } from "./common.ts";
 import { createApp } from "./http.ts";
+import { buildSource } from "./source.ts";
 
 /**
  * Single process: tail the chain into SQLite and serve the API. All configuration is environment variables:
@@ -30,15 +29,6 @@ function list(name: string): string[] {
   return env(name, "").split(",").map((s) => s.trim()).filter(Boolean);
 }
 
-/** neardata alone, or neardata backed by an RPC block scan when KRUXA_RPC_URL is set (KRUXA_RPC_ONLY=1 drops neardata). */
-function buildSource(network: string, accounts: string[]): BlockSource {
-  const neardata = new NeardataSource(network);
-  const url = env("KRUXA_RPC_URL", "");
-  if (url === "") return neardata;
-  const rpc = new RpcSource(network, httpRpc(url), { accounts, scanAllTransactions: env("KRUXA_RPC_SCAN_ALL", "") === "1" });
-  return env("KRUXA_RPC_ONLY", "") === "1" ? rpc : new FallbackSource(neardata, rpc);
-}
-
 async function main(): Promise<void> {
   const network = env("KRUXA_NETWORK", "testnet");
   const dbPath = env("KRUXA_DB", "./data/indexer.db");
@@ -53,7 +43,9 @@ async function main(): Promise<void> {
     for (const b of generateFullFixtureBlocks(Number(env("KRUXA_FIXTURE_SEED", "7")))) store.ingestBlock(b, "fixture");
   } else {
     const start = env("KRUXA_START_HEIGHT", "tip");
-    source = buildSource(network, [...contracts.core, ...contracts.market, ...(contracts.launcher ?? [])]);
+    source = buildSource(network, [...contracts.core, ...contracts.market, ...(contracts.launcher ?? [])], {
+      rpcUrl: env("KRUXA_RPC_URL", ""), rpcOnly: env("KRUXA_RPC_ONLY", "") === "1", rpcScanAll: env("KRUXA_RPC_SCAN_ALL", "") === "1",
+    });
     tailer = new Tailer(store, source, "chain", start === "tip" ? "tip" : Number(start));
     void tailer.run(Number(env("KRUXA_POLL_MS", "1500")));
   }
