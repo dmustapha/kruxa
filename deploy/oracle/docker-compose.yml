@@ -1,0 +1,55 @@
+# Kruxa backend on one Oracle Cloud VM: indexer + API (one process, one SQLite file) behind Caddy (automatic TLS).
+# Run from this directory:  cp compose.env.example .env && cp indexer.env.example indexer.env  (fill both), then  docker compose up -d --build
+# The image is built from ops/Dockerfile at the repo root (Node 24, zero runtime dependencies, healthcheck on /api/health).
+# There is no keeper or watcher daemon in this repo (scripts/keeper.sh and scripts/core-testnet/keeper.mjs are per-launch, run by hand), so none is deployed here.
+name: kruxa
+
+x-logging: &logging
+  driver: json-file
+  options: { max-size: "10m", max-file: "5" }
+
+services:
+  indexer:
+    build:
+      context: ../..
+      dockerfile: ops/Dockerfile
+    image: kruxa-indexer:local
+    restart: unless-stopped
+    env_file: ./indexer.env
+    environment:
+      KRUXA_DB: /data/indexer.db
+      PORT: "8787"
+      HOST: 0.0.0.0
+    volumes:
+      - ${KRUXA_DATA_HOST:-/srv/kruxa/data}:/data
+    ports:
+      - "127.0.0.1:8787:8787"   # loopback only: for curl on the VM. The public path is Caddy.
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8787/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    stop_grace_period: 20s     # the process closes SQLite cleanly on SIGTERM
+    logging: *logging
+
+  caddy:
+    image: caddy:2.8.4-alpine
+    restart: unless-stopped
+    depends_on:
+      indexer: { condition: service_healthy }
+    environment:
+      API_DOMAIN: ${API_DOMAIN:?set API_DOMAIN in .env}
+      ACME_EMAIL: ${ACME_EMAIL:?set ACME_EMAIL in .env}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data        # certificates: keep this volume or Let's Encrypt rate limits bite
+      - caddy_config:/config
+    logging: *logging
+
+volumes:
+  caddy_data:
+  caddy_config:

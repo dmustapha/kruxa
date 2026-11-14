@@ -1,0 +1,8 @@
+[Unit]
+Description=Kruxa nightly SQLite backup and snapshot bake
+After=kruxa.service
+
+[Service]
+Type=oneshot
+Environment=KRUXA_DATA_HOST=@DATA@
+ExecStart=@REPO@/deploy/oracle/backup.sh

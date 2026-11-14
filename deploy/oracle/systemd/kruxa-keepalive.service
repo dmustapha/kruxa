@@ -1,0 +1,9 @@
+[Unit]
+Description=Kruxa Oracle anti-idle burst
+
+[Service]
+Type=oneshot
+# Set API_URL to the public API (for example https://api.kruxa.example) to also generate network traffic.
+Environment=API_URL=
+ExecStart=@REPO@/deploy/oracle/keepalive.sh
+Nice=19

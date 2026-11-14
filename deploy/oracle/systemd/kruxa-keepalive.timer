@@ -1,0 +1,9 @@
+[Unit]
+Description=Kruxa hourly anti-idle burst
+
+[Timer]
+OnCalendar=hourly
+Persistent=true
+
+[Install]
+WantedBy=timers.target

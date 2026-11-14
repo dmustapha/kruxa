@@ -1,0 +1,25 @@
+# TLS is automatic (Let's Encrypt) once the A record for API_DOMAIN points at this VM and ports 80 and 443 are open.
+{
+	email {$ACME_EMAIL}
+	admin off
+}
+
+{$API_DOMAIN} {
+	encode zstd gzip
+	# SSE (/api/stream): do not buffer, send each event as it is written.
+	reverse_proxy indexer:8787 {
+		flush_interval -1
+		health_uri /api/health
+		health_interval 30s
+	}
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options nosniff
+		-Server
+	}
+	# The API sends its own CORS headers (access-control-allow-origin: *), so none are added here.
+	log {
+		output stdout
+		format console
+	}
+}
