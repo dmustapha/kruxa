@@ -1,0 +1,242 @@
+   Compiling kruxa-logic v0.1.0 (/Users/MAC/near-hack/kruxa-repo/crates/kruxa-logic)
+   Compiling kruxa-tests v0.1.0 (/Users/MAC/near-hack/kruxa-repo/tests)
+warning: unused `ExecutionFinalResult` that must be used
+   --> tests/tests/market_adversarial.rs:174:5
+    |
+174 |     mk.sell(&alice, ID, held, 1).await?;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: use `into_result()` to handle potential execution errors
+    = note: `#[warn(unused_must_use)]` (part of `#[warn(unused)]`) on by default
+help: use `let _ = ...` to ignore the resulting value
+    |
+174 |     let _ = mk.sell(&alice, ID, held, 1).await?;
+    |     +++++++
+
+warning: unused `ExecutionFinalResult` that must be used
+   --> tests/tests/market_adversarial.rs:266:5
+    |
+266 |     mk.send(&alice, &mk.usdc, 50 * USDC, msg).await?;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: use `into_result()` to handle potential execution errors
+help: use `let _ = ...` to ignore the resulting value
+    |
+266 |     let _ = mk.send(&alice, &mk.usdc, 50 * USDC, msg).await?;
+    |     +++++++
+
+warning: unused `ExecutionFinalResult` that must be used
+   --> tests/tests/known_findings.rs:148:9
+    |
+148 |         buy(&ix, &whale, &a, amt).await;
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: use `into_result()` to handle potential execution errors
+    = note: `#[warn(unused_must_use)]` (part of `#[warn(unused)]`) on by default
+help: use `let _ = ...` to ignore the resulting value
+    |
+148 |         let _ = buy(&ix, &whale, &a, amt).await;
+    |         +++++++
+
+warning: unused `ExecutionFinalResult` that must be used
+   --> tests/tests/known_findings.rs:179:5
+    |
+179 | /     whale
+180 | |         .call(&ix.token_id("WHAL"), "ft_transfer_call")
+181 | |         .args_json(json!({ "receiver_id": ix.market.id(), "amount": held.to_string(), "msg": msg }))
+182 | |         .deposit(NearToken::from_yoctonear(1))
+183 | |         .gas(ic::GAS)
+184 | |         .transact()
+185 | |         .await?;
+    | |_______________^
+    |
+    = note: use `into_result()` to handle potential execution errors
+help: use `let _ = ...` to ignore the resulting value
+    |
+179 |     let _ = whale
+    |     +++++++
+
+warning: `kruxa-tests` (test "market_adversarial") generated 2 warnings
+warning: `kruxa-tests` (test "known_findings") generated 2 warnings
+warning: unused `ExecutionFinalResult` that must be used
+    --> tests/tests/attack_gallery.rs:1697:5
+     |
+1697 |     ix.create_raw(&ix.creator, ic::params("NTOK"), None).await?;
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: use `into_result()` to handle potential execution errors
+     = note: `#[warn(unused_must_use)]` (part of `#[warn(unused)]`) on by default
+help: use `let _ = ...` to ignore the resulting value
+     |
+1697 |     let _ = ix.create_raw(&ix.creator, ic::params("NTOK"), None).await?;
+     |     +++++++
+
+warning: unused `ExecutionFinalResult` that must be used
+    --> tests/tests/attack_gallery.rs:2010:5
+     |
+2010 |     ix.create_raw(&ix.creator, ic::params("RCL1"), None).await?;
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = note: use `into_result()` to handle potential execution errors
+help: use `let _ = ...` to ignore the resulting value
+     |
+2010 |     let _ = ix.create_raw(&ix.creator, ic::params("RCL1"), None).await?;
+     |     +++++++
+
+warning: `kruxa-tests` (test "attack_gallery") generated 2 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 13.94s
+     Running unittests src/lib.rs (target/debug/deps/kruxa_tests-6ca641a4f15e0434)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/admin_ops.rs (target/debug/deps/admin_ops-9e1003f3f29d19b2)
+
+running 6 tests
+test adversarial_upgrade_guardian_cannot_upgrade_requeue_restarts_the_clock_and_a_bad_migrate_rolls_back ... ok
+test adversarial_halt_is_per_launch_and_refunds_stay_open_on_a_halted_failed_launch ... ok
+test upgrade_queue_waits_the_delay_then_deploys_and_state_survives ... ok
+test upgrade_refusals_and_guardian_cancel ... ok
+test halt_launch_stops_new_commits_and_creator_payouts_but_never_exits_or_the_verdict has been running for over 60 seconds
+test halt_launch_stops_new_commits_and_creator_payouts_but_never_exits_or_the_verdict ... ok
+test withdraw_owed_pays_the_caller_only_once_and_never_another_account ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 92.52s
+
+     Running tests/adversarial.rs (target/debug/deps/adversarial-585574543b26e0f4)
+
+running 20 tests
+test a_donation ... ok
+test a_dust ... ok
+test a_pause_cannot_hold_the_verdict_hostage_but_it_does_hold_creator_payouts ... ok
+test a_frontrun_finalize has been running for over 60 seconds
+test a_frontrun_finalize ... ok
+test a_slot_spam has been running for over 60 seconds
+test a_slot_spam ... ok
+test caps_are_the_ruled_values_and_raising_is_timelocked ... ok
+test caps_global_launch_and_holder_limits_hold ... ok
+test a_timestamp_boundary has been running for over 60 seconds
+test a_timestamp_boundary ... ok
+test commits_that_break_a_rule_are_rejected_and_the_money_comes_back has been running for over 60 seconds
+test create_trial_rejects_bad_params_deposit_duplicates_and_recovers_from_factory_failure ... ok
+test commits_that_break_a_rule_are_rejected_and_the_money_comes_back ... ok
+test failed_refund_leg_recredits_and_a_retry_pays_exactly_once ... ok
+test double_refund_pays_exactly_once ... ok
+test fake_tokens_and_direct_callbacks_cannot_credit_anything ... ok
+test global_cap_refuses_at_the_real_three_thousand_dollars ... ok
+test holder_cap_is_enforced_before_the_launch_total has been running for over 60 seconds
+test launch_total_cap_stops_oversubscription_at_twice_the_hard_cap ... ok
+test pause_blocks_new_risk_but_not_exits_and_freeze_blocks_exits ... ok
+test reentrant_refund_cannot_pay_twice ... ok
+test holder_cap_is_enforced_before_the_launch_total ... ok
+test refund_partial_native_ok_intents_fails_recredits_only_the_failed_leg ... ok
+test walk_flips_pass_to_fail_and_a_failed_payout_leaves_verdict_inputs_unchanged ... ok
+
+test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 500.10s
+
+     Running tests/attack_gallery.rs (target/debug/deps/attack_gallery-14261fa36830ce51)
+
+running 100 tests
+test a01_draw_before_pass ... ok
+test a02_draw_all_after_pass ... ok
+test a03_draw_half_after_pass ... ok
+test a04_draw_by_non_recipient_and_recipient_stays_fixed ... ok
+test a05_settle_before_the_deadline has been running for over 60 seconds
+test a06_settle_twice_replays_the_same_verdict ... ok
+test a05_settle_before_the_deadline ... ok
+test a07_replayed_settlement_steps ... ok
+test a09_fake_token_calls_the_core_intake ... ok
+test a08_donation_cannot_flip_the_verdict has been running for over 60 seconds
+test a10_direct_callbacks_on_core ... ok
+test a11_non_owner_calls_owner_only_methods ... ok
+test a12_double_refund_claim ... ok
+test a08_donation_cannot_flip_the_verdict ... ok
+test a13_reentrant_refund_claim ... ok
+test a15_pause_cannot_trap_exits ... ok
+test a16_freeze_blocks_exits_but_only_for_seven_days ... ok
+test a14_claim_another_holders_refund ... ok
+test a18_one_wallet_over_the_per_wallet_cap ... ok
+test a17_oversubscription_beyond_the_ceiling ... ok
+test a19_sybil_split_across_wallets_is_bounded_not_blocked ... ok
+test a20_late_walk_after_the_deadline ... ok
+test a22_token_claim_before_pass ... ok
+test a21_commit_after_the_window has been running for over 60 seconds
+test a23_creator_buys_their_own_launch ... ok
+test a24_forged_and_replayed_signed_walk ... ok
+test a25_second_trial_and_symbol_squat ... ok
+test a21_commit_after_the_window ... ok
+test c01_reopen_genesis_by_anyone_but_the_owner_or_outside_an_aborted_genesis has been running for over 60 seconds
+test c02_commit_after_a_guardian_abort_and_a_stale_ceremony_after_the_reopen has been running for over 60 seconds
+test c02_commit_after_a_guardian_abort_and_a_stale_ceremony_after_the_reopen ... ok
+test c03_f0_sign_genesis_with_an_unregistered_or_mismatched_message has been running for over 60 seconds
+test c03_f0_sign_genesis_with_an_unregistered_or_mismatched_message ... ok
+test c01_reopen_genesis_by_anyone_but_the_owner_or_outside_an_aborted_genesis ... ok
+test c05_check_solvency_spam_is_rate_limited_and_cannot_hold_the_cooldown ... ok
+test c06_forged_solvency_callback_and_attempts_to_raise_the_intents_alert ... ok
+test c04_f0_double_sign_swap_after_sign_and_a_gate_that_does_not_survive_the_reopen has been running for over 60 seconds
+test c04_f0_double_sign_swap_after_sign_and_a_gate_that_does_not_survive_the_reopen ... ok
+test c07_claim_tokens_reentry_and_double_claim has been running for over 60 seconds
+test c07_claim_tokens_reentry_and_double_claim ... ok
+test c08_claim_creator_alloc_by_a_stranger_the_creator_or_before_the_cliff has been running for over 60 seconds
+test c08_claim_creator_alloc_by_a_stranger_the_creator_or_before_the_cliff ... ok
+test c10_set_burn_mode_to_a_reserved_account_by_a_non_owner_and_after_the_lock ... ok
+test c11_upgrade_queue_by_the_guardian_with_a_bad_hash_or_before_the_seven_day_delay ... ok
+test c12_upgrade_with_a_different_wasm_after_the_delay_and_a_requeue_that_restarts_the_clock ... ok
+test c09_sweep_tokens_before_the_vest_and_window_end has been running for over 60 seconds
+test c09_sweep_tokens_before_the_vest_and_window_end ... ok
+test c14_force_resolve_op_cannot_redirect_inflate_or_be_called_by_others ... ok
+test c13_halt_launch_then_commit_is_refused_while_walk_refund_verdict_and_claims_still_work has been running for over 60 seconds
+test c13_halt_launch_then_commit_is_refused_while_walk_refund_verdict_and_claims_still_work ... ok
+test c15_claim_refund_batch_size_input_and_frozen_refusals ... ok
+test c16_claim_refund_batch_duplicates_and_repeats_pay_each_holder_once_to_the_holder has been running for over 60 seconds
+test c17_set_refund_route_for_another_account_a_paid_holder_or_while_frozen ... ok
+test c18_lengthen_stream_cannot_speed_the_stream_up_and_only_the_creator_may_touch_it has been running for over 60 seconds
+test c16_claim_refund_batch_duplicates_and_repeats_pay_each_holder_once_to_the_holder ... ok
+test c18_lengthen_stream_cannot_speed_the_stream_up_and_only_the_creator_may_touch_it ... ok
+test c19_claim_orphan_credit_with_a_replayed_nonce_or_a_second_claim ... ok
+test g01_creator_gate_bypass ... ok
+test g02_genesis_calls_by_the_wrong_relayer has been running for over 60 seconds
+test g03_genesis_out_of_order_and_twice ... ok
+test g02_genesis_calls_by_the_wrong_relayer ... ok
+test g04_forged_root_page_or_leaf ... ok
+test g05_confirm_misuse_and_abort_after_confirm has been running for over 60 seconds
+test g06_genesis_on_an_open_or_failed_launch ... ok
+test g07_genesis_mint_state_errors_at_create_trial ... ok
+test g05_confirm_misuse_and_abort_after_confirm ... ok
+test g08_abort_is_final_and_pause_stops_the_ceremony has been running for over 60 seconds
+test g08_abort_is_final_and_pause_stops_the_ceremony ... ok
+test g09_payout_recipient_views_cannot_be_redirected has been running for over 60 seconds
+test g09_payout_recipient_views_cannot_be_redirected ... ok
+test i01_instant_gate_refuses_a_non_owner_on_the_mainnet_profile ... ok
+test i02_instant_gate_refuses_the_owner_too_and_open_beta_is_owner_only ... ok
+test i03_symbol_squat_on_a_used_symbol ... ok
+test i04_the_reserved_kruxa_symbol_and_the_reserved_list ... ok
+test i05_second_launch_within_24_hours ... ok
+test i06_rate_limit_via_a_second_wallet_is_bounded_not_blocked ... ok
+test i07_hostile_fee_terms_are_refused_field_by_field ... ok
+test i08_seed_with_the_wrong_amount ... ok
+test i09_seed_with_the_wrong_token_or_a_forged_call ... ok
+test i10_seed_before_the_token_exists ... ok
+test i11_a_stranger_seeds_someone_elses_launch ... ok
+test i12_double_open_instant ... ok
+test i13_three_concurrent_open_instant_calls ... ok
+test i14_claim_vested_before_the_cliff ... ok
+test i15_claim_vested_above_the_claimable_amount ... ok
+test i16_claim_vested_by_a_non_recipient ... ok
+test i18_claim_vested_before_the_pool_is_open ... ok
+test i17_claim_vested_again_after_the_full_claim ... ok
+error: test failed, to rerun pass `-p kruxa-tests --test attack_gallery`
+
+Caused by:
+  process didn't exit successfully: `/Users/MAC/near-hack/kruxa-repo/target/debug/deps/attack_gallery-14261fa36830ce51 --test-threads=2 --include-ignored --nocapture` (signal: 15, SIGTERM: termination signal)
+     Running tests/bench.rs (target/debug/deps/bench-aa10be589f810e64)
+
+running 1 test
+BENCH storage native_position_bytes 465
+BENCH storage solana_position_bytes 415
+BENCH storage second_commit_same_holder_bytes 0
+test bench_storage_bytes_per_position ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 13.39s
+

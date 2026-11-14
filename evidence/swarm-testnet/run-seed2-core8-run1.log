@@ -1,0 +1,164 @@
+preflight: core8.kxi-root-1108.testnet global_cap 3000000000 global_held 0 headroom 3000000000; trial hard_cap 1000000000; pause None
+preflight: root 19.276 NEAR (reserve 1, spare 18.276); needs 2.097 NEAR (sub-accounts 0.060, token 1.800, creator top-up 0.237)
+OK   usdc.mint 8000000 to sw-h1.kxi-root-1108.testnet tx=F6mzbyWToPvnvz9kVM99vDkM46vSXTnfStVZk48jUbb3 codes=
+OK   usdc.mint 5000000 to sw-h2.kxi-root-1108.testnet tx=FnXVuQ1SchUpfdbZDLraTV93Voncde2e95JmaVtURrqG codes=
+OK   usdc.mint 1000000 to sw-h4.kxi-root-1108.testnet tx=ECoc5yWctWui1zS2QorZsTJ3VjJjNbCs4iTE2qxG5P4s codes=
+OK   top up sw-h5.kxi-root-1108.testnet to cover the 100 Tgas reservation tx=4oWr8fwpV5Jwnj4zZjzAuuYRk1TppqpF84daP5tqymuz
+OK   top up sw-h7.kxi-root-1108.testnet to cover the 100 Tgas reservation tx=7myeByLYRnUEb6ngjEDTSeZJBpvDyXbsJUnrFhSEioD7
+OK   top up sw-w2.kxi-root-1108.testnet to cover the 100 Tgas reservation tx=2NLnhWTQNRwpuoo9SDJqQJqsPEFKeCh1oK9vrHunZLrP
+OK   top up sw-s1.kxi-root-1108.testnet to cover the 100 Tgas reservation tx=3WsdWM7hGai1g2LeXMooAPHCkxAezkToZKMsWKezuv1K
+OK   top up sw-s2.kxi-root-1108.testnet to cover the 100 Tgas reservation tx=BT8wHaTmgUY19ekoeJBddJCzwBsAckLbLUHEddLDvycA
+OK   top up sw-y1.kxi-root-1108.testnet to cover the 100 Tgas reservation tx=H1eWtYHQh9rvYWKaKpqJmySdzgP6vth359c9Sbttxja
+OK   top up sw-y2.kxi-root-1108.testnet to cover the 100 Tgas reservation tx=4oKEooDLsvvrMV7kxsDeKPfaWCNrHh5o7fzyRqZdztam
+OK   top up sw-y3.kxi-root-1108.testnet to cover the 100 Tgas reservation tx=5Qhm6QDBruVWCEaz24as9qsNndE9pSqMPR5q56wnkoRW
+OK   top up sw-y4.kxi-root-1108.testnet to cover the 100 Tgas reservation tx=7vaSs6Q9aDNjbxGxg8R3wv4EpvqENm5MsKcBhem4u1Zn
+OK   top up sw-f.kxi-root-1108.testnet to cover the 100 Tgas reservation tx=Cr71F1ziFheqKctkyXicUoNyjy588EWcBGq6feEpXuhX
+OK   top up factory.kxi-root-0811.testnet for token sw2t041901.factory.kxi-root-0811.testnet tx=BCH1weCaYdhLu4nUtfY56kY8GoXmLPxAUvbr4bDpQf6q
+created sw2t041901.factory.kxi-root-0811.testnet tx=2fHF1gZ46XWK6YteXPhxqyj1MM3GNr5hYHa6PLYBF7qt
+deployed /Users/MAC/near-hack/kruxa-repo/target/near/mock_ft/mock_ft.wasm -> sw2t041901.factory.kxi-root-0811.testnet tx=JBhu7QnFS1FmCNxQCD4k5JVhTZih5qNBq5jSNTnN9bEg
+OK   init sw2t041901.factory.kxi-root-0811.testnet.new tx=HgKh3m2RmDeq8F4RpNmQqBcyBP5zm3oJyJHaVSmsFECw codes=
+OK   top up creator-a.kxi-root-1108.testnet for the trial deposit tx=2K933REXNivKArtiWynoi7k2ggqd1CocXHk4HyXthqFr
+Receipts: tiGqA3qXQvGbdKGhAR6K8Q8HJbfCDtrd1mYLr6w7T2S, mTEFx1kZJ87MYLwxZGc9KZPeMSWLWkNPWgKQGnx5UEB, CW38uXwzArbCXRRevxyDuLH1PSxeCx2VyFLRuuPEobRE
+	Log [core8.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"charter_created","data":[{"launch_id":"2","creator":"creator-a.kxi-root-1108.testnet","symbol":"SW2T041901","charter_hash":"46d95142259d0bea4cba6e2fb2a2df7ff16235261725eb444f15c7f20728f122","soft_cap":"1000000000","min_funders":10,"stream_days":30,"payout_recipient":"creator-a.kxi-root-1108.testnet","token_decimals":6,"name":"SW2T041901 Swarm Test","total_supply":"1000000000000000"}]}
+Receipt: Bojz5iP4W4m9Chx3tmXGE8jEpPDm2ouB6iBXidPgyBmz
+	Log [core8.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"trial_opened","data":[{"launch_id":"2","opens_at":"1794630047005741606","commit_end":"1794630447005741606","walk_end":"1794630527005741606"}]}
+OK   create_trial SW2T041901 (swarm seed) tx=6twBV7JZ4bZ7dsSzxf5KRCRpAs5w8JfAScHZzQqtZx9M codes=
+launch 2 on core8.kxi-root-1108.testnet, token sw2t041901.factory.kxi-root-0811.testnet
+Receipt: 6yVtfWGYNoCMry1MNzxMLxhn78V4fspv3tYjnr1MB9BL
+	Log [usdc.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"contributed","data":[{"launch_id":"2","holder":"near:sw-h1.kxi-root-1108.testnet","net":"44000000","relay_fee":"0","custody":"Native","total_active":"44000000","funders":1,"book_hash":"de78664dabb3e7024fed731d44206b6e83cc48e4ccc78b8e5789aa7f2cf6a6db"}]}
+OK   round 0 H1 commit 44000000 (recorded ok) tx=9V9svB9uMK35UqjvMbw2qBa9yfgmVM6EZz3hfKUYf6qy codes=
+Receipt: 5fFJfExfKukjgUZ4YkDWnx92orHUkecVYjUXYXkhw5F2
+	Log [usdc.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"deposit_rejected","data":[{"payer":"sw-w1.kxi-root-1108.testnet","amount":"1000000000","code":"R_CAP_ACCOUNT","detail":"R_CAP_ACCOUNT: wallet total = 1000000000 violates <= 100000000"}]}
+OK   round 0 W1 commit 1000000000 (recorded R_CAP_ACCOUNT) tx=2HFQSTuZT4MWNriZZHLY67NGTrYjbGdEAjrFDzzmZmag codes=R_CAP_ACCOUNT
+Receipt: EQU39gzNFsQbiBgJvKknCSgutCCxuuN3C8gyKv1hzwcw
+	Log [usdc.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"contributed","data":[{"launch_id":"2","holder":"near:sw-h4.kxi-root-1108.testnet","net":"37000000","relay_fee":"0","custody":"Native","total_active":"81000000","funders":2,"book_hash":"ef0ab17138b7576930be036d162dd1bce4d73a94deaaef740e9243ec76cb4d8e"}]}
+OK   round 1 H4 commit 37000000 (recorded ok) tx=GyS37befsUZvndfqhKLkAzSM4vLvUtuatbE4XzrSUHmT codes=
+Receipt: 4WCMNVpkvesGA3ZmrDxkDhLmS3rqwNNRRKGApdHRTmhL
+	Log [usdc.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"deposit_rejected","data":[{"payer":"sw-h6.kxi-root-1108.testnet","amount":"10000000","code":"R_MIN_CONTRIBUTION","detail":"R_MIN_CONTRIBUTION: net amount = 10000000 violates >= 20000000"}]}
+OK   round 1 H6 commit 10000000 (recorded R_MIN_CONTRIBUTION) tx=Gso1NAzqb5KHR2KfGyWPJGShQAsjGyPsgMfQ2REDTQUQ codes=R_MIN_CONTRIBUTION
+Receipt: 2tfTqBhpxAcD8miJxhyf4vSTY2GEUuPcS5P3hcnuBcUg
+	Log [usdc.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"contributed","data":[{"launch_id":"2","holder":"near:sw-w1.kxi-root-1108.testnet","net":"100000000","relay_fee":"0","custody":"Native","total_active":"181000000","funders":3,"book_hash":"67d557f6a94e70c0dc242ba48b1629948e2663e4917798da6c86e30dae9aded2"}]}
+OK   round 1 W1 commit 100000000 (recorded ok) tx=GxBRAUeZYwNsbQ9fipeSstaakEA5bXvw1sxVqA4VeFy5 codes=
+Receipt: 8KD7KGqEd8o5KAcX31tAHyJ1F6uWn8HotLtJbkTzsMxN
+	Log [usdc.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"contributed","data":[{"launch_id":"2","holder":"near:sw-h2.kxi-root-1108.testnet","net":"20000000","relay_fee":"0","custody":"Native","total_active":"201000000","funders":4,"book_hash":"d0e8b1a871e7641aea5102658ba501d5f710a3604bc7ec52591beb7d9ea29052"}]}
+OK   round 2 H2 commit 20000000 (recorded ok) tx=CSz66Q2Y7g7ok67jHcc4cg3WMsH1uSx56k1FKUCjx2ui codes=
+Receipt: BGD1MTFbDsX4JvzreKjC8NiWfd4nMdxaDuTj3HxxjZCS
+	Log [usdc.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"deposit_rejected","data":[{"payer":"sw-y1.kxi-root-1108.testnet","amount":"400000000","code":"R_CAP_ACCOUNT","detail":"R_CAP_ACCOUNT: wallet total = 400000000 violates <= 100000000"}]}
+OK   round 2 Y1 commit 400000000 (recorded R_CAP_ACCOUNT) tx=H6zg9LztkJev39qyvmBDNxLqNYj9iNNr8udnSc4RNHj codes=R_CAP_ACCOUNT
+Receipt: C3LyUSFhgDxMTHoKAZDi52tedLvC3WaqUojXnAbJawvK
+	Log [usdc.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"contributed","data":[{"launch_id":"2","holder":"near:sw-y1.kxi-root-1108.testnet","net":"100000000","relay_fee":"0","custody":"Native","total_active":"301000000","funders":5,"book_hash":"2c5f58425cbb35a6e6733e71d502ad41a7f6fda7476484b45245bdbc9c5f1b54"}]}
+OK   round 3 Y1 commit 100000000 (recorded ok) tx=DWW1zDev11StzbB8h6ddCr9UjJV6HFCnwZumhCF8AiT7 codes=
+Receipt: DZ1oq8oEKPBBTjX7cbG2ST45VYJrTMqpj8uQhtsX51P5
+	Log [usdc.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"contributed","data":[{"launch_id":"2","holder":"near:sw-f.kxi-root-1108.testnet","net":"100000000","relay_fee":"0","custody":"Native","total_active":"401000000","funders":6,"book_hash":"fd8d7ff5eb47b44171961accb31b2cb6a290dbf7908b8cb0dce089296670dcbc"}]}
+OK   round 4 F commit 100000000 (recorded ok) tx=BqmFPFcdtwHNHXfRCSUTJcqEPaB6tj39vC8H968WjA6F codes=
+Receipt: CYgBhyoNPPHo6i9X7gGCtfRdZPFNtbBtUrT8HmgdAvwy
+	Log [usdc.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"deposit_rejected","data":[{"payer":"sw-w1.kxi-root-1108.testnet","amount":"50000000","code":"R_CAP_ACCOUNT","detail":"R_CAP_ACCOUNT: wallet total = 50000000 violates <= 100000000"}]}
+OK   round 6 W1 commit 50000000 (recorded R_CAP_ACCOUNT) tx=5inN9GhNbeTRK6UrcSqTixqHhtGZgJks4Q7HvBw6XWgF codes=R_CAP_ACCOUNT
+Receipt: 9aYL7h8pQs4vXcu7Rtjm8Rbd5wgHVRqtCCsKEEPdGoDV
+	Log [usdc.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"contributed","data":[{"launch_id":"2","holder":"near:sw-h7.kxi-root-1108.testnet","net":"41000000","relay_fee":"0","custody":"Native","total_active":"442000000","funders":7,"book_hash":"10d5f98582af9c5c299d595eb77b25fd7a605044245e2d8db1121a1427a46ac2"}]}
+OK   round 6 H7 commit 41000000 (recorded ok) tx=CcZ6YanHS8xPJL9gLeimYQtnxyDDdYKn4haRn427EMVP codes=
+Receipt: DBkD9vNctthay4XwfFpiuDZZcmEMWwqzdRuQ6eNGj93R
+	Log [usdc.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"contributed","data":[{"launch_id":"2","holder":"near:sw-h3.kxi-root-1108.testnet","net":"33000000","relay_fee":"0","custody":"Native","total_active":"475000000","funders":8,"book_hash":"ae1d26039af787c1b005f2a983a5bc842534ed70e29a9f0d2b8ed5c7eb039032"}]}
+OK   round 8 H3 commit 33000000 (recorded ok) tx=JD7jgwtaAHLBwcuH7SXBd33SUnEvKWbeZS3topvsUkJP codes=
+Receipt: Bt2d1Vsa5rwxg3q6EP129mjFzgxifqBHg7oZiPuzWgYu
+	Log [usdc.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"deposit_rejected","data":[{"payer":"sw-w2.kxi-root-1108.testnet","amount":"1000000000","code":"R_CAP_ACCOUNT","detail":"R_CAP_ACCOUNT: wallet total = 1000000000 violates <= 100000000"}]}
+OK   round 8 W2 commit 1000000000 (recorded R_CAP_ACCOUNT) tx=y41Nt7gZH5gWeE4huD3twxqn5P76CAaCdV3kD954JCw codes=R_CAP_ACCOUNT
+Receipt: EFwhwhdxLm6xMECkCLLKwKFmJkzjyrF9ToqQ5pzSaEod
+	Log [usdc.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"contributed","data":[{"launch_id":"2","holder":"near:sw-y2.kxi-root-1108.testnet","net":"100000000","relay_fee":"0","custody":"Native","total_active":"575000000","funders":9,"book_hash":"a7fe13aef786e99ed91aaa68c9a2f41656910b8b0d0b1e42398e0853a67ad04a"}]}
+OK   round 8 Y2 commit 100000000 (recorded ok) tx=4m8Mqcm7jNN3f6d8NdxmceXFBMTzbfwBQ9JnDr2mXHkL codes=
+Receipt: 3UA7kXrzs5VW7d1c7BMsGisWD6YadEivQk2Vfmgi9dkz
+	Log [usdc.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"contributed","data":[{"launch_id":"2","holder":"near:sw-w2.kxi-root-1108.testnet","net":"100000000","relay_fee":"0","custody":"Native","total_active":"675000000","funders":10,"book_hash":"788152b72f3aea770feb2ce8c7803dfc1968c8ae4d2f05e0f6eaac85939942de"}]}
+OK   round 9 W2 commit 100000000 (recorded ok) tx=7taBW7ZkBCtCQozTBB8QLmtBg14bzGmRtGFnsqs43BHD codes=
+Receipt: Ap5qyXuz5VkFR9Pxv7j3W3icNnQDPhLKG8mrC77Lv8Lv
+	Log [usdc.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"contributed","data":[{"launch_id":"2","holder":"near:sw-y3.kxi-root-1108.testnet","net":"100000000","relay_fee":"0","custody":"Native","total_active":"775000000","funders":11,"book_hash":"ef5cbe6f25d94e2d35e03fad62cf34c8b02e6eeefe600639de3cebaccf58c4d0"}]}
+OK   round 12 Y3 commit 100000000 (recorded ok) tx=H5D1YhGMLzvwffqWpz9dJDUfF4oLjGuTweTcmnqTJkbR codes=
+Receipt: 71uoEkbZwXPSXzCTDobqraor9DvRDMKXR9gB5PgG7mQJ
+	Log [usdc.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"deposit_rejected","data":[{"payer":"sw-w1.kxi-root-1108.testnet","amount":"50000000","code":"R_CAP_ACCOUNT","detail":"R_CAP_ACCOUNT: wallet total = 50000000 violates <= 100000000"}]}
+OK   round 12 W1 commit 50000000 (recorded R_CAP_ACCOUNT) tx=7tfX7Xtyq5krReR5CKazcw67uME8kZCiihG1jNsMwi7G codes=R_CAP_ACCOUNT
+Receipt: AewgHAQeG7HFuPPEG7Jc2kRfeo5HGs83dZy4ThbD137C
+	Log [usdc.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"deposit_rejected","data":[{"payer":"sw-w2.kxi-root-1108.testnet","amount":"50000000","code":"R_CAP_ACCOUNT","detail":"R_CAP_ACCOUNT: wallet total = 50000000 violates <= 100000000"}]}
+OK   round 14 W2 commit 50000000 (recorded R_CAP_ACCOUNT) tx=EC8mpe2vNNh7BJC1QQW3YKGKJj3zf9kM6ByEKhxu5RYZ codes=R_CAP_ACCOUNT
+Receipt: A7dggjrxvS5Pu4hpAh23oXucQEkrG1NpAjP4qZQLj4Jv
+	Log [usdc.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"contributed","data":[{"launch_id":"2","holder":"near:sw-h5.kxi-root-1108.testnet","net":"20000000","relay_fee":"0","custody":"Native","total_active":"795000000","funders":12,"book_hash":"43bccd3d6230367f5b86eafbbc6751d39f636c5c1ec58fb4271d03ea4b4bd20d"}]}
+OK   round 14 H5 commit 20000000 (recorded ok) tx=2EZL5Vvwbn7AFQkM9oWosiLiuG7FciLa8JeNxXzwzA8D codes=
+Receipt: 6GsEn5TzTZbTvCtMK2nSTpGwPDWQzJgVMeby29JpNb2x
+	Log [usdc.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"contributed","data":[{"launch_id":"2","holder":"near:sw-y4.kxi-root-1108.testnet","net":"100000000","relay_fee":"0","custody":"Native","total_active":"895000000","funders":13,"book_hash":"d40148be9a6f06f2e595dd923ee31a33aa0ad02e726c3ab817b2e18773ab82ba"}]}
+OK   round 16 Y4 commit 100000000 (recorded ok) tx=5TbcH79xjk2x7YPqkbLRNNkPN1m7uNRCcXfP1gHSTEHv codes=
+Receipt: J7KqohJ1cNkpaF3cCqCdy29GMzGcEimvr1H4dtziSxj2
+	Log [usdc.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"deposit_rejected","data":[{"payer":"sw-w1.kxi-root-1108.testnet","amount":"50000000","code":"R_CAP_ACCOUNT","detail":"R_CAP_ACCOUNT: wallet total = 50000000 violates <= 100000000"}]}
+OK   round 18 W1 commit 50000000 (recorded R_CAP_ACCOUNT) tx=Fwp4SBTGqSXNUWrXm3DKCd4hdhdGrntBeLL3Z73tTf3y codes=R_CAP_ACCOUNT
+Receipt: 7ajqoB2NQyVnaSNVnsfKYvMZ2EeP4qu6ZtNjFJBoPpnu
+	Log [usdc.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"contributed","data":[{"launch_id":"2","holder":"near:sw-s1.kxi-root-1108.testnet","net":"100000000","relay_fee":"0","custody":"Native","total_active":"1095000000","funders":15,"book_hash":"18bf1d61ff855552c2527b30800710146c854ea25083f629379535336972ee24"}]}
+OK   round 19 S1 commit 100000000 (recorded ok) tx=E8Afs4gUszV4ZfWdFvdMwYbAek5rwrUMpao6cabUnBkj codes=
+Receipt: 2DNaVBkGdW2NyVQUDEov6NzA7mx2jk2cSeTw9R621ZSJ
+	Log [usdc.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"contributed","data":[{"launch_id":"2","holder":"near:sw-s2.kxi-root-1108.testnet","net":"100000000","relay_fee":"0","custody":"Native","total_active":"995000000","funders":14,"book_hash":"6c009ad183c160c4b697115ee9b4842519aa6efd7d2094b4314d2f95e9928a56"}]}
+OK   round 19 S2 commit 100000000 (recorded ok) tx=DwpztrgsBHvaZ7qD3KEs27v1ek1Zav2GfdGSD8y8N4qb codes=
+Receipts: DW6m4GfhNDaLm9rejaSf6DRDziDsENGQm1njHx32PgPV, FbuJdu6ZC4WbiqbLRKCwFR1A3g2tJwJYZbop3J2y2RwT, EaGcKqhez2jSD1QEf2UopcKXXpqswz81NcaYzjQfYTTr
+	Log [core8.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"walked","data":[{"launch_id":"2","holder":"near:sw-h7.kxi-root-1108.testnet","amount":"41000000","total_active":"1054000000","funders":14,"book_hash":"ed7f2857ef024b3c71827fb4fdefa497c0d6d652b98821d16de3756d06cbb125"}]}
+Receipt: 3AynPiRZdQTWTTYAvvsczRWQucvFzE7SA1gnvf1Ysok3
+	Log [core8.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"payout_resolved","data":[{"launch_id":"2","kind":"RefundNative","amount":"41000000","ok":true}]}
+OK   round 20 H7 walk 41000000 (recorded ok) tx=5E4NXttFz2yvypR7yYkGjzQFKnNLwN9D8YAf34Bn94QZ codes=
+Receipt: 8QBxSptrMWqRjHrVrQ32EgngAYmP8bV9pUB3ZxKFFBKw
+	Log [usdc.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"deposit_rejected","data":[{"payer":"sw-s1.kxi-root-1108.testnet","amount":"100000000","code":"R_WRONG_PHASE","detail":"R_WRONG_PHASE: phase = Open violates Open window"}]}
+OK   round 21 S1 commit 100000000 (recorded R_WRONG_PHASE) tx=2u97329nT9LWUb2zjo2DsFNjen8jfMLC1P1SfT9uorNh codes=R_WRONG_PHASE
+Receipt: 78RDmm9sWRmJyD8QwqyJyGV5CN69zaXgDXqeERENuGkK
+	Log [usdc.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"deposit_rejected","data":[{"payer":"sw-s2.kxi-root-1108.testnet","amount":"100000000","code":"R_WRONG_PHASE","detail":"R_WRONG_PHASE: phase = Open violates Open window"}]}
+OK   round 21 S2 commit 100000000 (recorded R_WRONG_PHASE) tx=4aHJnULkZ4mVBSfF2XR9MfyecQGdPqH6mZ38Cp5BYH2i codes=R_WRONG_PHASE
+Receipts: A68oJdSQ8xFvRXt2Vufa1sSV63xXE7Xt1MvGmDftxeaY, EE2AbxjNNvZ7dkaCiNat8LD9JAPjKAhQzk2Lz9DUPmN3, CCp8QMi7nyquVXBELCd5emWvquhodLCFspDvUHzv4J2s
+	Log [core8.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"walked","data":[{"launch_id":"2","holder":"near:sw-f.kxi-root-1108.testnet","amount":"100000000","total_active":"954000000","funders":13,"book_hash":"30880753b28704363ac7cb6976ee85cdbc2de4f44df21ccbe91414af6dd21681"}]}
+Receipt: CvTGPRsoj9pmd1LBQMmsPov3WZUTP566FdaeXQvTr3aK
+	Log [core8.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"payout_resolved","data":[{"launch_id":"2","kind":"RefundNative","amount":"100000000","ok":true}]}
+OK   round 23 F walk 100000000 (recorded ok) tx=DSS6thUY5NfdnjVxoW8xffUTZXweYmHVEEYKMyoWm8AN codes=
+Receipt: ESr5ihrQ5RjzPrpgUmHVWjXPi8Gfyj6uG3g5NpxpiRQe
+	Log [core8.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"verdict","data":[{"launch_id":"2","outcome":"FAIL","reasons":1,"total_active":"954000000","funders":13}]}
+OK   keeper settle 2 tx=ACLps6uFE9CfHqzrssCZHWiv9RUKLuz1Zopt5u4AVEcD codes=
+OK   keeper settle_positions_page 2 from 0 tx=2UdpGLLVREMSvNA65AnHoGadqVH5p8uLnkSosYMYyGrG codes=
+MATCH    replay: every event outcome equals the recorded result: chain 0, recorded 0
+MATCH    total_active before settle: chain 954000000, recorded 954000000
+MATCH    active_funders before settle: chain 13, recorded 13
+MATCH    verdict: chain FAIL, recorded FAIL
+MATCH    get_invariants all_ok: chain true, recorded true
+MATCH    H1 spent: chain 0, recorded 0
+MATCH    H1 tokens_entitled: chain 0, recorded 0
+MATCH    H1 bonus_entitled: chain 0, recorded 0
+MATCH    H2 spent: chain 0, recorded 0
+MATCH    H2 tokens_entitled: chain 0, recorded 0
+MATCH    H2 bonus_entitled: chain 0, recorded 0
+MATCH    H3 spent: chain 0, recorded 0
+MATCH    H3 tokens_entitled: chain 0, recorded 0
+MATCH    H3 bonus_entitled: chain 0, recorded 0
+MATCH    H4 spent: chain 0, recorded 0
+MATCH    H4 tokens_entitled: chain 0, recorded 0
+MATCH    H4 bonus_entitled: chain 0, recorded 0
+MATCH    H5 spent: chain 0, recorded 0
+MATCH    H5 tokens_entitled: chain 0, recorded 0
+MATCH    H5 bonus_entitled: chain 0, recorded 0
+MATCH    H6 position exists: chain none, recorded none
+MATCH    H7 walker record deleted after its refund: chain deleted, recorded deleted
+MATCH    W1 spent: chain 0, recorded 0
+MATCH    W1 tokens_entitled: chain 0, recorded 0
+MATCH    W1 bonus_entitled: chain 0, recorded 0
+MATCH    W2 spent: chain 0, recorded 0
+MATCH    W2 tokens_entitled: chain 0, recorded 0
+MATCH    W2 bonus_entitled: chain 0, recorded 0
+MATCH    S1 spent: chain 0, recorded 0
+MATCH    S1 tokens_entitled: chain 0, recorded 0
+MATCH    S1 bonus_entitled: chain 0, recorded 0
+MATCH    S2 spent: chain 0, recorded 0
+MATCH    S2 tokens_entitled: chain 0, recorded 0
+MATCH    S2 bonus_entitled: chain 0, recorded 0
+MATCH    Y1 spent: chain 0, recorded 0
+MATCH    Y1 tokens_entitled: chain 0, recorded 0
+MATCH    Y1 bonus_entitled: chain 0, recorded 0
+MATCH    Y2 spent: chain 0, recorded 0
+MATCH    Y2 tokens_entitled: chain 0, recorded 0
+MATCH    Y2 bonus_entitled: chain 0, recorded 0
+MATCH    Y3 spent: chain 0, recorded 0
+MATCH    Y3 tokens_entitled: chain 0, recorded 0
+MATCH    Y3 bonus_entitled: chain 0, recorded 0
+MATCH    Y4 spent: chain 0, recorded 0
+MATCH    Y4 tokens_entitled: chain 0, recorded 0
+MATCH    Y4 bonus_entitled: chain 0, recorded 0
+MATCH    F walker record deleted after its refund: chain deleted, recorded deleted
+transactions sent: 48
+SWARM-TESTNET GREEN (47 of 47 checks match)

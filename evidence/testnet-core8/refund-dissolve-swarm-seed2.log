@@ -1,0 +1,8 @@
+OK   claim_refund_batch launch 2 (4 holders, keeper) tx=9c84SZVVpW2UF1eiDjgs13jLYAtxV9ntZXub1YyAhDT7 codes=
+OK   claim_refund_batch launch 2 (4 holders, keeper) tx=4aycEY8etYX1k92aDB2s6Qhi6aACZnzt35woTRX9TZYS codes=
+OK   claim_refund_batch launch 2 (4 holders, keeper) tx=6xnWH3bPUV8qP9fUAQX6ZLTnavXeTZ2T4wMTmyKWfxwf codes=
+OK   claim_refund_batch launch 2 (1 holders, keeper) tx=7Pcwj3FhqvXRBkDgk89bAGbQFpJD77ZXj5PwsZu8qQqb codes=
+launch 2: positions_live after refunds 0
+OK   dissolve launch 2 (every refund cleared) tx=6mRsizCZXWcpgHXnskFar7zpUuzfy6gv4PehUFHaWoCw codes=
+launch 2: status Dissolved, invariants all_ok true
+global_held now 0

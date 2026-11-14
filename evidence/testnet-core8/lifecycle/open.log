@@ -1,0 +1,55 @@
+OK   top up factory.kxi-root-0811.testnet for token lcz1.factory.kxi-root-0811.testnet tx=ENF79SDUGp3VytuPDJjDHGyB6ycNDfHs2LpHQUAWUKtZ
+created lcz1.factory.kxi-root-0811.testnet tx=2ZhqScTX7kZEBiMjzosHpufy9dFWfNEyu6664nch2W8T
+deployed /Users/MAC/near-hack/kruxa-repo/target/near/mock_ft/mock_ft.wasm -> lcz1.factory.kxi-root-0811.testnet tx=7xteByUoHfH5mWvY63QwGuuCFwcfpMJhz3zAV4RP6otF
+OK   init lcz1.factory.kxi-root-0811.testnet.new tx=FqeGE2QVoyzSsBd82ojk4J8ngaVE64GXUvUyhyzhHhGS codes=
+OK   top up creator-a.kxi-root-1108.testnet to 0.62625 NEAR from kxi-root-1108.testnet tx=EfvYtf5RKzXKy3MKH2Pa39bnv6YaxFc2vZug6EoEgV6J
+OK   top up sw-h1.kxi-root-1108.testnet to 0.2 NEAR from kx-fund-1112.testnet tx=DwkWGJaGLthb3Yb3zdyqdjg6WpRQASAXZJZ1YhXzwXj6
+OK   usdc.mint 7000000 to sw-h1.kxi-root-1108.testnet tx=DJ9oddKQRqehGVeLJq8nuEpYRTqYSLP5LBCr74sjYGkU codes=
+OK   top up sw-h3.kxi-root-1108.testnet to 0.2 NEAR from kx-fund-1112.testnet tx=E7N14YaXk5LxxCYKMGxpDkNWnoJ1KDnL6GYfxmXFrCVo
+OK   usdc.mint 8000000 to sw-h3.kxi-root-1108.testnet tx=9Ad1WwmMnSWDfutAmoi29v14WmMbgJBqmbNDGnGzPW91 codes=
+OK   top up sw-h4.kxi-root-1108.testnet to 0.2 NEAR from kx-fund-1112.testnet tx=C8JFwx1bY5iTUayifPfnA36uWEBo6X8kEEqtVwGgmo5x
+OK   usdc.mint 14000000 to sw-h4.kxi-root-1108.testnet tx=FUd2APwYdCHuKdWuNQbe6Kw2FZ3aEXe62gsLacjkmNYj codes=
+OK   usdc.mint to intents for the Solana holders tx=4aHgQWBTU9CcAyqsEUvbSUHw5YaumYTAfwHCkbFHGvCp codes=
+OK   intents.mt_deposit sol:MRu6z1 tx=6Z4zT7z8scCN7w5S1uZwiUorfbT2zoUQ6HQKzKBEQvba codes=
+OK   intents.mt_deposit sol:Bt6ARH tx=6Bw6xgx4YXU3eCaVJtvZ6TrNQhBTKPHokcP2kQkxe9aq codes=
+OK   intents.mt_deposit sol:AMdQac tx=8DmTxiz8kLHMGmecC1KsErBJaiTjXKEM64wGjCoddKVA codes=
+OK   intents.mt_deposit sol:8cDDHG tx=7SbqSNBKxyqe95J1SaJq3MnXo3xgDuUeJWrEjB7JYXiz codes=
+OK   intents.mt_deposit sol:FsntM5 tx=4RAeMhDhkJBtH6hQK5tYzSANctWnsETiF1nHMkHhxmEV codes=
+OK   intents.mt_deposit sol:6U7VpG tx=4MekVJ7xYp7bWKCtphFYP8HcogUQqWxY6Fdk6mrRWMiQ codes=
+OK   intents.mt_deposit sol:8cGEMp tx=FjNrP6ZCUPW1q56DVdADqi2AciJPYthmBUNa2Sb32VVN codes=
+Receipts: 4e3XaDXF3NU1NS9LKDdP87vo5FvJmPH5MRZGLMmbDxdv, 2oZ9JbKGvDvfXAyaUE44dXmVS6tfTrsSVXKzW7nzDRTe, 2S1ngwRow2eQn2sx8FqUjsK9QTjm5sfPHYP7ouzRgWK8
+	Log [core8.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"charter_created","data":[{"launch_id":"1","creator":"creator-a.kxi-root-1108.testnet","symbol":"LCZ1","charter_hash":"e5a7ed524b9c921f52cb9c3c7d045782a3840fb6b6b17200b4ff17c96ec3e136","soft_cap":"350000000","min_funders":10,"stream_days":30,"payout_recipient":"creator-a.kxi-root-1108.testnet","token_decimals":6,"name":"LCZ1 Lifecycle Test","total_supply":"1000000000000000"}]}
+Receipt: D5FCxLu2CVL6f4fDqhmBfhFfcL6txEjeU1pCa689uY8x
+	Log [core8.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"trial_opened","data":[{"launch_id":"1","opens_at":"1794629487174839397","commit_end":"1794629687174839397","walk_end":"1794629837174839397"}]}
+OK   create_trial LCZ1 (hard cap 500, soft cap 350, min 10 funders) tx=3VSQfX9YXkKMi44q4PjGCwC43QABSxnTPEEwgYrLh4Lz codes=
+Receipt: owM8h1LHVdhRiJ4DYTWmPvvzpmEtyFUSQKQvrF8257i
+	Log [usdc.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"contributed","data":[{"launch_id":"1","holder":"near:sw-h3.kxi-root-1108.testnet","net":"36000000","relay_fee":"0","custody":"Native","total_active":"36000000","funders":1,"book_hash":"f2bda2ce5e163724b1874a6f7f502937b03951320208ddd1ff096e7012e11b49"}]}
+OK   commit sw-h3.kxi-root-1108.testnet 36 USDC tx=Dccoc2bhJrx3NCzRC9vSdHNkJYaNQsuWgbn5FzY8G7qh codes=
+Receipt: 5faRT7dgN8rdN6iBqtRR4HAHCBWNWvHCJPmrUJJVMh3x
+	Log [usdc.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"contributed","data":[{"launch_id":"1","holder":"near:sw-h4.kxi-root-1108.testnet","net":"36000000","relay_fee":"0","custody":"Native","total_active":"108000000","funders":3,"book_hash":"dbcd8855629ada39e4982ff40b0cba5a4c137d8a78bc7fd99a205f11bce247d0"}]}
+OK   commit sw-h4.kxi-root-1108.testnet 36 USDC tx=aGiPhGR1a625SJU6wsvjmhgBFHtMjaciuH18VEC2QWx codes=
+Receipt: 5qFfStsDi9UNeQ5cewHBtVC3WS435LsPWBpAqHQH9fkf
+	Log [usdc.kxi-root-1108.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"contributed","data":[{"launch_id":"1","holder":"near:sw-h1.kxi-root-1108.testnet","net":"36000000","relay_fee":"0","custody":"Native","total_active":"72000000","funders":2,"book_hash":"3318387c751e2e3112b2e7879878d2be80e08cfc292d76811f16a70273f5d365"}]}
+OK   commit sw-h1.kxi-root-1108.testnet 36 USDC tx=2K9bisnL8jEdKNx2Cd2YpZzf2TnKhjb6uztStEM3KDbE codes=
+Receipt: 6k74CKofoRRc9CTzsvNZJGqToznYA9nVq7ce6D51YYHT
+	Log [intents.kxa1-owner-1203.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"contributed","data":[{"launch_id":"1","holder":"sol:MRu6z1gZiSmyXPU2iJr2GeqqW2bwTvbYYDWZrHL7zBw","net":"36000000","relay_fee":"0","custody":"Intents","total_active":"144000000","funders":4,"book_hash":"f93a417e88d272e7b27885e3b290e5ec6e26dac3ed13c204ffb0162865411162"}]}
+OK   commit sol:MRu6z1 36 USDC (mock Intents, Solana-delivered) tx=3tN4BXPnk5HqCbXjFGokgBmfW9BkURB6V3nnCQLyA1yA codes=
+Receipt: GWqpFoUgX1n5pAjCvBEnq233eLSRvFmH7Zydwk54k9U
+	Log [intents.kxa1-owner-1203.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"contributed","data":[{"launch_id":"1","holder":"sol:Bt6ARHCEB2sYzSs3RjBuHXGZVAdY8wrhVgGwopAAG7B7","net":"36000000","relay_fee":"0","custody":"Intents","total_active":"180000000","funders":5,"book_hash":"fd3376a6ca93af63bb7729508acdb57aa75d978ffbd7c2c965dc28930254fe71"}]}
+OK   commit sol:Bt6ARH 36 USDC (mock Intents, Solana-delivered) tx=3AsB1SzApRXLPpi7BKXcosx1JMheH2FnG3RDSLtuo2kd codes=
+Receipt: 3pfwZA4jUpUCTrUbmnpBB7agbPpJutuUgXoXjEFpxbc8
+	Log [intents.kxa1-owner-1203.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"contributed","data":[{"launch_id":"1","holder":"sol:AMdQacKCrmPt6uBDL3nxX39PeKXzis8pVko9FTVsBfnM","net":"36000000","relay_fee":"0","custody":"Intents","total_active":"216000000","funders":6,"book_hash":"c27a21a9cf8356eb1e5d5bf2cdbc3ddc0a496e3929f138ac53e2b7bd5dcad3f1"}]}
+OK   commit sol:AMdQac 36 USDC (mock Intents, Solana-delivered) tx=HtEf5wUdbzHnfzTEK2NdEVuToP4Kjca13WuGANBrhFGM codes=
+Receipt: C1L2EbksnL5eYJsivFkEYbLLUMhithrCdxNkVLvLbxiV
+	Log [intents.kxa1-owner-1203.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"contributed","data":[{"launch_id":"1","holder":"sol:8cDDHGkat6xuzmYhtVpHKw4HGNFGJwYskVT7goatsGCt","net":"36000000","relay_fee":"0","custody":"Intents","total_active":"252000000","funders":7,"book_hash":"56d7ac701997d0601664bc97895af85e891092996583df503ef2d3499ac754a5"}]}
+OK   commit sol:8cDDHG 36 USDC (mock Intents, Solana-delivered) tx=9g8y32B3qTssQrLEwfcCGbu7cNuQ8DkHFKbL5gN9wPDC codes=
+Receipt: 3rNZZ9jRb9Xyv3QTHp4r2VngGBibPSipmaEHydMDYbfi
+	Log [intents.kxa1-owner-1203.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"contributed","data":[{"launch_id":"1","holder":"sol:FsntM5Rbbqo4z11RL31rn7Waa3DsHw3dRasKsyGqQm3p","net":"36000000","relay_fee":"0","custody":"Intents","total_active":"288000000","funders":8,"book_hash":"5fa4345c326e2dc9700063cbeae3492d21345025c99a85600625623f817b29a9"}]}
+OK   commit sol:FsntM5 36 USDC (mock Intents, Solana-delivered) tx=CHK6JA8ow7Wmnt8oDnaiFAVZg9yW85TU2zKMwJb51Lmt codes=
+Receipt: CZqWHnwUnSbthjiAPuPL43ooDU7Bv64AztsvQTjVMXab
+	Log [intents.kxa1-owner-1203.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"contributed","data":[{"launch_id":"1","holder":"sol:6U7VpGUi4vkKeWtuZwwos2nz8xZvGZNYiu5aKXPEf54i","net":"36000000","relay_fee":"0","custody":"Intents","total_active":"324000000","funders":9,"book_hash":"a1c8cae65cc26dc38bbc9fc146d0850ed8db2e006f00f1c2b2e57e1051dde136"}]}
+OK   commit sol:6U7VpG 36 USDC (mock Intents, Solana-delivered) tx=4y5qSr8Ra4NUGbBcE8FoQHoNZpK8vDGUuz5ZBVfb2RiW codes=
+Receipt: 6BWjAidUTuNzEojbNyLnYjawKKiUmwoGkjLmXRRubgGu
+	Log [intents.kxa1-owner-1203.testnet]: EVENT_JSON:{"standard":"kruxa","version":"1.0.0","event":"contributed","data":[{"launch_id":"1","holder":"sol:8cGEMpKQhkCJTC5qYpaqdER9zBMyFKvPAcmqbizeepEs","net":"36000000","relay_fee":"0","custody":"Intents","total_active":"360000000","funders":10,"book_hash":"a1788439ff71831f8b78968fedc614d66437a0171fff07cf05e822fee161bfdc"}]}
+OK   commit sol:8cGEMp 36 USDC (mock Intents, Solana-delivered) tx=9cJQyUW5i7YtLtsAUDxyUJmPgCUqG2fViw7VDjkwgZkn codes=
+launch 1 open with 10 of 10 commits; run finish before the tail ends

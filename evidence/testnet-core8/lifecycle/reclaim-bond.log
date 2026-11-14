@@ -1,0 +1,2 @@
+OK   reclaim_bond launch 1 (creator, walk then FAIL then dissolve, new wasm 047567d9) tx=FAq7jGrj9czejSerKMTNLKfi6AVWJ2JqRJ7mKr6k1cWE codes=
+{"tx":"FAq7jGrj9czejSerKMTNLKfi6AVWJ2JqRJ7mKr6k1cWE","success":true,"codes":[],"creator_delta":"0.1957","status":"Dissolved"}
