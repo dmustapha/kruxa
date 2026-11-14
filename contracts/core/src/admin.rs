@@ -34,14 +34,13 @@ impl Contract {
         emit("paused", json!({ "by": env::predecessor_account_id() }));
     }
 
-    /// Stops everything including exits, auto-expires to Paused after 7 days. The guardian cannot freeze again until 7 days after the
-    /// previous freeze ended (`freeze_barrier`), so exits are open for a full window between two guardian freezes; the owner is not bound.
+    /// Stops everything including exits, auto-expires to Paused after 7 days. Nobody (owner or guardian) can freeze again until 7 days
+    /// after the previous freeze ended (`freeze_barrier`), so exits are open for a full window between two freezes. `pause` is not bound.
     pub fn freeze(&mut self) {
         self.require_owner_or_guardian();
         let now = env::block_timestamp();
-        let by_owner = env::predecessor_account_id() == self.cfg.owner;
-        if !kruxa_logic::freeze_allowed(by_owner, self.freeze_barrier_ns(), now) {
-            fail(RuleCode::RNotYet, "the guardian cannot freeze again within 7 days after a freeze ended; the owner can");
+        if !kruxa_logic::freeze_allowed(self.freeze_barrier_ns(), now) {
+            fail(RuleCode::RNotYet, "no freeze within 7 days after the previous freeze ended");
         }
         self.cfg.pause = PauseLevel::Frozen;
         self.cfg.frozen_until = kruxa_logic::frozen_until(now);
@@ -49,7 +48,7 @@ impl Contract {
         emit("frozen", json!({ "by": env::predecessor_account_id(), "until": self.cfg.frozen_until.to_string() }));
     }
 
-    /// Earliest block timestamp (ns) at which the guardian may freeze again; 0 when no freeze has happened.
+    /// Earliest block timestamp (ns) at which a freeze may be armed again; 0 when no freeze has happened.
     pub fn freeze_barrier(&self) -> U64 {
         self.freeze_barrier_ns().into()
     }

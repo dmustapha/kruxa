@@ -33,16 +33,15 @@ pub fn frozen_until(now: u64) -> u64 {
     now.saturating_add(FREEZE_MAX_NS)
 }
 
-/// The earliest time the guardian may freeze again after a freeze that runs until `frozen_until`: one full `FREEZE_MAX_NS` window
-/// after it ends, so exits are open for at least that long between two guardian freezes (however the first one ended).
+/// The earliest time anyone may freeze again after a freeze that runs until `frozen_until`: one full `FREEZE_MAX_NS` window
+/// after it ends, so exits are open for at least that long between two freezes (however the first one ended).
 pub fn freeze_barrier(frozen_until: u64) -> u64 {
     frozen_until.saturating_add(FREEZE_MAX_NS)
 }
 
-/// True when a freeze at `now` may take effect. The owner is never held back (it is also the only account that can unpause);
-/// the guardian must wait until `barrier`. Equality counts as passed.
-pub fn freeze_allowed(by_owner: bool, barrier: u64, now: u64) -> bool {
-    by_owner || now >= barrier
+/// True when a freeze at `now` may take effect. The barrier binds every caller, owner and guardian alike. Equality counts as passed.
+pub fn freeze_allowed(barrier: u64, now: u64) -> bool {
+    now >= barrier
 }
 
 /// When a cap raise queued at `now` may be applied.
@@ -76,14 +75,13 @@ mod tests {
     }
 
     #[test]
-    fn guardian_freeze_waits_for_the_barrier_and_owner_never_does() {
+    fn freeze_waits_for_the_barrier_for_every_caller() {
         let barrier = freeze_barrier(frozen_until(0));
-        assert!(!freeze_allowed(false, barrier, 0), "right after the freeze started");
-        assert!(!freeze_allowed(false, barrier, frozen_until(0)), "the moment the freeze ends the guardian still waits");
-        assert!(!freeze_allowed(false, barrier, barrier - 1), "one ns before the barrier");
-        assert!(freeze_allowed(false, barrier, barrier), "at the barrier");
-        assert!(freeze_allowed(true, barrier, 0), "the owner is not bound");
-        assert!(freeze_allowed(false, 0, 0), "no freeze ever happened: barrier 0 never blocks");
+        assert!(!freeze_allowed(barrier, 0), "right after the freeze started");
+        assert!(!freeze_allowed(barrier, frozen_until(0)), "the moment the freeze ends a new freeze still waits");
+        assert!(!freeze_allowed(barrier, barrier - 1), "one ns before the barrier");
+        assert!(freeze_allowed(barrier, barrier), "at the barrier");
+        assert!(freeze_allowed(0, 0), "no freeze ever happened: barrier 0 never blocks");
     }
 
     #[test]

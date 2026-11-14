@@ -1,4 +1,4 @@
-//! Core hardening: the guardian freeze barrier (a freeze cannot be re-armed until 7 days after the last one ended) and the private `new`.
+//! Core hardening: the freeze barrier (a freeze cannot be re-armed until 7 days after the last one ended) and the private `new`.
 use kruxa_logic::TrialParams;
 use kruxa_tests::*;
 use near_workspaces::types::NearToken;
@@ -24,7 +24,7 @@ async fn barrier(env: &Env) -> u64 {
 }
 
 #[tokio::test]
-async fn guardian_cannot_rearm_a_freeze_inside_the_barrier_but_can_after_it() -> anyhow::Result<()> {
+async fn no_caller_can_rearm_a_freeze_inside_the_barrier_but_can_after_it() -> anyhow::Result<()> {
     let env = Env::new().await?;
     assert_eq!(barrier(&env).await, 0, "no freeze yet: nothing blocks");
     env.call(&env.guardian, "freeze", json!({}), ZERO).await.into_result()?;
@@ -48,10 +48,13 @@ async fn guardian_cannot_rearm_a_freeze_inside_the_barrier_but_can_after_it() ->
 }
 
 #[tokio::test]
-async fn owner_freeze_is_not_held_back_and_a_creator_still_cannot_freeze() -> anyhow::Result<()> {
+async fn owner_is_bound_by_the_barrier_too_and_a_creator_still_cannot_freeze() -> anyhow::Result<()> {
     let env = Env::new().await?;
-    env.call(&env.guardian, "freeze", json!({}), ZERO).await.into_result()?;
+    env.call(&env.owner, "freeze", json!({}), ZERO).await.into_result()?;
     env.call(&env.owner, "unpause", json!({}), ZERO).await.into_result()?;
+    assert!(has_code(&env.call(&env.owner, "freeze", json!({}), ZERO).await, "R_NOT_YET"), "the owner's second freeze inside the barrier");
+    env.call(&env.owner, "pause", json!({}), ZERO).await.into_result()?;
+    env.worker.patch_state(env.core.id(), b"x:fbar", &1u64.to_le_bytes()).await?;
     env.call(&env.owner, "freeze", json!({}), ZERO).await.into_result()?;
     assert!(has_code(&env.call(&env.creator, "freeze", json!({}), ZERO).await, "R_NOT_AUTHORIZED"));
     Ok(())
@@ -67,7 +70,7 @@ async fn exits_are_closed_only_while_frozen_and_open_in_the_window_between_freez
     assert!(has_code(&env.call(&u, "walk", lid(id), ONE).await, "R_FROZEN"), "exits close while frozen, as before");
     env.call(&env.owner, "unpause", json!({}), ZERO).await.into_result()?;
     env.call(&env.guardian, "pause", json!({}), ZERO).await.into_result()?;
-    assert!(has_code(&env.call(&env.guardian, "freeze", json!({}), ZERO).await, "R_NOT_YET"), "the guardian cannot close them again yet");
+    assert!(has_code(&env.call(&env.guardian, "freeze", json!({}), ZERO).await, "R_NOT_YET"), "nobody can close them again yet");
     env.call(&u, "walk", lid(id), ONE).await.into_result()?;
     assert_eq!(env.usdc_balance(u.id()).await, 1_000 * USDC, "the Walk went through inside the barrier window");
     Ok(())

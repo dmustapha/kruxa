@@ -42,7 +42,7 @@ export const LADDER_RULES: Rules = {
   maxCreatorBps: 2000, maxBackerBps: 1000, maxCreatorPlusBackerBps: 2500,
   minHardCap: 500n * USDC, maxHardCap: 1000n * USDC, minSoftAbs: 350n * USDC, minSoftPctBps: 2000, minBuyAbs: 20n * USDC, minBuyDivisor: 500n,
   walletBpsMin: 50, walletBpsMax: 500, fundersMin: 10, fundersMax: 500,
-  minCommitSecs: 86_400, maxCommitSecs: 2_592_000, minTailSecs: 3_600, maxTailSecs: 172_800, maxOpenDelaySecs: 604_800,
+  minCommitSecs: 43_200, maxCommitSecs: 2_592_000, minTailSecs: 3_600, maxTailSecs: 172_800, maxOpenDelaySecs: 604_800,
   minStreamDaysSmall: 30, minStreamDaysLarge: 90, maxStreamDays: 365, streamLargeThreshold: 25_000n * USDC,
   minTotalFeeBps: 30, maxTotalFeeBps: 200, maxCreatorShareBps: 6000, maxCreatorTakeBps: 100, platformBps: 1500, minPlatformBps: 1500,
   minHoldersBps: 1000, maxHoldersBps: 3000, minLpFeeBps: 500, maxLpFeeBps: 3000, minHoldersPlusLpBps: 2000, maxReferralBps: 2000,

@@ -15,7 +15,7 @@
 | Oversized or malicious commit message | 512-byte limit, `deny_unknown_fields`, typed parse before any state change | `intake.rs::parse_msg` |
 | Hostile re-parameterisation after commits | Charter is written once and hashed; rules are a snapshot | `lifecycle.rs::create_trial` |
 | Rounding drain | charged amounts round up, paid amounts round down, residue to LP; proptest of conservation | `kruxa-math`, `kruxa-logic::settle` |
-| Pause trapping exits | exits require only "not FROZEN"; FROZEN auto-expires in 7 days; unpause is owner-only | `lib.rs::pause_level`, `admin.rs` |
+| Pause trapping exits | exits require only "not FROZEN"; FROZEN auto-expires in 7 days and no new freeze (owner or guardian) is accepted for 7 days after it ends, so exits are never closed more than 7 days in any 14; unpause is owner-only | `lib.rs::pause_level`, `admin.rs` |
 | Instant cap inflation | raising a cap is queued 7 days and public; lowering is instant | `admin.rs` |
 | Brand symbol squatting | `KRUXA` and 8 others are reserved to the owner | `kruxa-logic::rules::check_text` |
 | Relayer signs an unregistered genesis message (F0) | `register_f0_message` then `sign_genesis`: the MPC signer is asked only for a message whose sha256 equals the registered hash, once, on the fixed path `kruxa:genesis:<id>` | `genesis.rs` |
