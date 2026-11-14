@@ -13,20 +13,22 @@ import { holderLeaves, VERDICTS } from "./launches.js";
 import { writeRecord } from "./record.js";
 import { F1Signer, type GenesisSigner } from "./signer.js";
 import { JITO_MAINNET } from "./solana-bytes.js";
+import { mainnetGenesis } from "./genesis-mainnet.js";
+import { type CeremonyGate, makeGate, readSettings } from "./mainnet-guard.js";
 import { createVault, readOnChain } from "../../tools/squads/vault.js";
 
 interface Args {
   launch: bigint; mode: "F1" | "F0"; cluster: Cluster; core?: string; record?: string; squadsMultisig?: string; squadsTimeLock?: number; holders: number; priorTx1?: string; holdersFile?: string;
 }
 
-const USAGE = "usage: genesis --launch N --mode F1|F0 [--cluster devnet|local] [--core ACCOUNT | (standalone)] [--squads-multisig PUBKEY | --squads-time-lock S] [--record FILE]";
+const USAGE = "usage: genesis --launch N --mode F1|F0 [--cluster devnet|local|mainnet-beta] [--core ACCOUNT | (standalone)] [--squads-multisig PUBKEY | --squads-time-lock S] [--record FILE]";
 
 function parseArgs(argv: string[]): Args {
   const get = (k: string) => { const i = argv.indexOf(k); return i >= 0 ? argv[i + 1] : undefined; };
-  const known = new Set(["--launch", "--mode", "--cluster", "--core", "--record", "--squads-multisig", "--squads-time-lock", "--holders", "--prior-tx1", "--holders-file", "--expect-refused"]);
+  const known = new Set(["--launch", "--mode", "--cluster", "--core", "--record", "--squads-multisig", "--squads-time-lock", "--holders", "--prior-tx1", "--holders-file", "--expect-refused", "--rehearse-gate"]);
   const bad = argv.filter((a) => a.startsWith("--") && !known.has(a));
   const launch = get("--launch"), mode = get("--mode") ?? "F1", cluster = get("--cluster") ?? "devnet";
-  if (!launch || !/^\d+$/.test(launch) || !["F1", "F0"].includes(mode) || !["devnet", "local"].includes(cluster) || bad.length) {
+  if (!launch || !/^\d+$/.test(launch) || !["F1", "F0"].includes(mode) || !["devnet", "local", "mainnet-beta"].includes(cluster) || bad.length) {
     console.error(USAGE);
     process.exit(64);
   }
@@ -41,6 +43,7 @@ function loadFunder(): Keypair {
 
 async function makeFunder(conn: Connection, cluster: Cluster): Promise<Keypair> {
   if (cluster === "devnet") return loadFunder();
+  if (cluster === "mainnet-beta") throw new Error("refusing: no airdrop funder on mainnet-beta");
   const kp = Keypair.generate();
   await conn.confirmTransaction(await conn.requestAirdrop(kp.publicKey, 20_000_000_000), "confirmed");
   return kp;
@@ -48,8 +51,15 @@ async function makeFunder(conn: Connection, cluster: Cluster): Promise<Keypair> 
 
 const makeSigner = (mode: Args["mode"], launch: bigint, core?: string): Promise<GenesisSigner> | GenesisSigner => (mode === "F1" ? new F1Signer() : F0Signer.fromEnv(launch, core));
 
+/** Local/devnet rehearsal of the mainnet confirmation gate: same plan, cap and typed-code flow, answered from the prompt. Never used on mainnet-beta. */
+function rehearsalGate(): CeremonyGate {
+  const env = { KRUXA_SOLANA_MAINNET_CONFIRMED: "I_CONFIRM_DAMI_RUNS_THIS", KRUXA_SOLANA_DRY_RUN: "0", KRUXA_SOLANA_SPEND_CAP_SOL: "0.05" };
+  return makeGate(readSettings(env), env, async (q) => { console.log(q); return `MINT ${/MINT ([0-9A-F]{8})/.exec(q)?.[1] ?? ""}`; }, console.log);
+}
+
 async function main(): Promise<void> {
   const a = parseArgs(process.argv.slice(2));
+  if (a.cluster === "mainnet-beta") return mainnetGenesis({ ...a, expectRefused: process.argv.includes("--expect-refused") });
   const conn = new Connection(rpcFor(a.cluster), "confirmed");
   await assertCluster(conn, a.cluster);
   console.log(`cluster: ${a.cluster} (${a.cluster === "local" ? "LOCAL validator, labelled rehearsal" : "devnet"}) mode: ${a.mode} launch: ${a.launch}`);
@@ -67,7 +77,7 @@ async function main(): Promise<void> {
   const signer = await makeSigner(a.mode, a.launch, real ? a.core : undefined);
   const gPub = new PublicKey(signer.pub()).toBase58();
   const t0 = Date.now();
-  const r = await runCeremony({ conn, cluster: a.cluster, core, signer, launchId: a.launch, funder, priceMicroLamports: 1000, jitoProgram: process.env.JITO_PROGRAM ?? JITO_MAINNET, metadataUri, priorTx1: a.priorTx1, log: console.log });
+  const r = await runCeremony({ conn, cluster: a.cluster, core, signer, launchId: a.launch, funder, priceMicroLamports: 1000, jitoProgram: process.env.JITO_PROGRAM ?? JITO_MAINNET, metadataUri, priorTx1: a.priorTx1, log: console.log, gate: process.argv.includes("--rehearse-gate") ? rehearsalGate() : undefined });
   const v = r.view;
   console.log(`mint: ${r.mint}\nmint_authority: ${v.mintAuthority}\nfreeze_authority: ${v.freezeAuthority}\nextensions: ${v.space === 82 ? "none" : "PRESENT"}`);
   console.log(`g_lamports_after: ${await conn.getBalance(new PublicKey(gPub))}\nspace: ${v.space}\nowner: ${v.owner}\nsupply: ${v.supply} (sum of buckets: ${r.compiled.supply})`);

@@ -4,7 +4,9 @@
 //   KRUXA_KEY_FILE=<core account key> node scripts/mainnet/deploy-core.mjs
 import { accountId, deployPreflight, execute, isEntry, readWasm, runMain, verifyDeployed, view, yoctoToNear } from './lib.mjs';
 
-const PROFILE = 'ladder'; // capped ladder rules, creator gate closed to everyone but the owner (D-1)
+// Profile 'mainnet': the same capped ladder rules and creator gate as 'ladder' (contracts/core/src/lib.rs), and the ONLY profile whose genesis spec
+// targets Solana mainnet-beta (contracts/core/src/genesis.rs build_spec). Any other profile commits a devnet spec, so a Solana mainnet genesis could never pass.
+const PROFILE = 'mainnet';
 const INIT_GAS_TGAS = 100;
 const CAP_NEAR = '0.5'; // gas only: this transaction attaches no deposit
 

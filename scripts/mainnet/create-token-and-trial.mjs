@@ -46,7 +46,7 @@ async function coreChecks(ctx, core, owner) {
   const cfg = await view(ctx, core, 'get_config');
   if (cfg.owner !== owner) throw new Refusal(`core owner is ${cfg.owner}, not ${owner}`);
   if (cfg.creator_gate !== true) throw new Refusal('core creator_gate is open: this must be the first and only owner launch');
-  if (cfg.profile !== 'ladder') throw new Refusal(`core profile is ${cfg.profile}, expected ladder`);
+  if (cfg.profile !== 'mainnet') throw new Refusal(`core profile is ${cfg.profile}, expected mainnet (only the mainnet profile commits a Solana mainnet genesis spec)`);
   if (cfg.pause !== 'None') throw new Refusal(`core is paused (${cfg.pause})`);
   if (BigInt(cfg.global_held) !== 0n) throw new Refusal(`core already holds ${cfg.global_held} micro-USDC in launches`);
   return cfg;

@@ -1,10 +1,12 @@
 import { createHash } from "node:crypto";
 import { Connection, Keypair, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import bs58 from "bs58";
-import { assertCluster, DEVNET_GENESIS_HASH, type Cluster } from "./cluster.js";
+import { assertCluster, expectedSpecCluster, type Cluster } from "./cluster.js";
 import { compileGenesis, decodeSpec, MAX_TX, specHash, type GenesisCompiled, type Params, type Spec } from "./compile.js";
 import { b58d, b58e, createWithSeed, TOKENKEG } from "./solana-bytes.js";
 import { GenesisRefused, type CoreClient } from "./core.js";
+import { assertMainnetPrograms, assertRentCalibration } from "./mainnet-programs.js";
+import { type CeremonyGate, type MainnetPlan } from "./mainnet-guard.js";
 import { assertSealed, readMint, type MintView } from "./mintcheck.js";
 import { checkAdoptable, matchCeremonyTxs, programDataDeclaresId, type ChainTx } from "./resume.js";
 import type { GenesisSigner } from "./signer.js";
@@ -22,6 +24,9 @@ export const GENESIS_NON_FEE_LAMPORTS = 27_295_600;
 export const NON_FEE: Record<Cluster, { withDistributor: number; noDistributor: number }> = {
   local: { withDistributor: 23_217_040, noDistributor: 18_658_240 },
   devnet: { withDistributor: 20_041_720, noDistributor: 16_683_840 },
+  /** mainnet-beta tx1 (noDistributor): MEASURED 2026-11-14 by simulateTransaction of compile()'s tx1 against mainnet-beta (G balance delta minus the 5,150 lamport fee), equal to the devnet figure.
+   *  The distributor part is the devnet-measured difference (3,357,880: distributor PDA rent plus the vault ATA); the real program is the same binary. See docs/MAINNET-SOLANA-GENESIS.md section 4. */
+  "mainnet-beta": { withDistributor: 20_041_720, noDistributor: 16_683_840 },
 };
 export const genesisCostLamports = (cluster: Cluster, hasDistributor: boolean, priceMicroLamports: number): number =>
   G_DUST_LAMPORTS + (hasDistributor ? NON_FEE[cluster].withDistributor : NON_FEE[cluster].noDistributor) + 2 * 5000 +
@@ -32,6 +37,8 @@ const UPGRADEABLE_LOADER = "BPFLoaderUpgradeab1e11111111111111111111111";
 export interface CeremonyInput {
   conn: Connection; cluster: Cluster; core: CoreClient; signer: GenesisSigner; launchId: bigint;
   funder: Keypair; priceMicroLamports: number; jitoProgram: string; metadataUri: string; priorTx1?: string; log: (line: string) => void;
+  /** Required on mainnet-beta, ignored elsewhere: shows the plan and decides (dry-run stop, cap, typed confirmation) before commit_genesis and again before G is funded. */
+  gate?: CeremonyGate;
 }
 
 export interface CeremonyResult {
@@ -84,17 +91,20 @@ async function freshCompile(conn: Connection, specBytes: Uint8Array, params: Par
 export async function runCeremony(i: CeremonyInput): Promise<CeremonyResult> {
   const { conn, signer, log, core, launchId } = i;
   await assertCluster(conn, i.cluster);
+  if (i.cluster === "mainnet-beta" && !i.gate) throw new Error("refusing: a mainnet-beta ceremony needs a confirmation gate");
   const predicted = new PublicKey(createWithSeed(signer.pub(), launchId.toString(), TOKENKEG));
   const pre = await readMint(conn, predicted);
   const adoptable = pre !== null && pre.mintAuthority === null && pre.owner === TOKENKEG && pre.space === 82;
   if (pre && !adoptable && pre.mintAuthority !== new PublicKey(signer.pub()).toBase58()) throw new Error(`preflight: mint ${predicted.toBase58()} already exists and is neither resumable nor a sealed mint to adopt (a previous ceremony used the same key and launch id); refusing BEFORE commit_genesis, which is one-shot`);
+  if (i.cluster === "mainnet-beta") await assertMainnetPrograms(conn, i.jitoProgram);
+  await i.gate?.(await planOf(i, "pre-commit", predicted));
   await core.commitGenesis(launchId, signer.pub());
   log(`commit_genesis ok (${core.label})`);
   const specBytes = await core.specBytes(launchId);
   if (Buffer.from(specHash(specBytes)).toString("hex") !== (await core.specHashOnChain(launchId))) throw new Error("spec bytes do not hash to the on-chain genesis_spec_hash");
   const spec = decodeSpec(specBytes);
   if (Buffer.compare(spec.gPub, signer.pub()) !== 0) throw new Error("spec g_pub is not the signer key");
-  if (i.cluster === "devnet" && b58e(spec.clusterGenesisHash) !== DEVNET_GENESIS_HASH) throw new Error("spec cluster hash is not devnet");
+  assertSpecCluster(i.cluster, spec);
   const params: Params = { jitoProgram: b58d(i.jitoProgram), metadataUri: i.metadataUri, clockTs: BigInt(Math.floor(Date.now() / 1000)) };
   const gKey = new PublicKey(signer.pub());
   const existing = await readMint(conn, new PublicKey(spec.mintAddress));
@@ -104,7 +114,10 @@ export async function runCeremony(i: CeremonyInput): Promise<CeremonyResult> {
   if (existing && !resume) throw new Error(`mint already exists and is not resumable (mint authority ${existing.mintAuthority})`);
   const need = costFor(i.cluster, spec, i.priceMicroLamports);
   const have = await conn.getBalance(gKey);
-  if (!resume || have < 20_000) log(`fund G ${gKey.toBase58()}: ${await fund(conn, i.funder, gKey, need - (resume ? 0 : have))}`);
+  if (i.cluster === "mainnet-beta") await assertRentCalibration(conn, spec.maxNumNodes > 0 || spec.maxTotalClaim > 0n, NON_FEE["mainnet-beta"][spec.maxNumNodes > 0 || spec.maxTotalClaim > 0n ? "withDistributor" : "noDistributor"]);
+  await i.gate?.(await planOf(i, "pre-send", new PublicKey(spec.mintAddress), { spec, compiled: compileGenesis(specBytes, params, (await conn.getLatestBlockhash("confirmed")).blockhash, i.priceMicroLamports), have, resume }));
+  const topUp = fundingAmount(need, have, resume);
+  if (topUp !== null) log(`fund G ${gKey.toBase58()}: ${await fund(conn, i.funder, gKey, topUp)}`);
   else log(`RESUME: mint exists unsealed, G holds ${have} lamports; skipping tx1`);
   const signMs: number[] = [];
   const sigs: string[] = [];
@@ -125,6 +138,36 @@ export async function runCeremony(i: CeremonyInput): Promise<CeremonyResult> {
   signer.destroy();
   const done = await finish(i, { specBytes, params, blockhash: last.blockhash, compiled: last.compiled, sigs, signMs, resumed: resume });
   return { ...done, sweepSig };
+}
+
+/** Lamports the funder sends to G, or null when G already holds enough to resume. Used by both the plan shown to the owner and the send. */
+export function fundingAmount(need: number, have: number, resume: boolean): number | null {
+  return !resume || have < 20_000 ? need - (resume ? 0 : have) : null;
+}
+
+export function assertSpecCluster(cluster: Cluster, spec: Spec): void {
+  const want = expectedSpecCluster(cluster);
+  if (want && (spec.chain !== want.chain || b58e(spec.clusterGenesisHash) !== want.hash)) {
+    throw new Error(`spec targets ${spec.chain} ${b58e(spec.clusterGenesisHash)}, not ${cluster} (${want.chain} ${want.hash}); refusing`);
+  }
+}
+
+interface ExactPlan { spec: Spec; compiled: GenesisCompiled; have: number; resume: boolean }
+
+/** The plan the gate shows. pre-commit has only what is derivable before the spec exists (an upper-bound cost); pre-send is exact. */
+async function planOf(i: CeremonyInput, stage: MainnetPlan["stage"], mint: PublicKey, x?: ExactPlan): Promise<MainnetPlan> {
+  const hasDist = x ? x.spec.maxNumNodes > 0 || x.spec.maxTotalClaim > 0n : true;
+  const need = genesisCostLamports(i.cluster, hasDist, i.priceMicroLamports);
+  const fund = x ? Math.max(0, fundingAmount(need, x.have, x.resume) ?? 0) : need;
+  const exact = x && {
+    specHash: Buffer.from(x.compiled.specHash).toString("hex"), hasDistributor: hasDist, metadata: b58e(x.compiled.accounts.metadata),
+    reserveMultisig: b58e(x.spec.squadsMultisig), reserveOwner: b58e(x.compiled.accounts.reserveOwner), reserveAta: b58e(x.compiled.accounts.reserveAta), distributor: b58e(x.compiled.accounts.distributor), vault: b58e(x.compiled.accounts.vault),
+  };
+  return {
+    stage, cluster: i.cluster, launchId: i.launchId.toString(), core: i.core.label, signerMode: i.signer.mode, gPub: new PublicKey(i.signer.pub()).toBase58(), mint: mint.toBase58(),
+    funder: i.funder.publicKey.toBase58(), funderBalance: await i.conn.getBalance(i.funder.publicKey), fundLamports: fund, priceMicroLamports: i.priceMicroLamports,
+    jitoProgram: i.jitoProgram, metadataUri: i.metadataUri, capLamports: null, exact,
+  };
 }
 
 /** Distributor preflight: deployed, executable, and (upgradeable loader) its program data carries its own address as the declared id. */
