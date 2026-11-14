@@ -4,6 +4,8 @@ version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 publish.workspace = true
+# NEP-330 source link: the public repository (owner approved baking it in, Nov 14).
+repository = "https://github.com/dmustapha/kruxa"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
