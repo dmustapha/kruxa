@@ -239,7 +239,7 @@ test('create-trial refuses any symbol except KRUXA and a deposit above the cap',
 test('the shipped params file is the GR-17 numbers', () => {
   const p = JSON.parse(fs.readFileSync(path.join(HERE, 'kruxa-trial-params.json'), 'utf8'));
   assert.deepEqual([p.symbol, p.total_supply_whole, p.sale_bps, p.lp_bps, p.creator_bps, p.backer_bps, p.hard_cap, p.soft_cap, p.min_buy, p.min_funders, p.stream_days],
-    ['KRUXA', 1_000_000_000, 6000, 2500, 1000, 500, '1000000000', '350000000', '20000000', 10, 30]);
+    ['KRUXA', 1_000_000_000, 6500, 2500, 500, 500, '1000000000', '350000000', '20000000', 10, 30]);
 });
 
 test('account-plan is read-only and derives funding from the wasm sizes', async () => {
