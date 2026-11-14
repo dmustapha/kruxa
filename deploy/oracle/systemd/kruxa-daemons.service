@@ -1,0 +1,17 @@
+[Unit]
+Description=Kruxa keeper and genesis watcher (compose profile "daemons")
+Requires=docker.service
+After=docker.service network-online.target kruxa.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=@REPO@/deploy/oracle
+# Both daemons start in dry-run unless keeper.env / watcher.env set KEEPER_SEND=1 / WATCHER_SEND=1.
+ExecStart=/usr/bin/docker compose --profile daemons up -d --build keeper watcher
+ExecStop=/usr/bin/docker compose --profile daemons stop keeper watcher
+TimeoutStartSec=900
+
+[Install]
+WantedBy=multi-user.target

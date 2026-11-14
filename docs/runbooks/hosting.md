@@ -7,7 +7,7 @@ Placeholders used below: `kruxa.example` (site) and `api.kruxa.example` (API). R
 ## What exists and what does not
 
 - Indexer and API run as one Node process (`ops/Dockerfile`, health at `/api/health`). Covered.
-- The "keeper or watcher" daemon does not exist in the repo. `scripts/keeper.sh` and `scripts/core-testnet/keeper.mjs` settle one launch per run and need a funded testnet signer. They are not hosted. If you want one hosted, that is a new build, and the signer key would live on the VM (say so first).
+- The keeper and the genesis watcher exist now (`services/keeper`, `relayer/src/watcher-cli.ts`) and are in the compose profile `daemons`, off by default and dry-run until you set `KEEPER_SEND=1` / `WATCHER_SEND=1`. Their signer keys would live on the VM as read-only files (say so before enabling). See `docs/runbooks/keeper-watcher.md`.
 - The relayer in `relayer/` is a library and CLI set (genesis, sweep, resume), not a server. Not hosted. `NEXT_PUBLIC_RELAYER_URL` stays empty.
 
 ## What only you can do

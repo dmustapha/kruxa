@@ -1,0 +1,16 @@
+# Kruxa genesis watcher (relayer/src/watcher-cli.ts). Build from the repo root context (compose does this).
+# Dry-run by default: it only runs a ceremony when WATCHER_SEND=1 is set in watcher.env.
+FROM node:22-slim
+ENV NODE_ENV=production
+WORKDIR /app
+COPY relayer/package.json relayer/package-lock.json relayer/
+COPY tools/squads/package.json tools/squads/package-lock.json tools/squads/
+RUN cd relayer && npm ci --include=dev --no-audit --no-fund && cd ../tools/squads && npm ci --include=dev --no-audit --no-fund
+COPY relayer/tsconfig.json relayer/
+COPY relayer/src relayer/src
+COPY tools/squads/vault.ts tools/squads/vault.ts
+RUN mkdir -p /data && chown node:node /data
+VOLUME /data
+USER node
+WORKDIR /app/relayer
+CMD ["npx", "tsx", "src/watcher-cli.ts"]

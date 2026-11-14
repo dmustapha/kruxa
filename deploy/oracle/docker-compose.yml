@@ -1,7 +1,9 @@
 # Kruxa backend on one Oracle Cloud VM: indexer + API (one process, one SQLite file) behind Caddy (automatic TLS).
 # Run from this directory:  cp compose.env.example .env && cp indexer.env.example indexer.env  (fill both), then  docker compose up -d --build
 # The image is built from ops/Dockerfile at the repo root (Node 24, zero runtime dependencies, healthcheck on /api/health).
-# There is no keeper or watcher daemon in this repo (scripts/keeper.sh and scripts/core-testnet/keeper.mjs are per-launch, run by hand), so none is deployed here.
+# The keeper and the genesis watcher are in the "daemons" profile: they do not start with a plain `docker compose up`.
+# Start them with:  cp keeper.env.example keeper.env; cp watcher.env.example watcher.env  (fill both), then  docker compose --profile daemons up -d --build keeper watcher
+# Both run in dry-run until KEEPER_SEND=1 / WATCHER_SEND=1. Keys are files under KRUXA_SECRETS_HOST, never in an env file. See docs/runbooks/keeper-watcher.md.
 name: kruxa
 
 x-logging: &logging
@@ -31,6 +33,33 @@ services:
       retries: 3
       start_period: 20s
     stop_grace_period: 20s     # the process closes SQLite cleanly on SIGTERM
+    logging: *logging
+
+  keeper:
+    profiles: ["daemons"]
+    build:
+      context: ../..
+      dockerfile: deploy/oracle/Dockerfile.keeper
+    image: kruxa-keeper:local
+    restart: unless-stopped
+    env_file: ./keeper.env
+    volumes:
+      - ${KRUXA_SECRETS_HOST:-/srv/kruxa/secrets}:/secrets:ro
+    stop_grace_period: 20s
+    logging: *logging
+
+  watcher:
+    profiles: ["daemons"]
+    build:
+      context: ../..
+      dockerfile: deploy/oracle/Dockerfile.watcher
+    image: kruxa-watcher:local
+    restart: unless-stopped
+    env_file: ./watcher.env
+    volumes:
+      - ${KRUXA_SECRETS_HOST:-/srv/kruxa/secrets}:/secrets:ro
+      - ${KRUXA_DATA_HOST:-/srv/kruxa/data}/watcher:/data
+    stop_grace_period: 20s
     logging: *logging
 
   caddy:

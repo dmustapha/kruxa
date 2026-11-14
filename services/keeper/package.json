@@ -1,0 +1,22 @@
+{
+  "name": "kruxa-keeper",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Kruxa keeper daemon: drives the permissionless core methods for every launch and alerts on solvency and invariant failures. Testnet only, dry-run by default.",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "keeper": "tsx src/cli.ts"
+  },
+  "dependencies": {
+    "near-api-js": "5.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.5",
+    "tsx": "4.19.2",
+    "typescript": "5.7.2",
+    "vitest": "2.1.8"
+  }
+}

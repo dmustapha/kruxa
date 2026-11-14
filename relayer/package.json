@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "watcher": "tsx src/watcher-cli.ts"
   },
   "dependencies": {
     "@noble/curves": "1.8.1",
