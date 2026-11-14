@@ -49,8 +49,8 @@ fn create(l: &mut Launcher, who: &str, symbol: &str, at_secs: u64, delay: u32) -
     INSTANT_ID_BASE + before
 }
 
-fn view(v: Box<near_sdk::serde_json::value::RawValue>) -> Value {
-    serde_json::from_str(v.get()).unwrap()
+fn view(v: impl AsRef<near_sdk::serde_json::value::RawValue>) -> Value {
+    serde_json::from_str(v.as_ref().get()).unwrap()
 }
 
 fn ids(page: &Value) -> Vec<String> {
