@@ -25,7 +25,15 @@ export function buildUrl(path: string, query?: Query, base: string = CONFIG.api)
   return url.toString();
 }
 
+/** No live API was configured but a remote snapshot was: read the recorded pages directly instead of trying localhost first. */
+async function recordedOnly<T>(path: string, query?: Query): Promise<T> {
+  const recorded = await readSnapshot(path, query);
+  if (recorded === null) throw new ApiError('not_found', 'This page is not in the recorded snapshot.');
+  return recorded as T;
+}
+
 export async function apiGet<T>(path: string, query?: Query, opts: { signal?: AbortSignal; timeoutMs?: number; base?: string } = {}): Promise<T> {
+  if (CONFIG.snapshotBase && !CONFIG.apiConfigured && !opts.base) return recordedOnly<T>(path, query);
   const ctl = new AbortController();
   const timer = setTimeout(() => ctl.abort('timeout'), opts.timeoutMs ?? 8000);
   opts.signal?.addEventListener('abort', () => ctl.abort(opts.signal?.reason));
@@ -40,6 +48,10 @@ export async function apiGet<T>(path: string, query?: Query, opts: { signal?: Ab
     throw new ApiError(timedOut ? 'timeout' : 'unreachable', timedOut ? 'The indexer did not answer in time.' : 'The indexer could not be reached.');
   } finally {
     clearTimeout(timer);
+  }
+  if (res.status >= 500 && CONFIG.snapshotBase) {
+    const recorded = await readSnapshot(path, query);
+    if (recorded !== null) return recorded as T;
   }
   let body: unknown;
   try { body = await res.json(); } catch { throw new ApiError('bad_response', 'The indexer returned something that is not JSON.', res.status); }

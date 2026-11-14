@@ -35,6 +35,15 @@ assertExplicitMainnetAccounts(NETWORK, {
   NEXT_PUBLIC_INSTANT_ACCOUNT: process.env.NEXT_PUBLIC_INSTANT_ACCOUNT,
 });
 
+/** Pure (tested in config.test.ts): an absolute http(s) URL with no trailing slash, or '' when unset or not a usable URL. */
+export function parseSnapshotBase(raw: string | undefined): string {
+  if (!raw) return '';
+  try {
+    const u = new URL(raw.trim());
+    return u.protocol === 'https:' || u.protocol === 'http:' ? u.toString().replace(/\/+$/, '') : '';
+  } catch { return ''; }
+}
+
 export const CONFIG = {
   network: NETWORK,
   rpcUrl: pick(process.env.NEXT_PUBLIC_NEAR_RPC, 'https://rpc.testnet.near.org'),
@@ -48,6 +57,10 @@ export const CONFIG = {
   usdcTokenId: pick(process.env.NEXT_PUBLIC_USDC_TOKEN_ID, 'nep141:usdc.kruxa.testnet'),
   /** Indexer read API base (docs/interfaces/api.openapi.yaml). */
   api: pick(process.env.NEXT_PUBLIC_KRUXA_API, 'http://localhost:8787').replace(/\/$/, ''),
+  /** True only when NEXT_PUBLIC_KRUXA_API was set; the localhost default above is a dev placeholder, not a configured backend. */
+  apiConfigured: pick(process.env.NEXT_PUBLIC_KRUXA_API, '') !== '',
+  /** Absolute base of a remote snapshot (GitHub Pages) that mirrors the API paths as static JSON. Empty keeps the app's own /snapshot only. */
+  snapshotBase: parseSnapshotBase(process.env.NEXT_PUBLIC_SNAPSHOT_BASE_URL),
   /** Instant launcher contract (docs/interfaces/INSTANT-ABI.md). Placeholder account until it is deployed. */
   instant: pick(process.env.NEXT_PUBLIC_INSTANT_ACCOUNT, 'instant.kruxa.testnet'),
   /** Kill switch: NEXT_PUBLIC_INSTANT_MODE=0 shows the disabled Instant card in Create. */
