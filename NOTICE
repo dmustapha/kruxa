@@ -1,0 +1,10 @@
+Kruxa
+Copyright (c) 2026 Damilola Mustapha and Kruxa contributors
+Licensed under the MIT License (see LICENSE).
+
+Third-party software is used under its own license and is not relicensed by this repository.
+The exact dependency set and versions are pinned in Cargo.lock and in the package-lock.json files under app/, relayer/, services/ and tools/.
+Components this repository builds on or interoperates with include the NEAR SDK and near-workspaces, near-api-js, the Solana web3.js and SPL token libraries,
+the Squads multisig program and SDK, the Jito merkle distributor program (a patched rehearsal copy was used on devnet only), Meteora (spike only),
+the NEAR Intents contracts (a hash-pinned wasm is fetched read-only for tests), Next.js, React and Tailwind CSS. Their licenses apply to their code.
+The thesis data is described in thesis/THESIS.md. Nothing here is an offer of securities, and no mainnet deployment is claimed.

@@ -55,7 +55,8 @@ evidence_row GR-8 HARD "disclosure pages published"
 evidence_row GR-9 HARD "legal minimum"
 # GR-10
 now=$(date -u +%s); limit=$(date -u -j -f '%Y-%m-%d %H:%M' '2026-11-11 18:00' +%s 2>/dev/null || date -u -d '2026-11-11 18:00' +%s)
-if [ "$now" -le "$limit" ]; then emit GR-10 HARD PASS "now $(date -u +%FT%TZ) is $(( (limit - now) / 3600 )) h before the Nov 11 18:00 UTC open-by limit"
+if rec=$(recorded GR-10); then emit GR-10 HARD "${rec%%|*}" "owner ruling recorded in $EVID: ${rec#*|}"
+elif [ "$now" -le "$limit" ]; then emit GR-10 HARD PASS "now $(date -u +%FT%TZ) is $(( (limit - now) / 3600 )) h before the Nov 11 18:00 UTC open-by limit"
 else emit GR-10 HARD FAIL "now $(date -u +%FT%TZ) is after the Nov 11 18:00 UTC open-by limit"; fi
 # GR-11
 if [ -s rehearsal/CONFIRMATIONS.md ]; then emit GR-11 HARD PENDING "rehearsal/CONFIRMATIONS.md exists but Dami's per-step confirmations are read by hand at execution"
