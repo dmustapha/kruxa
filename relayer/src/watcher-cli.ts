@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { providers } from "near-api-js";
 import { Connection, Keypair, PublicKey } from "@solana/web3.js";
 import { runCeremony } from "./ceremony.js";
-import { assertCluster, rpcFor, type Cluster } from "./cluster.js";
+import { assertCluster, rpcFor } from "./cluster.js";
 import { decodeSpec } from "./compile.js";
 import { F0Signer } from "./f0.js";
 import { testnetAccount } from "./near.js";
@@ -12,26 +12,23 @@ import { RealCore } from "./realcore.js";
 import { writeRecord } from "./record.js";
 import { F1Signer, type GenesisSigner } from "./signer.js";
 import { JITO_MAINNET } from "./solana-bytes.js";
+import { watcherSetup } from "./watcher-guard.js";
 import { newWatcher, ResumingCore, watchOnce, type GenesisView, type WatcherPorts } from "./watcher.js";
 import { readOnChain } from "../../tools/squads/vault.js";
 
 const env = process.env;
 const argv = process.argv.slice(2);
-const SEND = (argv.includes("--send") || env.WATCHER_SEND === "1") && !argv.includes("--dry-run");
+const SETUP = watcherSetup(env, argv);
+const SEND = SETUP.send;
 const ONCE = argv.includes("--once");
-const CORE = env.WATCHER_CORE ?? "";
-const CLUSTER = (env.WATCHER_CLUSTER ?? "devnet") as Cluster;
-const RPC = env.NEAR_TESTNET_RPC ?? "https://test.rpc.fastnear.com";
+const CORE = SETUP.core;
+const CLUSTER = SETUP.cluster;
+const RPC = SETUP.nearRpc;
 const RECORD_DIR = env.WATCHER_RECORD_DIR ?? "genesis-records";
 const INTERVAL = Number(env.WATCHER_INTERVAL_MS ?? 30_000);
 
 const log: WatcherPorts["log"] = (level, event, fields) => console.log(JSON.stringify({ ts: new Date().toISOString(), level, event, ...fields }));
 const recordFile = (id: bigint): string => join(RECORD_DIR, `genesis-${id}.json`);
-
-function guard(): void {
-  if (!CORE.endsWith(".testnet") || /mainnet/i.test(RPC)) throw new Error(`refusing: WATCHER_CORE ${CORE} must end .testnet and NEAR_TESTNET_RPC must not be mainnet`);
-  if (!["devnet", "local"].includes(CLUSTER)) throw new Error("refusing: WATCHER_CLUSTER must be devnet or local");
-}
 
 function loadFunder(): Keypair {
   const p = env.KRUXA_RELAYER_KEY ?? `${homedir()}/.kruxa-secrets/genesis/relayer-devnet.json`;
@@ -46,6 +43,7 @@ const view = async <T>(method: string, args: Record<string, unknown>): Promise<T
 
 /** Built only when a ceremony really runs (never in dry-run): this is where the NEAR relayer key and the Solana funder are loaded. */
 async function ceremonyFor(launch: bigint, g: GenesisView): Promise<{ mint: string; adopted: boolean; resumed: boolean }> {
+  if (CLUSTER === "mainnet-beta") throw new Error("refusing: the watcher never runs a mainnet ceremony");
   const conn = new Connection(rpcFor(CLUSTER), "confirmed");
   await assertCluster(conn, CLUSTER);
   const real = new RealCore(await testnetAccount(), CORE);
@@ -71,7 +69,6 @@ async function webhook(body: Record<string, unknown>): Promise<void> {
 }
 
 async function main(): Promise<void> {
-  guard();
   const raised = new Set<string>();
   const ports: WatcherPorts = {
     view, log,

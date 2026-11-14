@@ -6,6 +6,8 @@ import type { GenesisSigner } from "./signer.js";
 import { sha256 } from "./solana-bytes.js";
 
 export const TESTNET_SIGNER = "v1.signer-prod.testnet";
+export const MAINNET_SIGNER = "v1.signer";
+export type NearNetwork = "testnet" | "mainnet";
 export const SIGN_GAS = 300n * 10n ** 12n;
 
 /** Where the signature comes from: the real testnet MPC signer, or a labelled SANDBOX stand-in. */
@@ -42,8 +44,12 @@ export class F0Signer implements GenesisSigner {
 
   /** F0_BACKEND=sandbox: local stand-in key. F0_BACKEND=direct: the relayer account calls the MPC signer itself (no contract gate, legacy).
    *  Otherwise, with a core account: the core's own gate (register_f0_message then sign_genesis); without one the legacy direct backend. */
-  static async fromEnv(launch: bigint, coreId?: string): Promise<F0Signer> {
+  static async fromEnv(launch: bigint, coreId?: string, network: NearNetwork = "testnet"): Promise<F0Signer> {
     const which = process.env.F0_BACKEND;
+    if (network === "mainnet") {
+      if (which !== undefined || !coreId) throw new Error("refusing: on mainnet F0 is only the core's gate (F0_BACKEND must be unset and a core account given); sandbox and direct backends are rehearsal-only");
+      return F0Signer.create(await contractBackend(launch, coreId, "mainnet"));
+    }
     if (which === "sandbox") return F0Signer.create(sandboxBackend());
     if (coreId && which !== "direct") return F0Signer.create(await contractBackend(launch, coreId));
     return F0Signer.create(await nearBackend(launch));
@@ -126,13 +132,21 @@ export function contractBackendWith(account: NearCaller, coreId: string, launch:
   };
 }
 
-/** Live: the relayer account (the core's genesis_relayer) calls the core's gate. Testnet only (testnetAccount refuses anything else). */
-export async function contractBackend(launch: bigint, coreId: string): Promise<SignBackend> {
-  if (!coreId.endsWith(".testnet")) throw new Error("refusing: core account is not a .testnet account");
-  const { testnetAccount } = await import("./near.js");
-  const account = await testnetAccount();
-  const rootPk = (await account.viewFunction({ contractId: TESTNET_SIGNER, methodName: "public_key", args: { domain_id: 1 } })) as string;
-  return contractBackendWith(account as unknown as NearCaller, coreId, launch, rootPk);
+/** The core account and the NEAR network must agree: a .testnet core only on testnet, anything else only on mainnet. */
+export function assertCoreNetwork(coreId: string, network: NearNetwork): void {
+  if (network === "testnet" && !coreId.endsWith(".testnet")) throw new Error("refusing: core account is not a .testnet account");
+  if (network === "mainnet" && coreId.endsWith(".testnet")) throw new Error("refusing: a .testnet core on the mainnet path");
+}
+
+/** Live: the relayer account (the core's genesis_relayer) calls the core's gate. testnetAccount and mainnetAccount each refuse the other network. */
+export async function contractBackend(launch: bigint, coreId: string, network: NearNetwork = "testnet"): Promise<SignBackend> {
+  assertCoreNetwork(coreId, network);
+  const near = await import("./near.js");
+  const account = network === "mainnet" ? await near.mainnetAccount() : await near.testnetAccount();
+  const signer = network === "mainnet" ? MAINNET_SIGNER : TESTNET_SIGNER;
+  const rootPk = (await account.viewFunction({ contractId: signer, methodName: "public_key", args: { domain_id: 1 } })) as string;
+  const backend = contractBackendWith(account as unknown as NearCaller, coreId, launch, rootPk);
+  return { ...backend, label: backend.label.replace(TESTNET_SIGNER, signer).replace("NEAR testnet", `NEAR ${network}`) };
 }
 
 interface NearKeyFile { account_id: string; secret_key: string }

@@ -74,11 +74,13 @@ if [ -f "$F0_RECORD" ]; then
   else row G2-07 "genesis mode" 1 "$F0_RECORD says mode $mode; F1 needs a docs/CHANGE-ORDERS.md row containing 'F1 fallback adopted'"; fi
 else row G2-07 "genesis mode" 1 "no $F0_RECORD (copy the F0 rehearsal record there)"; fi
 
-# G2-08 hygiene: no key material in tracked files, no hard-coded mainnet send path in the relayer
+# G2-08 hygiene: no key material in tracked files; mainnet-beta may appear only in the guarded files (docs/MAINNET-SOLANA-GENESIS.md section 6)
 scan=$(./scripts/secret-scan.sh 2>&1); scan_code=$?
-mainnet=$(cat relayer/src/*.ts | grep -c "mainnet-beta" || true)
-if [ "$scan_code" -eq 0 ] && [ "$mainnet" -eq 0 ]; then row G2-08 "hygiene: secret-scan PASS, zero mainnet-beta in relayer/src" 0 ""
-else row G2-08 "hygiene" 1 "secret-scan exit $scan_code ($(echo "$scan" | last_line)); mainnet-beta occurrences: $mainnet"; fi
+allowed='cluster.ts|ceremony.ts|genesis-cli.ts|genesis-mainnet.ts|mainnet-guard.ts|mainnet-programs.ts|watcher-cli.ts|watcher-guard.ts'
+mainnet=$(grep -l "mainnet-beta" relayer/src/*.ts | grep -v '\.test\.ts$' | grep -Ev "/($allowed)$" | wc -l | tr -d ' ')
+unguarded=$(grep -c "MAINNET_CONFIRM_ENV" relayer/src/cluster.ts || true)
+if [ "$scan_code" -eq 0 ] && [ "$mainnet" -eq 0 ] && [ "$unguarded" -ge 1 ]; then row G2-08 "hygiene: secret-scan PASS, mainnet-beta only in the guarded relayer files" 0 ""
+else row G2-08 "hygiene" 1 "secret-scan exit $scan_code ($(echo "$scan" | last_line)); mainnet-beta in unguarded files: $mainnet; cluster.ts confirm guard lines: $unguarded"; fi
 
 # G2-09 no mainnet writes: every mention of mainnet in the devnet genesis script is its refusal text
 bad=$(grep -in "mainnet" scripts/genesis-devnet.sh | grep -viE "refus|impossible" || true)

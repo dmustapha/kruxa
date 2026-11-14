@@ -79,7 +79,7 @@ test('deploy-core dry-run prints the exact transaction, names the network and se
   assert.match(t, new RegExp(`receiver: ${ENV.KRUXA_CORE}`));
   assert.match(t, /"kind":"DeployContract"/);
   assert.match(t, /"method":"new"/);
-  assert.match(t, /"profile":"ladder"/);
+  assert.match(t, /"profile":"mainnet"/);
   assert.match(t, /"gasTgas":100/);
   assert.match(t, /DRY RUN: nothing was sent/);
   assert.equal(h.sent.length, 0);
@@ -104,7 +104,7 @@ test('confirm env set and the right code typed: ONE transaction, then the on-cha
   const dry = harness({}, { accounts: funded });
   await deployCore(dry.ctx);
   code = /confirmation code: (SEND [0-9a-f]{8})/.exec(dry.text())[1];
-  const h = harness(confirmed, { accounts: funded, codes: { [ENV.KRUXA_CORE]: coreWasm }, views: { [`${ENV.KRUXA_CORE}.get_config`]: { profile: 'ladder', creator_gate: true, global_cap: '3000000000' } } }, { typed: code });
+  const h = harness(confirmed, { accounts: funded, codes: { [ENV.KRUXA_CORE]: coreWasm }, views: { [`${ENV.KRUXA_CORE}.get_config`]: { profile: 'mainnet', creator_gate: true, global_cap: '3000000000' } } }, { typed: code });
   await deployCore(h.ctx);
   assert.equal(h.sent.length, 1);
   assert.equal(h.sent[0].actions.length, 2);
@@ -196,7 +196,7 @@ test('create-account in send mode writes the key file mode 600 before sending an
   fs.rmSync(keyFile);
 });
 
-const goodCore = { owner: OWNER, factory: 'factory.near', creator_gate: true, profile: 'ladder', pause: 'None', global_held: '0' };
+const goodCore = { owner: OWNER, factory: 'factory.near', creator_gate: true, profile: 'mainnet', pause: 'None', global_held: '0' };
 const trialViews = (extra = {}) => ({ [`${ENV.KRUXA_CORE}.get_config`]: { ...goodCore, ...extra }, [`${ENV.KRUXA_CORE}.get_state`]: null, [`${ENV.KRUXA_CORE}.required_deposit`]: '270000000000000000000000' });
 const okValidate = { validateParams: () => {} };
 

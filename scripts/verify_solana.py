@@ -20,6 +20,7 @@ import f0_derive  # noqa: E402
 import merkle  # noqa: E402
 import sol  # noqa: E402
 
+MAINNET_GENESIS_HASH = "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d"
 PRODUCTION_TIME_LOCK = 172_800
 G_DUST_MAX = 890_880 + 5_000
 TAMPER_FIELDS = ["mint", "g_pub", "launch_id", "name", "symbol", "decimals", "reserve_amount", "max_total_claim", "max_num_nodes",
@@ -299,6 +300,18 @@ def c_g(rpc, rec, r):
         r.ok("C16", "G lamports %d <= %d (rent-exempt floor 890,880 + 5,000; a system account cannot be left lower without a sweep)" % (lam, G_DUST_MAX))
 
 
+def c_cluster(rpc, rec, spec, params, r):
+    """C18 for a mainnet-beta record: the RPC is mainnet-beta, the spec targets it, and the distributor is the real Jito program (not a patched copy)."""
+    if rec.get("cluster") != "mainnet-beta":
+        return
+    want = (MAINNET_GENESIS_HASH, "solana-mainnet", MAINNET_GENESIS_HASH, sol.JITO_MAINNET)
+    got = (rpc.call("getGenesisHash", []), spec.chain, sol.b58e(spec.cluster_genesis_hash), sol.b58e(params.jito_program))
+    if got == want:
+        r.ok("C18", "mainnet-beta record: RPC genesis hash, spec chain and spec cluster hash are mainnet-beta, distributor is the real Jito program %s" % sol.JITO_MAINNET[:6])
+    else:
+        r.bad("C18", "jito_program", want, got)
+
+
 def c_txs(rpc, rec, raw, params, out, r):
     allow = {sol.SYSTEM, sol.COMPUTE_BUDGET, sol.TOKENKEG, sol.ATA, sol.METAPLEX, sol.b58e(params.jito_program)}
     good = True
@@ -412,6 +425,7 @@ def run_checks(rpc, rec, charter, production, near=None):
     c_squads(rpc, rec, spec, out, charter, production, r)
     c_g(rpc, rec, r)
     c_txs(rpc, rec, raw, params, out, r)
+    c_cluster(rpc, rec, spec, params, r)
     c_merkle(rec, spec, r)
     c_f0(rec, r)
     r.ok("C28", "two-RPC agreement enforced on every read (2 RPCs)") if len(rpc.urls) == 2 else r.skip("C28", "single RPC; pass --rpc2")

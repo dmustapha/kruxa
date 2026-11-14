@@ -10,7 +10,7 @@ interface Allocation { pubkey: string; amount: string }
 /** The real NEAR core (docs/interfaces/REQ-1-genesis-relayer.md): the relayer account must be the core's `genesis_relayer`. */
 export class RealCore implements CoreClient {
   label: string;
-  constructor(private readonly account: Account, readonly coreId: string) { this.label = `REAL core ${coreId} (NEAR testnet)`; }
+  constructor(private readonly account: Account, readonly coreId: string, network: "testnet" | "mainnet" = "testnet") { this.label = `REAL core ${coreId} (NEAR ${network})`; }
 
   view<T>(method: string, args: Record<string, unknown>): Promise<T> {
     return this.account.viewFunction({ contractId: this.coreId, methodName: method, args }) as Promise<T>;
