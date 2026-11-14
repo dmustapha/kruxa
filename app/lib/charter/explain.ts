@@ -7,7 +7,7 @@ export const EXPLAIN: Record<RuleCode, string> = {
   R_BUCKETS: 'The four token buckets (sale, LP, creator, backer) must each sit in their range and add up to exactly 100%.',
   R_ALLOC: 'The creator allocation is above its ceiling (25% for creator plus backer in a trial, 10% in an instant launch).',
   R_HARD_CAP: 'The hard cap is outside the allowed raise range for this profile.',
-  R_SOFT_CAP: 'The soft cap is below its floor (the larger of 20% of the hard cap and $350) or above the hard cap.',
+  R_SOFT_CAP: 'The soft cap is below its floor (the larger of 20% of the hard cap and $100) or above the hard cap.',
   R_MIN_BUY: 'The minimum buy is below its floor or above the soft cap.',
   R_WALLET_CAP: 'The per-wallet cap setting is outside 0.5% to 5% of the hard cap.',
   R_FUNDERS: 'Minimum backers must be between 10 and 500.',

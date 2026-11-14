@@ -13,7 +13,7 @@ describe('rule mirror: one failing case per code (cases lifted from crates/kruxa
     ['R_BUCKETS', { ...base, sale_bps: 5900 }], ['R_BUCKETS', { ...base, sale_bps: 4900, lp_bps: 3600 }],
     ['R_ALLOC', { ...base, creator_bps: 1900, backer_bps: 700, sale_bps: 5400, lp_bps: 2000 }],
     ['R_HARD_CAP', { ...base, hard_cap: 1000n * USDC + 1n }], ['R_HARD_CAP', { ...base, hard_cap: 499n * USDC }],
-    ['R_SOFT_CAP', { ...base, soft_cap: 349n * USDC }], ['R_MIN_BUY', { ...base, min_buy: 19n * USDC }], ['R_WALLET_CAP', { ...base, wallet_bps: 49 }],
+    ['R_SOFT_CAP', { ...base, soft_cap: 100n * USDC - 1n }], ['R_MIN_BUY', { ...base, min_buy: 10n * USDC - 1n }], ['R_WALLET_CAP', { ...base, wallet_bps: 49 }],
     ['R_FUNDERS', { ...base, min_funders: 9 }], ['R_PASSABLE', { ...base, min_funders: 18 }],
     ['R_WINDOW', { ...base, commit_secs: 43_199 }], ['R_WINDOW', { ...base, tail_secs: 3599 }], ['R_STREAM', { ...base, stream_days: 29 }],
     ['R_FEE_TOTAL', fees({ total_fee_bps: 201 })], ['R_FEE_TOTAL', fees({ total_fee_bps: 29 })], ['R_CREATOR_SHARE', fees({ creator_bps: 6001 })],
@@ -21,6 +21,17 @@ describe('rule mirror: one failing case per code (cases lifted from crates/kruxa
   ];
   for (const [code, p] of cases) it(`${code} fires`, () => expect(codes(p)).toContain(code));
   it('R_CAP_GLOBAL fires when headroom is short', () => expect(validateAll(base, LADDER_RULES, 500n * USDC).map((v) => v.code)).toContain('R_CAP_GLOBAL'));
+});
+
+describe('lowest launch bar: $100 soft cap', () => {
+  const low: TrialParams = { ...base, hard_cap: 500n * USDC, soft_cap: 100n * USDC, min_buy: 10n * USDC, min_funders: 10 };
+  it('hard 500 / soft 100 / min buy 10 / 10 funders is legal', () => expect(codes(low)).toEqual([]));
+  it('one micro-USDC below refuses', () => {
+    expect(codes({ ...low, soft_cap: 100n * USDC - 1n })).toContain('R_SOFT_CAP');
+    expect(codes({ ...low, min_buy: 10n * USDC - 1n })).toContain('R_MIN_BUY');
+  });
+  it('a $100 soft cap under a $1,000 hard cap needs 20%', () => expect(codes({ ...low, hard_cap: 1000n * USDC })).toEqual(['R_SOFT_CAP']));
+  it('11 funders at $10 cannot pass a $100 soft cap', () => expect(codes({ ...low, min_funders: 11 })).toEqual(['R_PASSABLE']));
 });
 
 describe('hostile preset (fixtures/hostile.json)', () => {

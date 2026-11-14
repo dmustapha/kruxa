@@ -40,7 +40,7 @@ export interface Rules {
 export const LADDER_RULES: Rules = {
   minSupply: 10_000_000, maxSupply: 1_000_000_000_000, minSaleBps: 5000, maxSaleBps: 8000, minLpBps: 1500, maxLpBps: 4000,
   maxCreatorBps: 2000, maxBackerBps: 1000, maxCreatorPlusBackerBps: 2500,
-  minHardCap: 500n * USDC, maxHardCap: 1000n * USDC, minSoftAbs: 350n * USDC, minSoftPctBps: 2000, minBuyAbs: 20n * USDC, minBuyDivisor: 500n,
+  minHardCap: 500n * USDC, maxHardCap: 1000n * USDC, minSoftAbs: 100n * USDC, minSoftPctBps: 2000, minBuyAbs: 10n * USDC, minBuyDivisor: 500n,
   walletBpsMin: 50, walletBpsMax: 500, fundersMin: 10, fundersMax: 500,
   minCommitSecs: 43_200, maxCommitSecs: 2_592_000, minTailSecs: 3_600, maxTailSecs: 172_800, maxOpenDelaySecs: 604_800,
   minStreamDaysSmall: 30, minStreamDaysLarge: 90, maxStreamDays: 365, streamLargeThreshold: 25_000n * USDC,

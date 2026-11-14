@@ -998,9 +998,9 @@ impl Rules {
             max_creator_plus_backer_bps: 2_500,
             min_hard_cap: 500 * USDC,
             max_hard_cap: 1_000 * USDC,
-            min_soft_abs: 350 * USDC,
+            min_soft_abs: 100 * USDC,
             min_soft_pct_bps: 2_000,
-            min_buy_abs: 20 * USDC,
+            min_buy_abs: 10 * USDC,
             min_buy_divisor: 500,
             wallet_bps_min: 50,
             wallet_bps_max: 500,
@@ -1347,8 +1347,8 @@ mod tests {
             (RuleCode::RAlloc, TrialParams { creator_bps: 1_900, backer_bps: 700, sale_bps: 5_400, lp_bps: 2_000, ..base.clone() }),
             (RuleCode::RHardCap, TrialParams { hard_cap: 1_000 * USDC + 1, ..base.clone() }),
             (RuleCode::RHardCap, TrialParams { hard_cap: 499 * USDC, ..base.clone() }),
-            (RuleCode::RSoftCap, TrialParams { soft_cap: 349 * USDC, ..base.clone() }),
-            (RuleCode::RMinBuy, TrialParams { min_buy: 19 * USDC, ..base.clone() }),
+            (RuleCode::RSoftCap, TrialParams { soft_cap: 100 * USDC - 1, ..base.clone() }),
+            (RuleCode::RMinBuy, TrialParams { min_buy: 10 * USDC - 1, ..base.clone() }),
             (RuleCode::RWalletCap, TrialParams { wallet_bps: 49, ..base.clone() }),
             (RuleCode::RFunders, TrialParams { min_funders: 9, ..base.clone() }),
             (RuleCode::RPassable, TrialParams { min_funders: 18, ..base.clone() }),
@@ -1781,7 +1781,7 @@ mod tests {
 
 ### Key Decisions
 - **Verdict inputs are four numbers and a flag** (`total_active`, `active_funders`, `soft_cap`, `min_funders`, `cancelled`) plus the Charter hash that pins the thresholds. `total_active` is gross, so oversubscription changes allocation, never the verdict.
-- **Fee formula** `min(max_fee, 3% of A, max(ceil(1.5% of A), min_fee))` (RECONCILED row 33): at the soft cap ($350) the $10 minimum is 2.86%, under the 3% ceiling.
+- **Fee formula** `min(max_fee, 3% of A, max(ceil(1.5% of A), min_fee))` (RECONCILED row 33): at a $350 soft cap the $10 minimum is 2.86%, under the 3% ceiling. At the lowest production bar ($100 raise) the $10 minimum would be 10%, so the 3% ceiling binds and the fee is $3.00 (see `docs/CORE-CHANGE-LOWER-BAR.md`).
 - **L4 holds step by step**, not just at the end: when a position settles, `open` and the `excess_pool` both fall by its refund. That is what lets the contract assert conservation after every lazy settlement.
 
 ## 4.4 kruxa-core (the contract)
@@ -6571,7 +6571,7 @@ Rule F-TRACK: a track is listed only if its step is green at the freeze commit. 
 | Layer | What it covers | Implemented in | Failure it prevents | How it is tested |
 |---|---|---|---|---|
 | 1 Input validation | typed numeric validation of every launch parameter with fixed check order; strict JSON for the commit message (`deny_unknown_fields`, <= 512 bytes); strict S4 payload struct; `deliver` and signer binding; relay-fee bounds; symbol reserved list | `kruxa-logic::rules::validate_params`, `intake.rs::parse_msg/resolve_holder`, `s4.rs` | hostile presets, injection through msg fields, parser differentials with the Verifier, wrong-token credit | `one_failing_case_per_code`, `commits_that_break_a_rule...`, `s4_forwards_only_strictly_shaped_payloads` |
-| 2 Rate and size limits | $20 minimum, per-wallet cap, `max_holders`, per-launch total held (2x hard cap), global $3,000, page size 25, view limit 50, timelocked cap raises | `check_commit`, `admin.rs` | one actor dominating a launch, storage bloat, unbounded loops, instant cap inflation | `caps_global_launch_and_holder_limits_hold`, `launch_total_cap...`, `holder_cap...` |
+| 2 Rate and size limits | $10 minimum buy (ladder), per-wallet cap, `max_holders`, per-launch total held (2x hard cap), global $3,000, page size 25, view limit 50, timelocked cap raises | `check_commit`, `admin.rs` | one actor dominating a launch, storage bloat, unbounded loops, instant cap inflation | `caps_global_launch_and_holder_limits_hold`, `launch_total_cap...`, `holder_cap...` |
 | 3 Circuit breakers | guardian `pause` (new risk stops, exits open), `freeze` (everything stops, auto-expires in 7 days), owner-only `unpause`, cancel by creator before `commit_end` | `admin.rs`, `require_live`, `require_exit_open` | an exploit in progress; a pause that traps depositors; a pause that holds the verdict hostage | `pause_blocks_new_risk...`, `a_pause_cannot_hold_the_verdict_hostage...` |
 | 4 Graceful degradation | a rejected commit returns the money; failed outbound legs re-credit in the callback; the verdict makes no promise so an outage cannot block it; S3 falls back to S4; creation recovery via `finalize_creation`; pull-based refunds anyone can push | `intake.rs`, `payout.rs::on_payout`, `lifecycle.rs` | stranded funds, double pay, a stuck launch | `failed_refund_leg_recredits...`, `fake_tokens_and_direct_callbacks...`, `create_trial_rejects...recovers_from_factory_failure` |
 Two or more independent layers protect each money path (for example a refund is protected by debit-first accounting, by the callback re-credit, and by the L1 identity view).
@@ -6644,8 +6644,8 @@ build scaffolds `SECURITY.md` from this skeleton and fills the File column with 
 | sale / LP bps | 5,000..8,000 / 1,500..4,000 | buckets sum to 10,000 |
 | creator / backer / combined bps | <= 2,000 / <= 1,000 / <= 2,500 | |
 | hard cap | $500 .. $1,000 | ladder (RULING 2026-11-07); production 250,000 USDC after review |
-| soft cap | >= max($350, 20% of hard cap), <= hard cap | |
-| min buy | >= max($20, ceil(hard cap / 500)), <= soft cap | checked on the net amount after the relay fee |
+| soft cap | >= max($100, 20% of hard cap), <= hard cap | |
+| min buy | >= max($10, ceil(hard cap / 500)), <= soft cap | checked on the net amount after the relay fee |
 | wallet cap | max(ceil(hard cap x wallet_bps), 5 x min buy); wallet_bps 50..500 | |
 | funders | 10..500, and funders x min buy <= soft cap | R_PASSABLE |
 | commit window / tail / open delay | 24 h..30 d / 1 h..48 h / <= 7 d (`demo`: 90 s min commit, 30 s min tail) | |

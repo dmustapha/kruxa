@@ -119,7 +119,7 @@ Ledger of decisions Dami ruled (2026-11-06 and 2026-11-07) and specs resolved. "
 | D-25 | Creator-take check form | Rounded; exact integer | Exact integer `fee x share <= 100 x 10,000` | Rounding allows 1.00% plus dust | RESOLVED (#26) |
 | D-26 | Window bounds and holders | 14 d; 30 d | Commit window 24 h to 30 d; max holders 500 (demo) | Later review may tighten | RESOLVED (#27) |
 | D-27 | Allocation reading | Separate caps; combined | `creator + backer pool <= 25%` as written (defaults 10% + 5%) | | RESOLVED (#29) |
-| D-28 | Minimum buy and wallet cap | $5, $10, $20 | $20 minimum; 2% or 5x minimum, whichever is larger | Exit-fee floor: below $10 the worst case exceeds 2.4% | RESOLVED (#30) |
+| D-28 | Minimum buy and wallet cap | $5, $10, $20 | $20 minimum; 2% or 5x minimum, whichever is larger | Exit-fee floor: below $10 the worst case exceeds 2.4% | RESOLVED (#30); ladder minimum lowered to $10 by owner ruling, see docs/CORE-CHANGE-LOWER-BAR.md |
 | D-29 | Finalize keeper reward | Reward; none | None in v1 | A reward creates a race | RESOLVED (#31) |
 | D-30 | Demo timing | Compressed clock in prod; separate demo account | Separate labelled demo account, same wasm, relaxed time bounds (min commit 90 s, tail 30 s) | Weakening production bounds | RESOLVED (#32) |
 | D-31 | Walk exit to Solana | Contract-initiated payout; refund to Intents account | v1: refund to Intents account plus optional buyer-signed withdraw; v1.1: contract-initiated payout only if OV15 passes | OV15 unproven | RESOLVED (#33) |
