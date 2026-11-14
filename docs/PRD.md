@@ -228,7 +228,7 @@ Rehearsal environment for every flow below unless marked MAINNET: NEAR testnet a
 
 ### Flow 3: Solana-only buyer commits through Intents (S3 primary, S4 fallback)
 1. Kofi gets USDC into his own Intents account (1Click quote with his hex-encoded Solana public key as recipient and his Solana address as `refundTo`).
-2. The app shows the relay fee (flat, in USDC, taken from the commit amount) and the net amount before he signs. Net must be at least the $20 minimum.
+2. The app shows the relay fee (flat, in USDC, taken from the commit amount) and the net amount before he signs. Net must be at least the $10 minimum.
 3. Phantom `signMessage` signs one `raw_ed25519` payload containing a transfer intent to `core.kruxa.near` with a flat `msg` and `min_gas` of 50 Tgas.
 4. Anyone submits `intents.near.execute_intents` (Kofi can submit himself; otherwise the submitter's gas is recovered from the relay fee, not paid by the platform).
 5. `intents.near` credits C1 and calls `mt_on_transfer`. C1 checks the predecessor is `intents.near`, one token, the USDC token id, and treats `sender_id` as the payer. It credits principal equal to the amount minus the relay fee, accrues the relay fee, and returns `[0]`.
@@ -335,8 +335,8 @@ Specs below give interface contracts and schemas, not implementation. Component 
 | Sale / LP / creator / backer buckets (bps) | 6000 / 2500 / 1000 / 500 | sale 5000-8000, LP 1500-4000, creator 0-2000, backer 0-1000; creator+backer at most 2500; sum 10,000; platform bucket 0 | `R_BUCKETS`, `R_ALLOC` | S1-A, S1-B |
 | Reserve bucket | 0 | 0-3000 bps | `R_BUCKETS` | [OPEN] vs the 15-30% in the vision |
 | Hard cap H | creator-set | $500 to $250,000; demo and Genesis Round $1,000 per launch | `R_HARD_CAP`, `R_CAP_LAUNCH` | S1-B, RULED caps |
-| Soft cap S | 30% of H | at least max(20% of H, $350), at most H | `R_SOFT_CAP` | S1-B |
-| Minimum buy | $20 | at least max($20, ceil(H/500)); checked after the relay fee | `R_MIN_CONTRIBUTION` (alias `R_MIN_BUY`) | S1-B, RULED R2 |
+| Soft cap S | 30% of H | at least max(20% of H, $100), at most H | `R_SOFT_CAP` | S1-B |
+| Minimum buy | $20 | at least max($10, ceil(H/500)); checked after the relay fee | `R_MIN_CONTRIBUTION` (alias `R_MIN_BUY`) | S1-B, RULED R2 |
 | Per-wallet cap | max(ceil(H x wallet_bps/10,000), 5 x minimum buy) | wallet_bps 50-500, default 200 | `R_CAP_ACCOUNT` (alias `R_WALLET_CAP`) | S1-B |
 | Minimum backers M | 25 | 10-500; M x minimum buy at most S | `R_FUNDERS`, `R_PASSABLE` | S1-B |
 | Open delay | 0 | 0-7 days | `R_WINDOW` | S1-B |
@@ -354,8 +354,8 @@ Specs below give interface contracts and schemas, not implementation. Component 
 Genesis Round arithmetic at the $1,000 cap (hard cap H = $1,000, defaults above), computed with exact integer rules:
 | Item | Value |
 |---|---|
-| Smallest legal soft cap | max(20% of 1,000 = $200, $350) = $350 |
-| Minimum backers vs soft cap | 10 x $20 = $200 at most $350, so M = 10 is legal |
+| Smallest legal soft cap | max(20% of 1,000 = $200, $100) = $200; at H = $500 it is max($100, $100) = $100 |
+| Minimum backers vs soft cap | 10 x $20 = $200 at most the $200 smallest soft cap, so M = 10 is legal; at H = $500, 10 x $10 = $100 at most $100 |
 | Per-wallet cap | max(2% x 1,000 = $20, 5 x $20 = $100) = $100 |
 | Launch fee at accepted raise A = $1,000 | min(2,500, $30, max($15, $10)) = $15.00 |
 | LP seed (USDC) | floor(1,000 x 2500 / 6000) = $416.666666 |

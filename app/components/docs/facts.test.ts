@@ -88,8 +88,8 @@ describe('split arithmetic', () => {
     expect(100 * 5_000).toBeLessThanOrEqual(1_000_000);
     expect(200 * 6_000).toBeGreaterThan(1_000_000); // 2.00% fee with a 60% creator share breaks the rule
   });
-  it('the fixed Solana withdrawal fee is 30000 micro-USDC and 0.15% of a $20 buy', () => {
+  it('the fixed Solana withdrawal fee is 30000 micro-USDC and 0.3% of a $10 buy', () => {
     expect(FACTS.intentsSolanaWithdrawFeeUsdc * 1_000_000).toBe(30_000);
-    expect((FACTS.intentsSolanaWithdrawFeeUsdc / FACTS.minBuyUsdc) * 100).toBeCloseTo(0.15, 10);
+    expect((FACTS.intentsSolanaWithdrawFeeUsdc / FACTS.minBuyUsdc) * 100).toBeCloseTo(0.3, 10);
   });
 });

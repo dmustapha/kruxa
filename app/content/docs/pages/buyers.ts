@@ -45,7 +45,7 @@ export const buyers: Page = {
       ['Where your refund lands', 'What is taken out'],
       ['Your NEAR account (you committed from NEAR)', 'nothing'],
       ['Your own Intents account (you committed from Solana)', 'the relay fee you already paid is not returned'],
-      ['A Solana address (you move it on)', `a fixed ${F.intentsSolanaWithdrawFeeUsdc.toFixed(2)} USDC withdrawal fee, shown before you sign. At the $${F.minBuyUsdc} minimum that is 0.15%.`],
+      ['A Solana address (you move it on)', `a fixed ${F.intentsSolanaWithdrawFeeUsdc.toFixed(2)} USDC withdrawal fee, shown before you sign. At the $${F.minBuyUsdc} minimum that is 0.30%.`],
     ),
     p('What you get back is your principal minus the fees shown. The platform never pays your withdrawal fee.'),
     h2('Solana-only buyers (Phantom, no NEAR account)'),

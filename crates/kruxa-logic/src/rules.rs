@@ -293,9 +293,9 @@ impl Rules {
             max_creator_plus_backer_bps: 2_500,
             min_hard_cap: 500 * USDC,
             max_hard_cap: 1_000 * USDC,
-            min_soft_abs: 350 * USDC,
+            min_soft_abs: 100 * USDC,
             min_soft_pct_bps: 2_000,
-            min_buy_abs: 20 * USDC,
+            min_buy_abs: 10 * USDC,
             min_buy_divisor: 500,
             wallet_bps_min: 50,
             wallet_bps_max: 500,
@@ -726,8 +726,8 @@ mod tests {
             (RuleCode::RAlloc, TrialParams { creator_bps: 1_900, backer_bps: 700, sale_bps: 5_400, lp_bps: 2_000, ..base.clone() }),
             (RuleCode::RHardCap, TrialParams { hard_cap: 1_000 * USDC + 1, ..base.clone() }),
             (RuleCode::RHardCap, TrialParams { hard_cap: 499 * USDC, ..base.clone() }),
-            (RuleCode::RSoftCap, TrialParams { soft_cap: 349 * USDC, ..base.clone() }),
-            (RuleCode::RMinBuy, TrialParams { min_buy: 19 * USDC, ..base.clone() }),
+            (RuleCode::RSoftCap, TrialParams { soft_cap: 100 * USDC - 1, ..base.clone() }),
+            (RuleCode::RMinBuy, TrialParams { min_buy: 10 * USDC - 1, ..base.clone() }),
             (RuleCode::RWalletCap, TrialParams { wallet_bps: 49, ..base.clone() }),
             (RuleCode::RFunders, TrialParams { min_funders: 9, ..base.clone() }),
             (RuleCode::RPassable, TrialParams { min_funders: 18, ..base.clone() }),
@@ -791,6 +791,45 @@ mod tests {
         assert!(ok(&TrialParams { commit_secs: 43_200, tail_secs: 3_600, ..base.clone() }).is_ok());
         assert!(ok(&TrialParams { min_funders: 17, ..base.clone() }).is_ok());
         assert!(validate_params(&TrialParams::example("KRUXA"), &Rules::ladder(), 3_000 * USDC, true).is_ok());
+    }
+
+    /// Owner ruling: the production launch bar is $100 of buyer commitments. A $100 soft cap needs the $500 minimum hard
+    /// cap (soft >= 20% of hard), min_buy >= $10, and 10 funders x $10 = $100 fits R_PASSABLE exactly.
+    fn lowest_bar() -> TrialParams {
+        TrialParams { hard_cap: 500 * USDC, soft_cap: 100 * USDC, min_buy: 10 * USDC, min_funders: 10, ..TrialParams::example("ABCD") }
+    }
+
+    #[test]
+    fn lowest_bar_launch_validates() {
+        let r = Rules::ladder();
+        assert_eq!((r.min_soft_abs, r.min_buy_abs, r.funders_min, r.min_soft_pct_bps), (100 * USDC, 10 * USDC, 10, 2_000));
+        assert!(ok(&lowest_bar()).is_ok());
+    }
+
+    #[test]
+    fn lowest_bar_refuses_one_micro_usdc_below() {
+        let base = lowest_bar();
+        let soft = ok(&TrialParams { soft_cap: 100 * USDC - 1, ..base.clone() }).unwrap_err();
+        assert_eq!(soft.code, RuleCode::RSoftCap);
+        let buy = ok(&TrialParams { min_buy: 10 * USDC - 1, ..base }).unwrap_err();
+        assert_eq!(buy.code, RuleCode::RMinBuy);
+    }
+
+    #[test]
+    fn lowest_bar_soft_cap_scales_with_hard_cap() {
+        let p = TrialParams { hard_cap: 1_000 * USDC, ..lowest_bar() };
+        let e = ok(&p).unwrap_err();
+        assert_eq!(e.code, RuleCode::RSoftCap, "a $100 soft cap under a $1,000 hard cap needs 20% = $200");
+        assert!(ok(&TrialParams { soft_cap: 200 * USDC, ..p }).is_ok());
+    }
+
+    #[test]
+    fn lowest_bar_passable_is_exact_at_ten_funders_of_ten_dollars() {
+        assert_eq!(10 * lowest_bar().min_buy, lowest_bar().soft_cap, "10 funders x $10 = the $100 soft cap");
+        assert!(ok(&lowest_bar()).is_ok());
+        // Soft cap $99 is below the floor, so R_SOFT_CAP fires first; R_PASSABLE is the same arithmetic one rung down.
+        assert_eq!(ok(&TrialParams { soft_cap: 99 * USDC, ..lowest_bar() }).unwrap_err().code, RuleCode::RSoftCap);
+        assert_eq!(ok(&TrialParams { min_funders: 11, ..lowest_bar() }).unwrap_err().code, RuleCode::RPassable);
     }
 
     #[test]
