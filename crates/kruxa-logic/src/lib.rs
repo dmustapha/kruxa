@@ -13,7 +13,8 @@ pub mod verdict;
 
 pub use book::{fold_book, BookEvent, FoldError, Folded};
 pub use controls::{
-    frozen_until, pause_at, timelock_effective_at, timelock_elapsed, Pause, CAP_TIMELOCK_NS, DAY_NS, FREEZE_MAX_NS, GLOBAL_CAP_USDC,
+    freeze_allowed, freeze_barrier, frozen_until, pause_at, timelock_effective_at, timelock_elapsed, Pause, CAP_TIMELOCK_NS, DAY_NS,
+    FREEZE_MAX_NS, GLOBAL_CAP_USDC,
 };
 pub use ledger::{
     check_flow, check_pass_conservation, i2_position_count, i3_inputs_frozen, i4_status_monotone, i5_no_overpay, BookSums, Buckets,
