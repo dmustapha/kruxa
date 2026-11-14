@@ -1,6 +1,6 @@
 # Kruxa
 
-A token launchpad on NEAR where a launch is a refundable trial: buyers can walk away until the deadline, and a fixed rule that anyone can recompute decides whether the launch happens. Prove it on your own machine with no keys and no funds: `make judge-fast` (about 10 minutes) or `make judge` (about 40).
+A token launchpad on NEAR where a launch is a refundable trial: buyers can walk away until the deadline, and a fixed rule that anyone can recompute decides whether the launch happens. Prove it on your own machine with no keys and no funds: `make judge-fast` (about 10 minutes) or `make judge` (about 50).
 
 Built for NEAR HACKATHON: Build Beyond Boundaries. The judge path runs in a local NEAR sandbox and on recorded data. Nothing here is on mainnet.
 
@@ -16,7 +16,7 @@ Built for NEAR HACKATHON: Build Beyond Boundaries. The judge path runs in a loca
 
 ## Try it
 
-Needs macOS or Linux, Rust 1.95.0 (pinned by `rust-toolchain.toml`), cargo-near 0.23.0, python3, jq and curl. Docker is not needed.
+Needs macOS or Linux, Rust 1.95.0 (pinned by `rust-toolchain.toml`), cargo-near 0.23.0 (`cargo install --locked cargo-near --version 0.23.0`), python3, jq and curl. Docker is not needed for the judge path. If you have no Rust toolchain, `Dockerfile.judge` builds a container that runs a shorter prebuilt path with no network (one clean run is recorded in `evidence/docker-judge/`, 12 of 12 steps, 109 seconds, on an earlier tree); its wasm is a local build, not the submitted one.
 
 Network use is stated, not hidden. Step N1 fetches crates and makes one read-only `view_code` call to a mainnet RPC node for the hash-pinned `intents.near` wasm (no signature, no transaction). Step N2 compiles the tests, and on a cold machine a cargo build script downloads the NEAR sandbox binary. Every later step runs with `CARGO_NET_OFFLINE=true`. No step reads a key; credential-shaped environment variables are removed before any step runs.
 
@@ -32,7 +32,7 @@ Expected: every step GREEN, then the summary line.
 FAST subset: 19 of 19 steps green
 ```
 
-2. Full check, about 40 minutes. The same command without the shortcuts: it re-runs every sandbox suite and the whole attack gallery, then prints a per-track table.
+2. Full check, about 50 minutes. The same command without the shortcuts: it re-runs every sandbox suite and the whole attack gallery, then prints a per-track table.
 
 ```bash
 make judge
@@ -93,7 +93,7 @@ cargo run -q -p kruxa-sim -- fold --events fixtures/events/lifecycle.jsonl --boo
 MISMATCH log (event 30: walk of 40000000, holder had 40000001)
 ```
 
-**Recorded Solana devnet genesis re-checks clean.** The record is replayed offline against the real testnet core's recorded views.
+**Recorded Solana devnet genesis re-checks clean.** The record is replayed offline against the recorded views of an earlier testnet core (`core2`, an older build than the one submitted). It proves the checker and the ceremony format, not the submitted wasm.
 
 ```bash
 ./scripts/verify.sh --evidence evidence/genesis/core2-f0-devnet-launch6-evidence.json
@@ -168,7 +168,7 @@ The tracks listed for this submission are the GREEN rows of `make judge`, copied
 - The factory token's publisher can replace the token code, and the Intents Verifier holds force powers over money inside `intents.near`. Both are disclosed in `SECURITY.md`.
 - The market contract is new and unreviewed. The launch fee and fee split are demonstration values.
 - Launch terms are bounded by a $1,000 cap per launch and a $3,000 global cap on the demo profile.
-- The core wasm is 675,007 bytes as built by step B1 and 655,387 bytes as the container build deployed on testnet. Both are above the 350 KB target we first set; the budget now in force is 700,000 bytes (`HONESTY.md`).
+- The core wasm is about 675,000 bytes as built locally by step B1 (the exact figure is printed in `evidence/judge-run.txt`) and 655,992 bytes as the reproducible container build in `artifacts/`. Both are above the 350 KB target we first set; the budget now in force is 700,000 bytes (`HONESTY.md`).
 
 ## Repository map
 
