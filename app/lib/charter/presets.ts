@@ -14,16 +14,16 @@ const base: TrialParams = {
 export const PRESETS: Preset[] = [
   { id: 'standard', label: 'Standard trial', blurb: 'The defaults: $1,000 hard cap, 72 h to commit, 6 h Walk tail, 30 day stream.', expectRefusal: false, params: base },
   {
-    id: 'quick', label: 'Small and quick', blurb: '$500 hard cap, the shortest legal commit window (24 h) and a 30 day stream.', expectRefusal: false,
-    params: { ...base, hard_cap: 500n * USDC, soft_cap: 350n * USDC, commit_secs: 24 * 3600, stream_days: 30 },
+    id: 'quick', label: 'Small and quick', blurb: '$500 hard cap, the shortest legal commit window (12 h) and a 30 day stream.', expectRefusal: false,
+    params: { ...base, hard_cap: 500n * USDC, soft_cap: 350n * USDC, commit_secs: 12 * 3600, stream_days: 30 },
   },
   {
     id: 'edge', label: 'Edge of legal', blurb: 'Creator allocation at its 20% ceiling. Legal, and nothing more generous passes.', expectRefusal: false,
     params: { ...base, sale_bps: 6000, lp_bps: 1500, creator_bps: 2000, backer_bps: 500 },
   },
   {
-    id: 'hostile', label: 'Hostile (must be refused)', blurb: 'Creator plus backer share of 26% and a commit window one second short of 24 h.', expectRefusal: true,
-    params: { ...base, symbol: 'HOSTILE', name: 'Hostile preset', sale_bps: 5400, lp_bps: 2000, creator_bps: 1900, backer_bps: 700, commit_secs: 86_399 },
+    id: 'hostile', label: 'Hostile (must be refused)', blurb: 'Creator plus backer share of 26% and a commit window one second short of 12 h.', expectRefusal: true,
+    params: { ...base, symbol: 'HOSTILE', name: 'Hostile preset', sale_bps: 5400, lp_bps: 2000, creator_bps: 1900, backer_bps: 700, commit_secs: 43_199 },
   },
 ];
 

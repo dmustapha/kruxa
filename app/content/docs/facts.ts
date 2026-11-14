@@ -28,7 +28,7 @@ export const FACTS = {
   minBuyUsdc: 20,
   funders: { min: 10, max: 500 },
   walletCapPct: { min: 0.5, max: 5 },
-  commitHours: { min: 24, max: 720 },
+  commitHours: { min: 12, max: 720 },
   tailHours: { min: 1, max: 48 },
   studioDefault: { commitHours: 72, tailHours: 6, streamDays: 30 },
   openDelayDays: 7,

@@ -76,7 +76,9 @@ pub(crate) fn fail(code: RuleCode, text: &str) -> ! {
 
 #[near]
 impl Contract {
+    /// Private: only the contract account can initialise, so a separate deploy and init cannot be front-run (deploy and init in one batch).
     #[init]
+    #[private]
     pub fn new(
         owner: AccountId,
         guardian: AccountId,

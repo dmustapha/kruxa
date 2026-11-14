@@ -302,7 +302,7 @@ impl Rules {
             wallet_floor_multiple: 5,
             funders_min: 10,
             funders_max: 500,
-            min_commit_secs: 86_400,
+            min_commit_secs: 43_200,
             max_commit_secs: 2_592_000,
             min_tail_secs: 3_600,
             max_tail_secs: 172_800,
@@ -731,7 +731,7 @@ mod tests {
             (RuleCode::RWalletCap, TrialParams { wallet_bps: 49, ..base.clone() }),
             (RuleCode::RFunders, TrialParams { min_funders: 9, ..base.clone() }),
             (RuleCode::RPassable, TrialParams { min_funders: 18, ..base.clone() }),
-            (RuleCode::RWindow, TrialParams { commit_secs: 86_399, ..base.clone() }),
+            (RuleCode::RWindow, TrialParams { commit_secs: 43_199, ..base.clone() }),
             (RuleCode::RWindow, TrialParams { tail_secs: 3_599, ..base.clone() }),
             (RuleCode::RFeeTotal, with_fees(&base, |f| f.total_fee_bps = 201)),
             (RuleCode::RFeeTotal, with_fees(&base, |f| f.total_fee_bps = 29)),
@@ -773,7 +773,7 @@ mod tests {
         let base = TrialParams::example("ABCD");
         assert!(validate_all(&base, &Rules::ladder(), 3_000 * USDC, false).is_empty());
         let hostile =
-            TrialParams { creator_bps: 1_900, backer_bps: 700, sale_bps: 5_400, lp_bps: 2_000, commit_secs: 86_399, ..base.clone() };
+            TrialParams { creator_bps: 1_900, backer_bps: 700, sale_bps: 5_400, lp_bps: 2_000, commit_secs: 43_199, ..base.clone() };
         let codes: Vec<RuleCode> = validate_all(&hostile, &Rules::ladder(), 3_000 * USDC, false).iter().map(|v| v.code).collect();
         assert_eq!(codes, vec![RuleCode::RAlloc, RuleCode::RWindow]);
         assert_eq!(
@@ -788,9 +788,20 @@ mod tests {
         let base = TrialParams::example("ABCD");
         assert!(ok(&TrialParams { soft_cap: 350 * USDC, ..base.clone() }).is_ok());
         assert!(ok(&TrialParams { hard_cap: 1_000 * USDC, ..base.clone() }).is_ok());
-        assert!(ok(&TrialParams { commit_secs: 86_400, tail_secs: 3_600, ..base.clone() }).is_ok());
+        assert!(ok(&TrialParams { commit_secs: 43_200, tail_secs: 3_600, ..base.clone() }).is_ok());
         assert!(ok(&TrialParams { min_funders: 17, ..base.clone() }).is_ok());
         assert!(validate_params(&TrialParams::example("KRUXA"), &Rules::ladder(), 3_000 * USDC, true).is_ok());
+    }
+
+    #[test]
+    fn ladder_commit_window_minimum_is_twelve_hours() {
+        let base = TrialParams::example("ABCD");
+        let window = |secs: u64| ok(&TrialParams { commit_secs: secs, ..base.clone() });
+        assert_eq!(window(11 * 3_600 + 59 * 60).unwrap_err().code, RuleCode::RWindow, "11h59m is refused");
+        assert_eq!(window(43_199).unwrap_err().code, RuleCode::RWindow, "one second short of 12h is refused");
+        assert!(window(43_200).is_ok(), "12h passes");
+        assert_eq!(Rules::ladder().min_commit_secs, 43_200);
+        assert_eq!(Rules::demo_clock().min_commit_secs, 90, "the demo clock is untouched");
     }
 
     #[test]

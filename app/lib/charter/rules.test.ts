@@ -15,7 +15,7 @@ describe('rule mirror: one failing case per code (cases lifted from crates/kruxa
     ['R_HARD_CAP', { ...base, hard_cap: 1000n * USDC + 1n }], ['R_HARD_CAP', { ...base, hard_cap: 499n * USDC }],
     ['R_SOFT_CAP', { ...base, soft_cap: 349n * USDC }], ['R_MIN_BUY', { ...base, min_buy: 19n * USDC }], ['R_WALLET_CAP', { ...base, wallet_bps: 49 }],
     ['R_FUNDERS', { ...base, min_funders: 9 }], ['R_PASSABLE', { ...base, min_funders: 18 }],
-    ['R_WINDOW', { ...base, commit_secs: 86_399 }], ['R_WINDOW', { ...base, tail_secs: 3599 }], ['R_STREAM', { ...base, stream_days: 29 }],
+    ['R_WINDOW', { ...base, commit_secs: 43_199 }], ['R_WINDOW', { ...base, tail_secs: 3599 }], ['R_STREAM', { ...base, stream_days: 29 }],
     ['R_FEE_TOTAL', fees({ total_fee_bps: 201 })], ['R_FEE_TOTAL', fees({ total_fee_bps: 29 })], ['R_CREATOR_SHARE', fees({ creator_bps: 6001 })],
     ['R_SPLIT_SUM', fees({ referral_bps: 900 })],
   ];
@@ -26,7 +26,7 @@ describe('rule mirror: one failing case per code (cases lifted from crates/kruxa
 describe('hostile preset (fixtures/hostile.json)', () => {
   const hostile = PRESETS.find((p) => p.id === 'hostile')!.params;
   it('is refused with R_ALLOC and R_WINDOW, in contract check order', () => expect(codes(hostile)).toEqual(['R_ALLOC', 'R_WINDOW']));
-  it('stays refused under the relaxed demo clock for the allocation, but the 24 h window is then legal', () => expect(codes(hostile, DEMO_RULES)).toEqual(['R_ALLOC']));
+  it('stays refused under the relaxed demo clock for the allocation, but the 12 h window is then legal', () => expect(codes(hostile, DEMO_RULES)).toEqual(['R_ALLOC']));
 });
 
 describe('presets', () => {

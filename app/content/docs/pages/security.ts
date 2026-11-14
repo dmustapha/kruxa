@@ -93,7 +93,7 @@ export const security: Page = {
       '**Mainnet compile and VM compatibility.** The contract loaded in a sandbox on protocol 88, and mainnet reported protocol 88 on 2026-11-08. Acceptance on the real network is untested until a deployment.',
       '**Omissions that are exposures.** A failed or dissolved launch\'s token is not burned: the default burn mode is Hold, which marks the supply as held and moves nothing, and the factory token has no burn method.',
       '**Frontend runtime.** The app was built but not exercised against a live wallet. Wallet tests are listed as pending.',
-      '**Block-timestamp skew.** A boundary can shift by seconds. Windows are at least 24 hours on the real profile.',
+      '**Block-timestamp skew.** A boundary can shift by seconds. Commit windows are at least 12 hours on the real profile.',
       '**Trusting the website and RPC.** Anyone who does not run the verifier relies on both.',
       '**Everything in the bounded table above** that is marked not prevented: undeclared wallets buying at open, bots at open, wash trading, fake volume, selling unlocked allocation and serial launches from new accounts.',
       '**Price.** No part of Kruxa supports a token\'s price or its liquidity depth. An Instant token can lose all of its value.',

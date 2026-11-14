@@ -199,7 +199,7 @@ export function CreateStudio() {
           <section className="card" aria-labelledby="time-h">
             <h2 id="time-h" style={{ marginTop: 0 }}>4. Time</h2>
             <div className="grid grid-2" style={{ gap: '0 16px' }}>
-              <Field id="commitHours" label="Commit window (hours)" value={form.commitHours} onChange={set('commitHours')} error={errors.commitHours} hint="24 h to 30 days" />
+              <Field id="commitHours" label="Commit window (hours)" value={form.commitHours} onChange={set('commitHours')} error={errors.commitHours} hint="12 h to 30 days" />
               <Field id="tailHours" label="Walk window after commits (hours)" value={form.tailHours} onChange={set('tailHours')} error={errors.tailHours} hint="1 h to 48 h" />
             </div>
             {parsed.ok && <Summary text={summarizeTime(parsed.params)} />}

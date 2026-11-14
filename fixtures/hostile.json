@@ -12,7 +12,7 @@
   "wallet_bps": 200,
   "min_funders": 10,
   "open_delay_secs": 0,
-  "commit_secs": 86399,
+  "commit_secs": 43199,
   "tail_secs": 21600,
   "stream_days": 30
 }
