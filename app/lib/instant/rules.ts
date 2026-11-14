@@ -5,12 +5,15 @@ import { RESERVED_SYMBOLS, STANDARD_FEES, USDC, validateFeeTerms, type FeeTerms,
 
 export interface InstantParams {
   name: string; symbol: string; creator_alloc_bps: number; cliff_days: number; vest_days: number; seed_q: bigint; fees: FeeTerms;
+  /** Announced open: seconds between the pool opening and the first accepted buy (0 to 3600, default 600). */
+  trade_delay_secs: number;
 }
 
 /** `kruxa_instant::default_fees`: the standard 50/15/15/10/10 split with the opening decay (500 bps over 60 minutes). */
 export const INSTANT_FEES: FeeTerms = { ...STANDARD_FEES, opening_fee_start_bps: 500, opening_decay_minutes: 60 };
 
-export const INSTANT_DEFAULTS: InstantParams = { name: '', symbol: '', creator_alloc_bps: 500, cliff_days: 7, vest_days: 90, seed_q: 250n * USDC, fees: INSTANT_FEES };
+export const INSTANT_DEFAULTS: InstantParams = { name: '', symbol: '', creator_alloc_bps: 500, cliff_days: 7, vest_days: 90, seed_q: 250n * USDC, fees: INSTANT_FEES, trade_delay_secs: 600 };
+export const MAX_TRADE_DELAY_SECS = 3600;
 
 export const SEED_MIN = 100n * USDC;
 export const SEED_MAX = 1000n * USDC;
@@ -57,6 +60,7 @@ export function validateInstant(p: InstantParams, limits: LauncherLimits = LOCAL
   if (p.creator_alloc_bps < 0 || p.creator_alloc_bps > 1000) out.push(v('R_ALLOC', 'creator_alloc_bps', p.creator_alloc_bps, '0..=1000'));
   if (p.vest_days < 30 || p.vest_days > 365) out.push(v('R_VEST', 'vest_days', p.vest_days, '30..=365'));
   if (p.cliff_days < 7 || p.cliff_days > 30 || p.cliff_days > p.vest_days) out.push(v('R_VEST', 'cliff_days', p.cliff_days, '7..=30 and at most vest_days'));
+  if (!Number.isInteger(p.trade_delay_secs) || p.trade_delay_secs < 0 || p.trade_delay_secs > MAX_TRADE_DELAY_SECS) out.push(v('R_TRADE_DELAY', 'trade_delay_secs', p.trade_delay_secs, `0..=${MAX_TRADE_DELAY_SECS}`));
   const fee = limits.launchFee ?? 0n;
   if (p.seed_q < limits.seedMin || p.seed_q > limits.seedMax || p.seed_q <= fee) out.push(v('R_SEED_RANGE', 'seed_q', p.seed_q, `${limits.seedMin}..=${limits.seedMax} and above the launch fee`));
   const feeV = validateFeeTerms(p.fees);

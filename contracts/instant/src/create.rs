@@ -50,7 +50,13 @@ impl Launcher {
             params: r.params.clone(),
             derived: r.derived.clone(),
         };
-        env::sha256_array(near_sdk::borsh::to_vec(&c).expect("charter serializes"))
+        let mut bytes = near_sdk::borsh::to_vec(&c).expect("charter serializes");
+        if r.params.trade_delay_secs > 0 {
+            // The delay is outside the stored record; a launch that has one commits to it here. Delay 0 and launches created
+            // before the field existed hash exactly as before (`sha256(borsh(Charter))`).
+            bytes.extend_from_slice(&r.params.trade_delay_secs.to_le_bytes());
+        }
+        env::sha256_array(bytes)
     }
 
     fn factory_call(&self, p: &InstantParams, supply: u128) -> Promise {
@@ -155,6 +161,8 @@ impl Launcher {
         };
         r.charter_hash = self.charter_hash(&r);
         self.symbols.insert(params.symbol.clone(), 1);
+        self.set_trade_delay(id, params.trade_delay_secs);
+        self.index_creator(&r);
         self.last_launch.insert(creator.clone(), now);
         emit(
             "instant_created",
@@ -172,6 +180,7 @@ impl Launcher {
                 .n("cliff_days", params.cliff_days)
                 .n("vest_days", params.vest_days)
                 .s("seed_q", params.seed_q)
+                .n("trade_delay_secs", params.trade_delay_secs)
                 .s("launch_fee", derived.launch_fee)
                 .j("terms", &params.fees)
                 .s("charter_hash", hex(&r.charter_hash)),

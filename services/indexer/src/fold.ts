@@ -207,14 +207,16 @@ export class Folder {
     const authNull = (k: string): number | null => (k in d ? (d[k] === null ? 1 : 0) : null);
     const terms = typeof d.terms === "object" && d.terms !== null ? (d.terms as Row) : null;
     const nsOpen = nsToSec(d.opened_ns);
+    const tradeFrom = nsToSec(d.trade_from_ns) || null; // absent or 0 = trading opened with the pool
     this.run(
       `INSERT OR IGNORE INTO pools (launch_id, opened_at, quote_reserve, token_reserve, fee_bps, paused, payout_recipient, token_decimals,
-         mint_authority_null, freeze_authority_null, creator_bps, creator_claimed, creator_fees, fees_total, source, token, market, terms, mode, creator)
-       VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, '0', '0', '0', ?, ?, ?, ?, ?, ?)`,
+         mint_authority_null, freeze_authority_null, creator_bps, creator_claimed, creator_fees, fees_total, source, token, market, terms, mode, creator, trade_from)
+       VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, '0', '0', '0', ?, ?, ?, ?, ?, ?, ?)`,
       id, nsOpen ?? e.time, (optBig(d.q) ?? optBig(d.quote_reserve))?.toString() ?? null, (optBig(d.t) ?? optBig(d.token_reserve))?.toString() ?? null,
       intOrNull(d.fee_bps), str(d.payout_recipient) || str(l.payout_recipient), intOrNull(d.token_decimals) ?? Number(l.token_decimals),
       authNull("mint_authority"), authNull("freeze_authority"), intOrNull(d.creator_bps), e.source,
       str(d.token) || null, e.contract, terms ? JSON.stringify(terms) : null, d.mode === "instant" ? "instant" : "trial", str(d.creator) || null,
+      tradeFrom,
     );
     if (d.mode === "instant" && typeof d.token === "string") this.run("UPDATE instants SET token = COALESCE(token, ?) WHERE launch_id = ?", d.token, id);
     const supply = optBig(d.total_supply);
@@ -359,10 +361,11 @@ export class Folder {
       intOrNull(d.token_decimals) ?? DEFAULT_TOKEN_DECIMALS, e.blockHeight, e.source,
     );
     this.run(
-      `INSERT OR IGNORE INTO instants (launch_id, creator_alloc, pool_tokens, cliff_days, vest_days, seed_q, launch_fee, supply_model, terms, source)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT OR IGNORE INTO instants (launch_id, creator_alloc, pool_tokens, cliff_days, vest_days, seed_q, launch_fee, supply_model, terms, source, trade_delay_secs)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       id, (optBig(d.creator_alloc) ?? 0n).toString(), (optBig(d.pool_tokens) ?? 0n).toString(), intOrNull(d.cliff_days) ?? 0, intOrNull(d.vest_days) ?? 0,
       seed.toString(), fee.toString(), str(d.supply_model) || "near_factory_fixed", d.terms ? JSON.stringify(d.terms) : null, e.source,
+      intOrNull(d.trade_delay_secs) ?? 0,
     );
     emit({ type: "launch", launchId: id });
   }

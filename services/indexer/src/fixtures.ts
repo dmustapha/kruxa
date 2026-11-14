@@ -258,7 +258,7 @@ function instantCreated(id: number, creator: string, sym: string, name: string):
   return { contract: launcher, event: "instant_created", data: {
     launch_id: String(id), mode: "instant", creator, payout_recipient: creator, symbol: sym, name, total_supply: INSTANT_SUPPLY.toString(), token_decimals: 6,
     creator_alloc: INSTANT_ALLOC.toString(), pool_tokens: (INSTANT_SUPPLY - INSTANT_ALLOC).toString(), cliff_days: 7, vest_days: 90, seed_q: "250000000",
-    launch_fee: "0", terms: TERMS, charter_hash: `ic${id}`.padEnd(64, "0"), supply_model: "near_factory_fixed",
+    trade_delay_secs: 30, launch_fee: "0", terms: TERMS, charter_hash: `ic${id}`.padEnd(64, "0"), supply_model: "near_factory_fixed",
   } };
 }
 
@@ -267,7 +267,7 @@ function instantScenario(b: Builder, rnd: () => number, s0: number): void {
   const echo = String(ECHO_ID);
   const token = "echo.token.fixture.testnet";
   const openAt = s0 + 350;
-  const open = (at: number): Record<string, string> => ({ opened_at: ns(at) });
+  const open = (at: number): Record<string, string> => ({ opened_at: ns(at), trade_from_ns: ns(at + 30) });
   b.push(s0 + 10, [{ contract: launcher, event: "beta_opened", data: { by: "owner.testnet" } }]);
   b.push(s0 + 300, [instantCreated(ECHO_ID, "eve.testnet", "ECHO", "Echo Wave")]);
   b.push(s0 + 305, [{ contract: launcher, event: "instant_token_ready", data: { launch_id: echo, token } }]);
@@ -278,7 +278,7 @@ function instantScenario(b: Builder, rnd: () => number, s0: number): void {
   b.push(s0 + 340, [{ contract: launcher, event: "instant_handoff", data: { launch_id: echo, leg: "Seed", amount: "250000000", market } }]);
   b.push(s0 + 349, [{ contract: market, event: "pool_opened", data: {
     launch_id: echo, mode: "instant", creator: "eve.testnet", token, quote: "usdc.fixture.testnet", q: "250000000", t: (INSTANT_SUPPLY - INSTANT_ALLOC).toString(),
-    payout_recipient: "eve.testnet", opened_ns: ns(openAt), fee_bps: 100, creator_bps: 5000, terms: TERMS,
+    payout_recipient: "eve.testnet", opened_ns: ns(openAt), trade_from_ns: ns(openAt + 30), fee_bps: 100, creator_bps: 5000, terms: TERMS,
   } }]);
   b.push(openAt, [{ contract: launcher, event: "instant_opened", data: { launch_id: echo, token, market, q: "250000000", t: (INSTANT_SUPPLY - INSTANT_ALLOC).toString(), ...open(openAt) } }]);
   b.push(s0 + 400, [instantCreated(ECHO_ID + 3, "hugo.testnet", "PEND", "Pend Pot")]);

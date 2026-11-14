@@ -29,7 +29,7 @@ if (only.includes('OPEN')) {
   const token = `${sym.toLowerCase()}.${REAL}`;
   const lid = (await view(L, 'get_config')).next_launch_id;
   const dep = await view(L, 'required_deposit');
-  const c = await call(`create_instant ${sym} against ${REAL}`, CC, L, 'create_instant', { params: { name: `${sym} Demo`, symbol: sym }, payout_recipient: null }, { deposit: dep, gas: tgas(300) });
+  const c = await call(`create_instant ${sym} against ${REAL}`, CC, L, 'create_instant', { params: { name: `${sym} Demo`, symbol: sym, trade_delay_secs: 0 }, payout_recipient: null }, { deposit: dep, gas: tgas(300) });
   await sleep(8);
   let inst = await view(L, 'get_instant', { launch_id: lid });
   append('findings.jsonl', { finding: 'real factory create_token via the launcher', symbol: sym, tx: c.tx, status: inst.status, token: inst.token, receipts: c.receipts, deposit_paid: inst.deposit_paid });

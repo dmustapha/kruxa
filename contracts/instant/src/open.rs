@@ -7,7 +7,7 @@ use crate::model::*;
 use crate::{fail, Launcher, LauncherExt};
 use crate::{
     GAS_LEG, GAS_RECONCILE_CB, GAS_RECONCILE_VIEW, GAS_SEED_CB, GAS_STORAGE, GAS_TOKEN_CB, MARKET_STORAGE_YOCTO, MIN_OPEN_GAS,
-    NEED_FOR_TOKEN_LEG, ONE_YOCTO, TOKEN_REG_YOCTO,
+    NEED_FOR_TOKEN_LEG, ONE_YOCTO, SEC_NS, TOKEN_REG_YOCTO,
 };
 use kruxa_logic::hex;
 use near_sdk::json_types::{U128, U64};
@@ -19,7 +19,7 @@ pub(crate) fn enough_gas_for_token_leg(prepaid: Gas, used: Gas) -> bool {
 }
 
 impl Launcher {
-    fn seed_msg(&self, r: &Instant) -> String {
+    fn seed_msg(&self, r: &Instant, trade_from_ns: u64) -> String {
         Obj::new()
             .n("v", 1)
             .s("op", "seed_quote")
@@ -31,7 +31,17 @@ impl Launcher {
             .s("charter_hash", hex(&r.charter_hash))
             .s("supply_model", "near_factory_fixed")
             .j("terms", &r.params.fees)
+            .s("trade_from_ns", trade_from_ns)
             .finish()
+    }
+
+    /// Announced open: `trade_delay_secs` after this seed leg is sent (0 = trading opens with the pool). A re-sent seed leg
+    /// announces afresh; the token leg never changes it.
+    fn announce_open(&mut self, id: u64) -> u64 {
+        let delay = self.trade_delay_of(id) as u64;
+        let from = if delay == 0 { 0 } else { env::block_timestamp().saturating_add(delay * SEC_NS) };
+        self.set_trade_from(id, from);
+        from
     }
 
     /// Debit the seed, then send leg 1.
@@ -44,7 +54,8 @@ impl Launcher {
         self.seed_due_total -= amount;
         let usdc = self.cfg.usdc.clone();
         self.custody_sub(&usdc, amount);
-        let msg = self.seed_msg(r);
+        let trade_from = self.announce_open(r.launch_id);
+        let msg = self.seed_msg(r, trade_from);
         emit("instant_handoff", Obj::new().s("launch_id", r.launch_id).s("leg", "Seed").s("amount", amount).s("market", market));
         let _ = ext_ft::ext(usdc)
             .with_attached_deposit(ONE_YOCTO)
@@ -305,7 +316,8 @@ impl Launcher {
                 .opt("market", self.cfg.market.as_ref())
                 .s("q", r.seed_sent)
                 .s("t", r.tokens_sent)
-                .s("opened_at", r.opened_at),
+                .s("opened_at", r.opened_at)
+                .s("trade_from_ns", self.trade_from_of(r.launch_id)),
         );
     }
 }

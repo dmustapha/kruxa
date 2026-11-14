@@ -21,7 +21,7 @@ const ftCall = (step, signer, token, receiver, amount, msg, extra) =>
 async function create(signer, sym, extra = {}) {
   const lid = (await view(L, 'get_config')).next_launch_id;
   const dep = await view(L, 'required_deposit');
-  const r = await call(`create_instant ${sym}`, signer, L, 'create_instant', { params: { name: `${sym} Demo`, symbol: sym, ...extra }, payout_recipient: null }, { deposit: dep, gas: tgas(300) });
+  const r = await call(`create_instant ${sym}`, signer, L, 'create_instant', { params: { name: `${sym} Demo`, symbol: sym, trade_delay_secs: 0, ...extra }, payout_recipient: null }, { deposit: dep, gas: tgas(300) });
   await snapshot(`after create_instant ${sym}`, L, M, lid);
   return lid;
 }

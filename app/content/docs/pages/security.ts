@@ -29,7 +29,7 @@ export const security: Page = {
       ['Risk', 'What bounds it', 'What it does not stop'],
       ['The token\'s price falling to near zero', 'Nothing. Instant launches can lose all value.', 'Everything. There is no refund on an Instant launch.'],
       ['The creator buying their own launch', 'A self-buy block on the creator account and the payout recipient', 'Any other wallet. The contracts cannot see who owns a wallet.'],
-      ['Sniping at the open', 'An opening fee that starts at 5% and falls over 60 minutes, with the surcharge going to liquidity; mandatory minimum-out', 'Bots still buy first. There is no announced-open delay in this release.'],
+      ['Sniping at the open', 'An announced open (the pool is visible, 10 minutes by default, before the first buy is accepted), then an opening fee that starts at 5% and falls over 60 minutes, with the surcharge going to liquidity; mandatory minimum-out', 'Bots still race at the announced second, which the opening fee taxes. The announcement removes the creator\'s private knowledge of the exact opening block, nothing more.'],
       ['Wash trading and fake volume', 'Each round trip pays the full fee, and the creator\'s slice is only part of it', 'Volume figures can still be inflated at a cost.'],
       ['The creator selling unlocked tokens', 'The cap, cliff and unlock rate, shown on the token page', 'The creator may sell what has unlocked, or move claimed tokens to other wallets first.'],
       ['Serial launches (launch, sell, repeat)', 'One Instant launch per account per 24 hours; every launch and pool is public; a closed beta gate on mainnet', 'A fresh account once the gate is open.'],

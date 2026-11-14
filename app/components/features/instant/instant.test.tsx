@@ -93,6 +93,17 @@ describe('Instant studio', () => {
     type(/Ticker/, 'ZED'); type('Name', 'Zed');
     expect((await screen.findAllByText('R_RATE_LIMIT')).length).toBeGreaterThan(0);
   });
+  it('trading opens after 10 minutes by default; 0 says trading opens with the pool, and more than 60 is refused in the field', () => {
+    setup();
+    render(<Wallets><InstantStudio /></Wallets>);
+    const field = screen.getByLabelText('Trading opens after (minutes)') as HTMLInputElement;
+    expect(field.value).toBe('10');
+    expect(screen.getByText(/visible for 10 minutes before the first buy is accepted/)).toBeTruthy();
+    type('Trading opens after (minutes)', '0');
+    expect(screen.getByText(/Trading opens as soon as the pool does/)).toBeTruthy();
+    type('Trading opens after (minutes)', '61');
+    expect(screen.getByText('Enter whole minutes, 0 to 60.')).toBeTruthy();
+  });
   it('shows the preview card with the instant badge and the opening price', () => {
     setup();
     render(<Wallets><InstantStudio /></Wallets>);

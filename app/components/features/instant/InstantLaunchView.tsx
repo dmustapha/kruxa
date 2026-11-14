@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { api } from '@/lib/api/client';
 import type { LaunchDetail } from '@/lib/api/types';
 import { useApi } from '@/lib/api/useApi';
@@ -15,7 +16,7 @@ import { InstantProgress } from './InstantProgress';
 import { VestPanel } from './VestPanel';
 import { useInstantLaunch, useLauncherUnit } from './useInstant';
 import { termWord } from '@/lib/instant/rules';
-import { cliffSharePct } from '@/lib/instant/summary';
+import { cliffSharePct, tradeCountdown } from '@/lib/instant/summary';
 
 const STEP_LABEL = { created: 'Create the token', seeded: 'Seed the pool with your USDC', trading: 'Open the pool' } as const;
 
@@ -29,6 +30,18 @@ function IndexedSteps({ l }: { l: LaunchDetail }) {
       <ol className="tl">{steps.map((s, i) => <li key={s.step}><b>Step {i + 1} of 3: {STEP_LABEL[s.step]}</b> {s.done ? <Badge tone="pass">Done</Badge> : <Badge tone="muted">Not yet</Badge>}{s.receipt_id && <span className="when">receipt {s.receipt_id}</span>}</li>)}</ol>
     </section>
   );
+}
+
+/** Counts down to the announced open (`trade_from_ns`); renders nothing once trading is open or when the pool never announced one. */
+function TradeCountdown({ tradeFromNs }: { tradeFromNs: string | undefined }) {
+  const [now, setNow] = useState(() => Date.now());
+  const text = tradeCountdown(tradeFromNs, now);
+  useEffect(() => {
+    if (!text) return;
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, [text]);
+  return text ? <p className="hint" role="status" aria-live="off">{text}. The pool is open and visible; buys are refused until then (R_NOT_YET_TRADING).</p> : null;
 }
 
 /** /launch/[id] for an instant launch (id at or above 1,000,000,000): no verdict, no Walk, no stepper of a trial. The launcher's views are the authority. */
@@ -52,6 +65,7 @@ export function InstantLaunchView() {
             <div className="row" style={{ marginTop: 8 }}><ModeBadge mode="instant" />{phase && <PhaseBadge phase={phase} />}{l && <SourceBadge source={l.source} />}</div>
           </div>
         </div>
+        {rec && <TradeCountdown tradeFromNs={rec.trade_from_ns} />}
         {(rec || l) && <p className="hint">Creator {shortAccount(rec?.creator ?? l?.creator ?? '')} · payout recipient {shortAccount(rec?.payout_recipient ?? l?.payout_recipient ?? '')}</p>}
       </header>
       <InstantNotice />

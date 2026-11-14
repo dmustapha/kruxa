@@ -32,3 +32,21 @@ export function summarizeOpenPrice(p: InstantParams, launchFee: bigint | null): 
   const open = f.opening_fee_start_bps > 0 ? ` The first trades pay an opening fee of ${pct(f.opening_fee_start_bps)} that falls to the base fee over ${f.opening_decay_minutes} minutes; the extra goes to liquidity.` : '';
   return d.openPriceUsdc === null ? 'The opening price needs a valid seed.' : `The pool opens at about ${d.openPriceUsdc.toPrecision(3)} USDC per token (an estimate; the launcher's own figure is shown when it answers).${open}`;
 }
+
+/** "Trading opens in 09:41" while `trade_from_ns` (INSTANT-ABI 1.1) is still ahead of `nowMs`; null when absent, 0, malformed or already past. */
+export function tradeCountdown(tradeFromNs: string | number | null | undefined, nowMs: number): string | null {
+  if (tradeFromNs === null || tradeFromNs === undefined || !/^\d+$/.test(String(tradeFromNs))) return null;
+  const leftMs = Number(BigInt(tradeFromNs) / 1_000_000n) - nowMs;
+  if (leftMs <= 0) return null;
+  const secs = Math.ceil(leftMs / 1000);
+  const mm = String(Math.floor(secs / 60)).padStart(2, '0');
+  return `Trading opens in ${mm}:${String(secs % 60).padStart(2, '0')}`;
+}
+
+/** The announced-open sentence of the create form. */
+export function summarizeTradeDelay(p: Pick<InstantParams, 'trade_delay_secs'>): string {
+  const s = p.trade_delay_secs;
+  if (s === 0) return 'Trading opens as soon as the pool does. Anyone watching can buy in the first block.';
+  const m = s % 60 === 0 ? `${s / 60} ${s === 60 ? 'minute' : 'minutes'}` : `${s} seconds`;
+  return `The pool is visible for ${m} before the first buy is accepted. The opening fee starts then, so early bots still pay it.`;
+}

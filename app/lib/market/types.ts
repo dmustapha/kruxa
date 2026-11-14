@@ -94,7 +94,7 @@ export interface InstantInfo {
   status?: string; symbol?: string; name?: string; token?: string | null; total_supply?: string; n_alloc?: string; n_pool?: string;
   creator_alloc_bps?: number; cliff_days?: number; vest_days?: number; seed_q?: string; launch_fee?: string; pool_seed_q?: string;
   created_at_ns?: string | number | null; seeded_at_ns?: string | number | null; opened_at_ns?: string | number | null; alloc_claimed?: string;
-  declared_wallets?: string[]; vesting?: VestingView | null;
+  trade_delay_secs?: number; trade_from_ns?: string | number | null; declared_wallets?: string[]; vesting?: VestingView | null;
 }
 
 export interface TokenStats {

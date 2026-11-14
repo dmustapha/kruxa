@@ -6,6 +6,7 @@ import type { MarketConfigView } from './chain';
 export const REFUSAL_TEXT: Record<string, string> = {
   R_SELF_BUY: 'R_SELF_BUY: the creator and payout recipient accounts cannot buy on an instant pool. Sells and claims are unaffected. A second wallet is not blocked.',
   R_MARKET_CAP: 'R_MARKET_CAP: instant pools together hit the market cap for instant launches, so buys are refused until the reserve falls. Sells always work.',
+  R_NOT_YET_TRADING: 'R_NOT_YET_TRADING: this pool announced its open. Buys are refused until the time shown on the launch page; nothing was swapped. Sells are not affected.',
   R_MIN_OUT: 'R_MIN_OUT: the price moved past your minimum. Nothing was swapped.',
   R_MIN_TRADE: 'R_MIN_TRADE: the minimum trade is $1 of USDC.',
   R_PAUSED: 'R_PAUSED: buys are paused. Sells and claims stay open.',

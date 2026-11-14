@@ -8,8 +8,9 @@ mod vest;
 
 pub use params::{
     default_fees, derive, is_reserved_symbol, symbol_format_ok, total_supply_base, validate_instant, Derived, InstantParams, Limits,
-    Violation, DEFAULT_ALLOC_BPS, DEFAULT_CLIFF_DAYS, DEFAULT_SEED_Q, DEFAULT_VEST_DAYS, MAX_ALLOC_BPS, MAX_CLIFF_DAYS, MAX_SEED_Q,
-    MAX_VEST_DAYS, MIN_CLIFF_DAYS, MIN_SEED_Q, MIN_VEST_DAYS, TOKEN_DECIMALS, TOTAL_SUPPLY_WHOLE,
+    Violation, DEFAULT_ALLOC_BPS, DEFAULT_CLIFF_DAYS, DEFAULT_SEED_Q, DEFAULT_TRADE_DELAY_SECS, DEFAULT_VEST_DAYS, MAX_ALLOC_BPS,
+    MAX_CLIFF_DAYS, MAX_SEED_Q, MAX_TRADE_DELAY_SECS, MAX_VEST_DAYS, MIN_CLIFF_DAYS, MIN_SEED_Q, MIN_VEST_DAYS, TOKEN_DECIMALS,
+    TOTAL_SUPPLY_WHOLE,
 };
 pub use vest::{alloc_unlocked, claimable, Schedule};
 
@@ -21,5 +22,6 @@ pub mod code {
     pub const SYMBOL: &str = "R_SYMBOL";
     pub const SYMBOL_RESERVED: &str = "R_SYMBOL_RESERVED";
     pub const FEE_TERMS: &str = "R_FEE_TERMS";
+    pub const TRADE_DELAY: &str = "R_TRADE_DELAY";
     pub const MATH: &str = "R_MATH";
 }

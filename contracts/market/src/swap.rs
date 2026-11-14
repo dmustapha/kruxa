@@ -5,7 +5,10 @@ use crate::events::emit;
 use crate::ext::ext_ft;
 use crate::model::*;
 use crate::{Market, MarketExt, GAS_CB, GAS_OUT, MAX_PARKED, ONE_YOCTO};
-use kruxa_market::{quote_buy, quote_sell, record_creator_fee, validate_market_terms, MarketError, Routing, Swap};
+use kruxa_market::{
+    fee_elapsed_ns, quote_buy, quote_sell, record_creator_fee, trade_from_in_range, trading_open, validate_market_terms, MarketError,
+    Routing, Swap, R_NOT_YET_TRADING, R_TRADE_FROM,
+};
 use near_sdk::json_types::U128;
 use near_sdk::serde_json::{self, json};
 use near_sdk::{env, is_promise_success, log, near, AccountId, Promise, PromiseOrValue};
@@ -80,6 +83,10 @@ impl Market {
             return Err("R_UNEXPECTED_TOKEN");
         }
         validate_market_terms(&terms).map_err(market_code)?;
+        let trade_from = if mode == Mode::Instant { m.trade_from_ns.map_or(0, |v| v.0) } else { 0 };
+        if !trade_from_in_range(env::block_timestamp(), trade_from) {
+            return Err(R_TRADE_FROM);
+        }
         if mode == Mode::Instant {
             self.check_instant_seed(amount)?;
             self.launcher_pools += 1;
@@ -109,6 +116,9 @@ impl Market {
         self.global_q += amount;
         self.custody_add(token, amount);
         self.pools.insert(id, pool.clone());
+        if trade_from > 0 {
+            set_trade_from(id, trade_from);
+        }
         if let Some(t) = self.parked.remove(&(id, tok)) {
             self.parked_count -= 1;
             self.finish_open(pool, t);
@@ -157,7 +167,7 @@ impl Market {
         emit(
             "pool_opened",
             json!({ "launch_id": pool.launch_id.to_string(), "mode": pool.mode.as_str(), "creator": pool.creator, "token": pool.token, "quote": self.usdc, "q": pool.q.to_string(), "t": t.to_string(),
-                    "payout_recipient": pool.payout_recipient, "opened_ns": pool.opened_ns.to_string(), "fee_bps": pool.terms.total_fee_bps,
+                    "payout_recipient": pool.payout_recipient, "opened_ns": pool.opened_ns.to_string(), "trade_from_ns": trade_from_of(pool.launch_id).to_string(), "fee_bps": pool.terms.total_fee_bps,
                     "creator_bps": pool.terms.creator_bps, "mint_authority": pool.mint_authority, "freeze_authority": pool.freeze_authority, "terms": pool.terms }),
         );
         self.pools.insert(pool.launch_id, pool);
@@ -204,6 +214,10 @@ impl Market {
             return Err("R_PAUSED");
         }
         let mut pool = self.open_pool(m.launch_id.0)?;
+        let trade_from = trade_from_of(pool.launch_id);
+        if !trading_open(env::block_timestamp(), trade_from) {
+            return Err(R_NOT_YET_TRADING);
+        }
         let receiver = m.receiver.clone().unwrap_or_else(|| sender.clone());
         if pool.mode == Mode::Instant
             && [&sender, &receiver].iter().any(|a| pool.creator.as_ref() == Some(*a) || **a == pool.payout_recipient)
@@ -212,7 +226,7 @@ impl Market {
         }
         let min_out = m.min_out.map_or(0, |v| v.0);
         let now = env::block_timestamp();
-        let s = quote_buy(pool.reserves(), amount, min_out, &pool.terms, now.saturating_sub(pool.opened_ns), Routing::M_A)
+        let s = quote_buy(pool.reserves(), amount, min_out, &pool.terms, fee_elapsed_ns(now, pool.opened_ns, trade_from), Routing::M_A)
             .map_err(market_code)?;
         if s.after.q > self.max_pool_q || self.global_q - pool.q + s.after.q > self.max_global_q {
             return Err("R_MARKET_CAP");
@@ -233,8 +247,8 @@ impl Market {
         }
         let min_out = m.min_out.map_or(0, |v| v.0);
         let now = env::block_timestamp();
-        let s = quote_sell(pool.reserves(), amount, min_out, &pool.terms, now.saturating_sub(pool.opened_ns), Routing::M_A)
-            .map_err(market_code)?;
+        let elapsed = fee_elapsed_ns(now, pool.opened_ns, trade_from_of(pool.launch_id));
+        let s = quote_sell(pool.reserves(), amount, min_out, &pool.terms, elapsed, Routing::M_A).map_err(market_code)?;
         let receiver = m.receiver.unwrap_or_else(|| sender.clone());
         self.custody_add(token, amount);
         self.apply_swap(&mut pool, &s, now);

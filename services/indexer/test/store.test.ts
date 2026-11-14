@@ -159,8 +159,10 @@ test("instant launch folds: mode from the authenticated pool, no verdict or book
   assert.equal(pool.mode, "instant");
   assert.equal(pool.creator, "eve.testnet");
   assert.equal(pool.token, "echo.token.fixture.testnet");
+  assert.equal(Number(pool.trade_from) - Number(pool.opened_at), 30, "announced open: trade_from_ns of pool_opened, in seconds");
   const inst = rows(s, "SELECT * FROM instants WHERE launch_id = 1000000000")[0]!;
   assert.equal(inst.alloc_claimed, "4000000000000");
+  assert.equal(inst.trade_delay_secs, 30, "instant_created trade_delay_secs");
   assert.ok(inst.opened_at);
   assert.equal(rows(s, "SELECT balance FROM balances WHERE launch_id = 1000000000 AND holder = 'eve.testnet'")[0]?.balance, "4000000000000");
   assert.equal(rows(s, "SELECT COUNT(*) AS n FROM launches WHERE mode = 'trial'")[0]?.n, 4);

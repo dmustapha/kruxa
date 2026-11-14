@@ -1,6 +1,6 @@
 # Market ABI (owner: workstream M; readers: A core, I indexer, U2 market UI)
 
-Status: 1.1.2 (additive over the FROZEN 1.0.0; 1.1.2 adds the instant seed cap setter, section "1.1.2" at the end; see section "1.1.0 instant launch delta" at the end; every 1.1.0 feature is OFF until the owner calls `set_launcher`, so 1.0.0 behaviour is unchanged). Source: ARCHITECTURE 5.1, 5.8, 5.9; PRD 4b.2, C5. Contract: `contracts/market`, account `market.kruxa.near`.
+Status: 1.3.0 (additive over the FROZEN 1.0.0; 1.3.0 adds the announced open `trade_from_ns`, section "1.3.0" at the end; 1.1.2 adds the instant seed cap setter, section "1.1.2" at the end; see section "1.1.0 instant launch delta" at the end; every 1.1.0 feature is OFF until the owner calls `set_launcher`, so 1.0.0 behaviour is unchanged). Source: ARCHITECTURE 5.1, 5.8, 5.9; PRD 4b.2, C5. Contract: `contracts/market`, account `market.kruxa.near`.
 All u128 and u64 values are decimal strings in JSON. USDC is 6 decimals (micro-USDC). All `ft_on_transfer` messages are JSON objects with `"v":1` and an `"op"`.
 Unknown fields are ignored. States are `AwaitToken` (seed landed, token leg not yet) and `Open`. Any bad message, wrong token, pause (for buys and opens), cap breach or unmet `min_out` REFUSES: `ft_on_transfer` returns the full amount (the token contract refunds the sender) and logs a rule code. `ft_on_transfer` never panics.
 
@@ -43,7 +43,7 @@ All outbound payments follow debit-before-outbound: the counter moves first, the
 
 ## Views (all return JSON; u128 as strings)
 - `get_config()` -> `{owner, guardian, treasury, usdc, core, paused, max_pool_reserve_q, max_global_reserve_q, global_q}`
-- `get_pool(launch_id)` -> `null` or `{launch_id, token, quote, state: "AwaitToken"|"Open", q, t, opened_ns, payout_recipient, total_supply, charter_hash, terms}`
+- `get_pool(launch_id)` -> `null` or `{launch_id, token, quote, state: "AwaitToken"|"Open", q, t, opened_ns, trade_from_ns ("0" = none), payout_recipient, total_supply, charter_hash, terms}`
 - `quote_buy(launch_id, amount_in, now_ns?)` -> `{ok, code?, out, fee_total, fee_bps, creator, platform, holders, lp, referral, surcharge, q_after, t_after, price_impact_bps}`
 - `quote_sell(launch_id, amount_in, now_ns?)` -> same shape; `out` is net USDC to the seller
 - `creator_status(launch_id)` -> `{recipient, accrued, unlocked, paid, claimable, epochs}`
@@ -52,7 +52,7 @@ All outbound payments follow debit-before-outbound: the counter moves first, the
 - `get_invariants()` -> `{k_non_decreasing_checked: true, slices_sum_checked: true, global_q_matches_pools, custody_identity}`
 
 ## Rule codes (logged, first token of the log line)
-`R_PAUSED`, `R_BAD_MSG`, `R_UNEXPECTED_TOKEN`, `R_NOT_AUTHORIZED`, `R_NO_POOL`, `R_POOL_STATE`, `R_MIN_OUT`, `R_MIN_TRADE`, `R_MARKET_CAP`, `R_FEE_TERMS`, `R_DUP_LAUNCH`, `R_MATH`, `R_NOTHING_TO_CLAIM`, `R_PARK_FULL`.
+`R_PAUSED`, `R_BAD_MSG`, `R_UNEXPECTED_TOKEN`, `R_NOT_AUTHORIZED`, `R_NO_POOL`, `R_POOL_STATE`, `R_MIN_OUT`, `R_MIN_TRADE`, `R_MARKET_CAP`, `R_FEE_TERMS`, `R_DUP_LAUNCH`, `R_MATH`, `R_NOTHING_TO_CLAIM`, `R_PARK_FULL`, and from 1.3.0 `R_NOT_YET_TRADING`, `R_TRADE_FROM`.
 
 ## Fee router (the one place the split lives: `kruxa_logic::FeeTerms`; math in `crates/kruxa-market`)
 Per swap: `fee_total = ceil(q_leg * rate_ppm / 1e6)`. `rate` = `total_fee_bps` after the opening window; inside the window it decays linearly from `opening_fee_start_bps` to `total_fee_bps` over `opening_decay_minutes` (all the surcharge goes to LP). The base part is cut by bps into creator, platform, holders, referral (floor), LP takes the remainder (dust). M-A routing: holders slice and referral slice are redirected to LP (no Hold Vault, no referral lots), reported as `red_holders` and `red_referral`, so in events `holders = 0` and `referral = 0` and `creator + platform + holders + lp + referral == fee_total` always.
@@ -73,7 +73,7 @@ Inert by default: with no launcher set the market behaves exactly as 1.0.0, exce
 | `new` | gains optional `max_instant_reserve_q` (omit for the default) |
 | Views | `get_config` gains `launcher`, `max_instant_reserve_q`, `instant_q`, `instant_seeded_q` (1.1.1); `get_pool` gains `mode`, `creator`; `get_invariants` gains `instant_q_matches` (internal check `instant_q <= global_q`) |
 | New rule codes | `R_ID_NAMESPACE`, `R_SELF_BUY`, `R_LAUNCHER_LOCKED` |
-| Not in this build | `trade_from_ns` / `R_NOT_YET_TRADING` (announced open, CO-7 2.7, "cut first"): the field is ignored if sent |
+| Announced open | built in 1.3.0, see section "1.3.0" below |
 | State layout | new config fields and two new pool fields change the borsh layout: a fresh deploy (testnet redeploy; mainnet market is not live) |
 
 ## 1.1.1 review fixes (REVIEW-INSTANT-LAUNCH M-01, M-04, L-10; no interface break)
@@ -93,3 +93,19 @@ Inert by default: with no launcher set the market behaves exactly as 1.0.0, exce
 | Views | `get_config` gains `pending_max_instant_reserve` (`null` or `{value, effective_at}`) |
 | Off by default | nothing is queued and `max_instant_reserve_q` keeps the value given to `new`; no existing behaviour changes. No new rule codes |
 | State layout | one new `Option` field in the contract state: like 1.1.0 this is a fresh deploy (no deployed market keeps state across it) |
+
+## 1.3.0 announced open (CO-7 2.7; additive, off unless the launcher sends it)
+
+A pool can carry `trade_from_ns`, the first chain time at which a buy is accepted. Only instant pools get one, and only from the authenticated launcher's `seed_quote`; core never sends it, a trial pool ignores it, and a pool without one trades as soon as it is open (this is also what every pool stored before 1.3.0 means).
+
+| Item | Rule |
+|---|---|
+| `seed_quote` field | optional `"trade_from_ns":"<u64>"` (decimal string). Absent or `"0"`: none. A value more than 3600 s after the block time is refused `R_TRADE_FROM` (the full seed comes back, nothing is stored); a value in the past is allowed and means "trade at once" |
+| Buys | `buy` on a pool whose `trade_from_ns` is still in the future is refused `R_NOT_YET_TRADING`: `ft_on_transfer` returns the full amount, nothing moves. Checked right after the pool is found `Open` and before the self-buy block and the quote. From `trade_from_ns` on (inclusive) buys are accepted as before |
+| Sells | not refused by the clock (nobody holds the token before the first buy: the creator allocation is locked in the launcher). They use the same opening-fee clock |
+| Visible pool | the pool exists and is `Open` from the token leg on: `get_pool` returns price inputs (`q`, `t`) and `trade_from_ns`; `quote_buy` answers `{ok:false, code:"R_NOT_YET_TRADING", trade_from_ns}` before it (with `now_ns` the answer is for that time) |
+| Opening-fee clock | `elapsed = now - max(opened_ns, trade_from_ns)` (zero before `trade_from_ns`): a buyer at `trade_from_ns` pays the full `opening_fee_start_bps`. Creator-fee epochs and vesting still count from `opened_ns` |
+| Events | `pool_opened` gains `trade_from_ns` (string, `"0"` = none) |
+| Views | `get_pool` gains `trade_from_ns` |
+| New rule codes | `R_NOT_YET_TRADING`, `R_TRADE_FROM` |
+| State layout | UNCHANGED. `trade_from_ns` is kept in raw storage under the key `trade_from:` + launch id (8 bytes little-endian), outside the `Pool` record and the `Market` state, so a market deployed before 1.3.0 loads every pool (no entry = none). |

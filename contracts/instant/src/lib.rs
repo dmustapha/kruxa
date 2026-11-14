@@ -13,8 +13,11 @@ mod kv;
 mod model;
 mod open;
 mod seed;
+mod side;
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod tests_views;
 mod views;
 
 use kv::Map;

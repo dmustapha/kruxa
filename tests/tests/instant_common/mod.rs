@@ -40,8 +40,10 @@ pub fn lid(id: &str) -> Value {
     json!({ "launch_id": id })
 }
 
+/// Default test params: trading opens with the pool (`trade_delay_secs` 0), as before the announced open existed. The delay
+/// suites (`instant_announced_open.rs`) build their own.
 pub fn params(symbol: &str) -> Value {
-    json!({ "name": format!("{symbol} Coin"), "symbol": symbol })
+    json!({ "name": format!("{symbol} Coin"), "symbol": symbol, "trade_delay_secs": 0 })
 }
 
 pub struct Ix {

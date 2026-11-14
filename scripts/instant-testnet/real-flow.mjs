@@ -35,7 +35,7 @@ async function setup() {
 async function create(signer, sym, extra = {}) {
   const lid = (await view(L, 'get_config')).next_launch_id;
   const dep = await view(L, 'required_deposit');
-  const c = await call(`create_instant ${sym} against ${REAL} (110 Tgas factory call)`, signer, L, 'create_instant', { params: { name: `${sym} Demo`, symbol: sym, ...extra }, payout_recipient: null }, { deposit: dep, gas: tgas(300) });
+  const c = await call(`create_instant ${sym} against ${REAL} (110 Tgas factory call)`, signer, L, 'create_instant', { params: { name: `${sym} Demo`, symbol: sym, trade_delay_secs: 0, ...extra }, payout_recipient: null }, { deposit: dep, gas: tgas(300) });
   await sleep(10);
   const inst = await view(L, 'get_instant', { launch_id: lid });
   append('findings.jsonl', { finding: 'create_instant on the real factory with GAS_FACTORY 110', symbol: sym, tx: c.tx, status: inst.status, token: inst.token, receipts: c.receipts });

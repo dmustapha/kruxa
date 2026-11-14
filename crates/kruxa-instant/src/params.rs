@@ -22,6 +22,9 @@ pub const DEFAULT_VEST_DAYS: u16 = 90;
 pub const MIN_SEED_Q: u128 = 100_000_000;
 pub const MAX_SEED_Q: u128 = 1_000_000_000;
 pub const DEFAULT_SEED_Q: u128 = 250_000_000;
+/// Announced open (CO-7 2.7): seconds between the seed handoff and the first accepted buy. 0 = trading opens with the pool.
+pub const MAX_TRADE_DELAY_SECS: u32 = 3_600;
+pub const DEFAULT_TRADE_DELAY_SECS: u32 = 600;
 
 /// Standard 50/15/15/10/10 split, 1.00% total, with the DN-26 opening decay (500 bps over 60 minutes).
 pub fn default_fees() -> FeeTerms {
@@ -40,6 +43,9 @@ fn d_vest() -> u16 {
 fn d_seed() -> u128 {
     DEFAULT_SEED_Q
 }
+fn d_delay() -> u32 {
+    DEFAULT_TRADE_DELAY_SECS
+}
 
 /// What the creator passes to `create_instant`. Omitted fields take the defaults.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, BorshSerialize, BorshDeserialize)]
@@ -56,6 +62,11 @@ pub struct InstantParams {
     pub seed_q: u128,
     #[serde(default = "default_fees")]
     pub fees: FeeTerms,
+    /// Announced open, 0..=3600 seconds (default 600). Not part of the borsh record: the launcher keeps it beside the record, so
+    /// launches stored before this field existed still load (as 0, trading open at once). The charter hash covers it when non-zero.
+    #[serde(default = "d_delay")]
+    #[borsh(skip)]
+    pub trade_delay_secs: u32,
 }
 
 impl InstantParams {
@@ -68,6 +79,7 @@ impl InstantParams {
             vest_days: d_vest(),
             seed_q: d_seed(),
             fees: default_fees(),
+            trade_delay_secs: d_delay(),
         }
     }
 }
@@ -167,6 +179,12 @@ fn check_schedule(p: &InstantParams, out: &mut Vec<Violation>) {
     }
 }
 
+fn check_trade_delay(p: &InstantParams, out: &mut Vec<Violation>) {
+    if p.trade_delay_secs > MAX_TRADE_DELAY_SECS {
+        out.push(Violation::new(code::TRADE_DELAY, "trade_delay_secs", p.trade_delay_secs, format!("0..={MAX_TRADE_DELAY_SECS}")));
+    }
+}
+
 fn check_money(p: &InstantParams, l: &Limits, out: &mut Vec<Violation>) {
     if p.seed_q < l.seed_min || p.seed_q > l.seed_max {
         out.push(Violation::new(code::SEED_RANGE, "seed_q", p.seed_q, format!("{}..={}", l.seed_min, l.seed_max)));
@@ -204,11 +222,12 @@ fn check_fees(fees: &FeeTerms, out: &mut Vec<Violation>) {
     }
 }
 
-/// Every violation, in a fixed order (text, schedule, money, fees). Empty = valid.
+/// Every violation, in a fixed order (text, schedule, trade delay, money, fees). Empty = valid.
 pub fn validate_instant(p: &InstantParams, l: &Limits) -> Vec<Violation> {
     let mut out = Vec::new();
     check_text(p, &mut out);
     check_schedule(p, &mut out);
+    check_trade_delay(p, &mut out);
     check_money(p, l, &mut out);
     check_fees(&p.fees, &mut out);
     out
@@ -273,6 +292,27 @@ mod tests {
         assert_eq!(q.seed_q, 500_000_000);
     }
 
+    #[test]
+    fn trade_delay_defaults_to_ten_minutes_and_is_bounded() {
+        assert_eq!(InstantParams::example("MYC").trade_delay_secs, 600);
+        let p: InstantParams = serde_json::from_str(r#"{"name":"A Coin","symbol":"ACN","trade_delay_secs":0}"#).unwrap();
+        assert_eq!(p.trade_delay_secs, 0);
+        for ok in [0, 1, 600, 3_600] {
+            assert!(validate_instant(&InstantParams { trade_delay_secs: ok, ..InstantParams::example("MYC") }, &lim()).is_empty(), "{ok}");
+        }
+        for bad in [3_601, u32::MAX] {
+            assert_eq!(first_code(&InstantParams { trade_delay_secs: bad, ..InstantParams::example("MYC") }, &lim()), code::TRADE_DELAY);
+        }
+    }
+
+    #[test]
+    fn the_delay_is_outside_the_borsh_record() {
+        let a = borsh::to_vec(&InstantParams { trade_delay_secs: 0, ..InstantParams::example("MYC") }).unwrap();
+        let b = borsh::to_vec(&InstantParams { trade_delay_secs: 3_600, ..InstantParams::example("MYC") }).unwrap();
+        assert_eq!(a, b, "the stored layout of a record does not depend on the delay");
+        assert_eq!(borsh::from_slice::<InstantParams>(&a).unwrap().trade_delay_secs, 0);
+    }
+
     /// One failing case per rule code.
     #[test]
     fn each_rule_code_has_a_failing_case() {
@@ -292,6 +332,7 @@ mod tests {
             (code::VEST, InstantParams { vest_days: 366, ..base.clone() }),
             (code::VEST, InstantParams { cliff_days: 6, ..base.clone() }),
             (code::VEST, InstantParams { cliff_days: 31, vest_days: 365, ..base.clone() }),
+            (code::TRADE_DELAY, InstantParams { trade_delay_secs: 3_601, ..base.clone() }),
             (code::SEED_RANGE, InstantParams { seed_q: 99_999_999, ..base.clone() }),
             (code::SEED_RANGE, InstantParams { seed_q: 1_000_000_001, ..base.clone() }),
             ("R_FEE_TOTAL", InstantParams { fees: FeeTerms { total_fee_bps: 201, ..default_fees() }, ..base.clone() }),
